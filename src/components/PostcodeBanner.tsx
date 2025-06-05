@@ -1,8 +1,5 @@
 const PostcodeBanner = () => {
-  const postcodes = [
-    'SO14', 'SO15', 'SO16', 'SO17', 'SO18', 'SO19', 'SO30', 'SO31', 'SO32', 'SO40', 'SO41', 'SO42', 'SO43', 'SO45',
-    'PO7', 'PO8', 'PO9', 'PO10', 'PO11', 'PO12', 'PO13', 'PO14', 'PO15', 'PO16', 'PO17'
-  ];
+  const scrollText = "Southampton SO15 SO16 SO17 SO18 SO19 Romsey/Test Valley/ North Baddesley SO51 SO52 SO20 Winchester SO21 SO22 SO23 Hedge End/Botley SO30 Locks Heath SO31 Meons/Whiteley SO32 PO17 Waterside/Totton SO40 SO45 New Forest SO41 SO42 SO43 BH24 Eastleigh SO50 Chandler's Ford SO53 Fareham PO13 PO14 PO15 PO16";
 
   return (
     <div className="pt-8 pb-4">
@@ -11,9 +8,9 @@ const PostcodeBanner = () => {
         <div className="overflow-hidden bg-community-navy rounded-lg py-3">
           <div className="animate-[marquee_30s_linear_infinite] whitespace-nowrap">
             <span className="text-white font-medium">
-              {postcodes.concat(postcodes).map((postcode, index) => (
-                <span key={index} className="mx-4">{postcode}</span>
-              ))}
+              {/* Duplicate the text to create seamless loop */}
+              <span className="mr-8">{scrollText}</span>
+              <span className="mr-8">{scrollText}</span>
             </span>
           </div>
         </div>
