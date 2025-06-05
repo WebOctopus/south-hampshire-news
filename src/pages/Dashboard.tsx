@@ -22,6 +22,8 @@ const Dashboard = () => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [editingBusiness, setEditingBusiness] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('create');
+  
+  const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -88,6 +90,13 @@ const Dashboard = () => {
       loadBusinesses();
     }
   }, [user]);
+
+  // Set default tab based on whether user has existing business
+  useEffect(() => {
+    if (hasExistingBusiness && !editingBusiness) {
+      setActiveTab('listings');
+    }
+  }, [hasExistingBusiness, editingBusiness]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -221,7 +230,10 @@ const Dashboard = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="create">
+              <TabsTrigger 
+                value="create" 
+                disabled={hasExistingBusiness && !editingBusiness}
+              >
                 {editingBusiness ? 'Edit Listing' : 'Create New Listing'}
               </TabsTrigger>
               <TabsTrigger value="listings">Your Listings ({businesses.length})</TabsTrigger>
@@ -406,6 +418,11 @@ const Dashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Your Business Listings</CardTitle>
+                  {hasExistingBusiness && (
+                    <p className="text-sm text-gray-600">
+                      You can only have one business listing per account. To add a different business, please edit your existing listing.
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {businesses.length === 0 ? (
