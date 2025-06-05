@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import WhatsOn from "./pages/WhatsOn";
 import Competitions from "./pages/Competitions";
 import Advertising from "./pages/Advertising";
+import ApplyToDistribute from "./pages/ApplyToDistribute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/whats-on" element={<WhatsOn />} />
           <Route path="/competitions" element={<Competitions />} />
           <Route path="/advertising" element={<Advertising />} />
+          <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

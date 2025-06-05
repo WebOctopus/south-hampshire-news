@@ -10,7 +10,7 @@ const Navigation = () => {
     { name: 'What\'s On / Add Event', href: '/whats-on', isRoute: true },
     { name: 'Enter Competitions', href: '/competitions', isRoute: true },
     { name: 'Advertising & Leaflets', href: '/advertising', isRoute: true },
-    { name: 'Apply to Distribute', href: '#distribute', isRoute: false },
+    { name: 'Apply to Distribute', href: '/apply-to-distribute', isRoute: true },
     { name: 'Contact Us', href: '#contact', isRoute: false },
   ];
 
