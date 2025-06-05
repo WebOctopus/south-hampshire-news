@@ -20,9 +20,13 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-heading font-bold text-community-navy">
-              Discover
-            </h1>
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/cc241b5d-25f5-4df1-bf08-5b9569b299a1.png" 
+                alt="Discover Magazines Logo" 
+                className="h-8 w-auto"
+              />
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
