@@ -1,5 +1,6 @@
 import Navigation from '../components/Navigation';
 import HeroSection from '../components/HeroSection';
+import PostcodeBanner from '../components/PostcodeBanner';
 import IconCardsSection from '../components/IconCardsSection';
 import TestimonialsCarousel from '../components/TestimonialsCarousel';
 import LatestStoriesGrid from '../components/LatestStoriesGrid';
@@ -14,6 +15,7 @@ const Index = () => {
       <Navigation />
       <main>
         <HeroSection />
+        <PostcodeBanner />
         <IconCardsSection />
         <TestimonialsCarousel />
         <LatestStoriesGrid />

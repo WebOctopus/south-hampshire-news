@@ -1,11 +1,6 @@
 import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
-  const postcodes = [
-    'SO14', 'SO15', 'SO16', 'SO17', 'SO18', 'SO19', 'SO30', 'SO31', 'SO32', 'SO40', 'SO41', 'SO42', 'SO43', 'SO45',
-    'PO7', 'PO8', 'PO9', 'PO10', 'PO11', 'PO12', 'PO13', 'PO14', 'PO15', 'PO16', 'PO17'
-  ];
-
   return (
     <section id="home" className="relative py-16 lg:py-24 overflow-hidden">
       {/* YouTube Video Background */}
@@ -27,17 +22,6 @@ const HeroSection = () => {
             Letterbox delivered to <span className="text-community-green">158,000 homes</span>
             <span className="block">across SO & PO postcodes</span>
           </h1>
-          
-          {/* Scrolling ticker */}
-          <div className="mb-8 overflow-hidden bg-community-navy rounded-lg py-3">
-            <div className="animate-[marquee_30s_linear_infinite] whitespace-nowrap">
-              <span className="text-white font-medium">
-                {postcodes.concat(postcodes).map((postcode, index) => (
-                  <span key={index} className="mx-4">{postcode}</span>
-                ))}
-              </span>
-            </div>
-          </div>
 
           {/* Three CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
