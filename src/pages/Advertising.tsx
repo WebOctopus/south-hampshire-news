@@ -4,57 +4,127 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MapPin, Phone, Users, Newspaper, Truck, Clock } from "lucide-react";
-
 const Advertising = () => {
-  const adSizes = [
-    { size: "Full Page", dimensions: "190mm x 277mm", price: "£450" },
-    { size: "Half Page", dimensions: "190mm x 138mm", price: "£250" },
-    { size: "Quarter Page", dimensions: "93mm x 138mm", price: "£150" },
-    { size: "1/8 Page", dimensions: "93mm x 68mm", price: "£85" },
-    { size: "1/16 Page", dimensions: "45mm x 68mm", price: "£50" },
-    { size: "Business Card", dimensions: "85mm x 55mm", price: "£35" },
-    { size: "Double Column", dimensions: "128mm x 100mm", price: "£120" },
-    { size: "Single Column", dimensions: "62mm x 100mm", price: "£70" },
-    { size: "Strip Ad", dimensions: "190mm x 25mm", price: "£60" },
-    { size: "Small Square", dimensions: "45mm x 45mm", price: "£30" },
-    { size: "Mini Ad", dimensions: "30mm x 30mm", price: "£20" }
-  ];
-
-  const localEditions = [
-    { area: "SO15", name: "Southampton City Centre", households: "12,500" },
-    { area: "SO16", name: "Bitterne & Thornhill", households: "15,200" },
-    { area: "SO17", name: "Shirley & Freemantle", households: "18,000" },
-    { area: "SO18", name: "Woolston & Weston", households: "14,800" },
-    { area: "SO19", name: "Sholing & Houndsfield", households: "16,500" },
-    { area: "SO30", name: "Hedge End & West End", households: "13,200" },
-    { area: "SO31", name: "Netley & Hamble", households: "11,800" },
-    { area: "SO32", name: "Bishop's Waltham", households: "9,500" },
-    { area: "SO40", name: "Totton & Eling", households: "17,300" },
-    { area: "SO45", name: "Hythe & Dibden", households: "14,600" },
-    { area: "SO53", name: "Chandler's Ford", households: "16,900" },
-    { area: "PO14", name: "Fareham East", households: "13,700" }
-  ];
-
-  const stats = [
-    { number: "250+", label: "Current Advertisers", icon: Users },
-    { number: "158,000", label: "Circulation", icon: Newspaper },
-    { number: "150", label: "Distributors", icon: Truck },
-    { number: "20", label: "Years in Business", icon: Clock }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  const adSizes = [{
+    size: "Full Page",
+    dimensions: "190mm x 277mm",
+    price: "£450"
+  }, {
+    size: "Half Page",
+    dimensions: "190mm x 138mm",
+    price: "£250"
+  }, {
+    size: "Quarter Page",
+    dimensions: "93mm x 138mm",
+    price: "£150"
+  }, {
+    size: "1/8 Page",
+    dimensions: "93mm x 68mm",
+    price: "£85"
+  }, {
+    size: "1/16 Page",
+    dimensions: "45mm x 68mm",
+    price: "£50"
+  }, {
+    size: "Business Card",
+    dimensions: "85mm x 55mm",
+    price: "£35"
+  }, {
+    size: "Double Column",
+    dimensions: "128mm x 100mm",
+    price: "£120"
+  }, {
+    size: "Single Column",
+    dimensions: "62mm x 100mm",
+    price: "£70"
+  }, {
+    size: "Strip Ad",
+    dimensions: "190mm x 25mm",
+    price: "£60"
+  }, {
+    size: "Small Square",
+    dimensions: "45mm x 45mm",
+    price: "£30"
+  }, {
+    size: "Mini Ad",
+    dimensions: "30mm x 30mm",
+    price: "£20"
+  }];
+  const localEditions = [{
+    area: "SO15",
+    name: "Southampton City Centre",
+    households: "12,500"
+  }, {
+    area: "SO16",
+    name: "Bitterne & Thornhill",
+    households: "15,200"
+  }, {
+    area: "SO17",
+    name: "Shirley & Freemantle",
+    households: "18,000"
+  }, {
+    area: "SO18",
+    name: "Woolston & Weston",
+    households: "14,800"
+  }, {
+    area: "SO19",
+    name: "Sholing & Houndsfield",
+    households: "16,500"
+  }, {
+    area: "SO30",
+    name: "Hedge End & West End",
+    households: "13,200"
+  }, {
+    area: "SO31",
+    name: "Netley & Hamble",
+    households: "11,800"
+  }, {
+    area: "SO32",
+    name: "Bishop's Waltham",
+    households: "9,500"
+  }, {
+    area: "SO40",
+    name: "Totton & Eling",
+    households: "17,300"
+  }, {
+    area: "SO45",
+    name: "Hythe & Dibden",
+    households: "14,600"
+  }, {
+    area: "SO53",
+    name: "Chandler's Ford",
+    households: "16,900"
+  }, {
+    area: "PO14",
+    name: "Fareham East",
+    households: "13,700"
+  }];
+  const stats = [{
+    number: "250+",
+    label: "Current Advertisers",
+    icon: Users
+  }, {
+    number: "158,000",
+    label: "Circulation",
+    icon: Newspaper
+  }, {
+    number: "150",
+    label: "Distributors",
+    icon: Truck
+  }, {
+    number: "20",
+    label: "Years in Business",
+    icon: Clock
+  }];
+  return <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Hero Banner */}
       <section className="relative bg-gradient-to-r from-community-navy to-community-green text-white py-20 overflow-hidden">
         {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
-          }}
-        />
+        <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{
+        backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
+      }} />
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-community-navy/80 to-community-green/80" />
         
@@ -77,9 +147,8 @@ const Advertising = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => {
-              const IconComponent = stat.icon;
-              return (
-                <div key={index} className="text-center">
+            const IconComponent = stat.icon;
+            return <div key={index} className="text-center">
                   <div className="flex justify-center mb-4">
                     <IconComponent className="h-12 w-12 text-community-green" />
                   </div>
@@ -87,9 +156,8 @@ const Advertising = () => {
                     {stat.number}
                   </div>
                   <div className="text-gray-600 font-medium">{stat.label}</div>
-                </div>
-              );
-            })}
+                </div>;
+          })}
           </div>
         </div>
       </section>
@@ -117,13 +185,11 @@ const Advertising = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {adSizes.map((ad, index) => (
-                    <TableRow key={index}>
+                  {adSizes.map((ad, index) => <TableRow key={index}>
                       <TableCell className="font-medium">{ad.size}</TableCell>
                       <TableCell>{ad.dimensions}</TableCell>
                       <TableCell className="font-bold text-community-green">{ad.price}</TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </CardContent>
@@ -190,12 +256,7 @@ const Advertising = () => {
 
           <div className="max-w-4xl mx-auto">
             <Accordion type="single" collapsible className="space-y-4">
-              {localEditions.map((edition, index) => (
-                <AccordionItem 
-                  key={edition.area} 
-                  value={`item-${index}`}
-                  className="bg-white rounded-lg border shadow-sm"
-                >
+              {localEditions.map((edition, index) => <AccordionItem key={edition.area} value={`item-${index}`} className="bg-white rounded-lg border shadow-sm">
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center">
@@ -230,8 +291,7 @@ const Advertising = () => {
                       </div>
                     </div>
                   </AccordionContent>
-                </AccordionItem>
-              ))}
+                </AccordionItem>)}
             </Accordion>
           </div>
         </div>
@@ -251,14 +311,12 @@ const Advertising = () => {
               <Phone className="mr-2 h-5 w-5" />
               Call 023 8043 3399
             </Button>
-            <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-community-navy">
+            <Button size="lg" variant="outline" className="border-white hover:bg-white hover:text-community-navy text-slate-900">
               Download Media Pack
             </Button>
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Advertising;
