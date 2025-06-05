@@ -18,7 +18,13 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'body': ['Inter', 'sans-serif'],
+				'heading': ['Oswald', 'sans-serif'],
+			},
 			colors: {
+				'community-green': '#10b981',
+				'community-navy': '#1e293b',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
