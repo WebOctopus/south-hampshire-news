@@ -3,15 +3,13 @@ import { Button } from '@/components/ui/button';
 const HeroSection = () => {
   return (
     <section id="home" className="relative py-16 lg:py-24 overflow-hidden">
-      {/* YouTube Video Background */}
-      <div className="absolute inset-0 w-full h-full">
-        <iframe
-          src="https://www.youtube.com/embed/Nbvbgvro2G0?autoplay=1&mute=1&loop=1&playlist=Nbvbgvro2G0&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&start=0"
-          className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          allow="autoplay; encrypted-media"
-          title="Background Video"
-        />
-      </div>
+      {/* Peacock Background Image */}
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/lovable-uploads/2f7e4e32-acda-49e5-ab66-17e0059b39fc.png)'
+        }}
+      ></div>
       
       {/* Dark Overlay for Text Readability */}
       <div className="absolute inset-0 bg-black/50"></div>
