@@ -40,7 +40,7 @@ const HeroSection = () => {
             <Button 
               variant="outline" 
               size="lg"
-              className="border-2 border-white text-white hover:bg-white hover:text-community-navy px-8 py-3 text-lg font-medium rounded-lg"
+              className="border-2 border-white text-black hover:bg-white hover:text-community-navy px-8 py-3 text-lg font-medium rounded-lg"
             >
               Advertising Enquiry
             </Button>
