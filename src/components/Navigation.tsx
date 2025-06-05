@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigationItems = [
-    { name: 'Home', href: '/' },
-    { name: 'What\'s On / Add Event', href: '/whats-on' },
-    { name: 'Enter Competitions', href: '#competitions' },
-    { name: 'Advertising & Leaflets', href: '#advertising' },
-    { name: 'Apply to Distribute', href: '#distribute' },
-    { name: 'Contact Us', href: '#contact' },
+    { name: 'Home', href: '/', isRoute: true },
+    { name: 'What\'s On / Add Event', href: '/whats-on', isRoute: true },
+    { name: 'Enter Competitions', href: '/competitions', isRoute: true },
+    { name: 'Advertising & Leaflets', href: '#advertising', isRoute: false },
+    { name: 'Apply to Distribute', href: '#distribute', isRoute: false },
+    { name: 'Contact Us', href: '#contact', isRoute: false },
   ];
 
   return (
@@ -27,15 +28,25 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              {navigationItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                >
-                  {item.name}
-                </a>
-              ))}
+              {navigationItems.map((item) => 
+                item.isRoute ? (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  >
+                    {item.name}
+                  </Link>
+                ) : (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  >
+                    {item.name}
+                  </a>
+                )
+              )}
             </div>
           </div>
 
@@ -54,16 +65,27 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              {navigationItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-community-green block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </a>
-              ))}
+              {navigationItems.map((item) => 
+                item.isRoute ? (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="text-gray-700 hover:text-community-green block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ) : (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="text-gray-700 hover:text-community-green block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </a>
+                )
+              )}
             </div>
           </div>
         )}
