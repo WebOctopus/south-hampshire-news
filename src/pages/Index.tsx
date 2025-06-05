@@ -1,6 +1,7 @@
 import Navigation from '../components/Navigation';
 import HeroSection from '../components/HeroSection';
 import IconCardsSection from '../components/IconCardsSection';
+import WhatsOnSection from '../components/WhatsOnSection';
 import TestimonialsCarousel from '../components/TestimonialsCarousel';
 import LatestStoriesGrid from '../components/LatestStoriesGrid';
 import FeaturedAdvertisersSection from '../components/FeaturedAdvertisersSection';
@@ -15,6 +16,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <IconCardsSection />
+        <WhatsOnSection />
         <TestimonialsCarousel />
         <LatestStoriesGrid />
         <FeaturedAdvertisersSection />
