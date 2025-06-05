@@ -83,6 +83,11 @@ const Navigation = () => {
             {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center space-x-2">
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-community-green">
+                    Dashboard
+                  </Button>
+                </Link>
                 <Button variant="ghost" size="sm" className="text-gray-700">
                   <User size={16} className="mr-1" />
                   {user.email?.split('@')[0]}
@@ -150,6 +155,13 @@ const Navigation = () => {
               <div className="border-t pt-2">
                 {user ? (
                   <>
+                    <Link
+                      to="/dashboard"
+                      className="text-gray-700 hover:text-community-green block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
                     <div className="px-3 py-2 text-gray-700 text-base font-medium">
                       <User size={16} className="inline mr-2" />
                       {user.email?.split('@')[0]}
