@@ -1,26 +1,26 @@
 import { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { Input } from '@/components/ui/input';
+import { Search, MapPin, Star, Filter } from 'lucide-react';
+import Navigation from '../components/Navigation';
+import Footer from '../components/Footer';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
-import BusinessCard from '@/components/BusinessCard';
-import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BusinessCategory {
   id: string;
   name: string;
-  slug: string;
+  description: string;
   icon: string;
+  slug: string;
 }
 
 interface Business {
   id: string;
   name: string;
   description: string;
-  category_id: string;
   email: string;
   phone: string;
   website: string;
@@ -29,186 +29,299 @@ interface Business {
   city: string;
   postcode: string;
   logo_url: string;
-  images: string[];
-  business_categories: {
-    name: string;
-    icon: string;
-  };
+  is_verified: boolean;
+  featured: boolean;
+  business_categories: BusinessCategory;
 }
 
 const BusinessDirectory = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     fetchCategories();
     fetchBusinesses();
   }, []);
 
-  useEffect(() => {
-    fetchBusinesses();
-  }, [selectedCategory, searchTerm]);
-
   const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('business_categories')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
+    const { data, error } = await supabase
+      .from('business_categories')
+      .select('*')
+      .order('name');
+    
+    if (error) {
       console.error('Error fetching categories:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load categories",
-        variant: "destructive",
-      });
+    } else {
+      setCategories(data || []);
     }
   };
 
   const fetchBusinesses = async () => {
-    try {
-      setLoading(true);
-      let query = supabase
-        .from('businesses')
-        .select(`
-          *,
-          business_categories (
-            name,
-            icon
-          )
-        `)
-        .eq('is_active', true);
+    let query = supabase
+      .from('businesses')
+      .select(`
+        *,
+        business_categories (
+          id,
+          name,
+          description,
+          icon,
+          slug
+        )
+      `)
+      .eq('is_active', true)
+      .order('featured', { ascending: false })
+      .order('name');
 
-      if (selectedCategory) {
-        query = query.eq('category_id', selectedCategory);
-      }
-
-      if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,postcode.ilike.%${searchTerm}%`);
-      }
-
-      const { data, error } = await query.order('name');
-
-      if (error) throw error;
-      setBusinesses(data || []);
-    } catch (error) {
-      console.error('Error fetching businesses:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load businesses",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    if (selectedCategory !== 'all') {
+      query = query.eq('category_id', selectedCategory);
     }
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching businesses:', error);
+    } else {
+      setBusinesses(data || []);
+    }
+    setLoading(false);
   };
 
-  const clearFilters = () => {
-    setSelectedCategory('');
-    setSearchTerm('');
-  };
+  useEffect(() => {
+    fetchBusinesses();
+  }, [selectedCategory]);
+
+  const filteredBusinesses = businesses.filter(business =>
+    business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    business.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    business.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    business.postcode?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const CategoryCard = ({ category }: { category: BusinessCategory }) => (
+    <Card 
+      className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+      onClick={() => setSelectedCategory(category.id)}
+    >
+      <CardContent className="p-6 text-center">
+        <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-community-green/10 rounded-full">
+          <div className="text-community-green text-2xl">📍</div>
+        </div>
+        <h3 className="font-semibold text-lg mb-2">{category.name}</h3>
+        <p className="text-sm text-gray-600">{category.description}</p>
+      </CardContent>
+    </Card>
+  );
+
+  const BusinessCard = ({ business }: { business: Business }) => (
+    <Card className="hover:shadow-lg transition-shadow duration-200">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <CardTitle className="text-xl flex items-center gap-2">
+              {business.name}
+              {business.is_verified && (
+                <Badge variant="secondary" className="text-xs">
+                  ✓ Verified
+                </Badge>
+              )}
+              {business.featured && (
+                <Badge className="bg-community-green text-xs">
+                  Featured
+                </Badge>
+              )}
+            </CardTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              {business.business_categories?.name}
+            </p>
+          </div>
+          {business.logo_url && (
+            <img 
+              src={business.logo_url} 
+              alt={`${business.name} logo`}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-700 mb-4">{business.description}</p>
+        
+        <div className="space-y-2 text-sm">
+          {business.address_line1 && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <MapPin size={16} />
+              <span>
+                {business.address_line1}
+                {business.address_line2 && `, ${business.address_line2}`}
+                {business.city && `, ${business.city}`}
+                {business.postcode && ` ${business.postcode}`}
+              </span>
+            </div>
+          )}
+          
+          {business.phone && (
+            <div className="text-gray-600">
+              <strong>Phone:</strong> {business.phone}
+            </div>
+          )}
+          
+          {business.email && (
+            <div className="text-gray-600">
+              <strong>Email:</strong> {business.email}
+            </div>
+          )}
+          
+          {business.website && (
+            <div className="text-gray-600">
+              <strong>Website:</strong> 
+              <a 
+                href={business.website} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-community-green hover:underline ml-1"
+              >
+                {business.website}
+              </a>
+            </div>
+          )}
+        </div>
+        
+        <div className="mt-4 flex gap-2">
+          <Button size="sm" className="bg-community-green hover:bg-green-600">
+            View Details
+          </Button>
+          {business.phone && (
+            <Button variant="outline" size="sm">
+              Call Now
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl lg:text-4xl font-heading font-bold text-gray-900 mb-4">
-            Local Business Directory
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover amazing local businesses in your area. Support your community and find exactly what you're looking for.
-          </p>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search businesses, services, or locations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              className="whitespace-nowrap"
-            >
-              Clear Filters
-            </Button>
-          </div>
-
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant={selectedCategory === '' ? 'default' : 'outline'}
-              className="cursor-pointer"
-              onClick={() => setSelectedCategory('')}
-            >
-              All Categories
-            </Badge>
-            {categories.map((category) => (
-              <Badge
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                className="cursor-pointer"
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                {category.name}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Results */}
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {loading ? 'Loading...' : `${businesses.length} businesses found`}
-          </h2>
-        </div>
-
-        {/* Business Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow-md p-6 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      <main>
+        {/* Hero Section */}
+        <section className="bg-gradient-to-r from-community-navy to-community-green text-white py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl lg:text-5xl font-heading font-bold mb-6">
+              Business Directory
+            </h1>
+            <p className="text-xl mb-8 max-w-3xl mx-auto">
+              Discover local businesses across SO & PO postcodes. 
+              Support your community and find the services you need.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto flex gap-4 mb-6">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Input
+                  type="text"
+                  placeholder="Search businesses, services, or locations..."
+                  className="pl-10 h-12 text-black"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            ))}
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-48 h-12 text-black">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        ) : businesses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {businesses.map((business) => (
-              <BusinessCard key={business.id} business={business} />
-            ))}
+        </section>
+
+        {/* Categories Section */}
+        {selectedCategory === 'all' && (
+          <section className="py-16 bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl font-heading font-bold text-center mb-12">
+                Browse by Category
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {categories.map((category) => (
+                  <CategoryCard key={category.id} category={category} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Business Listings Section */}
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-heading font-bold">
+                {selectedCategory === 'all' ? 'Featured Businesses' : 
+                 categories.find(c => c.id === selectedCategory)?.name || 'Businesses'}
+              </h2>
+              <div className="flex items-center gap-2 text-gray-600">
+                <Filter size={16} />
+                <span>{filteredBusinesses.length} businesses found</span>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-community-green"></div>
+                <p className="mt-4 text-gray-600">Loading businesses...</p>
+              </div>
+            ) : filteredBusinesses.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg">No businesses found matching your criteria.</p>
+                <Button 
+                  onClick={() => { setSearchTerm(''); setSelectedCategory('all'); }}
+                  className="mt-4 bg-community-green hover:bg-green-600"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredBusinesses.map((business) => (
+                  <BusinessCard key={business.id} business={business} />
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No businesses found matching your criteria.</p>
-            <Button onClick={clearFilters} variant="outline">
-              Clear Filters
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 bg-community-green text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-heading font-bold mb-6">
+              List Your Business
+            </h2>
+            <p className="text-xl mb-8 max-w-2xl mx-auto">
+              Join our directory and connect with local customers in your area. 
+              Boost your visibility and grow your business.
+            </p>
+            <Button 
+              size="lg"
+              className="bg-white text-community-green hover:bg-gray-100 px-8 py-3 text-lg font-medium"
+            >
+              Add Your Business
             </Button>
           </div>
-        )}
-      </div>
-
+        </section>
+      </main>
       <Footer />
     </div>
   );
