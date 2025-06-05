@@ -1,7 +1,11 @@
 import Navigation from '../components/Navigation';
 import HeroSection from '../components/HeroSection';
-import FeaturedSection from '../components/FeaturedSection';
-import BusinessSection from '../components/BusinessSection';
+import IconCardsSection from '../components/IconCardsSection';
+import TestimonialsCarousel from '../components/TestimonialsCarousel';
+import LatestStoriesGrid from '../components/LatestStoriesGrid';
+import FeaturedAdvertisersSection from '../components/FeaturedAdvertisersSection';
+import NewsletterSignup from '../components/NewsletterSignup';
+import StickyDownloadForm from '../components/StickyDownloadForm';
 import Footer from '../components/Footer';
 
 const Index = () => {
@@ -10,10 +14,14 @@ const Index = () => {
       <Navigation />
       <main>
         <HeroSection />
-        <FeaturedSection />
-        <BusinessSection />
+        <IconCardsSection />
+        <TestimonialsCarousel />
+        <LatestStoriesGrid />
+        <FeaturedAdvertisersSection />
+        <NewsletterSignup />
       </main>
       <Footer />
+      <StickyDownloadForm />
     </div>
   );
 };
