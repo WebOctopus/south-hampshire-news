@@ -47,8 +47,18 @@ const Advertising = () => {
       <Navigation />
       
       {/* Hero Banner */}
-      <section className="bg-gradient-to-r from-community-navy to-community-green text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative bg-gradient-to-r from-community-navy to-community-green text-white py-20 overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-20"
+          style={{
+            backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
+          }}
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-community-navy/80 to-community-green/80" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-heading font-bold mb-6">
             YOUR BUSINESS NEEDS TO BE SEEN
           </h1>
