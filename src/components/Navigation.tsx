@@ -7,6 +7,7 @@ const Navigation = () => {
 
   const navigationItems = [
     { name: 'Home', href: '/', isRoute: true },
+    { name: 'Business Directory', href: '/directory', isRoute: true },
     { name: 'What\'s On / Add Event', href: '/whats-on', isRoute: true },
     { name: 'Enter Competitions', href: '/competitions', isRoute: true },
     { name: 'Advertising & Leaflets', href: '/advertising', isRoute: true },
