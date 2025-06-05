@@ -1,9 +1,34 @@
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setIsMenuOpen(false);
+  };
 
   const navigationItems = [
     { name: 'Home', href: '/', isRoute: true },
@@ -32,8 +57,8 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-baseline space-x-4">
               {navigationItems.map((item) => 
                 item.isRoute ? (
                   <Link
@@ -54,6 +79,34 @@ const Navigation = () => {
                 )
               )}
             </div>
+            
+            {/* Auth Buttons */}
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" className="text-gray-700">
+                  <User size={16} className="mr-1" />
+                  {user.email?.split('@')[0]}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSignOut}
+                  className="text-gray-700 hover:text-community-green"
+                >
+                  <LogOut size={16} className="mr-1" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Link to="/auth">
+                <Button 
+                  size="sm" 
+                  className="bg-community-green hover:bg-green-600 text-white"
+                >
+                  Business Login
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -92,6 +145,33 @@ const Navigation = () => {
                   </a>
                 )
               )}
+              
+              {/* Mobile Auth Buttons */}
+              <div className="border-t pt-2">
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 text-gray-700 text-base font-medium">
+                      <User size={16} className="inline mr-2" />
+                      {user.email?.split('@')[0]}
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                    >
+                      <LogOut size={16} className="inline mr-2" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    className="block w-full text-center bg-community-green text-white hover:bg-green-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Business Login
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}
