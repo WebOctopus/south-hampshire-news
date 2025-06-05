@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Calendar, MapPin, Plus, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, MapPin, Plus, Clock, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,8 +90,13 @@ const months = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const categories = [
+  'All Categories', 'Community', 'Classes', 'Craft', 'Art', 'Sport', 'Music', 'Food', 'Literature'
+];
+
 const WhatsOnSection = () => {
   const [selectedMonth, setSelectedMonth] = useState('All Months');
+  const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [postcode, setPostcode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,10 +112,38 @@ const WhatsOnSection = () => {
     }
   });
 
+  // Reset to first page when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
+  // Filter events based on selected category
+  const filteredEvents = selectedCategory === 'All Categories' 
+    ? mockEvents 
+    : mockEvents.filter(event => {
+        // Map filter categories to event categories
+        const categoryMap: { [key: string]: string[] } = {
+          'Community': ['Workshop'],
+          'Classes': ['Workshop', 'Food'],
+          'Craft': ['Workshop'],
+          'Art': ['Arts'],
+          'Sport': ['Sports'],
+          'Music': ['Music'],
+          'Food': ['Food'],
+          'Literature': ['Literature']
+        };
+        
+        if (categoryMap[selectedCategory]) {
+          return categoryMap[selectedCategory].includes(event.category);
+        }
+        
+        return event.category.toLowerCase() === selectedCategory.toLowerCase();
+      });
+
   const eventsPerPage = 4;
-  const totalPages = Math.ceil(mockEvents.length / eventsPerPage);
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
   const startIndex = (currentPage - 1) * eventsPerPage;
-  const displayedEvents = mockEvents.slice(startIndex, startIndex + eventsPerPage);
+  const displayedEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -153,6 +186,20 @@ const WhatsOnSection = () => {
                 {months.map((month) => (
                   <SelectItem key={month} value={month}>
                     {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Tag className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Select Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
                   </SelectItem>
                 ))}
               </SelectContent>
