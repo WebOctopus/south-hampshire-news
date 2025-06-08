@@ -39,12 +39,34 @@ const Navigation = () => {
     setIsMenuOpen(false);
   };
 
-  const simpleNavigationItems = [
-    { name: 'Home', href: '/', isRoute: true },
-    { name: 'Enter Competitions', href: '/competitions', isRoute: true },
-    { name: 'Apply to Distribute', href: '/apply-to-distribute', isRoute: true },
-    { name: 'Business Directory', href: '/business-directory', isRoute: true },
-    { name: 'Contact Us', href: '/contact', isRoute: true },
+  const homeDropdownItems = [
+    { name: 'Latest Community News', href: '/#news', description: 'Stay updated with the latest local stories and updates' },
+    { name: 'Featured Advertisers', href: '/#advertisers', description: 'Discover local businesses and services in your area' },
+    { name: 'Newsletter Signup', href: '/#newsletter', description: 'Subscribe to receive regular community updates' },
+  ];
+
+  const competitionsDropdownItems = [
+    { name: 'Current Competitions', href: '/competitions', description: 'Enter exciting competitions with amazing prizes' },
+    { name: 'Past Winners', href: '/competitions#winners', description: 'See previous competition winners and their stories' },
+    { name: 'Competition Rules', href: '/competitions#rules', description: 'Read terms and conditions for all competitions' },
+  ];
+
+  const distributeDropdownItems = [
+    { name: 'Application Form', href: '/apply-to-distribute', description: 'Apply to become a distribution partner in your area' },
+    { name: 'Distribution Areas', href: '/apply-to-distribute#areas', description: 'View available distribution territories' },
+    { name: 'Requirements', href: '/apply-to-distribute#requirements', description: 'Learn about distributor requirements and benefits' },
+  ];
+
+  const businessDirectoryDropdownItems = [
+    { name: 'Browse Businesses', href: '/business-directory', description: 'Find local businesses and services by category' },
+    { name: 'Add Your Business', href: '/business-directory#add', description: 'List your business in our community directory' },
+    { name: 'Featured Listings', href: '/business-directory#featured', description: 'Premium business listings with enhanced visibility' },
+  ];
+
+  const contactDropdownItems = [
+    { name: 'Contact Form', href: '/contact', description: 'Get in touch with our editorial team' },
+    { name: 'Editorial Submissions', href: '/contact#editorial', description: 'Submit news stories and community updates' },
+    { name: 'Advertising Enquiries', href: '/contact#advertising', description: 'Discuss advertising opportunities and packages' },
   ];
 
   const whatsOnDropdownItems = [
@@ -57,6 +79,14 @@ const Navigation = () => {
     { name: 'Cost Calculator', href: '/advertising#calculator', description: 'Calculate your advertising costs instantly' },
     { name: 'Distribution Areas', href: '/advertising#areas', description: 'See our 12 areas across South Hampshire' },
     { name: 'Special Offers', href: '/advertising#offers', description: 'Current promotional deals and packages' },
+  ];
+
+  const allDropdownSections = [
+    { title: 'Home', items: homeDropdownItems },
+    { title: 'Enter Competitions', items: competitionsDropdownItems },
+    { title: 'Apply to Distribute', items: distributeDropdownItems },
+    { title: 'Business Directory', items: businessDirectoryDropdownItems },
+    { title: 'Contact Us', items: contactDropdownItems },
   ];
 
   return (
@@ -78,17 +108,29 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-4">
             <NavigationMenu>
               <NavigationMenuList className="space-x-2">
-                {/* Simple navigation items */}
-                {simpleNavigationItems.map((item) => (
-                  <NavigationMenuItem key={item.name}>
-                    <NavigationMenuLink asChild>
-                      <Link
-                        to={item.href}
-                        className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                      >
-                        {item.name}
-                      </Link>
-                    </NavigationMenuLink>
+                {/* Navigation items with dropdowns */}
+                {allDropdownSections.map((section) => (
+                  <NavigationMenuItem key={section.title}>
+                    <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                      {section.title}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="grid gap-3 p-4 w-[400px]">
+                        {section.items.map((item) => (
+                          <NavigationMenuLink key={item.name} asChild>
+                            <Link
+                              to={item.href}
+                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            >
+                              <div className="text-sm font-medium leading-none">{item.name}</div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                {item.description}
+                              </p>
+                            </Link>
+                          </NavigationMenuLink>
+                        ))}
+                      </div>
+                    </NavigationMenuContent>
                   </NavigationMenuItem>
                 ))}
 
@@ -191,15 +233,21 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              {simpleNavigationItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="text-gray-700 hover:text-community-green block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
+              {/* Mobile sections with dropdowns */}
+              {allDropdownSections.map((section) => (
+                <div key={section.title} className="border-t pt-2">
+                  <div className="px-3 py-2 text-gray-700 text-base font-medium">{section.title}</div>
+                  {section.items.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className="text-gray-600 hover:text-community-green block px-6 py-2 rounded-md text-sm transition-colors duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
               ))}
               
               {/* Mobile Advertising section */}
