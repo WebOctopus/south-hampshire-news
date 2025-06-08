@@ -83,10 +83,10 @@ const Navigation = () => {
 
   const allDropdownSections = [
     { title: 'Home', items: homeDropdownItems },
-    { title: 'Enter Competitions', items: competitionsDropdownItems },
-    { title: 'Apply to Distribute', items: distributeDropdownItems },
-    { title: 'Business Directory', items: businessDirectoryDropdownItems },
-    { title: 'Contact Us', items: contactDropdownItems },
+    { title: 'Competitions', items: competitionsDropdownItems },
+    { title: 'Distribute', items: distributeDropdownItems },
+    { title: 'Directory', items: businessDirectoryDropdownItems },
+    { title: 'Contact', items: contactDropdownItems },
   ];
 
   return (
@@ -137,7 +137,7 @@ const Navigation = () => {
                 {/* Advertising & Leaflets dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
-                    Advertising & Leaflets
+                    Advertising
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid gap-3 p-4 w-[400px]">
@@ -161,7 +161,7 @@ const Navigation = () => {
                 {/* What's On dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
-                    What's On / Add Event
+                    Events
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid gap-3 p-4 w-[400px]">
@@ -252,7 +252,7 @@ const Navigation = () => {
               
               {/* Mobile Advertising section */}
               <div className="border-t pt-2">
-                <div className="px-3 py-2 text-gray-700 text-base font-medium">Advertising & Leaflets</div>
+                <div className="px-3 py-2 text-gray-700 text-base font-medium">Advertising</div>
                 {advertisingDropdownItems.map((item) => (
                   <Link
                     key={item.name}
@@ -267,7 +267,7 @@ const Navigation = () => {
               
               {/* Mobile What's On section */}
               <div className="border-t pt-2">
-                <div className="px-3 py-2 text-gray-700 text-base font-medium">What's On / Add Event</div>
+                <div className="px-3 py-2 text-gray-700 text-base font-medium">Events</div>
                 {whatsOnDropdownItems.map((item) => (
                   <Link
                     key={item.name}
