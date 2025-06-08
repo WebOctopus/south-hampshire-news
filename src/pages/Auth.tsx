@@ -11,9 +11,12 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
 const Auth = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [signInEmail, setSignInEmail] = useState('');
+  const [signInPassword, setSignInPassword] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [signInLoading, setSignInLoading] = useState(false);
+  const [signUpLoading, setSignUpLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -50,15 +53,15 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Starting sign up process for:', email);
-    setLoading(true);
+    console.log('Starting sign up process for:', signUpEmail);
+    setSignUpLoading(true);
 
     try {
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: signUpEmail,
+        password: signUpPassword,
         options: {
           emailRedirectTo: redirectUrl
         }
@@ -77,6 +80,9 @@ const Auth = () => {
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your registration."
         });
+        // Clear form
+        setSignUpEmail('');
+        setSignUpPassword('');
       }
     } catch (error) {
       console.error('Unexpected error during sign up:', error);
@@ -86,19 +92,19 @@ const Auth = () => {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setSignUpLoading(false);
     }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Starting sign in process for:', email);
-    setLoading(true);
+    console.log('Starting sign in process for:', signInEmail);
+    setSignInLoading(true);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+        email: signInEmail,
+        password: signInPassword
       });
 
       if (error) {
@@ -108,7 +114,6 @@ const Auth = () => {
           description: error.message,
           variant: "destructive"
         });
-        setLoading(false);
         return;
       }
 
@@ -127,26 +132,24 @@ const Auth = () => {
           console.error('Error checking user role:', roleError);
         }
 
+        // Clear form first
+        setSignInEmail('');
+        setSignInPassword('');
+
         if (roleData) {
           console.log('Admin role detected, redirecting to admin dashboard');
           toast({
             title: "Welcome back, Admin!",
             description: "Redirecting to admin dashboard..."
           });
-          // Small delay to show the toast
-          setTimeout(() => {
-            navigate('/admin');
-          }, 1000);
+          navigate('/admin');
         } else {
           console.log('Regular user, redirecting to home');
           toast({
             title: "Welcome back!",
             description: "You have been successfully signed in."
           });
-          // Small delay to show the toast
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
+          navigate('/');
         }
       }
     } catch (error) {
@@ -157,7 +160,7 @@ const Auth = () => {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setSignInLoading(false);
     }
   };
 
@@ -195,11 +198,11 @@ const Auth = () => {
                       <Input
                         id="signin-email"
                         type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={signInEmail}
+                        onChange={(e) => setSignInEmail(e.target.value)}
                         required
                         placeholder="Enter your email"
-                        disabled={loading}
+                        disabled={signInLoading}
                       />
                     </div>
                     <div>
@@ -209,19 +212,19 @@ const Auth = () => {
                       <Input
                         id="signin-password"
                         type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={signInPassword}
+                        onChange={(e) => setSignInPassword(e.target.value)}
                         required
                         placeholder="Enter your password"
-                        disabled={loading}
+                        disabled={signInLoading}
                       />
                     </div>
                     <Button 
                       type="submit" 
                       className="w-full bg-community-green hover:bg-green-600"
-                      disabled={loading}
+                      disabled={signInLoading}
                     >
-                      {loading ? 'Signing In...' : 'Sign In'}
+                      {signInLoading ? 'Signing In...' : 'Sign In'}
                     </Button>
                   </form>
                 </TabsContent>
@@ -235,11 +238,11 @@ const Auth = () => {
                       <Input
                         id="signup-email"
                         type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={signUpEmail}
+                        onChange={(e) => setSignUpEmail(e.target.value)}
                         required
                         placeholder="Enter your email"
-                        disabled={loading}
+                        disabled={signUpLoading}
                       />
                     </div>
                     <div>
@@ -249,20 +252,20 @@ const Auth = () => {
                       <Input
                         id="signup-password"
                         type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={signUpPassword}
+                        onChange={(e) => setSignUpPassword(e.target.value)}
                         required
                         placeholder="Create a password"
                         minLength={6}
-                        disabled={loading}
+                        disabled={signUpLoading}
                       />
                     </div>
                     <Button 
                       type="submit" 
                       className="w-full bg-community-green hover:bg-green-600"
-                      disabled={loading}
+                      disabled={signUpLoading}
                     >
-                      {loading ? 'Creating Account...' : 'Create Account'}
+                      {signUpLoading ? 'Creating Account...' : 'Create Account'}
                     </Button>
                   </form>
                 </TabsContent>
