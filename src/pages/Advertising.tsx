@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import CostCalculator from "@/components/CostCalculator";
+import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -176,6 +177,59 @@ const Advertising = () => {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Special Offer Section */}
+      <section className="py-16 bg-gradient-to-r from-community-green to-green-600 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-block bg-white text-community-green px-6 py-2 rounded-full font-bold text-lg mb-6">
+              🎉 LIMITED TIME OFFER
+            </div>
+            <h2 className="text-5xl md:text-6xl font-heading font-bold mb-6">
+              £999 ALL AREAS PACKAGE
+            </h2>
+            <p className="text-2xl md:text-3xl mb-4 font-bold">
+              Reach 158,000 Homes Across All 12 Areas
+            </p>
+            <p className="text-xl mb-8 opacity-90">
+              Save over £500 with our exclusive package deal - Perfect for businesses ready to make a big impact!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl font-bold mb-2">158,000</div>
+                <div className="text-lg">Total Homes Reached</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl font-bold mb-2">12</div>
+                <div className="text-lg">Distribution Areas</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl font-bold mb-2">6</div>
+                <div className="text-lg">Magazine Editions</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <SpecialOfferForm>
+              <Button size="lg" className="bg-white text-community-green hover:bg-gray-100 text-xl px-12 py-6 font-bold">
+                CLAIM THIS OFFER - £999
+              </Button>
+            </SpecialOfferForm>
+            <p className="mt-4 text-lg opacity-90">
+              Includes professional design support & account management
+            </p>
           </div>
         </div>
       </section>
