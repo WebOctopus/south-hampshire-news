@@ -20,21 +20,29 @@ const Auth = () => {
   useEffect(() => {
     // Check if user is already logged in
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Check if user is admin and redirect accordingly
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .eq('role', 'admin')
-          .single();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          console.log('Existing session found:', session.user.email);
+          
+          // Check if user is admin and redirect accordingly
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .eq('role', 'admin')
+            .single();
 
-        if (roleData) {
-          navigate('/admin');
-        } else {
-          navigate('/');
+          if (roleData) {
+            console.log('Admin user detected, redirecting to admin dashboard');
+            navigate('/admin');
+          } else {
+            console.log('Regular user detected, redirecting to home');
+            navigate('/');
+          }
         }
+      } catch (error) {
+        console.error('Error checking auth:', error);
       }
     };
     checkAuth();
@@ -42,72 +50,115 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Starting sign up process for:', email);
     setLoading(true);
 
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl
-      }
-    });
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
 
-    if (error) {
+      if (error) {
+        console.error('Sign up error:', error);
+        toast({
+          title: "Sign Up Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        console.log('Sign up successful');
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link to complete your registration."
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error during sign up:', error);
       toast({
-        title: "Sign Up Error",
-        description: error.message,
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-    } else {
-      toast({
-        title: "Check your email",
-        description: "We've sent you a confirmation link to complete your registration."
-      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Starting sign in process for:', email);
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-    if (error) {
+      if (error) {
+        console.error('Sign in error:', error);
+        toast({
+          title: "Sign In Error",
+          description: error.message,
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        console.log('Sign in successful for user:', data.user.email);
+        
+        // Check if user is admin
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id)
+          .eq('role', 'admin')
+          .single();
+
+        if (roleError && roleError.code !== 'PGRST116') {
+          console.error('Error checking user role:', roleError);
+        }
+
+        if (roleData) {
+          console.log('Admin role detected, redirecting to admin dashboard');
+          toast({
+            title: "Welcome back, Admin!",
+            description: "Redirecting to admin dashboard..."
+          });
+          // Small delay to show the toast
+          setTimeout(() => {
+            navigate('/admin');
+          }, 1000);
+        } else {
+          console.log('Regular user, redirecting to home');
+          toast({
+            title: "Welcome back!",
+            description: "You have been successfully signed in."
+          });
+          // Small delay to show the toast
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
+        }
+      }
+    } catch (error) {
+      console.error('Unexpected error during sign in:', error);
       toast({
-        title: "Sign In Error",
-        description: error.message,
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-    } else if (data.user) {
-      // Check if user is admin
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', data.user.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (roleData) {
-        toast({
-          title: "Welcome back, Admin!",
-          description: "Redirecting to admin dashboard..."
-        });
-        navigate('/admin');
-      } else {
-        toast({
-          title: "Welcome back!",
-          description: "You have been successfully signed in."
-        });
-        navigate('/');
-      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -148,6 +199,7 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         placeholder="Enter your email"
+                        disabled={loading}
                       />
                     </div>
                     <div>
@@ -161,6 +213,7 @@ const Auth = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         placeholder="Enter your password"
+                        disabled={loading}
                       />
                     </div>
                     <Button 
@@ -186,6 +239,7 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         placeholder="Enter your email"
+                        disabled={loading}
                       />
                     </div>
                     <div>
@@ -200,6 +254,7 @@ const Auth = () => {
                         required
                         placeholder="Create a password"
                         minLength={6}
+                        disabled={loading}
                       />
                     </div>
                     <Button 
