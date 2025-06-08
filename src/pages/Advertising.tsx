@@ -399,21 +399,36 @@ const Advertising = () => {
             </p>
           </div>
 
-          <Card className="max-w-4xl mx-auto">
-            <CardContent className="p-8">
-              <ul className="space-y-3 text-gray-700">
-                <li>• A5 (148mm x 210mm) full colour, self cover</li>
-                <li>• Frequency per edition is 6 times a year (bi-monthly)</li>
-                <li>• 12 different publications; target your advertising</li>
-                <li>• Each edition is tailored with local stories & What's On</li>
-                <li>• Average circulation per edition is 13,500 homes</li>
-                <li>• Book 12 editions for 158,000 circulation</li>
-                <li>• Distribution is GPS tracked, monitored and recorded</li>
-                <li>• 50,000 rural homes only get Discover, no other publication</li>
-                <li>• Available for pick up at selected supermarkets</li>
-              </ul>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            {/* Map Section */}
+            <div className="text-center">
+              <img 
+                src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" 
+                alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas"
+                className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+              />
+              <p className="text-sm text-gray-600 mt-4 font-medium">
+                12 Distribution Areas across South Hampshire
+              </p>
+            </div>
+
+            {/* Facts List */}
+            <Card className="h-fit">
+              <CardContent className="p-8">
+                <ul className="space-y-3 text-gray-700">
+                  <li>• A5 (148mm x 210mm) full colour, self cover</li>
+                  <li>• Frequency per edition is 6 times a year (bi-monthly)</li>
+                  <li>• 12 different publications; target your advertising</li>
+                  <li>• Each edition is tailored with local stories & What's On</li>
+                  <li>• Average circulation per edition is 13,500 homes</li>
+                  <li>• Book 12 editions for 158,000 circulation</li>
+                  <li>• Distribution is GPS tracked, monitored and recorded</li>
+                  <li>• 50,000 rural homes only get Discover, no other publication</li>
+                  <li>• Available for pick up at selected supermarkets</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
