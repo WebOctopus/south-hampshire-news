@@ -400,18 +400,6 @@ const Advertising = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Map Section */}
-            <div className="text-center">
-              <img 
-                src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" 
-                alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas"
-                className="w-full max-w-md mx-auto rounded-lg shadow-lg"
-              />
-              <p className="text-sm text-gray-600 mt-4 font-medium">
-                12 Distribution Areas across South Hampshire
-              </p>
-            </div>
-
             {/* Facts List */}
             <Card className="h-fit">
               <CardContent className="p-8">
@@ -428,6 +416,18 @@ const Advertising = () => {
                 </ul>
               </CardContent>
             </Card>
+
+            {/* Map Section */}
+            <div className="text-center">
+              <img 
+                src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" 
+                alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas"
+                className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+              />
+              <p className="text-sm text-gray-600 mt-4 font-medium">
+                12 Distribution Areas across South Hampshire
+              </p>
+            </div>
           </div>
         </div>
       </section>
