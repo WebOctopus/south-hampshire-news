@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { Upload } from 'lucide-react';
 
 interface SpecialOfferFormProps {
   children: React.ReactNode;
@@ -23,7 +24,9 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
     adSize: '',
     previousAdvertising: '',
     goals: '',
-    additionalInfo: ''
+    additionalInfo: '',
+    artworkOption: '',
+    uploadedFile: null as File | null
   });
 
   const businessTypes = [
@@ -33,6 +36,16 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
     { id: 'professional', label: 'Professional Services' },
     { id: 'home-services', label: 'Home Services' },
     { id: 'fitness', label: 'Fitness/Wellness' },
+    { id: 'plumber', label: 'Plumber' },
+    { id: 'electrician', label: 'Electrician' },
+    { id: 'builder', label: 'Builder/Construction' },
+    { id: 'gardener', label: 'Gardener/Landscaper' },
+    { id: 'decorator', label: 'Painter/Decorator' },
+    { id: 'roofer', label: 'Roofer' },
+    { id: 'mechanic', label: 'Mechanic/Auto Services' },
+    { id: 'cleaner', label: 'Cleaning Services' },
+    { id: 'heating', label: 'Heating/Gas Engineer' },
+    { id: 'carpenter', label: 'Carpenter/Joiner' },
     { id: 'other', label: 'Other' }
   ];
 
@@ -51,9 +64,54 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
     { id: 'multiple', label: 'Multiple channels' }
   ];
 
+  const artworkOptions = [
+    { id: 'upload', label: 'I will upload my own artwork' },
+    { id: 'design-service', label: 'Have Discover Magazines create my advert (+£35)' }
+  ];
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 10MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'image/svg+xml'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload an image (JPG, PNG, GIF, SVG) or PDF file",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, uploadedFile: file }));
+      toast({
+        title: "File Uploaded",
+        description: `${file.name} has been uploaded successfully`,
+      });
+    }
+  };
+
+  const calculateTotalPrice = () => {
+    let basePrice = 999;
+    if (formData.artworkOption === 'design-service') {
+      basePrice += 35;
+    }
+    return basePrice;
+  };
+
   const handlePayment = async () => {
     // Validate required fields
-    if (!formData.fullName || !formData.emailAddress || !formData.phoneNumber || !formData.businessType || !formData.adSize) {
+    if (!formData.fullName || !formData.emailAddress || !formData.phoneNumber || !formData.businessType || !formData.adSize || !formData.artworkOption) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields marked with *",
@@ -62,9 +120,17 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
       return;
     }
 
+    // Validate artwork requirements
+    if (formData.artworkOption === 'upload' && !formData.uploadedFile) {
+      toast({
+        title: "Artwork Required",
+        description: "Please upload your artwork file or choose our design service",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      // Here you would integrate with your payment gateway
-      // For now, we'll simulate the payment process
       toast({
         title: "Processing Payment",
         description: "Redirecting to payment gateway...",
@@ -235,6 +301,74 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
             </CardContent>
           </Card>
 
+          {/* Artwork Options */}
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                Artwork & Design Options *
+              </h3>
+              <div className="space-y-4">
+                <RadioGroup
+                  value={formData.artworkOption}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, artworkOption: value, uploadedFile: value === 'design-service' ? null : prev.uploadedFile }))}
+                  className="space-y-4"
+                >
+                  {artworkOptions.map((option) => (
+                    <div key={option.id} className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value={option.id} id={option.id} />
+                      <Label htmlFor={option.id} className="cursor-pointer text-base">
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+
+                {formData.artworkOption === 'upload' && (
+                  <div className="mt-4 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                    <div className="text-center">
+                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="mt-4">
+                        <Label htmlFor="artwork-upload" className="cursor-pointer">
+                          <span className="text-community-green font-medium hover:underline">
+                            Click to upload your artwork
+                          </span>
+                        </Label>
+                        <Input
+                          id="artwork-upload"
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                        <p className="text-sm text-gray-500 mt-2">
+                          Accepted formats: JPG, PNG, GIF, SVG, PDF (Max 10MB)
+                        </p>
+                        {formData.uploadedFile && (
+                          <p className="text-sm text-community-green font-medium mt-2">
+                            ✓ {formData.uploadedFile.name} uploaded
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {formData.artworkOption === 'design-service' && (
+                  <div className="mt-4 p-4 bg-community-green/10 border border-community-green rounded-lg">
+                    <h4 className="font-medium text-community-navy mb-2">Professional Design Service</h4>
+                    <p className="text-sm text-gray-600">
+                      Our experienced design team will create a professional, eye-catching advertisement for your business. 
+                      We'll work with you to ensure the design matches your brand and messaging perfectly.
+                    </p>
+                    <p className="text-sm font-bold text-community-green mt-2">
+                      Additional cost: £35
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Package Summary */}
           <Card className="bg-community-green/10 border-community-green">
             <CardContent className="p-6">
@@ -260,10 +394,28 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
                     {formData.adSize ? adSizes.find(s => s.id === formData.adSize)?.label : 'To be selected'}
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span>Artwork:</span>
+                  <span className="font-medium">
+                    {formData.artworkOption === 'upload' ? 'Customer Provided' : 
+                     formData.artworkOption === 'design-service' ? 'Professional Design (+£35)' : 
+                     'To be selected'}
+                  </span>
+                </div>
                 <div className="border-t pt-2 mt-4">
-                  <div className="flex justify-between text-xl font-bold text-community-navy">
-                    <span>Special Offer Price:</span>
-                    <span className="text-community-green">£999</span>
+                  <div className="flex justify-between">
+                    <span>Base Package:</span>
+                    <span>£999</span>
+                  </div>
+                  {formData.artworkOption === 'design-service' && (
+                    <div className="flex justify-between">
+                      <span>Design Service:</span>
+                      <span>£35</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-xl font-bold text-community-navy mt-2">
+                    <span>Total Price:</span>
+                    <span className="text-community-green">£{calculateTotalPrice()}</span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1">
                     Regular price would be £1,500+ - Save over £500!
@@ -275,9 +427,9 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
                 <Button 
                   onClick={handlePayment}
                   className="w-full bg-community-green hover:bg-green-600 text-lg py-6"
-                  disabled={!formData.fullName || !formData.emailAddress || !formData.phoneNumber || !formData.businessType || !formData.adSize}
+                  disabled={!formData.fullName || !formData.emailAddress || !formData.phoneNumber || !formData.businessType || !formData.adSize || !formData.artworkOption || (formData.artworkOption === 'upload' && !formData.uploadedFile)}
                 >
-                  Proceed to Payment - £999
+                  Proceed to Payment - £{calculateTotalPrice()}
                 </Button>
                 <p className="text-xs text-gray-500 text-center mt-2">
                   Secure payment processing via Stripe
