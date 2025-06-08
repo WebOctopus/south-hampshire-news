@@ -17,25 +17,25 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('Checking authentication status...');
+        console.log('ProtectedRoute: Checking authentication status...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting session:', error);
+          console.error('ProtectedRoute: Error getting session:', error);
           navigate('/auth');
           return;
         }
 
         if (session?.user) {
-          console.log('User is authenticated:', session.user.email);
+          console.log('ProtectedRoute: User is authenticated:', session.user.email);
           setUser(session.user);
         } else {
-          console.log('No authenticated user found, redirecting to auth page');
+          console.log('ProtectedRoute: No authenticated user found, redirecting to auth page');
           navigate('/auth');
           return;
         }
       } catch (error) {
-        console.error('Error checking auth:', error);
+        console.error('ProtectedRoute: Error checking auth:', error);
         navigate('/auth');
       } finally {
         setLoading(false);
@@ -47,7 +47,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
+      console.log('ProtectedRoute: Auth state changed:', event, session?.user?.email);
       
       if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user);

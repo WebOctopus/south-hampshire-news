@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import TestAuthButton from '@/components/TestAuthButton';
 
 const Auth = () => {
   const [signInEmail, setSignInEmail] = useState('');
@@ -24,13 +24,14 @@ const Auth = () => {
     // Check if user is already logged in
     const checkAuth = async () => {
       try {
+        console.log('Auth page: Checking existing session...');
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          console.log('Existing session found, redirecting...');
+          console.log('Auth page: Existing session found, redirecting...');
           navigate('/');
         }
       } catch (error) {
-        console.error('Error checking auth:', error);
+        console.error('Auth page: Error checking auth:', error);
       }
     };
     checkAuth();
@@ -47,14 +48,14 @@ const Auth = () => {
 
       return !!roleData;
     } catch (error) {
-      console.log('No admin role found or error checking role');
+      console.log('Auth page: No admin role found or error checking role');
       return false;
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Starting sign up process for:', signUpEmail);
+    console.log('Auth page: Starting sign up process for:', signUpEmail);
     setSignUpLoading(true);
 
     try {
@@ -69,14 +70,14 @@ const Auth = () => {
       });
 
       if (error) {
-        console.error('Sign up error:', error);
+        console.error('Auth page: Sign up error:', error);
         toast({
           title: "Sign Up Error",
           description: error.message,
           variant: "destructive"
         });
       } else {
-        console.log('Sign up successful');
+        console.log('Auth page: Sign up successful');
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your registration."
@@ -86,7 +87,7 @@ const Auth = () => {
         setSignUpPassword('');
       }
     } catch (error) {
-      console.error('Unexpected error during sign up:', error);
+      console.error('Auth page: Unexpected error during sign up:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -99,7 +100,7 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Starting sign in process for:', signInEmail);
+    console.log('Auth page: Starting sign in process for:', signInEmail);
     setSignInLoading(true);
 
     try {
@@ -109,7 +110,7 @@ const Auth = () => {
       });
 
       if (error) {
-        console.error('Sign in error:', error);
+        console.error('Auth page: Sign in error:', error);
         toast({
           title: "Sign In Error",
           description: error.message,
@@ -120,7 +121,7 @@ const Auth = () => {
       }
 
       if (data.user) {
-        console.log('Sign in successful for user:', data.user.email);
+        console.log('Auth page: Sign in successful for user:', data.user.email);
         
         // Clear form immediately
         setSignInEmail('');
@@ -136,15 +137,15 @@ const Auth = () => {
         const isAdmin = await checkUserRole(data.user.id);
         
         if (isAdmin) {
-          console.log('Admin role detected, redirecting to admin dashboard');
+          console.log('Auth page: Admin role detected, redirecting to admin dashboard');
           navigate('/admin');
         } else {
-          console.log('Regular user, redirecting to home');
+          console.log('Auth page: Regular user, redirecting to home');
           navigate('/');
         }
       }
     } catch (error) {
-      console.error('Unexpected error during sign in:', error);
+      console.error('Auth page: Unexpected error during sign in:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -174,6 +175,8 @@ const Auth = () => {
               <CardTitle className="text-center">Get Started</CardTitle>
             </CardHeader>
             <CardContent>
+              <TestAuthButton />
+              
               <Tabs defaultValue="signin" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>
