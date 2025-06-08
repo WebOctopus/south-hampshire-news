@@ -1,5 +1,5 @@
-
 import Navigation from "@/components/Navigation";
+import CostCalculator from "@/components/CostCalculator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -392,9 +392,11 @@ const Advertising = () => {
                   </p>
                 </div>
                 <div className="text-center">
-                  <Button className="bg-community-green hover:bg-green-600">
-                    REQUEST A RATE CARD
-                  </Button>
+                  <CostCalculator>
+                    <Button className="bg-community-green hover:bg-green-600">
+                      REQUEST A RATE CARD
+                    </Button>
+                  </CostCalculator>
                 </div>
               </div>
             </CardContent>
@@ -433,9 +435,11 @@ const Advertising = () => {
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <Button className="w-full">
-                          REQUEST A QUOTE
-                        </Button>
+                        <CostCalculator>
+                          <Button className="w-full">
+                            REQUEST A QUOTE
+                          </Button>
+                        </CostCalculator>
                       </div>
                     </div>
                   </AccordionContent>
