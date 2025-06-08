@@ -42,7 +42,6 @@ const Navigation = () => {
   const simpleNavigationItems = [
     { name: 'Home', href: '/', isRoute: true },
     { name: 'Enter Competitions', href: '/competitions', isRoute: true },
-    { name: 'Advertising & Leaflets', href: '/advertising', isRoute: true },
     { name: 'Apply to Distribute', href: '/apply-to-distribute', isRoute: true },
     { name: 'Business Directory', href: '/business-directory', isRoute: true },
     { name: 'Contact Us', href: '/contact', isRoute: true },
@@ -51,6 +50,13 @@ const Navigation = () => {
   const whatsOnDropdownItems = [
     { name: 'Find Events', href: '/whats-on', description: 'Browse upcoming events in your area' },
     { name: 'Add Events', href: '/whats-on?tab=add', description: 'Submit your event to be featured' },
+  ];
+
+  const advertisingDropdownItems = [
+    { name: 'View Advertising Options', href: '/advertising', description: 'Explore our advertising packages and rates' },
+    { name: 'Cost Calculator', href: '/advertising#calculator', description: 'Calculate your advertising costs instantly' },
+    { name: 'Distribution Areas', href: '/advertising#areas', description: 'See our 12 areas across South Hampshire' },
+    { name: 'Special Offers', href: '/advertising#offers', description: 'Current promotional deals and packages' },
   ];
 
   return (
@@ -85,6 +91,30 @@ const Navigation = () => {
                     </NavigationMenuLink>
                   </NavigationMenuItem>
                 ))}
+
+                {/* Advertising & Leaflets dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                    Advertising & Leaflets
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid gap-3 p-4 w-[400px]">
+                      {advertisingDropdownItems.map((item) => (
+                        <NavigationMenuLink key={item.name} asChild>
+                          <Link
+                            to={item.href}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none">{item.name}</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
                 {/* What's On dropdown */}
                 <NavigationMenuItem>
@@ -171,6 +201,21 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Mobile Advertising section */}
+              <div className="border-t pt-2">
+                <div className="px-3 py-2 text-gray-700 text-base font-medium">Advertising & Leaflets</div>
+                {advertisingDropdownItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="text-gray-600 hover:text-community-green block px-6 py-2 rounded-md text-sm transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
               
               {/* Mobile What's On section */}
               <div className="border-t pt-2">
