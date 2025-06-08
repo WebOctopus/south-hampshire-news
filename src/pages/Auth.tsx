@@ -26,23 +26,8 @@ const Auth = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          console.log('Existing session found:', session.user.email);
-          
-          // Check if user is admin and redirect accordingly
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .eq('role', 'admin')
-            .single();
-
-          if (roleData) {
-            console.log('Admin user detected, redirecting to admin dashboard');
-            navigate('/admin');
-          } else {
-            console.log('Regular user detected, redirecting to home');
-            navigate('/');
-          }
+          console.log('Existing session found, redirecting...');
+          navigate('/');
         }
       } catch (error) {
         console.error('Error checking auth:', error);
@@ -50,6 +35,22 @@ const Auth = () => {
     };
     checkAuth();
   }, [navigate]);
+
+  const checkUserRole = async (userId: string) => {
+    try {
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .single();
+
+      return !!roleData;
+    } catch (error) {
+      console.log('No admin role found or error checking role');
+      return false;
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,41 +115,31 @@ const Auth = () => {
           description: error.message,
           variant: "destructive"
         });
+        setSignInLoading(false);
         return;
       }
 
       if (data.user) {
         console.log('Sign in successful for user:', data.user.email);
         
-        // Check if user is admin
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .eq('role', 'admin')
-          .single();
-
-        if (roleError && roleError.code !== 'PGRST116') {
-          console.error('Error checking user role:', roleError);
-        }
-
-        // Clear form first
+        // Clear form immediately
         setSignInEmail('');
         setSignInPassword('');
+        
+        // Show success message
+        toast({
+          title: "Welcome back!",
+          description: "You have been successfully signed in."
+        });
 
-        if (roleData) {
+        // Check role and navigate
+        const isAdmin = await checkUserRole(data.user.id);
+        
+        if (isAdmin) {
           console.log('Admin role detected, redirecting to admin dashboard');
-          toast({
-            title: "Welcome back, Admin!",
-            description: "Redirecting to admin dashboard..."
-          });
           navigate('/admin');
         } else {
           console.log('Regular user, redirecting to home');
-          toast({
-            title: "Welcome back!",
-            description: "You have been successfully signed in."
-          });
           navigate('/');
         }
       }
