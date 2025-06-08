@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,18 +16,45 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Check if user is admin
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .eq('role', 'admin')
+            .single();
+          
+          setIsAdmin(!!roleData);
+        } else {
+          setIsAdmin(false);
+        }
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        // Check if user is admin
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .eq('role', 'admin')
+          .single();
+        
+        setIsAdmin(!!roleData);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -37,6 +63,7 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setIsMenuOpen(false);
+    setIsAdmin(false);
   };
 
   const homeDropdownItems = [
@@ -134,7 +161,7 @@ const Navigation = () => {
                   </NavigationMenuItem>
                 ))}
 
-                {/* Advertising & Leaflets dropdown */}
+                {/* Advertising dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
                     Advertising
@@ -158,7 +185,7 @@ const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* What's On dropdown */}
+                {/* Events dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
                     Events
@@ -187,6 +214,14 @@ const Navigation = () => {
             {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center space-x-2 ml-4">
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="ghost" size="sm" className="text-purple-700 hover:text-purple-800">
+                      <Shield size={16} className="mr-1" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/dashboard">
                   <Button variant="ghost" size="sm" className="text-gray-700 hover:text-community-green">
                     Dashboard
@@ -265,7 +300,7 @@ const Navigation = () => {
                 ))}
               </div>
               
-              {/* Mobile What's On section */}
+              {/* Mobile Events section */}
               <div className="border-t pt-2">
                 <div className="px-3 py-2 text-gray-700 text-base font-medium">Events</div>
                 {whatsOnDropdownItems.map((item) => (
@@ -284,6 +319,16 @@ const Navigation = () => {
               <div className="border-t pt-2">
                 {user ? (
                   <>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="text-purple-700 hover:text-purple-800 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Shield size={16} className="inline mr-2" />
+                        Admin Dashboard
+                      </Link>
+                    )}
                     <Link
                       to="/dashboard"
                       className="text-gray-700 hover:text-community-green block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"

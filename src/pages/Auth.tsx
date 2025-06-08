@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,19 @@ const Auth = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/');
+        // Check if user is admin and redirect accordingly
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .eq('role', 'admin')
+          .single();
+
+        if (roleData) {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
       }
     };
     checkAuth();
@@ -60,7 +73,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
@@ -71,12 +84,28 @@ const Auth = () => {
         description: error.message,
         variant: "destructive"
       });
-    } else {
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully signed in."
-      });
-      navigate('/');
+    } else if (data.user) {
+      // Check if user is admin
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .eq('role', 'admin')
+        .single();
+
+      if (roleData) {
+        toast({
+          title: "Welcome back, Admin!",
+          description: "Redirecting to admin dashboard..."
+        });
+        navigate('/admin');
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "You have been successfully signed in."
+        });
+        navigate('/');
+      }
     }
     setLoading(false);
   };
