@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,8 +42,9 @@ const WhatsOn = () => {
   const [types, setTypes] = useState<string[]>([]);
 
   // Fetch events with filters
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
+      console.log('Fetching events...');
       setLoading(true);
       setError(null);
 
@@ -51,6 +52,8 @@ const WhatsOn = () => {
         .from('events')
         .select('*')
         .order('date', { ascending: true });
+      
+      console.log('Query built, executing...');
 
       // Apply search filter
       if (searchTerm) {
@@ -89,11 +92,13 @@ const WhatsOn = () => {
       }
 
       const { data, error } = await query;
+      console.log('Query response:', { data, error, dataLength: data?.length });
 
       if (error) {
         throw error;
       }
 
+      console.log('Setting events:', data);
       setEvents(data || []);
     } catch (err) {
       console.error('Error fetching events:', err);
@@ -106,7 +111,7 @@ const WhatsOn = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange.from, dateRange.to]);
 
   // Fetch filter metadata
   const fetchFilterMetadata = async () => {
@@ -134,7 +139,7 @@ const WhatsOn = () => {
   // Fetch events when filters change
   useEffect(() => {
     fetchEvents();
-  }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange]);
+  }, [fetchEvents]);
 
   // Initial load
   useEffect(() => {
