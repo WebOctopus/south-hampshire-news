@@ -60,18 +60,12 @@ const BusinessDirectory = () => {
   };
 
   const fetchBusinesses = async () => {
+    console.log('Fetching businesses for category:', selectedCategory);
+    console.log('About to execute query');
+    
     let query = supabase
       .from('businesses')
-      .select(`
-        *,
-        business_categories (
-          id,
-          name,
-          description,
-          icon,
-          slug
-        )
-      `)
+      .select('*, business_categories(*)')
       .eq('is_active', true)
       .order('featured', { ascending: false })
       .order('name');
@@ -82,9 +76,12 @@ const BusinessDirectory = () => {
 
     const { data, error } = await query;
     
+    console.log('Query result:', { data, error });
+    
     if (error) {
       console.error('Error fetching businesses:', error);
     } else {
+      console.log('Successfully fetched businesses:', data?.length || 0);
       setBusinesses(data || []);
     }
     setLoading(false);
