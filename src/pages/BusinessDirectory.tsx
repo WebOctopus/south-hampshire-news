@@ -65,7 +65,7 @@ const BusinessDirectory = () => {
     
     let query = supabase
       .from('businesses')
-      .select('*, business_categories(*)')
+      .select('*')
       .eq('is_active', true)
       .order('featured', { ascending: false })
       .order('name');
@@ -74,16 +74,35 @@ const BusinessDirectory = () => {
       query = query.eq('category_id', selectedCategory);
     }
 
-    const { data, error } = await query;
+    const { data: businessData, error: businessError } = await query;
     
-    console.log('Query result:', { data, error });
+    console.log('Business query result:', { businessData, businessError });
     
-    if (error) {
-      console.error('Error fetching businesses:', error);
-    } else {
-      console.log('Successfully fetched businesses:', data?.length || 0);
-      setBusinesses(data || []);
+    if (businessError) {
+      console.error('Error fetching businesses:', businessError);
+      setLoading(false);
+      return;
     }
+
+    // Fetch categories separately
+    const { data: categoriesData, error: categoriesError } = await supabase
+      .from('business_categories')
+      .select('*');
+
+    console.log('Categories query result:', { categoriesData, categoriesError });
+
+    if (categoriesError) {
+      console.error('Error fetching categories for businesses:', categoriesError);
+    }
+
+    // Merge business data with category data
+    const businessesWithCategories = businessData?.map(business => ({
+      ...business,
+      business_categories: categoriesData?.find(cat => cat.id === business.category_id) || null
+    })) || [];
+
+    console.log('Final businesses with categories:', businessesWithCategories.length);
+    setBusinesses(businessesWithCategories);
     setLoading(false);
   };
 
