@@ -108,7 +108,11 @@ const LatestStoriesGrid = () => {
         </div>
         
         <div className="text-center mt-12">
-          <Button size="lg" className="bg-community-navy hover:bg-slate-700 text-white">
+          <Button 
+            size="lg" 
+            className="bg-community-navy hover:bg-slate-700 text-white"
+            onClick={() => navigate('/stories')}
+          >
             View All Stories
           </Button>
         </div>
