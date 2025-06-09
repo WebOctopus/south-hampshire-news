@@ -37,7 +37,7 @@ const FeaturedAdvertisersSection = () => {
                     <img 
                       src={advertiser.logo} 
                       alt={advertiser.name}
-                      className="max-w-full max-h-16 object-contain hover:scale-105 transition-all duration-300"
+                      className="max-w-full max-h-32 object-contain hover:scale-105 transition-all duration-300"
                     />
                   </div>
                 </CarouselItem>
