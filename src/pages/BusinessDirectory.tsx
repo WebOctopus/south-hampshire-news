@@ -29,7 +29,6 @@ interface Business {
   city: string;
   postcode: string;
   logo_url: string;
-  featured_image_url: string;
   is_verified: boolean;
   featured: boolean;
   business_categories: BusinessCategory;
@@ -61,35 +60,34 @@ const BusinessDirectory = () => {
   };
 
   const fetchBusinesses = async () => {
-    console.log('Fetching businesses for category:', selectedCategory);
-    try {
-      let query = supabase
-        .from('businesses')
-        .select('*, business_categories(*)')
-        .eq('is_active', true)
-        .order('featured', { ascending: false })
-        .order('name');
+    let query = supabase
+      .from('businesses')
+      .select(`
+        *,
+        business_categories (
+          id,
+          name,
+          description,
+          icon,
+          slug
+        )
+      `)
+      .eq('is_active', true)
+      .order('featured', { ascending: false })
+      .order('name');
 
-      if (selectedCategory !== 'all') {
-        query = query.eq('category_id', selectedCategory);
-      }
-
-      console.log('About to execute query');
-      const { data, error } = await query;
-      console.log('Query completed, error:', error, 'data length:', data?.length);
-      
-      if (error) {
-        console.error('Error fetching businesses:', error);
-      } else {
-        console.log('Fetched businesses:', data);
-        setBusinesses(data || []);
-      }
-    } catch (err) {
-      console.error('Unexpected error in fetchBusinesses:', err);
-    } finally {
-      console.log('Setting loading to false');
-      setLoading(false);
+    if (selectedCategory !== 'all') {
+      query = query.eq('category_id', selectedCategory);
     }
+
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching businesses:', error);
+    } else {
+      setBusinesses(data || []);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -102,8 +100,6 @@ const BusinessDirectory = () => {
     business.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     business.postcode?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  console.log('Component render - loading:', loading, 'businesses:', businesses.length, 'filteredBusinesses:', filteredBusinesses.length, 'searchTerm:', searchTerm);
 
   const CategoryCard = ({ category }: { category: BusinessCategory }) => (
     <Card 
@@ -120,93 +116,6 @@ const BusinessDirectory = () => {
     </Card>
   );
 
-  const FeaturedBusinessCard = ({ business }: { business: Business }) => (
-    <Card className="hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-      {business.featured_image_url && (
-        <div className="relative h-48 w-full">
-          <img 
-            src={business.featured_image_url} 
-            alt={`${business.name} featured image`}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute top-2 right-2">
-            <Badge className="bg-community-green">
-              Featured
-            </Badge>
-          </div>
-        </div>
-      )}
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <CardTitle className="text-xl flex items-center gap-2">
-              {business.name}
-              {business.is_verified && (
-                <Badge variant="secondary" className="text-xs">
-                  ✓ Verified
-                </Badge>
-              )}
-            </CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
-              {business.business_categories?.name}
-            </p>
-          </div>
-          {business.logo_url && (
-            <img 
-              src={business.logo_url} 
-              alt={`${business.name} logo`}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2 text-sm">
-          {business.address_line1 && (
-            <div className="flex items-center gap-2 text-gray-600">
-              <MapPin size={16} />
-              <span>
-                {business.city && `${business.city}`}
-                {business.postcode && `, ${business.postcode}`}
-              </span>
-            </div>
-          )}
-          
-          {business.phone && (
-            <div className="text-gray-600">
-              <strong>Phone:</strong> {business.phone}
-            </div>
-          )}
-          
-          {business.website && (
-            <div className="text-gray-600">
-              <strong>Website:</strong> 
-              <a 
-                href={business.website} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-community-green hover:underline ml-1"
-              >
-                Visit Website
-              </a>
-            </div>
-          )}
-        </div>
-        
-        <div className="mt-4 flex gap-2">
-          <Button size="sm" className="bg-community-green hover:bg-green-600">
-            View Details
-          </Button>
-          {business.phone && (
-            <Button variant="outline" size="sm">
-              Call Now
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   const BusinessCard = ({ business }: { business: Business }) => (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
@@ -217,6 +126,11 @@ const BusinessDirectory = () => {
               {business.is_verified && (
                 <Badge variant="secondary" className="text-xs">
                   ✓ Verified
+                </Badge>
+              )}
+              {business.featured && (
+                <Badge className="bg-community-green text-xs">
+                  Featured
                 </Badge>
               )}
             </CardTitle>
@@ -382,11 +296,7 @@ const BusinessDirectory = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredBusinesses.map((business) => (
-                  business.featured ? (
-                    <FeaturedBusinessCard key={business.id} business={business} />
-                  ) : (
-                    <BusinessCard key={business.id} business={business} />
-                  )
+                  <BusinessCard key={business.id} business={business} />
                 ))}
               </div>
             )}

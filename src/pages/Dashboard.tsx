@@ -13,7 +13,6 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { User } from '@supabase/supabase-js';
 import { Edit } from 'lucide-react';
-import ImageUpload from '@/components/ImageUpload';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -23,8 +22,6 @@ const Dashboard = () => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [editingBusiness, setEditingBusiness] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('create');
-  const [images, setImages] = useState<string[]>([]);
-  const [featuredImage, setFeaturedImage] = useState<string>('');
   
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
@@ -119,11 +116,7 @@ const Dashboard = () => {
         // Update existing business
         const { error } = await supabase
           .from('businesses')
-          .update({
-            ...formData,
-            images,
-            featured_image_url: featuredImage
-          })
+          .update(formData)
           .eq('id', editingBusiness.id);
 
         if (error) throw error;
@@ -142,9 +135,7 @@ const Dashboard = () => {
           .insert([{
             ...formData,
             owner_id: user.id,
-            is_active: true,
-            images,
-            featured_image_url: featuredImage
+            is_active: true
           }]);
 
         if (error) throw error;
@@ -168,8 +159,6 @@ const Dashboard = () => {
         city: '',
         postcode: ''
       });
-      setImages([]);
-      setFeaturedImage('');
 
       loadBusinesses();
 
@@ -198,8 +187,6 @@ const Dashboard = () => {
       city: business.city || '',
       postcode: business.postcode || ''
     });
-    setImages(business.images || []);
-    setFeaturedImage(business.featured_image_url || '');
     setActiveTab('create');
   };
 
@@ -217,8 +204,6 @@ const Dashboard = () => {
       city: '',
       postcode: ''
     });
-    setImages([]);
-    setFeaturedImage('');
   };
 
   if (loading) {
@@ -413,14 +398,6 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-
-                    <ImageUpload 
-                      images={images}
-                      featuredImage={featuredImage}
-                      onImagesChange={setImages}
-                      onFeaturedImageChange={setFeaturedImage}
-                      userId={user?.id || ''}
-                    />
 
                     <Button 
                       type="submit" 
