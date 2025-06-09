@@ -1,3 +1,5 @@
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+
 const FeaturedAdvertisersSection = () => {
   // Featured local business advertisers
   const advertisers = [
@@ -23,19 +25,28 @@ const FeaturedAdvertisersSection = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8 items-center">
-          {advertisers.map((advertiser, index) => (
-            <div 
-              key={index} 
-              className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
-            >
-              <img 
-                src={advertiser.logo} 
-                alt={advertiser.name}
-                className="max-w-full max-h-16 object-contain grayscale hover:grayscale-0 transition-all duration-300"
-              />
-            </div>
-          ))}
+        <div className="relative max-w-5xl mx-auto">
+          <Carousel opts={{
+            align: "center",
+            loop: true
+          }} className="w-full">
+            <CarouselContent className="-ml-6">
+              {advertisers.map((advertiser, index) => (
+                <CarouselItem key={index} className="pl-6 basis-1/4">
+                  <div className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <img 
+                      src={advertiser.logo} 
+                      alt={advertiser.name}
+                      className="max-w-full max-h-16 object-contain hover:scale-105 transition-all duration-300"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            
+            <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2" />
+            <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2" />
+          </Carousel>
         </div>
         
         <div className="text-center mt-12">
