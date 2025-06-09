@@ -265,6 +265,12 @@ const Navigation = () => {
                                 View offers →
                               </Link>
                             </div>
+                            <div className="bg-white rounded-lg p-4 shadow-sm border">
+                              <h4 className="text-sm font-medium text-foreground mb-2">Don't Miss The Next Deadline</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Date 14th May 2025
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
