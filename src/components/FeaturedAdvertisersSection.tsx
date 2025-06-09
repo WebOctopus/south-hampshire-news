@@ -1,4 +1,5 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const FeaturedAdvertisersSection = () => {
   // Featured local business advertisers
@@ -33,13 +34,26 @@ const FeaturedAdvertisersSection = () => {
             <CarouselContent className="-ml-6">
               {advertisers.map((advertiser, index) => (
                 <CarouselItem key={index} className="pl-6 basis-1/4">
-                  <div className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <img 
-                      src={advertiser.logo} 
-                      alt={advertiser.name}
-                      className="max-w-full max-h-48 object-contain hover:scale-105 transition-all duration-300"
-                    />
-                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <div className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer">
+                        <img 
+                          src={advertiser.logo} 
+                          alt={advertiser.name}
+                          className="max-w-full max-h-48 object-contain hover:scale-105 transition-all duration-300"
+                        />
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] p-4">
+                      <div className="flex items-center justify-center">
+                        <img 
+                          src={advertiser.logo} 
+                          alt={advertiser.name}
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </CarouselItem>
               ))}
             </CarouselContent>
