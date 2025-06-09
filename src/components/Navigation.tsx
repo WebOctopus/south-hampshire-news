@@ -67,7 +67,7 @@ const Navigation = () => {
   };
 
   const homeDropdownItems = [
-    { name: 'Latest Community News', href: '/#news', description: 'Stay updated with the latest local stories and updates', icon: Newspaper },
+    { name: 'Latest Community News', href: '/stories', description: 'Stay updated with the latest local stories and updates', icon: Newspaper },
     { name: 'Featured Advertisers', href: '/#advertisers', description: 'Discover local businesses and services in your area', icon: Star },
     { name: 'Newsletter Signup', href: '/#newsletter', description: 'Subscribe to receive regular community updates', icon: Mail },
   ];
@@ -186,12 +186,12 @@ const Navigation = () => {
                                 <p className="text-sm text-muted-foreground mb-3">
                                   Stay updated with the latest community stories and local events in South Hampshire.
                                 </p>
-                                <Link 
-                                  to="/#news" 
-                                  className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
-                                >
-                                  Read more →
-                                </Link>
+                <Link 
+                  to="/stories" 
+                  className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                >
+                  Read more →
+                </Link>
                               </div>
                             </div>
                           </div>
