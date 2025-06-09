@@ -1,14 +1,14 @@
 const FeaturedAdvertisersSection = () => {
-  // Mock advertiser logos - in a real app these would be dynamic
+  // Featured local business advertisers
   const advertisers = [
-    { name: 'Local Garage', logo: '/placeholder.svg' },
-    { name: 'Community Bank', logo: '/placeholder.svg' },
-    { name: 'Garden Centre', logo: '/placeholder.svg' },
-    { name: 'Dental Practice', logo: '/placeholder.svg' },
-    { name: 'Estate Agent', logo: '/placeholder.svg' },
-    { name: 'Restaurant', logo: '/placeholder.svg' },
-    { name: 'Fitness Centre', logo: '/placeholder.svg' },
-    { name: 'Hair Salon', logo: '/placeholder.svg' }
+    { name: 'DJ Summers Plumbing & Heating', logo: '/lovable-uploads/3457943e-ae98-43c0-b6cb-556d1d936472.png' },
+    { name: 'Edwards Conservatory & Gutter Cleaning', logo: '/lovable-uploads/f6d05495-f433-4146-a6c5-b4332e7616bf.png' },
+    { name: 'Acorn Tree Specialist Ltd', logo: '/lovable-uploads/0fd435d2-73a9-43e4-94cb-ee201a129979.png' },
+    { name: 'The Little Curtain and Blind Company', logo: '/lovable-uploads/9940534b-25e0-4a76-9769-8f048532d0a5.png' },
+    { name: 'Jon Callen Podiatrist', logo: '/lovable-uploads/6ce5a96b-19dd-49ab-aa34-4a048c3c22d2.png' },
+    { name: 'Mark Parsons Decorating Services', logo: '/lovable-uploads/5c775c6a-2d81-439b-871e-56243f2f1686.png' },
+    { name: 'Martin Langley Carpentry', logo: '/lovable-uploads/5d7d823c-c298-48e4-81ca-f206cfb9e6f9.png' },
+    { name: 'W.A.G Decorating Services', logo: '/lovable-uploads/3bf54723-bde1-45e5-ba7d-fa1c6a9a1a1a.png' }
   ];
 
   return (
