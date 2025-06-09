@@ -29,7 +29,7 @@ const Story = () => {
         
         <p>The garden is open daily from dawn to dusk, and anyone interested in getting involved can contact the organizing committee through the Fareham Community Center.</p>
       `,
-      image: '/lovable-uploads/3d27ee8c-7011-429f-98ca-06f2a167bed7.png',
+      image: '/placeholder.svg',
       date: '2024-06-01',
       category: 'Community',
       author: 'Emma Thompson',
@@ -54,7 +54,7 @@ const Story = () => {
         
         <p>The award comes with a £5,000 prize, which Santos plans to use to expand the bakery's community programming and create a small community library corner.</p>
       `,
-      image: '/lovable-uploads/99da34dd-ee6c-44a1-b95c-6edbc8085cd4.png',
+      image: '/placeholder.svg',
       date: '2024-05-28',
       category: 'Business',
       author: 'Michael Roberts',
@@ -81,7 +81,7 @@ const Story = () => {
         
         <p>Next year's walk is already scheduled for the first Saturday in May, with registration opening in January.</p>
       `,
-      image: '/lovable-uploads/8510b25e-7916-4c6f-9962-24063afd3547.png',
+      image: '/placeholder.svg',
       date: '2024-05-25',
       category: 'Events',
       author: 'Rachel Green',
@@ -110,7 +110,7 @@ const Story = () => {
         
         <p>The official unveiling ceremony is planned for next month, with a community celebration featuring food, music, and performances representing the diverse cultures depicted in the mural.</p>
       `,
-      image: '/lovable-uploads/39aad051-fc81-4d48-8360-29e479c12edb.png',
+      image: '/placeholder.svg',
       date: '2024-05-22',
       category: 'Education',
       author: 'David Park',
@@ -139,7 +139,7 @@ const Story = () => {
         
         <p>The path is open year-round from dawn to dusk, and cycle hire is available at both Petersfield and Wickham stations for visitors arriving by train.</p>
       `,
-      image: '/lovable-uploads/9880f659-eb8f-4c62-a436-3228e465479c.png',
+      image: '/placeholder.svg',
       date: '2024-05-20',
       category: 'Transport',
       author: 'Sophie Williams',
@@ -168,7 +168,7 @@ const Story = () => {
         
         <p>Henderson continues to work at the food bank four days a week and has no plans to slow down. "As long as there are families who need support, I'll be here," she said.</p>
       `,
-      image: '/lovable-uploads/0cb5406a-eaee-4828-af68-e345305abd9e.png',
+      image: '/placeholder.svg',
       date: '2024-05-18',
       category: 'People',
       author: 'James Mitchell',
