@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, Shield, Newspaper, Users, Calendar, Building, Mail, Star, Trophy, MapPin, Briefcase, Phone, Megaphone, Calculator, Gift, Eye } from 'lucide-react';
+import { Menu, X, User, LogOut, Shield, Newspaper, Users, Calendar, Building, Mail, Star, Trophy, MapPin, Briefcase, Phone, Megaphone, Calculator, Gift, Eye, ChevronDown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +10,12 @@ import {
   NavigationMenuTrigger,
   NavigationMenuLink,
 } from '@/components/ui/navigation-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -350,39 +356,33 @@ const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* User dropdown */}
-                {user && (
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger 
-                      className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent"
-                    >
-                      <User size={16} className="mr-1" />
-                      {user.email?.split('@')[0]}
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="w-48 bg-white border border-border shadow-lg rounded-lg p-2">
-                        <NavigationMenuLink asChild>
-                          <Link
-                            to="/dashboard"
-                            className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:text-community-green hover:bg-accent rounded-md transition-colors"
-                          >
-                            <User size={16} />
-                            <span>Dashboard</span>
-                          </Link>
-                        </NavigationMenuLink>
-                        <button
-                          onClick={handleSignOut}
-                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:text-community-green hover:bg-accent rounded-md transition-colors"
-                        >
-                          <LogOut size={16} />
-                          <span>Sign Out</span>
-                        </button>
-                      </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                )}
               </NavigationMenuList>
             </NavigationMenu>
+            
+            {/* User Dropdown */}
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-community-green ml-4">
+                    <User size={16} className="mr-1" />
+                    {user.email?.split('@')[0]}
+                    <ChevronDown size={14} className="ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48" align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center w-full">
+                      <User size={16} className="mr-2" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut} className="flex items-center w-full">
+                    <LogOut size={16} className="mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             
             {/* Admin Button (outside navigation menu) */}
             {user && isAdmin && (
