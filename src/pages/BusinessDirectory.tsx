@@ -61,6 +61,7 @@ const BusinessDirectory = () => {
   };
 
   const fetchBusinesses = async () => {
+    console.log('Fetching businesses for category:', selectedCategory);
     let query = supabase
       .from('businesses')
       .select(`
@@ -86,8 +87,10 @@ const BusinessDirectory = () => {
     if (error) {
       console.error('Error fetching businesses:', error);
     } else {
+      console.log('Fetched businesses:', data);
       setBusinesses(data || []);
     }
+    console.log('Setting loading to false');
     setLoading(false);
   };
 
