@@ -349,40 +349,53 @@ const Navigation = () => {
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
+
+                {/* User dropdown */}
+                {user && (
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger 
+                      className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent"
+                    >
+                      <User size={16} className="mr-1" />
+                      {user.email?.split('@')[0]}
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="w-48 bg-white border border-border shadow-lg rounded-lg p-2">
+                        <NavigationMenuLink asChild>
+                          <Link
+                            to="/dashboard"
+                            className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:text-community-green hover:bg-accent rounded-md transition-colors"
+                          >
+                            <User size={16} />
+                            <span>Dashboard</span>
+                          </Link>
+                        </NavigationMenuLink>
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:text-community-green hover:bg-accent rounded-md transition-colors"
+                        >
+                          <LogOut size={16} />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                )}
               </NavigationMenuList>
             </NavigationMenu>
             
-            {/* Auth Buttons */}
-            {user ? (
-              <div className="flex items-center space-x-2 ml-4">
-                {isAdmin && (
-                  <Link to="/admin">
-                    <Button variant="ghost" size="sm" className="text-purple-700 hover:text-purple-800">
-                      <Shield size={16} className="mr-1" />
-                      Admin
-                    </Button>
-                  </Link>
-                )}
-                <Link to="/dashboard">
-                  <Button variant="ghost" size="sm" className="text-gray-700 hover:text-community-green">
-                    Dashboard
-                  </Button>
-                </Link>
-                <Button variant="ghost" size="sm" className="text-gray-700">
-                  <User size={16} className="mr-1" />
-                  {user.email?.split('@')[0]}
+            {/* Admin Button (outside navigation menu) */}
+            {user && isAdmin && (
+              <Link to="/admin" className="ml-4">
+                <Button variant="ghost" size="sm" className="text-purple-700 hover:text-purple-800">
+                  <Shield size={16} className="mr-1" />
+                  Admin
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleSignOut}
-                  className="text-gray-700 hover:text-community-green"
-                >
-                  <LogOut size={16} className="mr-1" />
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
+              </Link>
+            )}
+
+            {/* Business Login Button */}
+            {!user && (
               <Link to="/auth" className="ml-4">
                 <Button 
                   size="sm" 
