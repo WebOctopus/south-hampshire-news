@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, User, LogOut, Shield } from 'lucide-react';
+import { Menu, X, User, LogOut, Shield, Newspaper, Users, Calendar, Building, Mail, Star, Trophy, MapPin, Briefcase, Phone, Megaphone, Calculator, Gift, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,45 +67,45 @@ const Navigation = () => {
   };
 
   const homeDropdownItems = [
-    { name: 'Latest Community News', href: '/#news', description: 'Stay updated with the latest local stories and updates' },
-    { name: 'Featured Advertisers', href: '/#advertisers', description: 'Discover local businesses and services in your area' },
-    { name: 'Newsletter Signup', href: '/#newsletter', description: 'Subscribe to receive regular community updates' },
+    { name: 'Latest Community News', href: '/#news', description: 'Stay updated with the latest local stories and updates', icon: Newspaper },
+    { name: 'Featured Advertisers', href: '/#advertisers', description: 'Discover local businesses and services in your area', icon: Star },
+    { name: 'Newsletter Signup', href: '/#newsletter', description: 'Subscribe to receive regular community updates', icon: Mail },
   ];
 
   const competitionsDropdownItems = [
-    { name: 'Current Competitions', href: '/competitions', description: 'Enter exciting competitions with amazing prizes' },
-    { name: 'Past Winners', href: '/competitions#winners', description: 'See previous competition winners and their stories' },
-    { name: 'Competition Rules', href: '/competitions#rules', description: 'Read terms and conditions for all competitions' },
+    { name: 'Current Competitions', href: '/competitions', description: 'Enter exciting competitions with amazing prizes', icon: Trophy },
+    { name: 'Past Winners', href: '/competitions#winners', description: 'See previous competition winners and their stories', icon: Users },
+    { name: 'Competition Rules', href: '/competitions#rules', description: 'Read terms and conditions for all competitions', icon: Eye },
   ];
 
   const distributeDropdownItems = [
-    { name: 'Application Form', href: '/apply-to-distribute', description: 'Apply to become a distribution partner in your area' },
-    { name: 'Distribution Areas', href: '/apply-to-distribute#areas', description: 'View available distribution territories' },
-    { name: 'Requirements', href: '/apply-to-distribute#requirements', description: 'Learn about distributor requirements and benefits' },
+    { name: 'Application Form', href: '/apply-to-distribute', description: 'Apply to become a distribution partner in your area', icon: Briefcase },
+    { name: 'Distribution Areas', href: '/apply-to-distribute#areas', description: 'View available distribution territories', icon: MapPin },
+    { name: 'Requirements', href: '/apply-to-distribute#requirements', description: 'Learn about distributor requirements and benefits', icon: Eye },
   ];
 
   const businessDirectoryDropdownItems = [
-    { name: 'Browse Businesses', href: '/business-directory', description: 'Find local businesses and services by category' },
-    { name: 'Add Your Business', href: '/business-directory#add', description: 'List your business in our community directory' },
-    { name: 'Featured Listings', href: '/business-directory#featured', description: 'Premium business listings with enhanced visibility' },
+    { name: 'Browse Businesses', href: '/business-directory', description: 'Find local businesses and services by category', icon: Building },
+    { name: 'Add Your Business', href: '/business-directory#add', description: 'List your business in our community directory', icon: Briefcase },
+    { name: 'Featured Listings', href: '/business-directory#featured', description: 'Premium business listings with enhanced visibility', icon: Star },
   ];
 
   const contactDropdownItems = [
-    { name: 'Contact Form', href: '/contact', description: 'Get in touch with our editorial team' },
-    { name: 'Editorial Submissions', href: '/contact#editorial', description: 'Submit news stories and community updates' },
-    { name: 'Advertising Enquiries', href: '/contact#advertising', description: 'Discuss advertising opportunities and packages' },
+    { name: 'Contact Form', href: '/contact', description: 'Get in touch with our editorial team', icon: Phone },
+    { name: 'Editorial Submissions', href: '/contact#editorial', description: 'Submit news stories and community updates', icon: Newspaper },
+    { name: 'Advertising Enquiries', href: '/contact#advertising', description: 'Discuss advertising opportunities and packages', icon: Megaphone },
   ];
 
   const whatsOnDropdownItems = [
-    { name: 'Find Events', href: '/whats-on', description: 'Browse upcoming events in your area' },
-    { name: 'Add Events', href: '/whats-on?tab=add', description: 'Submit your event to be featured' },
+    { name: 'Find Events', href: '/whats-on', description: 'Browse upcoming events in your area', icon: Calendar },
+    { name: 'Add Events', href: '/whats-on?tab=add', description: 'Submit your event to be featured', icon: Calendar },
   ];
 
   const advertisingDropdownItems = [
-    { name: 'View Advertising Options', href: '/advertising', description: 'Explore our advertising packages and rates' },
-    { name: 'Cost Calculator', href: '/advertising#calculator', description: 'Calculate your advertising costs instantly' },
-    { name: 'Distribution Areas', href: '/advertising#areas', description: 'See our 12 areas across South Hampshire' },
-    { name: 'Special Offers', href: '/advertising#offers', description: 'Current promotional deals and packages' },
+    { name: 'View Advertising Options', href: '/advertising', description: 'Explore our advertising packages and rates', icon: Megaphone },
+    { name: 'Cost Calculator', href: '/advertising#calculator', description: 'Calculate your advertising costs instantly', icon: Calculator },
+    { name: 'Distribution Areas', href: '/advertising#areas', description: 'See our 12 areas across South Hampshire', icon: MapPin },
+    { name: 'Special Offers', href: '/advertising#offers', description: 'Current promotional deals and packages', icon: Gift },
   ];
 
   const allDropdownSections = [
@@ -142,20 +142,60 @@ const Navigation = () => {
                       {section.title}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <div className="grid gap-3 p-6 w-full md:grid-cols-2 lg:grid-cols-3">
-                        {section.items.map((item) => (
-                          <NavigationMenuLink key={item.name} asChild>
-                            <Link
-                              to={item.href}
-                              className="group block select-none space-y-1 rounded-md p-4 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground border border-border/50 hover:border-border"
-                            >
-                              <div className="text-sm font-medium leading-none group-hover:text-community-green transition-colors">{item.name}</div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                {item.description}
-                              </p>
-                            </Link>
-                          </NavigationMenuLink>
-                        ))}
+                      <div className="w-full bg-white border border-border shadow-lg rounded-lg">
+                        <div className="grid md:grid-cols-4 lg:grid-cols-5">
+                          {/* Main content sections */}
+                          <div className="md:col-span-3 lg:col-span-3 p-6">
+                            <div className="grid gap-6 md:grid-cols-2">
+                              <div>
+                                <h3 className="text-sm font-semibold text-foreground mb-4">{section.title}</h3>
+                                <div className="space-y-3">
+                                  {section.items.map((item) => {
+                                    const IconComponent = item.icon;
+                                    return (
+                                      <NavigationMenuLink key={item.name} asChild>
+                                        <Link
+                                          to={item.href}
+                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
+                                        >
+                                          <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
+                                            <IconComponent size={20} />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors">
+                                              {item.name}
+                                            </div>
+                                            <p className="text-sm text-muted-foreground leading-tight mt-1">
+                                              {item.description}
+                                            </p>
+                                          </div>
+                                        </Link>
+                                      </NavigationMenuLink>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Featured content */}
+                          <div className="md:col-span-1 lg:col-span-2 bg-muted/30 p-6 rounded-r-lg">
+                            <div className="space-y-4">
+                              <div className="text-sm font-semibold text-foreground">Latest News</div>
+                              <div className="bg-white rounded-lg p-4 shadow-sm border">
+                                <h4 className="text-sm font-medium text-foreground mb-2">Community Update!</h4>
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  Stay updated with the latest community stories and local events in South Hampshire.
+                                </p>
+                                <Link 
+                                  to="/#news" 
+                                  className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                                >
+                                  Read more →
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </NavigationMenuContent>
                   </NavigationMenuItem>
@@ -167,20 +207,60 @@ const Navigation = () => {
                     Advertising
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid gap-3 p-6 w-full md:grid-cols-2 lg:grid-cols-4">
-                      {advertisingDropdownItems.map((item) => (
-                        <NavigationMenuLink key={item.name} asChild>
-                          <Link
-                            to={item.href}
-                            className="group block select-none space-y-1 rounded-md p-4 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground border border-border/50 hover:border-border"
-                          >
-                            <div className="text-sm font-medium leading-none group-hover:text-community-green transition-colors">{item.name}</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      ))}
+                    <div className="w-full bg-white border border-border shadow-lg rounded-lg">
+                      <div className="grid md:grid-cols-4 lg:grid-cols-5">
+                        {/* Main content sections */}
+                        <div className="md:col-span-3 lg:col-span-3 p-6">
+                          <div className="grid gap-6 md:grid-cols-2">
+                            <div>
+                              <h3 className="text-sm font-semibold text-foreground mb-4">Advertising</h3>
+                              <div className="space-y-3">
+                                {advertisingDropdownItems.map((item) => {
+                                  const IconComponent = item.icon;
+                                  return (
+                                    <NavigationMenuLink key={item.name} asChild>
+                                      <Link
+                                        to={item.href}
+                                        className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
+                                      >
+                                        <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
+                                          <IconComponent size={20} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors">
+                                            {item.name}
+                                          </div>
+                                          <p className="text-sm text-muted-foreground leading-tight mt-1">
+                                            {item.description}
+                                          </p>
+                                        </div>
+                                      </Link>
+                                    </NavigationMenuLink>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Featured content */}
+                        <div className="md:col-span-1 lg:col-span-2 bg-muted/30 p-6 rounded-r-lg">
+                          <div className="space-y-4">
+                            <div className="text-sm font-semibold text-foreground">Special Offer!</div>
+                            <div className="bg-white rounded-lg p-4 shadow-sm border">
+                              <h4 className="text-sm font-medium text-foreground mb-2">Advertise with us</h4>
+                              <p className="text-sm text-muted-foreground mb-3">
+                                Reach 12 areas across South Hampshire with our advertising packages.
+                              </p>
+                              <Link 
+                                to="/advertising#offers" 
+                                className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                              >
+                                View offers →
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
@@ -191,20 +271,60 @@ const Navigation = () => {
                     Events
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid gap-3 p-6 w-full md:grid-cols-1 lg:grid-cols-2">
-                      {whatsOnDropdownItems.map((item) => (
-                        <NavigationMenuLink key={item.name} asChild>
-                          <Link
-                            to={item.href}
-                            className="group block select-none space-y-1 rounded-md p-4 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground border border-border/50 hover:border-border"
-                          >
-                            <div className="text-sm font-medium leading-none group-hover:text-community-green transition-colors">{item.name}</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      ))}
+                    <div className="w-full bg-white border border-border shadow-lg rounded-lg">
+                      <div className="grid md:grid-cols-4 lg:grid-cols-5">
+                        {/* Main content sections */}
+                        <div className="md:col-span-3 lg:col-span-3 p-6">
+                          <div className="grid gap-6 md:grid-cols-2">
+                            <div>
+                              <h3 className="text-sm font-semibold text-foreground mb-4">Events</h3>
+                              <div className="space-y-3">
+                                {whatsOnDropdownItems.map((item) => {
+                                  const IconComponent = item.icon;
+                                  return (
+                                    <NavigationMenuLink key={item.name} asChild>
+                                      <Link
+                                        to={item.href}
+                                        className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
+                                      >
+                                        <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
+                                          <IconComponent size={20} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors">
+                                            {item.name}
+                                          </div>
+                                          <p className="text-sm text-muted-foreground leading-tight mt-1">
+                                            {item.description}
+                                          </p>
+                                        </div>
+                                      </Link>
+                                    </NavigationMenuLink>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Featured content */}
+                        <div className="md:col-span-1 lg:col-span-2 bg-muted/30 p-6 rounded-r-lg">
+                          <div className="space-y-4">
+                            <div className="text-sm font-semibold text-foreground">Upcoming Events</div>
+                            <div className="bg-white rounded-lg p-4 shadow-sm border">
+                              <h4 className="text-sm font-medium text-foreground mb-2">What's happening?</h4>
+                              <p className="text-sm text-muted-foreground mb-3">
+                                Discover local events and activities happening in your community.
+                              </p>
+                              <Link 
+                                to="/whats-on" 
+                                className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                              >
+                                Browse events →
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
