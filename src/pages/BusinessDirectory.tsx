@@ -105,6 +105,8 @@ const BusinessDirectory = () => {
     business.postcode?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  console.log('Component render - loading:', loading, 'businesses:', businesses.length, 'filteredBusinesses:', filteredBusinesses.length, 'searchTerm:', searchTerm);
+
   const CategoryCard = ({ category }: { category: BusinessCategory }) => (
     <Card 
       className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
