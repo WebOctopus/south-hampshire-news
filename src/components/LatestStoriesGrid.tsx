@@ -11,7 +11,7 @@ const LatestStoriesGrid = () => {
       id: 1,
       title: 'New Community Garden Opens in Fareham',
       excerpt: 'Local residents celebrate the opening of a beautiful new community garden that brings neighbors together.',
-      image: '/placeholder.svg',
+      image: '/lovable-uploads/3d27ee8c-7011-429f-98ca-06f2a167bed7.png',
       date: '2024-06-01',
       category: 'Community'
     },
@@ -19,7 +19,7 @@ const LatestStoriesGrid = () => {
       id: 2,
       title: 'Local Business Wins Regional Award',
       excerpt: 'Southampton-based bakery receives recognition for outstanding customer service and community involvement.',
-      image: '/placeholder.svg',
+      image: '/lovable-uploads/99da34dd-ee6c-44a1-b95c-6edbc8085cd4.png',
       date: '2024-05-28',
       category: 'Business'
     },
@@ -27,7 +27,7 @@ const LatestStoriesGrid = () => {
       id: 3,
       title: 'Charity Walk Raises £15,000',
       excerpt: 'Annual charity walk through Hampshire countryside exceeds fundraising goals for local hospice.',
-      image: '/placeholder.svg',
+      image: '/lovable-uploads/8510b25e-7916-4c6f-9962-24063afd3547.png',
       date: '2024-05-25',
       category: 'Events'
     },
@@ -35,7 +35,7 @@ const LatestStoriesGrid = () => {
       id: 4,
       title: 'School Art Project Brightens High Street',
       excerpt: 'Students create stunning mural that transforms local shopping area and celebrates community diversity.',
-      image: '/placeholder.svg',
+      image: '/lovable-uploads/39aad051-fc81-4d48-8360-29e479c12edb.png',
       date: '2024-05-22',
       category: 'Education'
     },
@@ -43,7 +43,7 @@ const LatestStoriesGrid = () => {
       id: 5,
       title: 'New Cycling Route Connects Villages',
       excerpt: 'Hampshire County Council opens safe cycling path linking rural communities with market towns.',
-      image: '/placeholder.svg',
+      image: '/lovable-uploads/9880f659-eb8f-4c62-a436-3228e465479c.png',
       date: '2024-05-20',
       category: 'Transport'
     },
@@ -51,7 +51,7 @@ const LatestStoriesGrid = () => {
       id: 6,
       title: 'Local Hero Honored for Volunteer Work',
       excerpt: 'Grandmother of four receives community award for decades of service to local food bank.',
-      image: '/placeholder.svg',
+      image: '/lovable-uploads/0cb5406a-eaee-4828-af68-e345305abd9e.png',
       date: '2024-05-18',
       category: 'People'
     }
