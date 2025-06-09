@@ -187,7 +187,7 @@ const Navigation = () => {
                                   Stay updated with the latest community stories and local events in South Hampshire.
                                 </p>
                                 <Link 
-                                  to="/#news" 
+                                  to="/stories" 
                                   className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
                                 >
                                   Read more →
