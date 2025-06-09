@@ -140,11 +140,6 @@ const Advertising = () => {
       title: "WINCHESTER & SURROUNDS"
     },
     {
-      src: "/lovable-uploads/52f793ce-4d83-8de0-ca08c2bd63c9.png",
-      alt: "Discover Magazine - Southampton & Totton Edition",
-      title: "SOUTHAMPTON & TOTTON"
-    },
-    {
       src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png",
       alt: "Discover Magazine - Itchen Valley Edition",
       title: "ITCHEN VALLEY"
