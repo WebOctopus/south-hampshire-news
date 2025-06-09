@@ -93,6 +93,7 @@ export type Database = {
           description: string | null
           email: string | null
           featured: boolean | null
+          featured_image_url: string | null
           id: string
           images: string[] | null
           is_active: boolean | null
@@ -116,6 +117,7 @@ export type Database = {
           description?: string | null
           email?: string | null
           featured?: boolean | null
+          featured_image_url?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
@@ -139,6 +141,7 @@ export type Database = {
           description?: string | null
           email?: string | null
           featured?: boolean | null
+          featured_image_url?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
