@@ -492,23 +492,38 @@ const WhatsOn = () => {
                 <div className="flex justify-center mb-6">
                   <CalendarComponent
                     mode="single"
+                    selected={dateFilter}
+                    onSelect={(date) => {
+                      setDateFilter(date);
+                      // Clear date range when selecting single date
+                      setDateRange({ from: undefined, to: undefined });
+                    }}
                     className="p-3 pointer-events-auto"
                     components={{
                       Day: ({ date, ...props }) => {
                         const dateStr = date.toISOString().split('T')[0];
                         const dayEvents = filteredEvents.filter(event => event.date === dateStr);
                         const hasEvents = dayEvents.length > 0;
+                        const isSelected = dateFilter && dateFilter.toISOString().split('T')[0] === dateStr;
                         
                         return (
                           <div className="relative">
                             <button
                               {...props}
-                              className={`relative h-9 w-9 p-0 font-normal aria-selected:opacity-100 ${
-                                hasEvents ? 'bg-community-green/20 text-community-navy font-semibold' : ''
+                              onClick={() => {
+                                setDateFilter(date);
+                                setDateRange({ from: undefined, to: undefined });
+                              }}
+                              className={`relative h-9 w-9 p-0 font-normal transition-colors ${
+                                isSelected 
+                                  ? 'bg-community-green text-white font-semibold' 
+                                  : hasEvents 
+                                    ? 'bg-community-green/20 text-community-navy font-semibold hover:bg-community-green/30' 
+                                    : 'hover:bg-gray-100'
                               }`}
                             >
                               {date.getDate()}
-                              {hasEvents && (
+                              {hasEvents && !isSelected && (
                                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-community-green rounded-full"></div>
                               )}
                             </button>
