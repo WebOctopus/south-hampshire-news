@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, User, LogOut, Shield, Newspaper, Users, Calendar, Building, Mail, Star, Trophy, MapPin, Briefcase, Phone, Megaphone, Calculator, Gift, Eye } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -17,6 +17,7 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener
@@ -109,11 +110,11 @@ const Navigation = () => {
   ];
 
   const allDropdownSections = [
-    { title: 'Home', items: homeDropdownItems },
-    { title: 'Competitions', items: competitionsDropdownItems },
-    { title: 'Distribute', items: distributeDropdownItems },
-    { title: 'Directory', items: businessDirectoryDropdownItems },
-    { title: 'Contact', items: contactDropdownItems },
+    { title: 'Home', items: homeDropdownItems, path: '/' },
+    { title: 'Competitions', items: competitionsDropdownItems, path: '/competitions' },
+    { title: 'Distribute', items: distributeDropdownItems, path: '/apply-to-distribute' },
+    { title: 'Directory', items: businessDirectoryDropdownItems, path: '/business-directory' },
+    { title: 'Contact', items: contactDropdownItems, path: '/contact' },
   ];
 
   return (
@@ -138,7 +139,10 @@ const Navigation = () => {
                 {/* Navigation items with dropdowns */}
                 {allDropdownSections.map((section) => (
                   <NavigationMenuItem key={section.title}>
-                    <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                    <NavigationMenuTrigger 
+                      className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent"
+                      onClick={() => navigate(section.path)}
+                    >
                       {section.title}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
@@ -203,7 +207,10 @@ const Navigation = () => {
 
                 {/* Advertising dropdown */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                  <NavigationMenuTrigger 
+                    className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent"
+                    onClick={() => navigate('/advertising')}
+                  >
                     Advertising
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -267,7 +274,10 @@ const Navigation = () => {
 
                 {/* Events dropdown */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                  <NavigationMenuTrigger 
+                    className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent"
+                    onClick={() => navigate('/whats-on')}
+                  >
                     Events
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
