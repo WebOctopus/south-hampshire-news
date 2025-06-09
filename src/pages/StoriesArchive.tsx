@@ -12,6 +12,7 @@ const StoriesArchive = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedArea, setSelectedArea] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
   // Mock data - in a real app this would come from a blog feed/API
@@ -22,7 +23,8 @@ const StoriesArchive = () => {
       excerpt: 'Local residents celebrate the opening of a beautiful new community garden that brings neighbors together.',
       image: '/placeholder.svg',
       date: '2024-06-01',
-      category: 'Community'
+      category: 'Community',
+      area: 'FAREHAM & SURROUNDS'
     },
     {
       id: 2,
@@ -30,7 +32,8 @@ const StoriesArchive = () => {
       excerpt: 'Southampton-based bakery receives recognition for outstanding customer service and community involvement.',
       image: '/placeholder.svg',
       date: '2024-05-28',
-      category: 'Business'
+      category: 'Business',
+      area: 'SOUTHAMPTON SUBURBS'
     },
     {
       id: 3,
@@ -38,7 +41,8 @@ const StoriesArchive = () => {
       excerpt: 'Annual charity walk through Hampshire countryside exceeds fundraising goals for local hospice.',
       image: '/placeholder.svg',
       date: '2024-05-25',
-      category: 'Events'
+      category: 'Events',
+      area: 'WINCHESTER & VILLAGES'
     },
     {
       id: 4,
@@ -46,7 +50,8 @@ const StoriesArchive = () => {
       excerpt: 'Students create stunning mural that transforms local shopping area and celebrates community diversity.',
       image: '/placeholder.svg',
       date: '2024-05-22',
-      category: 'Education'
+      category: 'Education',
+      area: 'EASTLEIGH & VILLAGES'
     },
     {
       id: 5,
@@ -54,7 +59,8 @@ const StoriesArchive = () => {
       excerpt: 'Hampshire County Council opens safe cycling path linking rural communities with market towns.',
       image: '/placeholder.svg',
       date: '2024-05-20',
-      category: 'Transport'
+      category: 'Transport',
+      area: 'ROMSEY & TEST VALLEY'
     },
     {
       id: 6,
@@ -62,7 +68,8 @@ const StoriesArchive = () => {
       excerpt: 'Grandmother of four receives community award for decades of service to local food bank.',
       image: '/placeholder.svg',
       date: '2024-05-18',
-      category: 'People'
+      category: 'People',
+      area: 'WATERSIDE & TOTTON'
     },
     {
       id: 7,
@@ -70,7 +77,8 @@ const StoriesArchive = () => {
       excerpt: 'Modern library facility offers digital resources and community meeting spaces for all ages.',
       image: '/placeholder.svg',
       date: '2024-05-15',
-      category: 'Community'
+      category: 'Community',
+      area: 'CHANDLER\'S FORD & NORTH BADDESLEY'
     },
     {
       id: 8,
@@ -78,7 +86,8 @@ const StoriesArchive = () => {
       excerpt: 'Family-owned restaurant recognized for innovative eco-friendly practices and local sourcing.',
       image: '/placeholder.svg',
       date: '2024-05-12',
-      category: 'Business'
+      category: 'Business',
+      area: 'HEDGE END & SURROUNDS'
     },
     {
       id: 9,
@@ -86,11 +95,13 @@ const StoriesArchive = () => {
       excerpt: 'Local under-16s team makes it to county championships after impressive season performance.',
       image: '/placeholder.svg',
       date: '2024-05-08',
-      category: 'Events'
+      category: 'Events',
+      area: 'LOCKS HEATH & SURROUNDS'
     }
   ];
 
   const categories = ['all', 'Community', 'Business', 'Events', 'Education', 'Transport', 'People'];
+  const areas = ['all', 'SOUTHAMPTON SUBURBS', 'CHANDLER\'S FORD & NORTH BADDESLEY', 'EASTLEIGH & VILLAGES', 'HEDGE END & SURROUNDS', 'LOCKS HEATH & SURROUNDS', 'FAREHAM & SURROUNDS', 'WICKHAM & BISHOP\'S WALTHAM', 'WINCHESTER & VILLAGES', 'ROMSEY & TEST VALLEY', 'WATERSIDE & TOTTON', 'NEW FOREST TO LYMINGTON'];
 
   // Filter and sort stories
   const filteredStories = allStories
@@ -98,7 +109,8 @@ const StoriesArchive = () => {
       const matchesSearch = story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            story.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || story.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesArea = selectedArea === 'all' || story.area === selectedArea;
+      return matchesSearch && matchesCategory && matchesArea;
     })
     .sort((a, b) => {
       if (sortBy === 'newest') {
@@ -159,6 +171,19 @@ const StoriesArchive = () => {
                   </SelectContent>
                 </Select>
 
+                <Select value={selectedArea} onValueChange={setSelectedArea}>
+                  <SelectTrigger className="w-64">
+                    <SelectValue placeholder="Select area" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {areas.map(area => (
+                      <SelectItem key={area} value={area}>
+                        {area === 'all' ? 'All Areas' : area}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Sort by" />
@@ -193,6 +218,7 @@ const StoriesArchive = () => {
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedCategory('all');
+                    setSelectedArea('all');
                   }}
                   className="mt-4"
                 >
@@ -211,9 +237,12 @@ const StoriesArchive = () => {
                       />
                     </div>
                     <CardHeader>
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className="px-3 py-1 bg-community-green text-white text-xs font-medium rounded-full">
                           {story.category}
+                        </span>
+                        <span className="px-3 py-1 bg-community-navy text-white text-xs font-medium rounded-full">
+                          {story.area}
                         </span>
                         <span className="text-gray-500 text-sm">{story.date}</span>
                       </div>
