@@ -93,14 +93,18 @@ const WhatsOn = () => {
         query = query.lte('date', toDateStr);
       }
 
+      console.log('About to execute query...');
       const { data, error } = await query;
-      console.log('Query response:', { data, error, dataLength: data?.length });
+      console.log('Query executed. Raw response:', { data, error });
+      console.log('Data length:', data?.length);
+      console.log('Error details:', error);
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
-      console.log('Setting events:', data);
+      console.log('Setting events with data:', data);
       setEvents(data || []);
     } catch (err) {
       console.error('Error fetching events:', err);
