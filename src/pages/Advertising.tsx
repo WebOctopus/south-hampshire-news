@@ -7,185 +7,152 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
-
 const Advertising = () => {
-  const stats = [
-    {
-      number: "250+",
-      label: "Current Advertisers",
-      icon: Users
-    },
-    {
-      number: "20",
-      label: "Estd 2005 - Celebrating 20 Years!",
-      icon: Award
-    },
-    {
-      number: "158,000",
-      label: "Bi-monthly Circulation",
-      icon: Newspaper
-    },
-    {
-      number: "12",
-      label: "Local Editions to Choose From",
-      icon: MapPin
-    },
-    {
-      number: "72%",
-      label: "Repeat Advertisers - It Works!",
-      icon: Target
-    },
-    {
-      number: "500,000",
-      label: "Leaflets Distributed Per Month",
-      icon: Truck
-    }
-  ];
-
-  const localAreas = [
-    {
-      area: "AREA 1",
-      title: "SOUTHAMPTON SUBURBS",
-      postcodes: "SO15 SO16 SO17",
-      description: "ABC1 homes in the more affluent residential suburban streets inc Chilworth, Upper Shirley, Rownhams, Basett and Highfield. Excluding student areas & flats",
-      circulation: "13,500",
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 2", 
-      title: "CHANDLER'S FORD & NORTH BADDESLEY",
-      postcodes: "SO53 SO52",
-      description: "ABC1 homes in this affluent suburb between Southampton and Winchester plus North Baddesley",
-      circulation: "13,500",
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 3",
-      title: "EASTLEIGH & VILLAGES", 
-      postcodes: "SO50",
-      description: "ABC1 homes in Fair Oak, Bishopstoke, Horton Heath, Allbrook, Boyatt Wood and selected streets of Eastleigh.",
-      circulation: "10,500",
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 4",
-      title: "HEDGE END & SURROUNDS",
-      postcodes: "SO30", 
-      description: "ABC1 homes in east of Southampton: Hedge End, West End & Botley",
-      circulation: "13,000",
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 5",
-      title: "LOCKS HEATH & SURROUNDS",
-      postcodes: "SO31",
-      description: "ABC1 homes in south east of Southampton, west of Fareham: Locks Heath, Warsash, Swanwick, Bursledon, Hamble, Netley",
-      circulation: "13,000", 
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 6",
-      title: "FAREHAM & SURROUNDS",
-      postcodes: "PO13 PO14 PO15",
-      description: "ABC1 homes in Fareham westside, Titchfield, Stubbington, Lee on Solent, Hill Head",
-      circulation: "14,000",
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 7",
-      title: "WICKHAM & BISHOP'S WALTHAM",
-      postcodes: "SO32 PO17",
-      description: "Meon Valley is an affluent rural area with two market towns; Wickham & Bishop's Waltham so it's delivered by Royal Mail. Every property in these postcodes recieves Discover.",
-      circulation: "14,000",
-      leaflets: "NO, SORRY"
-    },
-    {
-      area: "AREA 8", 
-      title: "WINCHESTER & VILLAGES",
-      postcodes: "SO21 SO22 SO23",
-      description: "Distribution is mixed with part Royal Mail (the affluent rural ring around Winchester) and part by Discover distribution in Winchester's ABC1 suburbs. Rural ring includes Otterbourne, Colden Common, Hursley, Crawley, South Wonston, Littleton, Sparsholt.",
-      circulation: "13,500",
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 9",
-      title: "ROMSEY & TEST VALLEY", 
-      postcodes: "SO51 SO20",
-      description: "Test Valley includes the market towns of Romsey and Stockbridge including rural villages such as The Wellows, Braishfield, Ampfield, Kings Somborne. Every property in the rural postcodes receive Discover while 4,000 homes in Romsey are distributed by Discover.",
-      circulation: "15,000",
-      leaflets: "YES BUT ROMSEY ONLY"
-    },
-    {
-      area: "AREA 10",
-      title: "WATERSIDE & TOTTON",
-      postcodes: "SO40 SO45", 
-      description: "Locally referred to as Southampton's Waterside Discover is delivered to ABC1 homes in Totton, Marchwood, Hythe, Dibden, Dibden Purlieu, Holbury and Blackfield.",
-      circulation: "14,000",
-      leaflets: "YES"
-    },
-    {
-      area: "AREA 11",
-      title: "NEW FOREST TO LYMINGTON",
-      postcodes: "SO41 SO42 SO43 BH24 4",
-      description: "The only magazine to reach so many homes in The New Forest directly delivered to by Royal Mail. Every property in these postcodes receive a copy.",
-      circulation: "13,500",
-      leaflets: "NO, SORRY"
-    }
-  ];
-
-  const magazineCovers = [
-    {
-      src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
-      alt: "Discover Magazine - Winchester & Surrounds Edition",
-      title: "WINCHESTER & SURROUNDS"
-    },
-    {
-      src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png",
-      alt: "Discover Magazine - Itchen Valley Edition",
-      title: "ITCHEN VALLEY"
-    },
-    {
-      src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png",
-      alt: "Discover Magazine - Meon Valley & Whiteley Edition",
-      title: "MEON VALLEY & WHITELEY"
-    },
-    {
-      src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png",
-      alt: "Discover Magazine - New Forest & Waterside Edition",
-      title: "NEW FOREST & WATERSIDE"
-    },
-    {
-      src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png",
-      alt: "Discover Magazine - Southampton West & Totton Edition",
-      title: "SOUTHAMPTON WEST & TOTTON"
-    },
-    {
-      src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png",
-      alt: "Discover Magazine - Test Valley & Romsey Edition",
-      title: "TEST VALLEY & ROMSEY"
-    },
-    {
-      src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png",
-      alt: "Discover Magazine - Winchester & Alresford Edition",
-      title: "WINCHESTER & ALRESFORD"
-    },
-    {
-      src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png",
-      alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition",
-      title: "CHANDLER'S FORD & EASTLEIGH"
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  const stats = [{
+    number: "250+",
+    label: "Current Advertisers",
+    icon: Users
+  }, {
+    number: "20",
+    label: "Estd 2005 - Celebrating 20 Years!",
+    icon: Award
+  }, {
+    number: "158,000",
+    label: "Bi-monthly Circulation",
+    icon: Newspaper
+  }, {
+    number: "12",
+    label: "Local Editions to Choose From",
+    icon: MapPin
+  }, {
+    number: "72%",
+    label: "Repeat Advertisers - It Works!",
+    icon: Target
+  }, {
+    number: "500,000",
+    label: "Leaflets Distributed Per Month",
+    icon: Truck
+  }];
+  const localAreas = [{
+    area: "AREA 1",
+    title: "SOUTHAMPTON SUBURBS",
+    postcodes: "SO15 SO16 SO17",
+    description: "ABC1 homes in the more affluent residential suburban streets inc Chilworth, Upper Shirley, Rownhams, Basett and Highfield. Excluding student areas & flats",
+    circulation: "13,500",
+    leaflets: "YES"
+  }, {
+    area: "AREA 2",
+    title: "CHANDLER'S FORD & NORTH BADDESLEY",
+    postcodes: "SO53 SO52",
+    description: "ABC1 homes in this affluent suburb between Southampton and Winchester plus North Baddesley",
+    circulation: "13,500",
+    leaflets: "YES"
+  }, {
+    area: "AREA 3",
+    title: "EASTLEIGH & VILLAGES",
+    postcodes: "SO50",
+    description: "ABC1 homes in Fair Oak, Bishopstoke, Horton Heath, Allbrook, Boyatt Wood and selected streets of Eastleigh.",
+    circulation: "10,500",
+    leaflets: "YES"
+  }, {
+    area: "AREA 4",
+    title: "HEDGE END & SURROUNDS",
+    postcodes: "SO30",
+    description: "ABC1 homes in east of Southampton: Hedge End, West End & Botley",
+    circulation: "13,000",
+    leaflets: "YES"
+  }, {
+    area: "AREA 5",
+    title: "LOCKS HEATH & SURROUNDS",
+    postcodes: "SO31",
+    description: "ABC1 homes in south east of Southampton, west of Fareham: Locks Heath, Warsash, Swanwick, Bursledon, Hamble, Netley",
+    circulation: "13,000",
+    leaflets: "YES"
+  }, {
+    area: "AREA 6",
+    title: "FAREHAM & SURROUNDS",
+    postcodes: "PO13 PO14 PO15",
+    description: "ABC1 homes in Fareham westside, Titchfield, Stubbington, Lee on Solent, Hill Head",
+    circulation: "14,000",
+    leaflets: "YES"
+  }, {
+    area: "AREA 7",
+    title: "WICKHAM & BISHOP'S WALTHAM",
+    postcodes: "SO32 PO17",
+    description: "Meon Valley is an affluent rural area with two market towns; Wickham & Bishop's Waltham so it's delivered by Royal Mail. Every property in these postcodes recieves Discover.",
+    circulation: "14,000",
+    leaflets: "NO, SORRY"
+  }, {
+    area: "AREA 8",
+    title: "WINCHESTER & VILLAGES",
+    postcodes: "SO21 SO22 SO23",
+    description: "Distribution is mixed with part Royal Mail (the affluent rural ring around Winchester) and part by Discover distribution in Winchester's ABC1 suburbs. Rural ring includes Otterbourne, Colden Common, Hursley, Crawley, South Wonston, Littleton, Sparsholt.",
+    circulation: "13,500",
+    leaflets: "YES"
+  }, {
+    area: "AREA 9",
+    title: "ROMSEY & TEST VALLEY",
+    postcodes: "SO51 SO20",
+    description: "Test Valley includes the market towns of Romsey and Stockbridge including rural villages such as The Wellows, Braishfield, Ampfield, Kings Somborne. Every property in the rural postcodes receive Discover while 4,000 homes in Romsey are distributed by Discover.",
+    circulation: "15,000",
+    leaflets: "YES BUT ROMSEY ONLY"
+  }, {
+    area: "AREA 10",
+    title: "WATERSIDE & TOTTON",
+    postcodes: "SO40 SO45",
+    description: "Locally referred to as Southampton's Waterside Discover is delivered to ABC1 homes in Totton, Marchwood, Hythe, Dibden, Dibden Purlieu, Holbury and Blackfield.",
+    circulation: "14,000",
+    leaflets: "YES"
+  }, {
+    area: "AREA 11",
+    title: "NEW FOREST TO LYMINGTON",
+    postcodes: "SO41 SO42 SO43 BH24 4",
+    description: "The only magazine to reach so many homes in The New Forest directly delivered to by Royal Mail. Every property in these postcodes receive a copy.",
+    circulation: "13,500",
+    leaflets: "NO, SORRY"
+  }];
+  const magazineCovers = [{
+    src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
+    alt: "Discover Magazine - Winchester & Surrounds Edition",
+    title: "WINCHESTER & SURROUNDS"
+  }, {
+    src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png",
+    alt: "Discover Magazine - Itchen Valley Edition",
+    title: "ITCHEN VALLEY"
+  }, {
+    src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png",
+    alt: "Discover Magazine - Meon Valley & Whiteley Edition",
+    title: "MEON VALLEY & WHITELEY"
+  }, {
+    src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png",
+    alt: "Discover Magazine - New Forest & Waterside Edition",
+    title: "NEW FOREST & WATERSIDE"
+  }, {
+    src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png",
+    alt: "Discover Magazine - Southampton West & Totton Edition",
+    title: "SOUTHAMPTON WEST & TOTTON"
+  }, {
+    src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png",
+    alt: "Discover Magazine - Test Valley & Romsey Edition",
+    title: "TEST VALLEY & ROMSEY"
+  }, {
+    src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png",
+    alt: "Discover Magazine - Winchester & Alresford Edition",
+    title: "WINCHESTER & ALRESFORD"
+  }, {
+    src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png",
+    alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition",
+    title: "CHANDLER'S FORD & EASTLEIGH"
+  }];
+  return <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Hero Banner */}
       <section className="relative bg-gradient-to-r from-community-navy to-community-green text-white py-20 overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{
-          backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
-        }} />
+        backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
+      }} />
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-community-navy/80 to-community-green/80" />
         
@@ -208,9 +175,8 @@ const Advertising = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {stats.map((stat, index) => {
-              const IconComponent = stat.icon;
-              return (
-                <div key={index} className="text-center">
+            const IconComponent = stat.icon;
+            return <div key={index} className="text-center">
                   <div className="flex justify-center mb-4">
                     <IconComponent className="h-12 w-12 text-community-green" />
                   </div>
@@ -218,9 +184,8 @@ const Advertising = () => {
                     {stat.number}
                   </div>
                   <div className="text-gray-600 font-medium text-sm">{stat.label}</div>
-                </div>
-              );
-            })}
+                </div>;
+          })}
           </div>
         </div>
       </section>
@@ -247,24 +212,16 @@ const Advertising = () => {
           </div>
 
           <div className="relative max-w-5xl mx-auto">
-            <Carousel 
-              opts={{
-                align: "center",
-                loop: true,
-              }}
-              className="w-full"
-            >
+            <Carousel opts={{
+            align: "center",
+            loop: true
+          }} className="w-full">
               <CarouselContent className="-ml-6">
-                {magazineCovers.map((cover, index) => (
-                  <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                {magazineCovers.map((cover, index) => <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
                     <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
                       <CardContent className="p-6">
                         <div className="relative overflow-hidden rounded-lg">
-                          <img
-                            src={cover.src}
-                            alt={cover.alt}
-                            className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110"
-                          />
+                          <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
                           {/* Futuristic Overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
@@ -279,8 +236,7 @@ const Advertising = () => {
                         <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       </CardContent>
                     </Card>
-                  </CarouselItem>
-                ))}
+                  </CarouselItem>)}
               </CarouselContent>
               
               {/* Custom Navigation Buttons */}
@@ -297,7 +253,7 @@ const Advertising = () => {
                   EXPLORE ALL EDITIONS
                 </Button>
               </CostCalculator>
-              <Button variant="outline" className="border-white/30 text-white hover:bg-white hover:text-gray-900 px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300">
+              <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
                 VIEW DISTRIBUTION MAP
               </Button>
             </div>
@@ -543,11 +499,7 @@ const Advertising = () => {
 
             {/* Map Section */}
             <div className="text-center">
-              <img 
-                src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" 
-                alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas"
-                className="w-full max-w-md mx-auto rounded-lg shadow-lg"
-              />
+              <img src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas" className="w-full max-w-md mx-auto rounded-lg shadow-lg" />
               <p className="text-sm text-gray-600 mt-4 font-medium">
                 12 Distribution Areas across South Hampshire
               </p>
@@ -597,8 +549,7 @@ const Advertising = () => {
 
           <div className="max-w-6xl mx-auto">
             <Accordion type="single" collapsible className="space-y-4">
-              {localAreas.map((area, index) => (
-                <AccordionItem key={area.area} value={`item-${index}`} className="bg-white rounded-lg border shadow-sm">
+              {localAreas.map((area, index) => <AccordionItem key={area.area} value={`item-${index}`} className="bg-white rounded-lg border shadow-sm">
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center">
@@ -636,8 +587,7 @@ const Advertising = () => {
                       </div>
                     </div>
                   </AccordionContent>
-                </AccordionItem>
-              ))}
+                </AccordionItem>)}
             </Accordion>
           </div>
         </div>
@@ -749,8 +699,6 @@ const Advertising = () => {
           </p>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Advertising;
