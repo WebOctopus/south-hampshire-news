@@ -63,7 +63,6 @@ const Index = () => {
         <HeroSection />
         <PostcodeBanner />
         <IconCardsSection />
-        <TestimonialsCarousel />
         
         {/* Magazine Covers Carousel */}
         <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
@@ -138,6 +137,7 @@ const Index = () => {
 
         <LatestStoriesGrid />
         <FeaturedAdvertisersSection />
+        <TestimonialsCarousel />
         <NewsletterSignup />
       </main>
       <Footer />
