@@ -166,6 +166,57 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          area: string
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          image: string | null
+          location: string
+          organizer: string | null
+          postcode: string | null
+          time: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          category: string
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          location: string
+          organizer?: string | null
+          postcode?: string | null
+          time: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          location?: string
+          organizer?: string | null
+          postcode?: string | null
+          time?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

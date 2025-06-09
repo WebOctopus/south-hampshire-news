@@ -13,130 +13,20 @@ import { format } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const WhatsOn = () => {
-  // Enhanced mock events data with diverse categories
-  const [allEvents] = useState([
-    {
-      id: 1,
-      title: 'Fareham Food Festival',
-      date: '2024-07-15',
-      time: '10:00',
-      location: 'Fareham Town Centre',
-      area: 'Fareham',
-      postcode: 'PO16',
-      description: 'A celebration of local food and drink with over 50 stalls featuring the best of Hampshire cuisine.',
-      organizer: 'Fareham Council',
-      category: 'Food & Drink',
-      type: 'Festival',
-      image: '/lovable-uploads/39aad051-fc81-4d48-8360-29e479c12edb.png'
-    },
-    {
-      id: 2,
-      title: 'Hamlet at New Theatre Royal',
-      date: '2024-07-18',
-      time: '19:30',
-      location: 'New Theatre Royal Portsmouth',
-      area: 'Portsmouth',
-      postcode: 'PO1',
-      description: 'Shakespeare\'s greatest tragedy performed by the Royal Shakespeare Company.',
-      organizer: 'New Theatre Royal',
-      category: 'Theatre & Shows',
-      type: 'Theatre',
-      image: '/lovable-uploads/0cb5406a-eaee-4828-af68-e345305abd9e.png'
-    },
-    {
-      id: 3,
-      title: 'Community Garden Workshop',
-      date: '2024-07-20',
-      time: '14:00',
-      location: 'Southsea Common',
-      area: 'Southsea',
-      postcode: 'PO5',
-      description: 'Learn sustainable gardening techniques and help maintain our community garden.',
-      organizer: 'Southsea Green Group',
-      category: 'Community Activities',
-      type: 'Workshop',
-      image: '/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png'
-    },
-    {
-      id: 4,
-      title: 'Portsmouth Symphony Orchestra',
-      date: '2024-07-22',
-      time: '20:00',
-      location: 'Portsmouth Guildhall',
-      area: 'Portsmouth',
-      postcode: 'PO1',
-      description: 'Classical music evening featuring works by Mozart and Beethoven.',
-      organizer: 'Portsmouth Guildhall',
-      category: 'Music & Concerts',
-      type: 'Concert',
-      image: '/lovable-uploads/3457943e-ae98-43c0-b6cb-556d1d936472.png'
-    },
-    {
-      id: 5,
-      title: 'Local Artists Exhibition',
-      date: '2024-07-25',
-      time: '11:00',
-      location: 'Aspex Gallery Portsmouth',
-      area: 'Portsmouth',
-      postcode: 'PO1',
-      description: 'Showcase of contemporary art from local Hampshire artists.',
-      organizer: 'Aspex Gallery',
-      category: 'Arts & Culture',
-      type: 'Exhibition',
-      image: '/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png'
-    },
-    {
-      id: 6,
-      title: 'Comedy Night at The Wedgewood Rooms',
-      date: '2024-07-27',
-      time: '20:00',
-      location: 'The Wedgewood Rooms',
-      area: 'Portsmouth',
-      postcode: 'PO1',
-      description: 'Stand-up comedy featuring touring comedians and local talent.',
-      organizer: 'The Wedgewood Rooms',
-      category: 'Theatre & Shows',
-      type: 'Comedy',
-      image: '/lovable-uploads/3bf54723-bde1-45e5-ba7d-fa1c6a9a1a1a.png'
-    },
-    {
-      id: 7,
-      title: 'Charity Fun Run',
-      date: '2024-07-28',
-      time: '09:00',
-      location: 'Gosport Millennium Bridge',
-      area: 'Gosport',
-      postcode: 'PO12',
-      description: '5K charity run to raise funds for local children\'s hospice.',
-      organizer: 'Gosport Runners Club',
-      category: 'Community Activities',
-      type: 'Sports',
-      image: '/lovable-uploads/5c775c6a-2d81-439b-871e-56243f2f1686.png'
-    },
-    {
-      id: 8,
-      title: 'Summer Film Festival',
-      date: '2024-08-02',
-      time: '19:00',
-      location: 'Showcase Cinema Portsmouth',
-      area: 'Portsmouth',
-      postcode: 'PO6',
-      description: 'Week-long festival featuring independent and classic films.',
-      organizer: 'Portsmouth Film Society',
-      category: 'Theatre & Shows',
-      type: 'Film',
-      image: '/lovable-uploads/5d7d823c-c298-48e4-81ca-f206cfb9e6f9.png'
-    }
-  ]);
-
+  // State management
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedArea, setSelectedArea] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
-  const [filteredEvents, setFilteredEvents] = useState(allEvents);
   
   // View and date filter state
   const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
@@ -146,52 +36,110 @@ const WhatsOn = () => {
     to: undefined
   });
 
-  // Filter events based on search and filter criteria
+  // Filter metadata
+  const [categories, setCategories] = useState<string[]>([]);
+  const [areas, setAreas] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
+
+  // Fetch events with filters
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      let query = supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`);
+      }
+
+      // Apply category filter
+      if (selectedCategory !== 'all') {
+        query = query.eq('category', selectedCategory);
+      }
+
+      // Apply area filter
+      if (selectedArea !== 'all') {
+        query = query.eq('area', selectedArea);
+      }
+
+      // Apply type filter
+      if (selectedType !== 'all') {
+        query = query.eq('type', selectedType);
+      }
+
+      // Apply date filter
+      if (dateFilter) {
+        const filterDateStr = dateFilter.toISOString().split('T')[0];
+        query = query.eq('date', filterDateStr);
+      }
+
+      // Apply date range filter
+      if (dateRange.from) {
+        const fromDateStr = dateRange.from.toISOString().split('T')[0];
+        query = query.gte('date', fromDateStr);
+      }
+      if (dateRange.to) {
+        const toDateStr = dateRange.to.toISOString().split('T')[0];
+        query = query.lte('date', toDateStr);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      setEvents(data || []);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to load events. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch filter metadata
+  const fetchFilterMetadata = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('category, area, type');
+
+      if (error) throw error;
+
+      if (data) {
+        const uniqueCategories = [...new Set(data.map(event => event.category))];
+        const uniqueAreas = [...new Set(data.map(event => event.area))];
+        const uniqueTypes = [...new Set(data.map(event => event.type))];
+        
+        setCategories(uniqueCategories);
+        setAreas(uniqueAreas);
+        setTypes(uniqueTypes);
+      }
+    } catch (err) {
+      console.error('Error fetching filter metadata:', err);
+    }
+  };
+
+  // Fetch events when filters change
   useEffect(() => {
-    let filtered = allEvents;
+    fetchEvents();
+  }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange]);
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.location.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(event => event.category === selectedCategory);
-    }
-
-    // Area filter
-    if (selectedArea !== 'all') {
-      filtered = filtered.filter(event => event.area === selectedArea);
-    }
-
-    // Type filter
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(event => event.type === selectedType);
-    }
-
-    // Date filter
-    if (dateFilter) {
-      const filterDateStr = dateFilter.toISOString().split('T')[0];
-      filtered = filtered.filter(event => event.date === filterDateStr);
-    }
-
-    // Date range filter
-    if (dateRange.from) {
-      const fromDateStr = dateRange.from.toISOString().split('T')[0];
-      filtered = filtered.filter(event => event.date >= fromDateStr);
-    }
-    if (dateRange.to) {
-      const toDateStr = dateRange.to.toISOString().split('T')[0];
-      filtered = filtered.filter(event => event.date <= toDateStr);
-    }
-
-    setFilteredEvents(filtered);
-  }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange, allEvents]);
+  // Initial load
+  useEffect(() => {
+    fetchFilterMetadata();
+  }, []);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -203,10 +151,6 @@ const WhatsOn = () => {
     });
   };
 
-  // Get unique values for filters
-  const categories = [...new Set(allEvents.map(event => event.category))];
-  const areas = [...new Set(allEvents.map(event => event.area))];
-  const types = [...new Set(allEvents.map(event => event.type))];
 
   return (
     <div className="min-h-screen">
@@ -244,7 +188,7 @@ const WhatsOn = () => {
                 Upcoming Events
               </h2>
               <p className="text-gray-600 font-body">
-                Don't miss out on these exciting local events ({filteredEvents.length} found)
+                {loading ? 'Loading events...' : `Don't miss out on these exciting local events (${events.length} found)`}
               </p>
             </div>
           </div>
@@ -422,12 +366,43 @@ const WhatsOn = () => {
             </div>
           </div>
 
-          {/* Events Display - Grid or Calendar View */}
-          {filteredEvents.length > 0 ? (
+          {/* Loading State */}
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="max-w-md mx-auto">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-community-green mx-auto mb-4"></div>
+                <h3 className="text-xl font-heading font-semibold text-gray-600 mb-2">
+                  Loading Events...
+                </h3>
+                <p className="text-gray-500">
+                  Please wait while we fetch the latest events for you.
+                </p>
+              </div>
+            </div>
+          ) : error ? (
+            /* Error State */
+            <div className="text-center py-12">
+              <div className="max-w-md mx-auto">
+                <Calendar className="h-16 w-16 text-red-300 mx-auto mb-4" />
+                <h3 className="text-xl font-heading font-semibold text-red-600 mb-2">
+                  Error Loading Events
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  {error}
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => fetchEvents()}
+                >
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          ) : events.length > 0 ? (
             viewMode === 'grid' ? (
               /* Grid View */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredEvents.map((event) => (
+                {events.map((event) => (
                   <Card key={event.id} className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
                     {/* Event Image */}
                     <div className="relative h-48 overflow-hidden">
@@ -494,8 +469,8 @@ const WhatsOn = () => {
                   <h3 className="text-lg font-heading font-semibold text-community-navy mb-4">
                     Events
                   </h3>
-                  <div className="grid gap-4">
-                    {filteredEvents.map((event) => (
+                   <div className="grid gap-4">
+                     {events.map((event) => (
                       <Card key={event.id} className="p-4 hover:shadow-md transition-shadow duration-200">
                         <div className="flex items-start gap-4">
                           <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
