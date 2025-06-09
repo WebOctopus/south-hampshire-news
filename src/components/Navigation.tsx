@@ -265,10 +265,15 @@ const Navigation = () => {
                                 View offers →
                               </Link>
                             </div>
-                            <div className="bg-white rounded-lg p-4 shadow-sm border">
-                              <h4 className="text-sm font-medium text-foreground mb-2">Don't Miss The Next Deadline</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Date 14th May 2025
+                            <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-4 shadow-md">
+                              <h4 className="text-base font-bold text-red-700 mb-2 flex items-center">
+                                ⚠️ DEADLINE ALERT!
+                              </h4>
+                              <p className="text-sm font-semibold text-red-600 mb-1">
+                                Next deadline: 14th May 2025
+                              </p>
+                              <p className="text-xs text-red-500 font-medium">
+                                Don't miss out - secure your ad space now!
                               </p>
                             </div>
                           </div>
