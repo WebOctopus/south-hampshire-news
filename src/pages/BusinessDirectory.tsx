@@ -63,6 +63,24 @@ const BusinessDirectory = () => {
   const fetchBusinesses = async () => {
     console.log('Fetching businesses for category:', selectedCategory);
     try {
+      // Test basic connectivity first with a simple query
+      console.log('Testing basic connectivity...');
+      const { data: testData, error: testError } = await supabase
+        .from('businesses')
+        .select('id, name')
+        .limit(1);
+      
+      console.log('Basic query result:', { testData, testError });
+      
+      if (testError) {
+        console.error('Basic connectivity failed:', testError);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Basic connectivity works, trying full query...');
+      
+      // Now try the full query
       let query = supabase
         .from('businesses')
         .select(`
@@ -83,9 +101,9 @@ const BusinessDirectory = () => {
         query = query.eq('category_id', selectedCategory);
       }
 
-      console.log('About to execute query');
+      console.log('About to execute full query');
       const { data, error } = await query;
-      console.log('Query completed, error:', error, 'data length:', data?.length);
+      console.log('Full query completed, error:', error, 'data length:', data?.length);
       
       if (error) {
         console.error('Error fetching businesses:', error);
