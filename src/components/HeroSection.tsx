@@ -1,6 +1,9 @@
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section id="home" className="relative py-16 lg:py-24 overflow-hidden">
       {/* Peacock Background Image */}
@@ -26,12 +29,14 @@ const HeroSection = () => {
             <Button 
               size="lg" 
               className="bg-community-green hover:bg-green-600 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg"
+              onClick={() => navigate('/add-event')}
             >
               Submit an Event
             </Button>
             <Button 
               size="lg"
               className="bg-community-navy hover:bg-slate-700 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg"
+              onClick={() => navigate('/contact')}
             >
               Submit a Story
             </Button>
@@ -39,6 +44,7 @@ const HeroSection = () => {
               variant="outline" 
               size="lg"
               className="border-2 border-white text-black hover:bg-white hover:text-community-navy px-8 py-3 text-lg font-medium rounded-lg"
+              onClick={() => navigate('/advertising')}
             >
               Advertising Enquiry
             </Button>
