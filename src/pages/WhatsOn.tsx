@@ -1,12 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search } from 'lucide-react';
+import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Link } from 'react-router-dom';
@@ -134,6 +137,14 @@ const WhatsOn = () => {
   const [selectedArea, setSelectedArea] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [filteredEvents, setFilteredEvents] = useState(allEvents);
+  
+  // View and date filter state
+  const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
 
   // Filter events based on search and filter criteria
   useEffect(() => {
@@ -163,8 +174,24 @@ const WhatsOn = () => {
       filtered = filtered.filter(event => event.type === selectedType);
     }
 
+    // Date filter
+    if (dateFilter) {
+      const filterDateStr = dateFilter.toISOString().split('T')[0];
+      filtered = filtered.filter(event => event.date === filterDateStr);
+    }
+
+    // Date range filter
+    if (dateRange.from) {
+      const fromDateStr = dateRange.from.toISOString().split('T')[0];
+      filtered = filtered.filter(event => event.date >= fromDateStr);
+    }
+    if (dateRange.to) {
+      const toDateStr = dateRange.to.toISOString().split('T')[0];
+      filtered = filtered.filter(event => event.date <= toDateStr);
+    }
+
     setFilteredEvents(filtered);
-  }, [searchTerm, selectedCategory, selectedArea, selectedType, allEvents]);
+  }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange, allEvents]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -290,8 +317,70 @@ const WhatsOn = () => {
               </Select>
             </div>
 
+            {/* Date Filter */}
+            <div className="lg:col-span-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Single Date Filter */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="justify-start text-left font-normal">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      {dateFilter ? format(dateFilter, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateFilter}
+                      onSelect={setDateFilter}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {/* Date Range From */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="justify-start text-left font-normal">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      {dateRange.from ? format(dateRange.from, "PPP") : "From date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateRange.from}
+                      onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {/* Date Range To */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="justify-start text-left font-normal">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      {dateRange.to ? format(dateRange.to, "PPP") : "To date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateRange.to}
+                      onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
             {/* Clear Filters */}
-            {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all') && (
+            {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
               <div className="mt-4">
                 <Button
                   variant="outline"
@@ -301,6 +390,8 @@ const WhatsOn = () => {
                     setSelectedCategory('all');
                     setSelectedArea('all');
                     setSelectedType('all');
+                    setDateFilter(undefined);
+                    setDateRange({ from: undefined, to: undefined });
                   }}
                 >
                   Clear All Filters
@@ -309,68 +400,182 @@ const WhatsOn = () => {
             )}
           </div>
 
-          {/* Events Grid */}
-          {filteredEvents.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredEvents.map((event) => (
-                <Card key={event.id} className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
-                  {/* Event Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={event.image} 
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 left-3">
-                      <Badge className="bg-community-green text-white">
-                        {event.category}
-                      </Badge>
-                    </div>
-                    <div className="absolute top-3 right-3">
-                      <Badge variant="secondary" className="bg-white/90 text-community-navy">
-                        {event.type}
-                      </Badge>
-                    </div>
-                    {/* Date Badge */}
-                    <div className="absolute bottom-3 left-3 bg-white rounded-lg p-2 text-center shadow-md">
-                      <div className="text-lg font-bold text-community-navy">
-                        {new Date(event.date).getDate()}
-                      </div>
-                      <div className="text-xs text-gray-600 uppercase">
-                        {new Date(event.date).toLocaleDateString('en-GB', { month: 'short' })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <CardHeader>
-                    <CardTitle className="text-xl text-community-navy hover:text-community-green transition-colors">
-                      {event.title}
-                    </CardTitle>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="h-4 w-4" />
-                        <span>{event.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="h-4 w-4" />
-                        <span>{event.location}, {event.area}</span>
-                      </div>
-                      <p className="text-gray-700 font-body leading-relaxed line-clamp-3">
-                        {event.description}
-                      </p>
-                      <div className="pt-2 border-t border-gray-100">
-                        <p className="text-xs text-gray-500">
-                          Organized by {event.organizer}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* View Toggle and Calendar Controls */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid className="mr-2 h-4 w-4" />
+                Grid View
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+              >
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Calendar View
+              </Button>
             </div>
+          </div>
+
+          {/* Events Display - Grid or Calendar View */}
+          {filteredEvents.length > 0 ? (
+            viewMode === 'grid' ? (
+              /* Grid View */
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredEvents.map((event) => (
+                  <Card key={event.id} className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
+                    {/* Event Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={event.image} 
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 left-3">
+                        <Badge className="bg-community-green text-white">
+                          {event.category}
+                        </Badge>
+                      </div>
+                      <div className="absolute top-3 right-3">
+                        <Badge variant="secondary" className="bg-white/90 text-community-navy">
+                          {event.type}
+                        </Badge>
+                      </div>
+                      {/* Date Badge */}
+                      <div className="absolute bottom-3 left-3 bg-white rounded-lg p-2 text-center shadow-md">
+                        <div className="text-lg font-bold text-community-navy">
+                          {new Date(event.date).getDate()}
+                        </div>
+                        <div className="text-xs text-gray-600 uppercase">
+                          {new Date(event.date).toLocaleDateString('en-GB', { month: 'short' })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <CardHeader>
+                      <CardTitle className="text-xl text-community-navy hover:text-community-green transition-colors">
+                        {event.title}
+                      </CardTitle>
+                    </CardHeader>
+                    
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="h-4 w-4" />
+                          <span>{event.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="h-4 w-4" />
+                          <span>{event.location}, {event.area}</span>
+                        </div>
+                        <p className="text-gray-700 font-body leading-relaxed line-clamp-3">
+                          {event.description}
+                        </p>
+                        <div className="pt-2 border-t border-gray-100">
+                          <p className="text-xs text-gray-500">
+                            Organized by {event.organizer}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              /* Calendar View */
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex justify-center mb-6">
+                  <CalendarComponent
+                    mode="single"
+                    className="p-3 pointer-events-auto"
+                    components={{
+                      Day: ({ date, ...props }) => {
+                        const dateStr = date.toISOString().split('T')[0];
+                        const dayEvents = filteredEvents.filter(event => event.date === dateStr);
+                        const hasEvents = dayEvents.length > 0;
+                        
+                        return (
+                          <div className="relative">
+                            <button
+                              {...props}
+                              className={`relative h-9 w-9 p-0 font-normal aria-selected:opacity-100 ${
+                                hasEvents ? 'bg-community-green/20 text-community-navy font-semibold' : ''
+                              }`}
+                            >
+                              {date.getDate()}
+                              {hasEvents && (
+                                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-community-green rounded-full"></div>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      }
+                    }}
+                  />
+                </div>
+                
+                {/* Events for selected/current month */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-heading font-semibold text-community-navy mb-4">
+                    Events This Month
+                  </h3>
+                  <div className="grid gap-4">
+                    {filteredEvents.map((event) => (
+                      <Card key={event.id} className="p-4 hover:shadow-md transition-shadow duration-200">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+                            <img 
+                              src={event.image} 
+                              alt={event.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="text-lg font-heading font-semibold text-community-navy mb-1">
+                                  {event.title}
+                                </h4>
+                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                                  <div className="flex items-center gap-1">
+                                    <CalendarDays className="h-4 w-4" />
+                                    {formatDate(event.date)}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="h-4 w-4" />
+                                    {event.time}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-4 w-4" />
+                                    {event.area}
+                                  </div>
+                                </div>
+                                <p className="text-sm text-gray-700 line-clamp-2">
+                                  {event.description}
+                                </p>
+                              </div>
+                              <div className="flex flex-col gap-2 ml-4">
+                                <Badge className="bg-community-green text-white text-xs">
+                                  {event.category}
+                                </Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  {event.type}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )
           ) : (
             /* No Results */
             <div className="text-center py-12">
@@ -389,6 +594,8 @@ const WhatsOn = () => {
                     setSelectedCategory('all');
                     setSelectedArea('all');
                     setSelectedType('all');
+                    setDateFilter(undefined);
+                    setDateRange({ from: undefined, to: undefined });
                   }}
                 >
                   Clear All Filters
