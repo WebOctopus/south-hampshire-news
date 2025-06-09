@@ -142,14 +142,14 @@ const Navigation = () => {
                       {section.title}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <div className="grid gap-3 p-4 w-[400px]">
+                      <div className="grid gap-3 p-6 w-full md:grid-cols-2 lg:grid-cols-3">
                         {section.items.map((item) => (
                           <NavigationMenuLink key={item.name} asChild>
                             <Link
                               to={item.href}
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              className="group block select-none space-y-1 rounded-md p-4 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground border border-border/50 hover:border-border"
                             >
-                              <div className="text-sm font-medium leading-none">{item.name}</div>
+                              <div className="text-sm font-medium leading-none group-hover:text-community-green transition-colors">{item.name}</div>
                               <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                                 {item.description}
                               </p>
@@ -167,14 +167,14 @@ const Navigation = () => {
                     Advertising
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid gap-3 p-4 w-[400px]">
+                    <div className="grid gap-3 p-6 w-full md:grid-cols-2 lg:grid-cols-4">
                       {advertisingDropdownItems.map((item) => (
                         <NavigationMenuLink key={item.name} asChild>
                           <Link
                             to={item.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            className="group block select-none space-y-1 rounded-md p-4 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground border border-border/50 hover:border-border"
                           >
-                            <div className="text-sm font-medium leading-none">{item.name}</div>
+                            <div className="text-sm font-medium leading-none group-hover:text-community-green transition-colors">{item.name}</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               {item.description}
                             </p>
@@ -191,14 +191,14 @@ const Navigation = () => {
                     Events
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid gap-3 p-4 w-[400px]">
+                    <div className="grid gap-3 p-6 w-full md:grid-cols-1 lg:grid-cols-2">
                       {whatsOnDropdownItems.map((item) => (
                         <NavigationMenuLink key={item.name} asChild>
                           <Link
                             to={item.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            className="group block select-none space-y-1 rounded-md p-4 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground border border-border/50 hover:border-border"
                           >
-                            <div className="text-sm font-medium leading-none">{item.name}</div>
+                            <div className="text-sm font-medium leading-none group-hover:text-community-green transition-colors">{item.name}</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               {item.description}
                             </p>
