@@ -48,12 +48,14 @@ const WhatsOn = () => {
       setLoading(true);
       setError(null);
 
+      console.log('Supabase client:', supabase);
+      
       let query = supabase
         .from('events')
         .select('*')
         .order('date', { ascending: true });
       
-      console.log('Query built, executing...');
+      console.log('Query built, executing...', query);
 
       // Apply search filter
       if (searchTerm) {
