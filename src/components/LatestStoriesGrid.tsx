@@ -1,7 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const LatestStoriesGrid = () => {
+  const navigate = useNavigate();
+  
   // Mock data - in a real app this would come from a blog feed
   const stories = [
     {
@@ -91,7 +94,12 @@ const LatestStoriesGrid = () => {
                 <p className="text-gray-600 font-body mb-4">
                   {story.excerpt}
                 </p>
-                <Button variant="outline" size="sm" className="text-community-green border-community-green hover:bg-community-green hover:text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-community-green border-community-green hover:bg-community-green hover:text-white"
+                  onClick={() => navigate(`/story/${story.id}`)}
+                >
                   Read More
                 </Button>
               </CardContent>

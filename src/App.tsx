@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AddEvent from "./pages/AddEvent";
+import Story from "./pages/Story";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/business-directory" element={<BusinessDirectory />} />
+          <Route path="/story/:id" element={<Story />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
