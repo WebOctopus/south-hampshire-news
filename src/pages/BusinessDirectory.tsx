@@ -62,36 +62,43 @@ const BusinessDirectory = () => {
 
   const fetchBusinesses = async () => {
     console.log('Fetching businesses for category:', selectedCategory);
-    let query = supabase
-      .from('businesses')
-      .select(`
-        *,
-        business_categories (
-          id,
-          name,
-          description,
-          icon,
-          slug
-        )
-      `)
-      .eq('is_active', true)
-      .order('featured', { ascending: false })
-      .order('name');
+    try {
+      let query = supabase
+        .from('businesses')
+        .select(`
+          *,
+          business_categories (
+            id,
+            name,
+            description,
+            icon,
+            slug
+          )
+        `)
+        .eq('is_active', true)
+        .order('featured', { ascending: false })
+        .order('name');
 
-    if (selectedCategory !== 'all') {
-      query = query.eq('category_id', selectedCategory);
-    }
+      if (selectedCategory !== 'all') {
+        query = query.eq('category_id', selectedCategory);
+      }
 
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching businesses:', error);
-    } else {
-      console.log('Fetched businesses:', data);
-      setBusinesses(data || []);
+      console.log('About to execute query');
+      const { data, error } = await query;
+      console.log('Query completed, error:', error, 'data length:', data?.length);
+      
+      if (error) {
+        console.error('Error fetching businesses:', error);
+      } else {
+        console.log('Fetched businesses:', data);
+        setBusinesses(data || []);
+      }
+    } catch (err) {
+      console.error('Unexpected error in fetchBusinesses:', err);
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
     }
-    console.log('Setting loading to false');
-    setLoading(false);
   };
 
   useEffect(() => {
