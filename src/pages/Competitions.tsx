@@ -26,7 +26,7 @@ const mockCompetitions: Competition[] = [
     endDate: '2025-06-15T23:59:59',
     entryCount: 1247,
     category: 'Travel',
-    image: '/placeholder.svg'
+    image: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop'
   },
   {
     id: '2',
@@ -36,7 +36,7 @@ const mockCompetitions: Competition[] = [
     endDate: '2025-06-12T23:59:59',
     entryCount: 892,
     category: 'Food',
-    image: '/placeholder.svg'
+    image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=800&h=600&fit=crop'
   },
   {
     id: '3',
@@ -46,7 +46,7 @@ const mockCompetitions: Competition[] = [
     endDate: '2025-06-20T23:59:59',
     entryCount: 654,
     category: 'Family',
-    image: '/placeholder.svg'
+    image: 'https://images.unsplash.com/photo-1438565434616-3ef039228b15?w=800&h=600&fit=crop'
   },
   {
     id: '4',
@@ -56,7 +56,7 @@ const mockCompetitions: Competition[] = [
     endDate: '2025-06-30T23:59:59',
     entryCount: 2156,
     category: 'Shopping',
-    image: '/placeholder.svg'
+    image: 'https://images.unsplash.com/photo-1493962853295-0fd70327578a?w=800&h=600&fit=crop'
   }
 ];
 
