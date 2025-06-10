@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, User, LogOut, Shield, Newspaper, Users, Calendar, Building, Mail, Star, Trophy, MapPin, Briefcase, Phone, Megaphone, Calculator, Gift, Eye, ChevronDown } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -313,82 +326,118 @@ const Navigation = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-community-green focus:outline-none focus:text-community-green"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-gray-700 hover:text-community-green"
+                >
+                  <Menu size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:w-80 bg-background">
+                <SheetHeader>
+                  <SheetTitle className="text-left text-lg font-semibold text-foreground">
+                    Menu
+                  </SheetTitle>
+                </SheetHeader>
+                
+                <div className="mt-6 space-y-6">
+                  {/* Navigation Sections */}
+                  <Accordion type="single" collapsible className="w-full">
+                    {allDropdownSections.map((section) => (
+                      <AccordionItem key={section.title} value={section.title} className="border-b border-border">
+                        <AccordionTrigger className="text-left hover:text-community-green hover:no-underline py-4">
+                          <div className="flex items-center justify-between w-full">
+                            <span className="text-base font-medium text-foreground">{section.title}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4">
+                          <div className="space-y-2">
+                            {section.items.map((item) => {
+                              const IconComponent = item.icon;
+                              return (
+                                <Link
+                                  key={item.name}
+                                  to={item.href}
+                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group"
+                                  onClick={() => setIsMenuOpen(false)}
+                                >
+                                  <div className="flex-shrink-0 w-5 h-5 text-muted-foreground group-hover:text-community-green transition-colors">
+                                    <IconComponent size={18} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors">
+                                      {item.name}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-1 leading-tight">
+                                      {item.description}
+                                    </p>
+                                  </div>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              {/* Mobile sections with dropdowns */}
-              {allDropdownSections.map((section) => (
-                <div key={section.title} className="border-t pt-2">
-                  <div className="px-3 py-2 text-gray-700 text-base font-medium">{section.title}</div>
-                  {section.items.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className="text-gray-600 hover:text-community-green block px-6 py-2 rounded-md text-sm transition-colors duration-200"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-              ))}
-              
-              {/* Mobile Auth Buttons */}
-              <div className="border-t pt-2">
-                {user ? (
-                  <>
-                    {isAdmin && (
+                  {/* User Section */}
+                  <div className="border-t border-border pt-6 space-y-3">
+                    {user ? (
+                      <>
+                        <div className="flex items-center space-x-2 px-3 py-2 text-sm text-muted-foreground">
+                          <User size={16} />
+                          <span>Signed in as {user.email?.split('@')[0]}</span>
+                        </div>
+                        
+                        <Link
+                          to="/dashboard"
+                          className="flex items-center space-x-3 px-3 py-3 rounded-lg hover:bg-accent transition-colors text-foreground hover:text-community-green"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <User size={18} />
+                          <span className="font-medium">Dashboard</span>
+                        </Link>
+                        
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            className="flex items-center space-x-3 px-3 py-3 rounded-lg hover:bg-accent transition-colors text-purple-700 hover:text-purple-800"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Shield size={18} />
+                            <span className="font-medium">Admin Dashboard</span>
+                          </Link>
+                        )}
+                        
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center space-x-3 px-3 py-3 rounded-lg hover:bg-accent transition-colors text-foreground hover:text-community-green w-full text-left"
+                        >
+                          <LogOut size={18} />
+                          <span className="font-medium">Sign Out</span>
+                        </button>
+                      </>
+                    ) : (
                       <Link
-                        to="/admin"
-                        className="text-purple-700 hover:text-purple-800 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                        to="/auth"
+                        className="block w-full"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <Shield size={16} className="inline mr-2" />
-                        Admin Dashboard
+                        <Button className="w-full bg-community-green hover:bg-green-600 text-white py-3">
+                          Business Login
+                        </Button>
                       </Link>
                     )}
-                    <Link
-                      to="/dashboard"
-                      className="text-gray-700 hover:text-community-green block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                    <div className="px-3 py-2 text-gray-700 text-base font-medium">
-                      <User size={16} className="inline mr-2" />
-                      {user.email?.split('@')[0]}
-                    </div>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full text-left text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                    >
-                      <LogOut size={16} className="inline mr-2" />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    to="/auth"
-                    className="block w-full text-center bg-community-green text-white hover:bg-green-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Business Login
-                  </Link>
-                )}
-              </div>
-            </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );
