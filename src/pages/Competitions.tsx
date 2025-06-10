@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Trophy, Clock, Users, Gift, Calendar } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
+import CompetitionEntryForm from '../components/CompetitionEntryForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -152,6 +153,19 @@ const RulesAndTerms = () => {
 };
 
 const Competitions = () => {
+  const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const handleEnterCompetition = (competition: Competition) => {
+    setSelectedCompetition(competition);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setSelectedCompetition(null);
+  };
+
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -209,7 +223,10 @@ const Competitions = () => {
                     </div>
                   </div>
                   
-                  <Button className="w-full bg-community-green hover:bg-community-green/90">
+                  <Button 
+                    className="w-full bg-community-green hover:bg-community-green/90"
+                    onClick={() => handleEnterCompetition(competition)}
+                  >
                     <Trophy className="w-4 h-4 mr-2" />
                     Enter Competition
                   </Button>
@@ -223,6 +240,13 @@ const Competitions = () => {
         <RulesAndTerms />
       </main>
       <Footer />
+      
+      {/* Competition Entry Form Modal */}
+      <CompetitionEntryForm
+        competition={selectedCompetition}
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+      />
     </div>
   );
 };
