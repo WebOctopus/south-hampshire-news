@@ -12,7 +12,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { User } from '@supabase/supabase-js';
-import { Edit } from 'lucide-react';
+import { Edit, Calendar, Trash2 } from 'lucide-react';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -21,6 +21,8 @@ const Dashboard = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [editingBusiness, setEditingBusiness] = useState<any>(null);
+  const [events, setEvents] = useState<any[]>([]);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('create');
   
   const hasExistingBusiness = businesses.length > 0;
@@ -38,6 +40,19 @@ const Dashboard = () => {
     address_line2: '',
     city: '',
     postcode: ''
+  });
+
+  const [eventFormData, setEventFormData] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    location: '',
+    area: '',
+    postcode: '',
+    organizer: '',
+    category: '',
+    type: ''
   });
 
   useEffect(() => {
@@ -85,9 +100,24 @@ const Dashboard = () => {
     }
   };
 
+  const loadEvents = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: true });
+    
+    if (data) {
+      setEvents(data);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadBusinesses();
+      loadEvents();
     }
   }, [user]);
 
@@ -100,6 +130,13 @@ const Dashboard = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleEventInputChange = (field: string, value: string) => {
+    setEventFormData(prev => ({
       ...prev,
       [field]: value
     }));
@@ -206,6 +243,116 @@ const Dashboard = () => {
     });
   };
 
+  const handleEventSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setSubmitting(true);
+
+    try {
+      if (editingEvent) {
+        // Update existing event
+        const { error } = await supabase
+          .from('events')
+          .update(eventFormData)
+          .eq('id', editingEvent.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success!",
+          description: "Your event has been updated successfully."
+        });
+
+        setEditingEvent(null);
+        setActiveTab('events');
+      } else {
+        // Create new event
+        const { error } = await supabase
+          .from('events')
+          .insert([{
+            ...eventFormData,
+            user_id: user.id
+          }]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success!",
+          description: "Your event has been created successfully."
+        });
+      }
+
+      // Reset form
+      setEventFormData({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        location: '',
+        area: '',
+        postcode: '',
+        organizer: '',
+        category: '',
+        type: ''
+      });
+
+      loadEvents();
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEditEvent = (event: any) => {
+    setEditingEvent(event);
+    setEventFormData({
+      title: event.title || '',
+      description: event.description || '',
+      date: event.date || '',
+      time: event.time || '',
+      location: event.location || '',
+      area: event.area || '',
+      postcode: event.postcode || '',
+      organizer: event.organizer || '',
+      category: event.category || '',
+      type: event.type || ''
+    });
+    setActiveTab('create-event');
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Event deleted successfully."
+      });
+
+      loadEvents();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -221,15 +368,15 @@ const Dashboard = () => {
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-heading font-bold mb-4">
-              Business Dashboard
+              Dashboard
             </h1>
             <p className="text-gray-600">
-              Welcome back! Create and manage your business listings here.
+              Welcome back! Create and manage your business listings and events here.
             </p>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger 
                 value="create" 
                 disabled={hasExistingBusiness && !editingBusiness}
@@ -237,6 +384,10 @@ const Dashboard = () => {
                 {editingBusiness ? 'Edit Listing' : 'Create New Listing'}
               </TabsTrigger>
               <TabsTrigger value="listings">Your Listings ({businesses.length})</TabsTrigger>
+              <TabsTrigger value="create-event">
+                {editingEvent ? 'Edit Event' : 'Create Event'}
+              </TabsTrigger>
+              <TabsTrigger value="events">Your Events ({events.length})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="create">
@@ -471,6 +622,282 @@ const Dashboard = () => {
                                   <Edit size={14} />
                                   Edit
                                 </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="create-event">
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {editingEvent ? 'Edit Event' : 'Create New Event'}
+                  </CardTitle>
+                  {editingEvent && (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingEvent(null);
+                          setEventFormData({
+                            title: '',
+                            description: '',
+                            date: '',
+                            time: '',
+                            location: '',
+                            area: '',
+                            postcode: '',
+                            organizer: '',
+                            category: '',
+                            type: ''
+                          });
+                        }}
+                        size="sm"
+                      >
+                        Cancel Edit
+                      </Button>
+                    </div>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleEventSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="event-title" className="block text-sm font-medium mb-1">
+                          Event Title *
+                        </label>
+                        <Input
+                          id="event-title"
+                          value={eventFormData.title}
+                          onChange={(e) => handleEventInputChange('title', e.target.value)}
+                          required
+                          placeholder="Enter event title"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="event-organizer" className="block text-sm font-medium mb-1">
+                          Organizer
+                        </label>
+                        <Input
+                          id="event-organizer"
+                          value={eventFormData.organizer}
+                          onChange={(e) => handleEventInputChange('organizer', e.target.value)}
+                          placeholder="Event organizer"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="event-description" className="block text-sm font-medium mb-1">
+                        Description
+                      </label>
+                      <Textarea
+                        id="event-description"
+                        value={eventFormData.description}
+                        onChange={(e) => handleEventInputChange('description', e.target.value)}
+                        placeholder="Describe your event..."
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="event-date" className="block text-sm font-medium mb-1">
+                          Date *
+                        </label>
+                        <Input
+                          id="event-date"
+                          type="date"
+                          value={eventFormData.date}
+                          onChange={(e) => handleEventInputChange('date', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="event-time" className="block text-sm font-medium mb-1">
+                          Time *
+                        </label>
+                        <Input
+                          id="event-time"
+                          type="time"
+                          value={eventFormData.time}
+                          onChange={(e) => handleEventInputChange('time', e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label htmlFor="event-location" className="block text-sm font-medium mb-1">
+                          Location *
+                        </label>
+                        <Input
+                          id="event-location"
+                          value={eventFormData.location}
+                          onChange={(e) => handleEventInputChange('location', e.target.value)}
+                          required
+                          placeholder="Event venue"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="event-area" className="block text-sm font-medium mb-1">
+                          Area *
+                        </label>
+                        <Input
+                          id="event-area"
+                          value={eventFormData.area}
+                          onChange={(e) => handleEventInputChange('area', e.target.value)}
+                          required
+                          placeholder="City/Town"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="event-postcode" className="block text-sm font-medium mb-1">
+                          Postcode
+                        </label>
+                        <Input
+                          id="event-postcode"
+                          value={eventFormData.postcode}
+                          onChange={(e) => handleEventInputChange('postcode', e.target.value)}
+                          placeholder="PO1 2AB"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="event-category" className="block text-sm font-medium mb-1">
+                          Category *
+                        </label>
+                        <Select value={eventFormData.category} onValueChange={(value) => handleEventInputChange('category', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Arts & Culture">Arts & Culture</SelectItem>
+                            <SelectItem value="Community Activities">Community Activities</SelectItem>
+                            <SelectItem value="Food & Drink">Food & Drink</SelectItem>
+                            <SelectItem value="Music & Concerts">Music & Concerts</SelectItem>
+                            <SelectItem value="Theatre & Shows">Theatre & Shows</SelectItem>
+                            <SelectItem value="Sports & Fitness">Sports & Fitness</SelectItem>
+                            <SelectItem value="Education">Education</SelectItem>
+                            <SelectItem value="Business">Business</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="event-type" className="block text-sm font-medium mb-1">
+                          Type *
+                        </label>
+                        <Select value={eventFormData.type} onValueChange={(value) => handleEventInputChange('type', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Festival">Festival</SelectItem>
+                            <SelectItem value="Workshop">Workshop</SelectItem>
+                            <SelectItem value="Concert">Concert</SelectItem>
+                            <SelectItem value="Theatre">Theatre</SelectItem>
+                            <SelectItem value="Exhibition">Exhibition</SelectItem>
+                            <SelectItem value="Comedy">Comedy</SelectItem>
+                            <SelectItem value="Sports">Sports</SelectItem>
+                            <SelectItem value="Film">Film</SelectItem>
+                            <SelectItem value="Market">Market</SelectItem>
+                            <SelectItem value="Conference">Conference</SelectItem>
+                            <SelectItem value="Meetup">Meetup</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-community-green hover:bg-green-600"
+                      disabled={submitting || !eventFormData.title || !eventFormData.date || !eventFormData.time || !eventFormData.location || !eventFormData.area || !eventFormData.category || !eventFormData.type}
+                    >
+                      {submitting 
+                        ? (editingEvent ? 'Updating Event...' : 'Creating Event...') 
+                        : (editingEvent ? 'Update Event' : 'Create Event')
+                      }
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="events">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar size={20} />
+                    Your Events
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {events.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
+                      <p>You haven't created any events yet.</p>
+                      <p className="mt-2">Click on "Create Event" to get started.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Event Title</TableHead>
+                            <TableHead>Date & Time</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {events.map((event) => (
+                            <TableRow key={event.id}>
+                              <TableCell className="font-medium">{event.title}</TableCell>
+                              <TableCell>
+                                {new Date(event.date).toLocaleDateString()} at {event.time}
+                              </TableCell>
+                              <TableCell>
+                                {event.location}, {event.area}
+                              </TableCell>
+                              <TableCell>{event.category}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditEvent(event)}
+                                    className="flex items-center gap-1"
+                                  >
+                                    <Edit size={14} />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteEvent(event.id)}
+                                    className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 size={14} />
+                                    Delete
+                                  </Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
