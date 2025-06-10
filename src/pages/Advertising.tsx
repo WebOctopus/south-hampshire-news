@@ -538,9 +538,7 @@ const Advertising = () => {
                 </div>
                 <div className="text-center">
                   <CostCalculator>
-                    <Button className="bg-community-green hover:bg-green-600">
-                      REQUEST A RATE CARD
-                    </Button>
+                    <Button className="bg-community-green hover:bg-green-600">COST CALCULATOR</Button>
                   </CostCalculator>
                 </div>
               </div>
