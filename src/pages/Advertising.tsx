@@ -336,7 +336,7 @@ const Advertising = () => {
                 <img 
                   src="/lovable-uploads/34ecfbb2-fff7-4b7e-a22f-14509fe08bf3.png" 
                   alt="Discover Magazine Cover Example" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
                 />
                 <p className="text-gray-600">We offer 11 ad sizes to more easily match with your budget and campaign needs.</p>
               </CardContent>
