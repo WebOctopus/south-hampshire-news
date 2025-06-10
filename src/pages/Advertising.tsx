@@ -347,6 +347,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Premium Position Advertising</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/9f1d05c6-6723-48d2-9b24-3aee6cb957bd.png" 
+                  alt="Premium Position Advertising Example" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
+                />
                 <p className="text-gray-600">Pay a little extra for pages 2,3,5 or back cover ... Stand out from the Crowd!</p>
               </CardContent>
             </Card>
