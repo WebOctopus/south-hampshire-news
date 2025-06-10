@@ -361,6 +361,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Small Budget Options</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/9ba0441a-d421-4a65-8738-115023b9fc55.png" 
+                  alt="Think Big Shop Small - Small Budget Options" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
+                />
                 <p className="text-gray-600">Low cost sizes, special packages and generous discounts for selected businesses</p>
               </CardContent>
             </Card>
