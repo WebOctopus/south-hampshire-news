@@ -443,6 +443,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Eye-Catching Design</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/9019f654-8637-4147-80ed-9ea16f9b7361.png" 
+                  alt="Eye-Catching Design - Colorful artistic eye makeup" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">Ask about free artwork services for series bookings and anything else you need!</p>
               </CardContent>
             </Card>
@@ -452,6 +457,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Logos & Branding</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/057f04d1-71d6-4a38-8318-51bcd9dff466.png" 
+                  alt="Logos & Branding - ARTBOX Digital Design logo" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">Whether a new design or a refresh and update we offer low cost portfolios</p>
               </CardContent>
             </Card>
@@ -461,6 +471,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">QR Codes & Geo Numbers</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/50abedfe-ca8b-4655-9286-1c33ae15e786.png" 
+                  alt="QR Codes & Geo Numbers - QR code example" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">Quantify your advertising responses with trackable QR codes and local phone numbers</p>
               </CardContent>
             </Card>
@@ -470,6 +485,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Lead Generation Specialists</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/06688917-138a-40f5-b46d-527ed07e7f8b.png" 
+                  alt="Lead Generation Specialists - Wise owl representing expertise" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">We can talk about more than print advertising to market your business</p>
               </CardContent>
             </Card>
@@ -479,6 +499,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Marketing Support</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/0856841b-a768-43dd-b06b-edc0c2255265.png" 
+                  alt="Marketing Support - Media Buddy logo" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">Every Discover advertisers deserves - and gets - their own Media Buddy.</p>
               </CardContent>
             </Card>
@@ -488,6 +513,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Social Media Promotion</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/1950c3ad-577b-4c76-9ca1-aad2fc4bdb7a.png" 
+                  alt="Social Media Promotion - Friendly dog representing social engagement" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">We can "twitter-woo" for you, too! (doesn't sound as good with X)</p>
               </CardContent>
             </Card>
