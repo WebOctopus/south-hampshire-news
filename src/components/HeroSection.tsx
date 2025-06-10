@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const HeroSection = () => {
   const navigate = useNavigate();
   const supabaseUrl = "https://qajegkbvbpekdggtrupv.supabase.co";
-  const videoUrl = `${supabaseUrl}/storage/v1/object/public/websitevideo/Monthly-Community-Mag`;
+  const videoUrl = `${supabaseUrl}/storage/v1/object/public/websitevideo/Monthly-Community-Mag.mp4`;
 
   return (
     <section id="home" className="relative overflow-hidden">
