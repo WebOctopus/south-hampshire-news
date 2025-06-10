@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays } from 'lucide-react';
+import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -205,154 +206,334 @@ const WhatsOn = () => {
           </div>
 
           {/* Filters Section */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="h-5 w-5 text-community-navy" />
-              <h3 className="text-lg font-heading font-semibold text-community-navy">Filter Events</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Search */}
+          <div className="bg-white rounded-lg shadow-sm mb-8">
+            {/* Always Visible Search on Mobile */}
+            <div className="p-4 border-b border-gray-100 md:hidden">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Search events..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-12 text-base"
                 />
               </div>
-
-              {/* Category Filter */}
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <Tag className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Area Filter */}
-              <Select value={selectedArea} onValueChange={setSelectedArea}>
-                <SelectTrigger>
-                  <MapPin className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="All Areas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Areas</SelectItem>
-                  {areas.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Type Filter */}
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {types.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
-            {/* Date Filter */}
-            <div className="lg:col-span-4 mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Single Date Filter */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-start text-left font-normal">
-                      <CalendarDays className="mr-2 h-4 w-4" />
-                      {dateFilter ? format(dateFilter, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={dateFilter}
-                      onSelect={setDateFilter}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+            {/* Mobile Accordion Filters */}
+            <div className="md:hidden">
+              <Accordion type="single" collapsible>
+                <AccordionItem value="filters" className="border-none">
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-5 w-5 text-community-navy" />
+                      <span className="text-base font-heading font-semibold text-community-navy">
+                        More Filters
+                      </span>
+                      {(selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
+                        <Badge variant="secondary" className="ml-2 text-xs">
+                          Active
+                        </Badge>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                      {/* Category Filter */}
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Category</label>
+                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                          <SelectTrigger className="h-12">
+                            <Tag className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="All Categories" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                {/* Date Range From */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-start text-left font-normal">
-                      <CalendarDays className="mr-2 h-4 w-4" />
-                      {dateRange.from ? format(dateRange.from, "PPP") : "From date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={dateRange.from}
-                      onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                      {/* Area Filter */}
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Area</label>
+                        <Select value={selectedArea} onValueChange={setSelectedArea}>
+                          <SelectTrigger className="h-12">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="All Areas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Areas</SelectItem>
+                            {areas.map((area) => (
+                              <SelectItem key={area} value={area}>
+                                {area}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                {/* Date Range To */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-start text-left font-normal">
-                      <CalendarDays className="mr-2 h-4 w-4" />
-                      {dateRange.to ? format(dateRange.to, "PPP") : "To date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={dateRange.to}
-                      onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                      {/* Type Filter */}
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Type</label>
+                        <Select value={selectedType} onValueChange={setSelectedType}>
+                          <SelectTrigger className="h-12">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="All Types" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            {types.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Date Filters */}
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Date</label>
+                        <div className="space-y-3">
+                          {/* Single Date Filter */}
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full h-12 justify-start text-left font-normal">
+                                <CalendarDays className="mr-2 h-4 w-4" />
+                                {dateFilter ? format(dateFilter, "PPP") : "Pick a specific date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <CalendarComponent
+                                mode="single"
+                                selected={dateFilter}
+                                onSelect={setDateFilter}
+                                initialFocus
+                                className="p-3"
+                              />
+                            </PopoverContent>
+                          </Popover>
+
+                          {/* Date Range */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button variant="outline" className="h-12 justify-start text-left font-normal text-xs">
+                                  <CalendarDays className="mr-1 h-4 w-4" />
+                                  {dateRange.from ? format(dateRange.from, "MMM dd") : "From"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={dateRange.from}
+                                  onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                                  initialFocus
+                                  className="p-3"
+                                />
+                              </PopoverContent>
+                            </Popover>
+
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button variant="outline" className="h-12 justify-start text-left font-normal text-xs">
+                                  <CalendarDays className="mr-1 h-4 w-4" />
+                                  {dateRange.to ? format(dateRange.to, "MMM dd") : "To"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={dateRange.to}
+                                  onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                                  initialFocus
+                                  className="p-3"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Clear Filters */}
+                      {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSearchTerm('');
+                            setSelectedCategory('all');
+                            setSelectedArea('all');
+                            setSelectedType('all');
+                            setDateFilter(undefined);
+                            setDateRange({ from: undefined, to: undefined });
+                          }}
+                          className="w-full"
+                        >
+                          Clear All Filters
+                        </Button>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+
+            {/* Desktop Filters */}
+            <div className="hidden md:block p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="h-5 w-5 text-community-navy" />
+                <h3 className="text-lg font-heading font-semibold text-community-navy">Filter Events</h3>
               </div>
-            </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search events..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
 
-            {/* Clear Filters */}
-            {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
+                {/* Category Filter */}
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <Tag className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Area Filter */}
+                <Select value={selectedArea} onValueChange={setSelectedArea}>
+                  <SelectTrigger>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="All Areas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Areas</SelectItem>
+                    {areas.map((area) => (
+                      <SelectItem key={area} value={area}>
+                        {area}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Type Filter */}
+                <Select value={selectedType} onValueChange={setSelectedType}>
+                  <SelectTrigger>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    {types.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date Filter */}
               <div className="mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory('all');
-                    setSelectedArea('all');
-                    setSelectedType('all');
-                    setDateFilter(undefined);
-                    setDateRange({ from: undefined, to: undefined });
-                  }}
-                >
-                  Clear All Filters
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Single Date Filter */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="justify-start text-left font-normal">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        {dateFilter ? format(dateFilter, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={dateFilter}
+                        onSelect={setDateFilter}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Date Range From */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="justify-start text-left font-normal">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        {dateRange.from ? format(dateRange.from, "PPP") : "From date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={dateRange.from}
+                        onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Date Range To */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="justify-start text-left font-normal">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        {dateRange.to ? format(dateRange.to, "PPP") : "To date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={dateRange.to}
+                        onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
-            )}
+
+              {/* Clear Filters */}
+              {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
+                <div className="mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSelectedCategory('all');
+                      setSelectedArea('all');
+                      setSelectedType('all');
+                      setDateFilter(undefined);
+                      setDateRange({ from: undefined, to: undefined });
+                    }}
+                  >
+                    Clear All Filters
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* View Toggle and Calendar Controls */}
