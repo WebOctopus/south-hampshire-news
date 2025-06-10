@@ -515,9 +515,19 @@ const Advertising = () => {
             <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
               12 Areas to Target - Trial Areas - Add More Later - Tailored Campaigns - Mix Adverts with Leaflets!
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 mb-6">
               Our 158,000 circulation is divided into 12 Areas - each with a circulation of up to 14,000** homes
             </p>
+            <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto">
+              <p className="text-lg text-gray-700 mb-4">
+                Get an <span className="font-bold text-community-green">instant quote</span> for any combination of areas using our cost calculator
+              </p>
+              <CostCalculator>
+                <Button className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg">
+                  GET INSTANT QUOTE
+                </Button>
+              </CostCalculator>
+            </div>
           </div>
 
           {/* Special SO19 Section */}
