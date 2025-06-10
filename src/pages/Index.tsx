@@ -127,8 +127,8 @@ const Index = () => {
                 <Button className="bg-community-green hover:bg-community-green/90 text-white px-8 py-3 font-bold rounded-full border border-community-green/20 hover:shadow-lg hover:shadow-community-green/30 transition-all duration-300">
                   EXPLORE ALL EDITIONS
                 </Button>
-                <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
-                  VIEW DISTRIBUTION MAP
+                <Button asChild variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
+                  <a href="/advertising#distribution-map">VIEW DISTRIBUTION MAP</a>
                 </Button>
               </div>
             </div>

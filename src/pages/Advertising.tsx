@@ -559,7 +559,7 @@ const Advertising = () => {
             </Card>
 
             {/* Map Section */}
-            <div className="text-center">
+            <div id="distribution-map" className="text-center">
               <img src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas" className="w-full max-w-md mx-auto rounded-lg shadow-lg" />
               <p className="text-sm text-gray-600 mt-4 font-medium">
                 12 Distribution Areas across South Hampshire
