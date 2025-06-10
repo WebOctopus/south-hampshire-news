@@ -53,11 +53,6 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
             <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-2">
               {business.name}
             </h3>
-            {business.business_categories && (
-              <Badge variant="secondary" className="text-xs">
-                {business.business_categories.name}
-              </Badge>
-            )}
           </div>
           {business.logo_url && (
             <img
@@ -67,12 +62,6 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
             />
           )}
         </div>
-        
-        {business.description && (
-          <p className="text-sm text-gray-600 line-clamp-3">
-            {business.description}
-          </p>
-        )}
       </CardHeader>
 
       {/* Featured Image */}
