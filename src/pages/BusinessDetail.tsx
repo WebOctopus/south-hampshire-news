@@ -129,8 +129,83 @@ const BusinessDetail = () => {
           Back to Directory
         </Link>
 
+        {/* Mobile Business Header */}
+        <div className="lg:hidden mb-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-3">
+                {business.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Badge variant="secondary" className="bg-community-green/10 text-community-green">
+                  {business.business_categories?.name}
+                </Badge>
+                {business.is_verified && (
+                  <Badge variant="default" className="bg-blue-100 text-blue-800">
+                    Verified
+                  </Badge>
+                )}
+                {business.featured && (
+                  <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+                    Featured
+                  </Badge>
+                )}
+              </div>
+            </div>
+            {business.logo_url && (
+              <img
+                src={business.logo_url}
+                alt={`${business.name} logo`}
+                className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg ml-4 flex-shrink-0"
+              />
+            )}
+          </div>
+          
+          {business.description && (
+            <p className="text-gray-600 text-base leading-relaxed mb-4">
+              {business.description}
+            </p>
+          )}
+          
+          {/* Mobile Contact Actions */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
+            {business.phone && (
+              <Button
+                onClick={handlePhoneClick}
+                variant="outline"
+                className="w-full text-sm"
+                size="sm"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Call
+              </Button>
+            )}
+            {business.email && (
+              <Button
+                onClick={handleEmailClick}
+                variant="outline"
+                className="w-full text-sm"
+                size="sm"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Email
+              </Button>
+            )}
+            {business.website && (
+              <Button
+                onClick={handleWebsiteClick}
+                className="w-full bg-community-green hover:bg-green-600 text-sm"
+                size="sm"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Website
+              </Button>
+            )}
+          </div>
+        </div>
+
         {/* Hero Section */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
           {/* Image Gallery */}
           <div className="space-y-4">
             {allImages.length > 0 ? (
@@ -143,12 +218,12 @@ const BusinessDetail = () => {
                   />
                 </div>
                 {allImages.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto">
+                  <div className="flex gap-2 overflow-x-auto pb-2">
                     {allImages.map((image, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                        className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 ${
                           selectedImageIndex === index ? 'border-community-green' : 'border-transparent'
                         }`}
                       >
@@ -169,8 +244,8 @@ const BusinessDetail = () => {
             )}
           </div>
 
-          {/* Business Info */}
-          <div className="space-y-6">
+          {/* Desktop Business Info */}
+          <div className="hidden lg:block space-y-6">
             <div>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -209,7 +284,7 @@ const BusinessDetail = () => {
               )}
             </div>
 
-            {/* Contact Actions */}
+            {/* Desktop Contact Actions */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {business.phone && (
                 <Button
