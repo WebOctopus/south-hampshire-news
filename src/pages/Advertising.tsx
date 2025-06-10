@@ -163,10 +163,11 @@ const Advertising = () => {
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             We can't promise to find you a mate, but we will match you up with new customers!
           </p>
-          <Button size="lg" className="bg-white text-community-navy hover:bg-gray-100">
-            <Phone className="mr-2 h-5 w-5" />
-            Call us TODAY 02380 266388
-          </Button>
+          <CostCalculator>
+            <Button size="lg" className="bg-white text-community-navy hover:bg-gray-100 px-8 py-3 font-bold">
+              GET INSTANT QUOTE
+            </Button>
+          </CostCalculator>
         </div>
       </section>
 
