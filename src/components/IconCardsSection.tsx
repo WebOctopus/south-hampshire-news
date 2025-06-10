@@ -17,8 +17,8 @@ const IconCardsSection = () => {
     },
     {
       icon: Clock,
-      title: 'Competition Deadlines',
-      description: 'Don\'t miss out! Check entry deadlines for current competitions',
+      title: 'Next Issue Deadline',
+      description: 'Don\'t miss out - secure your ad space for the next magazine issue',
       color: 'text-red-600 bg-red-50'
     },
     {
