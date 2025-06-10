@@ -689,7 +689,7 @@ const Advertising = () => {
               <Phone className="mr-2 h-5 w-5" />
               023 80 266388
             </Button>
-            <Button size="lg" variant="outline" className="border-white hover:bg-white hover:text-community-navy text-white">
+            <Button size="lg" variant="outline" className="border-white hover:bg-white hover:text-community-navy text-slate-950">
               Advertising Enquiry Form
             </Button>
           </div>
