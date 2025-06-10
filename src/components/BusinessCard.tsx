@@ -78,16 +78,12 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
       <CardContent className="flex-1 space-y-3 pt-0">
         {/* Address */}
         {(business.address_line1 || business.city || business.postcode) && (
-          <div className="flex items-start gap-2">
-            <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-gray-600">
-              {business.address_line1 && <div>{business.address_line1}</div>}
-              {business.address_line2 && <div>{business.address_line2}</div>}
-              <div>
-                {business.city && business.city}
-                {business.city && business.postcode && ', '}
-                {business.postcode && business.postcode}
-              </div>
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <div className="text-sm text-gray-600 truncate">
+              {[business.address_line1, business.address_line2, business.city, business.postcode]
+                .filter(Boolean)
+                .join(', ')}
             </div>
           </div>
         )}
