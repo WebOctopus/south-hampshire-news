@@ -2,6 +2,7 @@ import { MapPin, Phone, Mail, ExternalLink, Star } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface BusinessCardProps {
   business: {
@@ -27,26 +28,38 @@ interface BusinessCardProps {
 }
 
 const BusinessCard = ({ business }: BusinessCardProps) => {
-  const handleWebsiteClick = () => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/business/${business.id}`);
+  };
+
+  const handleWebsiteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (business.website) {
       window.open(business.website.startsWith('http') ? business.website : `https://${business.website}`, '_blank');
     }
   };
 
-  const handleEmailClick = () => {
+  const handleEmailClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (business.email) {
       window.open(`mailto:${business.email}`);
     }
   };
 
-  const handlePhoneClick = () => {
+  const handlePhoneClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (business.phone) {
       window.open(`tel:${business.phone}`);
     }
   };
 
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
+    <Card 
+      className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
