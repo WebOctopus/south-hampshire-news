@@ -388,6 +388,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Target Up to 108,000 Homes</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/fe26219a-b740-4f8f-8a86-f3611b4b16dc.png" 
+                  alt="Target Up to 108,000 Homes - Footprints tracking" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">100% Tracked, Monitored & Recorded</p>
               </CardContent>
             </Card>
@@ -397,6 +402,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Cost Saving Options</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/8302477f-4fa2-42dd-8d1d-a479d5e981db.png" 
+                  alt="Cost Saving Options - Tree representing growth and savings" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">Plus Leaflet Sharing Save on Print and 50% off Delivery!</p>
               </CardContent>
             </Card>
@@ -406,6 +416,11 @@ const Advertising = () => {
                 <CardTitle className="text-community-navy">Royal Mail Partners</CardTitle>
               </CardHeader>
               <CardContent>
+                <img 
+                  src="/lovable-uploads/163918e9-487a-48cd-a7c4-61b988ecb9ea.png" 
+                  alt="Royal Mail Partners - Official Royal Mail logo" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
                 <p className="text-gray-600">Piggyback on our Royal Mail Contracts - Save Hassle & £££</p>
               </CardContent>
             </Card>
