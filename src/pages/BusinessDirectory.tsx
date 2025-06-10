@@ -109,12 +109,12 @@ const BusinessDirectory = () => {
       className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
       onClick={() => setSelectedCategory(category.id)}
     >
-      <CardContent className="p-6 text-center">
-        <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-community-green/10 rounded-full">
-          <div className="text-community-green text-2xl">📍</div>
+      <CardContent className="p-4 md:p-6 text-center">
+        <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 flex items-center justify-center bg-community-green/10 rounded-full">
+          <div className="text-community-green text-xl md:text-2xl">📍</div>
         </div>
-        <h3 className="font-semibold text-lg mb-2">{category.name}</h3>
-        <p className="text-sm text-gray-600">{category.description}</p>
+        <h3 className="font-semibold text-base md:text-lg mb-2">{category.name}</h3>
+        <p className="text-xs md:text-sm text-gray-600">{category.description}</p>
       </CardContent>
     </Card>
   );
@@ -125,30 +125,30 @@ const BusinessDirectory = () => {
       <Navigation />
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-community-navy to-community-green text-white py-16">
+        <section className="bg-gradient-to-r from-community-navy to-community-green text-white py-8 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl lg:text-5xl font-heading font-bold mb-6">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold mb-4 md:mb-6">
               Business Directory
             </h1>
-            <p className="text-xl mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl mb-6 md:mb-8 max-w-3xl mx-auto px-4">
               Discover local businesses across SO & PO postcodes. 
               Support your community and find the services you need.
             </p>
             
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto flex gap-4 mb-6">
+            <div className="max-w-2xl mx-auto space-y-4 md:space-y-0 md:flex md:gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <Input
                   type="text"
-                  placeholder="Search businesses, services, or locations..."
+                  placeholder="Search businesses, services..."
                   className="pl-10 h-12 text-black"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-48 h-12 text-black">
+                <SelectTrigger className="w-full md:w-48 h-12 text-black">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,12 +166,12 @@ const BusinessDirectory = () => {
 
         {/* Categories Section */}
         {selectedCategory === 'all' && (
-          <section className="py-16 bg-gray-50">
+          <section className="py-8 md:py-16 bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-3xl font-heading font-bold text-center mb-12">
+              <h2 className="text-2xl md:text-3xl font-heading font-bold text-center mb-8 md:mb-12">
                 Browse by Category
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {categories.map((category) => (
                   <CategoryCard key={category.id} category={category} />
                 ))}
@@ -181,14 +181,14 @@ const BusinessDirectory = () => {
         )}
 
         {/* Business Listings Section */}
-        <section className="py-16">
+        <section className="py-8 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-heading font-bold">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+              <h2 className="text-2xl md:text-3xl font-heading font-bold">
                 {selectedCategory === 'all' ? 'Featured Businesses' : 
                  categories.find(c => c.id === selectedCategory)?.name || 'Businesses'}
               </h2>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-gray-600 text-sm md:text-base">
                 <Filter size={16} />
                 <span>{filteredBusinesses.length} businesses found</span>
               </div>
@@ -210,7 +210,7 @@ const BusinessDirectory = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredBusinesses.map((business) => (
                   <BusinessCard key={business.id} business={business} />
                 ))}
@@ -220,18 +220,18 @@ const BusinessDirectory = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-community-green text-white">
+        <section className="py-12 md:py-16 bg-community-green text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-heading font-bold mb-6">
+            <h2 className="text-2xl md:text-3xl font-heading font-bold mb-4 md:mb-6">
               List Your Business
             </h2>
-            <p className="text-xl mb-8 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto px-4">
               Join our directory and connect with local customers in your area. 
               Boost your visibility and grow your business.
             </p>
             <Button 
               size="lg"
-              className="bg-white text-community-green hover:bg-gray-100 px-8 py-3 text-lg font-medium"
+              className="bg-white text-community-green hover:bg-gray-100 px-6 md:px-8 py-3 text-base md:text-lg font-medium"
             >
               Add Your Business
             </Button>
