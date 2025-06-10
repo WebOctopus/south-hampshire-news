@@ -17,6 +17,7 @@ interface BusinessCardProps {
     city: string;
     postcode: string;
     logo_url: string;
+    featured_image_url: string;
     images: string[];
     business_categories: {
       name: string;
@@ -73,6 +74,17 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
           </p>
         )}
       </CardHeader>
+
+      {/* Featured Image */}
+      {business.featured_image_url && (
+        <div className="px-6 pb-3">
+          <img
+            src={business.featured_image_url}
+            alt={`${business.name} featured image`}
+            className="w-full h-32 object-cover rounded-lg"
+          />
+        </div>
+      )}
 
       <CardContent className="flex-1 space-y-3 pt-0">
         {/* Address */}
