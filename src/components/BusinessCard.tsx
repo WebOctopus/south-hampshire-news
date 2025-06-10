@@ -70,7 +70,7 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
           <img
             src={business.featured_image_url}
             alt={`${business.name} featured image`}
-            className="w-full h-32 object-cover rounded-lg"
+            className="w-full h-48 object-cover rounded-lg"
           />
         </div>
       )}
