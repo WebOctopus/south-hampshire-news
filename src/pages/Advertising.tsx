@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import CostCalculator from "@/components/CostCalculator";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
@@ -144,6 +145,20 @@ const Advertising = () => {
     alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition",
     title: "CHANDLER'S FORD & EASTLEIGH"
   }];
+
+  useEffect(() => {
+    // Handle scrolling to hash on page load
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.getElementById(hash.substring(1));
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
   return <div className="min-h-screen bg-gray-50">
       <Navigation />
       
