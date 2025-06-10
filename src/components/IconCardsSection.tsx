@@ -18,7 +18,7 @@ const IconCardsSection = () => {
     {
       icon: Clock,
       title: 'Next Issue Deadline',
-      description: 'Don\'t miss out - secure your ad space for the next magazine issue',
+      description: 'Next deadline: 14th May 2025 - Don\'t miss out, secure your ad space now!',
       color: 'text-red-600 bg-red-50'
     },
     {
