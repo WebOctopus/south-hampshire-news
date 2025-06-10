@@ -117,9 +117,11 @@ const Navigation = () => {
 
   const allDropdownSections = [
     { title: 'Home', items: homeDropdownItems, path: '/' },
+    { title: 'Events', items: whatsOnDropdownItems, path: '/whats-on' },
     { title: 'Competitions', items: competitionsDropdownItems, path: '/competitions' },
-    { title: 'Distribute', items: distributeDropdownItems, path: '/apply-to-distribute' },
     { title: 'Directory', items: businessDirectoryDropdownItems, path: '/business-directory' },
+    { title: 'Advertising', items: advertisingDropdownItems, path: '/advertising' },
+    { title: 'Distribute', items: distributeDropdownItems, path: '/apply-to-distribute' },
     { title: 'Contact', items: contactDropdownItems, path: '/contact' },
   ];
 
@@ -190,19 +192,66 @@ const Navigation = () => {
                           {/* Featured content */}
                           <div className="md:col-span-1 lg:col-span-2 bg-muted/30 p-6 rounded-r-lg">
                             <div className="space-y-4">
-                              <div className="text-sm font-semibold text-foreground">Latest News</div>
-                              <div className="bg-white rounded-lg p-4 shadow-sm border">
-                                <h4 className="text-sm font-medium text-foreground mb-2">Community Update!</h4>
-                                <p className="text-sm text-muted-foreground mb-3">
-                                  Stay updated with the latest community stories and local events in South Hampshire.
-                                </p>
-                                <Link 
-                                  to="/stories" 
-                                  className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
-                                >
-                                  Read more →
-                                </Link>
-                              </div>
+                              {section.title === 'Advertising' ? (
+                                <>
+                                  <div className="text-sm font-semibold text-foreground">Important Information</div>
+                                  <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-4 shadow-md">
+                                    <h4 className="text-base font-bold text-red-700 mb-2 flex items-center">
+                                      ⚠️ DEADLINE ALERT!
+                                    </h4>
+                                    <p className="text-sm font-semibold text-red-600 mb-1">
+                                      Next deadline: 14th May 2025
+                                    </p>
+                                    <p className="text-xs text-red-500 font-medium">
+                                      Don't miss out - secure your ad space now!
+                                    </p>
+                                  </div>
+                                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                                    <h4 className="text-sm font-medium text-foreground mb-2">Advertise with us</h4>
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                      Reach 12 areas across South Hampshire with our advertising packages.
+                                    </p>
+                                    <Link 
+                                      to="/advertising#offers" 
+                                      className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                                    >
+                                      View offers →
+                                    </Link>
+                                  </div>
+                                </>
+                              ) : section.title === 'Events' ? (
+                                <>
+                                  <div className="text-sm font-semibold text-foreground">Upcoming Events</div>
+                                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                                    <h4 className="text-sm font-medium text-foreground mb-2">What's happening?</h4>
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                      Discover local events and activities happening in your community.
+                                    </p>
+                                    <Link 
+                                      to="/whats-on" 
+                                      className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                                    >
+                                      Browse events →
+                                    </Link>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-sm font-semibold text-foreground">Latest News</div>
+                                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                                    <h4 className="text-sm font-medium text-foreground mb-2">Community Update!</h4>
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                      Stay updated with the latest community stories and local events in South Hampshire.
+                                    </p>
+                                    <Link 
+                                      to="/stories" 
+                                      className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                                    >
+                                      Read more →
+                                    </Link>
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -210,151 +259,6 @@ const Navigation = () => {
                     </NavigationMenuContent>
                   </NavigationMenuItem>
                 ))}
-
-                {/* Advertising dropdown */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger 
-                    className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent"
-                    onClick={() => navigate('/advertising')}
-                  >
-                    Advertising
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-full bg-white border border-border shadow-lg rounded-lg">
-                      <div className="grid md:grid-cols-4 lg:grid-cols-5">
-                        {/* Main content sections */}
-                        <div className="md:col-span-3 lg:col-span-3 p-6">
-                          <div className="grid gap-6 md:grid-cols-2">
-                            <div>
-                              <h3 className="text-sm font-semibold text-foreground mb-4">Advertising</h3>
-                              <div className="space-y-3">
-                                {advertisingDropdownItems.map((item) => {
-                                  const IconComponent = item.icon;
-                                  return (
-                                    <NavigationMenuLink key={item.name} asChild>
-                                      <Link
-                                        to={item.href}
-                                        className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
-                                      >
-                                        <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
-                                          <IconComponent size={20} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors">
-                                            {item.name}
-                                          </div>
-                                          <p className="text-sm text-muted-foreground leading-tight mt-1">
-                                            {item.description}
-                                          </p>
-                                        </div>
-                                      </Link>
-                                    </NavigationMenuLink>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Featured content */}
-                        <div className="md:col-span-1 lg:col-span-2 bg-muted/30 p-6 rounded-r-lg">
-                          <div className="space-y-4">
-                            <div className="text-sm font-semibold text-foreground">Important Information</div>
-                            <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-4 shadow-md">
-                              <h4 className="text-base font-bold text-red-700 mb-2 flex items-center">
-                                ⚠️ DEADLINE ALERT!
-                              </h4>
-                              <p className="text-sm font-semibold text-red-600 mb-1">
-                                Next deadline: 14th May 2025
-                              </p>
-                              <p className="text-xs text-red-500 font-medium">
-                                Don't miss out - secure your ad space now!
-                              </p>
-                            </div>
-                            <div className="bg-white rounded-lg p-4 shadow-sm border">
-                              <h4 className="text-sm font-medium text-foreground mb-2">Advertise with us</h4>
-                              <p className="text-sm text-muted-foreground mb-3">
-                                Reach 12 areas across South Hampshire with our advertising packages.
-                              </p>
-                              <Link 
-                                to="/advertising#offers" 
-                                className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
-                              >
-                                View offers →
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                {/* Events dropdown */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger 
-                    className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-transparent hover:bg-transparent data-[state=open]:bg-transparent"
-                    onClick={() => navigate('/whats-on')}
-                  >
-                    Events
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-full bg-white border border-border shadow-lg rounded-lg">
-                      <div className="grid md:grid-cols-4 lg:grid-cols-5">
-                        {/* Main content sections */}
-                        <div className="md:col-span-3 lg:col-span-3 p-6">
-                          <div className="grid gap-6 md:grid-cols-2">
-                            <div>
-                              <h3 className="text-sm font-semibold text-foreground mb-4">Events</h3>
-                              <div className="space-y-3">
-                                {whatsOnDropdownItems.map((item) => {
-                                  const IconComponent = item.icon;
-                                  return (
-                                    <NavigationMenuLink key={item.name} asChild>
-                                      <Link
-                                        to={item.href}
-                                        className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
-                                      >
-                                        <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
-                                          <IconComponent size={20} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors">
-                                            {item.name}
-                                          </div>
-                                          <p className="text-sm text-muted-foreground leading-tight mt-1">
-                                            {item.description}
-                                          </p>
-                                        </div>
-                                      </Link>
-                                    </NavigationMenuLink>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Featured content */}
-                        <div className="md:col-span-1 lg:col-span-2 bg-muted/30 p-6 rounded-r-lg">
-                          <div className="space-y-4">
-                            <div className="text-sm font-semibold text-foreground">Upcoming Events</div>
-                            <div className="bg-white rounded-lg p-4 shadow-sm border">
-                              <h4 className="text-sm font-medium text-foreground mb-2">What's happening?</h4>
-                              <p className="text-sm text-muted-foreground mb-3">
-                                Discover local events and activities happening in your community.
-                              </p>
-                              <Link 
-                                to="/whats-on" 
-                                className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
-                              >
-                                Browse events →
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
 
               </NavigationMenuList>
             </NavigationMenu>
@@ -438,36 +342,6 @@ const Navigation = () => {
                   ))}
                 </div>
               ))}
-              
-              {/* Mobile Advertising section */}
-              <div className="border-t pt-2">
-                <div className="px-3 py-2 text-gray-700 text-base font-medium">Advertising</div>
-                {advertisingDropdownItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className="text-gray-600 hover:text-community-green block px-6 py-2 rounded-md text-sm transition-colors duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-              
-              {/* Mobile Events section */}
-              <div className="border-t pt-2">
-                <div className="px-3 py-2 text-gray-700 text-base font-medium">Events</div>
-                {whatsOnDropdownItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className="text-gray-600 hover:text-community-green block px-6 py-2 rounded-md text-sm transition-colors duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
               
               {/* Mobile Auth Buttons */}
               <div className="border-t pt-2">
