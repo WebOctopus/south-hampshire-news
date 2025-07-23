@@ -7,6 +7,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { areas, adSizes, durations } from '@/data/advertisingPricing';
+import { calculateAdvertisingPrice, formatPrice, calculateCPM, getRecommendedDuration } from '@/lib/pricingCalculator';
 
 interface CostCalculatorProps {
   children: React.ReactNode;
@@ -23,119 +27,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     duration: ''
   });
 
-  const areas = [
-    { 
-      id: 'area1', 
-      name: 'SOUTHAMPTON SUBURBS', 
-      postcodes: 'SO15 SO16 SO17', 
-      townsVillages: 'Chilworth, Upper Shirley, Rownhams, Bassett, Highfield', 
-      circulation: 13500 
-    },
-    { 
-      id: 'area2', 
-      name: 'CHANDLER\'S FORD & NORTH BADDESLEY', 
-      postcodes: 'SO53 SO52', 
-      townsVillages: 'Chandler\'s Ford, North Baddesley', 
-      circulation: 13500 
-    },
-    { 
-      id: 'area3', 
-      name: 'EASTLEIGH & VILLAGES', 
-      postcodes: 'SO50', 
-      townsVillages: 'Fair Oak, Bishopstoke, Horton Heath, Allbrook, Boyatt Wood, Eastleigh', 
-      circulation: 10500 
-    },
-    { 
-      id: 'area4', 
-      name: 'HEDGE END & SURROUNDS', 
-      postcodes: 'SO30', 
-      townsVillages: 'Hedge End, West End, Botley', 
-      circulation: 13000 
-    },
-    { 
-      id: 'area5', 
-      name: 'LOCKS HEATH & SURROUNDS', 
-      postcodes: 'SO31', 
-      townsVillages: 'Locks Heath, Warsash, Swanwick, Bursledon, Hamble, Netley', 
-      circulation: 13000 
-    },
-    { 
-      id: 'area6', 
-      name: 'FAREHAM & SURROUNDS', 
-      postcodes: 'PO13 PO14 PO15', 
-      townsVillages: 'Fareham, Titchfield, Stubbington, Lee on Solent, Hill Head', 
-      circulation: 14000 
-    },
-    { 
-      id: 'area7', 
-      name: 'WICKHAM & BISHOP\'S WALTHAM', 
-      postcodes: 'SO32 PO17', 
-      townsVillages: 'Wickham, Bishop\'s Waltham', 
-      circulation: 14000 
-    },
-    { 
-      id: 'area8', 
-      name: 'WINCHESTER & VILLAGES', 
-      postcodes: 'SO21 SO22 SO23', 
-      townsVillages: 'Winchester, Otterbourne, Colden Common, Hursley, Crawley, South Wonston, Littleton, Sparsholt', 
-      circulation: 13500 
-    },
-    { 
-      id: 'area9', 
-      name: 'ROMSEY & TEST VALLEY', 
-      postcodes: 'SO51 SO20', 
-      townsVillages: 'Romsey, Stockbridge, The Wellows, Braishfield, Ampfield, Kings Somborne', 
-      circulation: 15000 
-    },
-    { 
-      id: 'area10', 
-      name: 'WATERSIDE & TOTTON', 
-      postcodes: 'SO40 SO45', 
-      townsVillages: 'Totton, Marchwood, Hythe, Dibden, Dibden Purlieu, Holbury, Blackfield', 
-      circulation: 14000 
-    },
-    { 
-      id: 'area11', 
-      name: 'NEW FOREST TO LYMINGTON', 
-      postcodes: 'SO41 SO42 SO43 BH24 4', 
-      townsVillages: 'Lymington, Brockenhurst, Lyndhurst, New Milton, Beaulieu', 
-      circulation: 13500 
-    },
-    { 
-      id: 'area12', 
-      name: 'MEON VALLEY*', 
-      postcodes: 'PO9 PO10 PO11 PO12', 
-      townsVillages: 'Havant, Waterlooville, Emsworth, Cosham, Drayton, Denmead', 
-      circulation: 15000 
-    },
-    { 
-      id: 'area13', 
-      name: 'PORTSMOUTH NORTH', 
-      postcodes: 'PO6 PO7 PO8', 
-      townsVillages: 'Cosham, Drayton, Farlington, Widley, Purbrook', 
-      circulation: 14500 
-    },
-    { 
-      id: 'area14', 
-      name: 'PORTSMOUTH SOUTH', 
-      postcodes: 'PO1 PO2 PO3 PO4 PO5', 
-      townsVillages: 'Portsmouth, Southsea, Eastney, Milton, Fratton', 
-      circulation: 16000 
-    }
-  ];
 
-  const adSizes = [
-    { id: '1/8-page', label: '1/8 Page', price: 150 },
-    { id: '1/4-page', label: '1/4 Page', price: 280 },
-    { id: '1/2-page', label: '1/2 Page', price: 520 },
-    { id: 'full-page', label: 'Full Page', price: 980 }
-  ];
-
-  const durations = [
-    { id: '1-month', label: '1 Month' },
-    { id: '3-months', label: '3 Months' },
-    { id: '6-months', label: '6 Months' }
-  ];
 
   const handleAreaChange = (areaId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -146,25 +38,13 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     }));
   };
 
-  const calculatePrice = () => {
-    const selectedAdSize = adSizes.find(size => size.id === formData.adSize);
-    if (!selectedAdSize || !formData.selectedAreas.length) return 0;
+  const pricingBreakdown = calculateAdvertisingPrice(
+    formData.selectedAreas,
+    formData.adSize,
+    formData.duration
+  );
 
-    const basePrice = selectedAdSize.price;
-    const areasCount = formData.selectedAreas.length;
-    const totalDistribution = formData.selectedAreas.reduce((total, areaId) => {
-      const area = areas.find(a => a.id === areaId);
-      return total + (area ? area.circulation : 0);
-    }, 0);
-
-    let multiplier = 1;
-    if (formData.duration === '3-months') multiplier = 2.7;
-    if (formData.duration === '6-months') multiplier = 5.1;
-
-    return Math.round(basePrice * areasCount * multiplier);
-  };
-
-  const finalPrice = calculatePrice();
+  const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
 
   return (
     <Dialog>
@@ -271,16 +151,24 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               <RadioGroup
                 value={formData.adSize}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
-                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 {adSizes.map((size) => (
-                  <div key={size.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value={size.id} id={size.id} />
-                    <div>
-                      <Label htmlFor={size.id} className="font-medium cursor-pointer">
+                  <div key={size.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value={size.id} id={size.id} className="mt-1" />
+                    <div className="flex-1">
+                      <Label htmlFor={size.id} className="font-medium cursor-pointer block">
                         {size.label}
                       </Label>
-                      <p className="text-sm text-community-green">£{size.price} per area</p>
+                      {size.description && (
+                        <p className="text-sm text-gray-600 mt-1">{size.description}</p>
+                      )}
+                      {size.dimensions && (
+                        <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
+                      )}
+                      <p className="text-sm text-community-green font-bold mt-2">
+                        From {formatPrice(size.basePrice)} per area
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -297,14 +185,36 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               <RadioGroup
                 value={formData.duration}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 {durations.map((duration) => (
-                  <div key={duration.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value={duration.id} id={duration.id} />
-                    <Label htmlFor={duration.id} className="font-medium cursor-pointer">
-                      {duration.label}
-                    </Label>
+                  <div key={duration.id} className={`flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 ${
+                    recommendedDurations.includes(duration.id) ? 'border-community-green border-2' : ''
+                  }`}>
+                    <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={duration.id} className="font-medium cursor-pointer">
+                          {duration.label}
+                        </Label>
+                        {recommendedDurations.includes(duration.id) && (
+                          <Badge variant="default" className="text-xs bg-community-green">
+                            Recommended
+                          </Badge>
+                        )}
+                        {duration.isSubscription && (
+                          <Badge variant="outline" className="text-xs">
+                            Subscription
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {duration.months} month{duration.months > 1 ? 's' : ''}
+                        {duration.discountMultiplier < duration.months && 
+                          ` • ${Math.round((1 - duration.discountMultiplier / duration.months) * 100)}% discount`
+                        }
+                      </p>
+                    </div>
                   </div>
                 ))}
               </RadioGroup>
@@ -315,41 +225,96 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
           <Card className="bg-gray-50">
             <CardContent className="p-6">
               <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                Summary
+                Pricing Summary
               </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Total Circulation:</span>
-                  <span className="font-medium">
-                    {formData.selectedAreas.reduce((total, areaId) => {
-                      const area = areas.find(a => a.id === areaId);
-                      return total + (area ? area.circulation : 0);
-                    }, 0).toLocaleString()}
-                  </span>
+              
+              {pricingBreakdown ? (
+                <div className="space-y-4">
+                  {/* Campaign Overview */}
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg">
+                    <div>
+                      <p className="text-sm text-gray-600">Total Circulation</p>
+                      <p className="font-bold text-community-navy">{pricingBreakdown.totalCirculation.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Cost Per Thousand (CPM)</p>
+                      <p className="font-bold text-community-navy">{formatPrice(calculateCPM(pricingBreakdown.finalTotal, pricingBreakdown.totalCirculation))}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Selected Areas</p>
+                      <p className="font-bold text-community-navy">{formData.selectedAreas.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Campaign Duration</p>
+                      <p className="font-bold text-community-navy">
+                        {durations.find(d => d.id === formData.duration)?.label || 'Not selected'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Pricing Breakdown */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Subtotal ({formData.selectedAreas.length} areas)</span>
+                      <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
+                    </div>
+                    
+                    {pricingBreakdown.volumeDiscountPercent > 0 && (
+                      <div className="flex justify-between text-community-green">
+                        <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%)</span>
+                        <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between">
+                      <span>Duration Multiplier</span>
+                      <span className="font-medium">×{pricingBreakdown.durationMultiplier}</span>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between text-xl font-bold text-community-navy">
+                      <span>Total Price:</span>
+                      <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                    </div>
+                  </div>
+
+                  {/* Area Breakdown */}
+                  {pricingBreakdown.areaBreakdown.length > 0 && (
+                    <details className="mt-4">
+                      <summary className="cursor-pointer text-sm font-medium text-community-navy hover:text-community-green">
+                        View Area-by-Area Breakdown
+                      </summary>
+                      <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
+                        {pricingBreakdown.areaBreakdown.map(({ area, basePrice, multipliedPrice }) => (
+                          <div key={area.id} className="flex justify-between text-sm p-2 bg-white rounded">
+                            <span className="truncate mr-2">{area.name}</span>
+                            <span className="font-medium">
+                              {formatPrice(basePrice)} → {formatPrice(multipliedPrice)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span>Selected Areas:</span>
-                  <span className="font-medium">{formData.selectedAreas.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Ad Size:</span>
-                  <span className="font-medium">
-                    {formData.adSize ? adSizes.find(s => s.id === formData.adSize)?.label : 'Not selected'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Duration:</span>
-                  <span className="font-medium">
-                    {formData.duration ? durations.find(d => d.id === formData.duration)?.label : 'Not selected'}
-                  </span>
-                </div>
-                <div className="border-t pt-2 mt-4">
-                  <div className="flex justify-between text-xl font-bold text-community-navy">
-                    <span>Estimated Price:</span>
-                    <span>£{finalPrice.toFixed(2)}</span>
+              ) : (
+                <div className="space-y-2 text-gray-600">
+                  <p>Please select areas, ad size, and duration to see pricing.</p>
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg">
+                    <div>
+                      <p className="text-sm text-gray-500">Total Circulation</p>
+                      <p className="font-bold">-</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Selected Areas</p>
+                      <p className="font-bold">{formData.selectedAreas.length}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               
               <div className="mt-6 space-y-2">
                 <Button 
@@ -359,7 +324,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   Request Quote
                 </Button>
                 <p className="text-xs text-gray-500 text-center">
-                  * This is an estimated price. Final pricing may vary based on specific requirements.
+                  * This is an estimated price. Final pricing may vary based on specific requirements and current promotions.
                 </p>
               </div>
             </CardContent>
