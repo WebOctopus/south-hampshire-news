@@ -24,17 +24,104 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   });
 
   const areas = [
-    { id: 'area1', name: 'Area 1', description: 'SO15, SO16, SO17', homes: '13,500' },
-    { id: 'area2', name: 'Area 2', description: 'SO53, SO52', homes: '13,500' },
-    { id: 'area3', name: 'Area 3', description: 'SO50', homes: '10,500' },
-    { id: 'area4', name: 'Area 4', description: 'SO30', homes: '13,000' },
-    { id: 'area5', name: 'Area 5', description: 'SO31', homes: '13,000' },
-    { id: 'area6', name: 'Area 6', description: 'PO13, PO14, PO15', homes: '14,000' },
-    { id: 'area7', name: 'Area 7', description: 'SO32, PO17', homes: '14,000' },
-    { id: 'area8', name: 'Area 8', description: 'SO21, SO22, SO23', homes: '13,500' },
-    { id: 'area9', name: 'Area 9', description: 'SO51, SO20', homes: '15,000' },
-    { id: 'area10', name: 'Area 10', description: 'SO40, SO45', homes: '14,000' },
-    { id: 'area11', name: 'Area 11', description: 'SO41, SO42, SO43, BH24', homes: '13,500' }
+    { 
+      id: 'area1', 
+      name: 'SOUTHAMPTON SUBURBS', 
+      postcodes: 'SO15 SO16 SO17', 
+      townsVillages: 'Chilworth, Upper Shirley, Rownhams, Bassett, Highfield', 
+      circulation: 13500 
+    },
+    { 
+      id: 'area2', 
+      name: 'CHANDLER\'S FORD & NORTH BADDESLEY', 
+      postcodes: 'SO53 SO52', 
+      townsVillages: 'Chandler\'s Ford, North Baddesley', 
+      circulation: 13500 
+    },
+    { 
+      id: 'area3', 
+      name: 'EASTLEIGH & VILLAGES', 
+      postcodes: 'SO50', 
+      townsVillages: 'Fair Oak, Bishopstoke, Horton Heath, Allbrook, Boyatt Wood, Eastleigh', 
+      circulation: 10500 
+    },
+    { 
+      id: 'area4', 
+      name: 'HEDGE END & SURROUNDS', 
+      postcodes: 'SO30', 
+      townsVillages: 'Hedge End, West End, Botley', 
+      circulation: 13000 
+    },
+    { 
+      id: 'area5', 
+      name: 'LOCKS HEATH & SURROUNDS', 
+      postcodes: 'SO31', 
+      townsVillages: 'Locks Heath, Warsash, Swanwick, Bursledon, Hamble, Netley', 
+      circulation: 13000 
+    },
+    { 
+      id: 'area6', 
+      name: 'FAREHAM & SURROUNDS', 
+      postcodes: 'PO13 PO14 PO15', 
+      townsVillages: 'Fareham, Titchfield, Stubbington, Lee on Solent, Hill Head', 
+      circulation: 14000 
+    },
+    { 
+      id: 'area7', 
+      name: 'WICKHAM & BISHOP\'S WALTHAM', 
+      postcodes: 'SO32 PO17', 
+      townsVillages: 'Wickham, Bishop\'s Waltham', 
+      circulation: 14000 
+    },
+    { 
+      id: 'area8', 
+      name: 'WINCHESTER & VILLAGES', 
+      postcodes: 'SO21 SO22 SO23', 
+      townsVillages: 'Winchester, Otterbourne, Colden Common, Hursley, Crawley, South Wonston, Littleton, Sparsholt', 
+      circulation: 13500 
+    },
+    { 
+      id: 'area9', 
+      name: 'ROMSEY & TEST VALLEY', 
+      postcodes: 'SO51 SO20', 
+      townsVillages: 'Romsey, Stockbridge, The Wellows, Braishfield, Ampfield, Kings Somborne', 
+      circulation: 15000 
+    },
+    { 
+      id: 'area10', 
+      name: 'WATERSIDE & TOTTON', 
+      postcodes: 'SO40 SO45', 
+      townsVillages: 'Totton, Marchwood, Hythe, Dibden, Dibden Purlieu, Holbury, Blackfield', 
+      circulation: 14000 
+    },
+    { 
+      id: 'area11', 
+      name: 'NEW FOREST TO LYMINGTON', 
+      postcodes: 'SO41 SO42 SO43 BH24 4', 
+      townsVillages: 'Lymington, Brockenhurst, Lyndhurst, New Milton, Beaulieu', 
+      circulation: 13500 
+    },
+    { 
+      id: 'area12', 
+      name: 'MEON VALLEY*', 
+      postcodes: 'PO9 PO10 PO11 PO12', 
+      townsVillages: 'Havant, Waterlooville, Emsworth, Cosham, Drayton, Denmead', 
+      circulation: 15000 
+    },
+    { 
+      id: 'area13', 
+      name: 'PORTSMOUTH NORTH', 
+      postcodes: 'PO6 PO7 PO8', 
+      townsVillages: 'Cosham, Drayton, Farlington, Widley, Purbrook', 
+      circulation: 14500 
+    },
+    { 
+      id: 'area14', 
+      name: 'PORTSMOUTH SOUTH', 
+      postcodes: 'PO1 PO2 PO3 PO4 PO5', 
+      townsVillages: 'Portsmouth, Southsea, Eastney, Milton, Fratton', 
+      circulation: 16000 
+    }
   ];
 
   const adSizes = [
@@ -67,7 +154,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     const areasCount = formData.selectedAreas.length;
     const totalDistribution = formData.selectedAreas.reduce((total, areaId) => {
       const area = areas.find(a => a.id === areaId);
-      return total + (area ? parseInt(area.homes.replace(',', '')) : 0);
+      return total + (area ? area.circulation : 0);
     }, 0);
 
     let multiplier = 1;
@@ -146,20 +233,28 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
                 Select Distribution Areas
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {areas.map((area) => (
-                  <div key={area.id} className="flex items-start space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                  <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
                     <Checkbox
                       id={area.id}
                       checked={formData.selectedAreas.includes(area.id)}
                       onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                      className="mt-1"
                     />
-                    <div className="flex-1">
-                      <Label htmlFor={area.id} className="font-medium text-community-navy cursor-pointer">
+                    <div className="flex-1 min-w-0">
+                      <Label htmlFor={area.id} className="font-bold text-community-navy cursor-pointer block">
                         {area.name}
                       </Label>
-                      <p className="text-sm text-gray-600">{area.description}</p>
-                      <p className="text-sm text-community-green font-medium">{area.homes} homes</p>
+                      <p className="text-sm text-gray-700 font-medium mt-1">
+                        {area.postcodes}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {area.townsVillages}
+                      </p>
+                      <p className="text-sm text-community-green font-bold mt-2">
+                        Circulation: {area.circulation.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -224,12 +319,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               </h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span>Total Distribution:</span>
+                  <span>Total Circulation:</span>
                   <span className="font-medium">
                     {formData.selectedAreas.reduce((total, areaId) => {
                       const area = areas.find(a => a.id === areaId);
-                      return total + (area ? parseInt(area.homes.replace(',', '')) : 0);
-                    }, 0).toLocaleString()} homes
+                      return total + (area ? area.circulation : 0);
+                    }, 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
