@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { areas, adSizes, durations } from '@/data/advertisingPricing';
+import { areas, adSizes, durations, subscriptionDurations } from '@/data/advertisingPricing';
 import { calculateAdvertisingPrice, formatPrice, calculateCPM, getRecommendedDuration } from '@/lib/pricingCalculator';
 
 interface CostCalculatorProps {
@@ -40,11 +40,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     }));
   };
 
-  const pricingBreakdown = selectedPricingModel === 'fixed' ? calculateAdvertisingPrice(
+  const pricingBreakdown = calculateAdvertisingPrice(
     formData.selectedAreas,
     formData.adSize,
-    formData.duration
-  ) : null;
+    formData.duration,
+    selectedPricingModel === 'subscription'
+  );
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
 
@@ -192,12 +193,26 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                {adSizes.map((size) => (
+                {adSizes
+                  .filter(size => {
+                    // Show 1/6 Page and 1/8 Page only for subscription packages
+                    if (selectedPricingModel === 'subscription') {
+                      return true;
+                    } else {
+                      return !['sixth-page', 'eighth-page'].includes(size.id);
+                    }
+                  })
+                  .map((size) => (
                   <div key={size.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
                     <RadioGroupItem value={size.id} id={size.id} className="mt-1" />
                     <div className="flex-1">
                       <Label htmlFor={size.id} className="font-medium cursor-pointer block">
                         {size.label}
+                        {(['sixth-page', 'eighth-page'].includes(size.id)) && (
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            Subscription Only
+                          </Badge>
+                        )}
                       </Label>
                       {size.description && (
                         <p className="text-sm text-gray-600 mt-1">{size.description}</p>
@@ -208,7 +223,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       <p className="text-sm text-community-green font-bold mt-2">
                         From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
                           ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
-                          : 0)} per area
+                          : 0)} per {selectedPricingModel === 'subscription' ? 'issue' : 'area'}
                       </p>
                     </div>
                   </div>
@@ -264,19 +279,40 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             </Card>
           )}
 
-          {/* Subscription Packages */}
+          {/* Subscription Duration */}
           {selectedPricingModel === 'subscription' && (
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                  Subscription Packages
+                  Subscription Duration
                 </h3>
-                <div className="text-center py-8">
-                  <p className="text-gray-600 mb-4">Subscription packages are coming soon!</p>
-                  <p className="text-sm text-gray-500">
-                    We're working on exciting subscription plans that will offer better rates and additional benefits.
-                  </p>
-                </div>
+                <RadioGroup
+                  value={formData.duration}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                >
+                  {subscriptionDurations.map((duration) => (
+                    <div key={duration.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={duration.id} className="font-medium cursor-pointer">
+                            {duration.label}
+                          </Label>
+                          <Badge variant="default" className="text-xs bg-community-green">
+                            Subscription
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {duration.months} months • Pay per issue
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Better rates with longer commitments
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </RadioGroup>
               </CardContent>
             </Card>
           )}
@@ -305,9 +341,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       <p className="font-bold text-community-navy">{formData.selectedAreas.length}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Campaign Duration</p>
+                      <p className="text-sm text-gray-600">{selectedPricingModel === 'subscription' ? 'Subscription' : 'Campaign'} Duration</p>
                       <p className="font-bold text-community-navy">
-                        {durations.find(d => d.id === formData.duration)?.label || 'Not selected'}
+                        {selectedPricingModel === 'subscription' 
+                          ? subscriptionDurations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                          : durations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                        }
                       </p>
                     </div>
                   </div>
@@ -329,8 +368,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     )}
                     
                     <div className="flex justify-between">
-                      <span>Duration Multiplier</span>
-                      <span className="font-medium">×{pricingBreakdown.durationMultiplier}</span>
+                      <span>{selectedPricingModel === 'subscription' ? 'Total Issues' : 'Duration Multiplier'}</span>
+                      <span className="font-medium">
+                        {selectedPricingModel === 'subscription' ? `${pricingBreakdown.durationMultiplier} issues` : `×${pricingBreakdown.durationMultiplier}`}
+                      </span>
                     </div>
                     
                     <Separator />
@@ -396,7 +437,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     !formData.emailAddress || 
                     !formData.selectedAreas.length || 
                     !formData.adSize || 
-                    (selectedPricingModel === 'fixed' && !formData.duration)
+                    !formData.duration
                   }
                 >
                   {selectedPricingModel === 'subscription' ? 'Get Subscription Quote' : 'Request Quote'}

@@ -1,4 +1,4 @@
-import { areas, adSizes, durations, volumeDiscounts, type Area, type AdSize, type Duration } from '@/data/advertisingPricing';
+import { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, type Area, type AdSize, type Duration } from '@/data/advertisingPricing';
 
 export interface PricingBreakdown {
   subtotal: number;
@@ -16,12 +16,13 @@ export interface PricingBreakdown {
 }
 
 /**
- * Calculate comprehensive advertising pricing based on Excel structure for 1-3 issues fixed booking
+ * Calculate comprehensive advertising pricing for both fixed and subscription packages
  */
 export function calculateAdvertisingPrice(
   selectedAreaIds: string[],
   adSizeId: string,
-  durationId: string
+  durationId: string,
+  isSubscription: boolean = false
 ): PricingBreakdown | null {
   // Validate inputs
   if (!selectedAreaIds.length || !adSizeId || !durationId) {
@@ -30,34 +31,47 @@ export function calculateAdvertisingPrice(
 
   const selectedAreas = areas.filter(area => selectedAreaIds.includes(area.id));
   const selectedAdSize = adSizes.find(size => size.id === adSizeId);
-  const selectedDuration = durations.find(duration => duration.id === durationId);
+  const allDurations = isSubscription ? subscriptionDurations : durations;
+  const selectedDuration = allDurations.find(duration => duration.id === durationId);
 
   if (!selectedAdSize || !selectedDuration || !selectedAreas.length) {
     return null;
   }
 
-  // Calculate pricing based on total number of areas selected (cumulative pricing)
+  // Calculate pricing based on model type
   const areasCount = selectedAreas.length;
-  
-  // Use the perMonth pricing array as cumulative pricing for area counts
-  // Index 0 = 1 area, Index 1 = 2 areas, etc.
-  const cumulativePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
+  let subtotal: number;
+  let areaBreakdown: Array<{area: Area; adSize: AdSize; basePrice: number; multipliedPrice: number;}>;
 
-  // Create area breakdown for display purposes - distribute the cumulative price evenly
-  const pricePerArea = cumulativePrice / areasCount;
-  const areaBreakdown = selectedAreas.map((area) => {
-    return {
+  if (isSubscription) {
+    // For subscription: use per-issue pricing from Excel data
+    const perIssuePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
+    subtotal = perIssuePrice;
+    
+    // Create area breakdown - distribute per-issue price evenly
+    const pricePerArea = perIssuePrice / areasCount;
+    areaBreakdown = selectedAreas.map((area) => ({
       area,
       adSize: selectedAdSize,
       basePrice: pricePerArea,
       multipliedPrice: pricePerArea
-    };
-  });
+    }));
+  } else {
+    // For fixed pricing: use cumulative pricing model  
+    const cumulativePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
+    subtotal = cumulativePrice;
+    
+    // Create area breakdown - distribute cumulative price evenly
+    const pricePerArea = cumulativePrice / areasCount;
+    areaBreakdown = selectedAreas.map((area) => ({
+      area,
+      adSize: selectedAdSize,
+      basePrice: pricePerArea,
+      multipliedPrice: pricePerArea
+    }));
+  }
 
-  // Subtotal is the cumulative price for the selected number of areas
-  const subtotal = cumulativePrice;
-
-  // Apply duration multiplier (1, 2, or 3 issues) - no volume discount for this payment type
+  // Apply duration multiplier
   const finalTotal = subtotal * selectedDuration.discountMultiplier;
 
   // Calculate total circulation

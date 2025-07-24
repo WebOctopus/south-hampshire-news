@@ -327,6 +327,30 @@ export const adSizes: AdSize[] = [
       // Per area pricing for areas 1-14 from Excel
       perArea: [112, 108, 104, 102, 100, 96, 94, 92, 90, 90, 88, 88, 88, 88]
     }
+  },
+  { 
+    id: 'sixth-page', 
+    label: '1/6 Page', 
+    description: '64 x 60.66',
+    dimensions: '64 x 60.66',
+    areaPricing: {
+      // Per Issue pricing for areas 1-14 from subscription Excel data
+      perMonth: [73, 128, 181, 232, 281, 325, 362, 398, 435, 471, 508, 545, 581, 618],
+      // Per area pricing for areas 1-14 from Excel
+      perArea: [73, 64, 60, 58, 56, 54, 52, 50, 48, 48, 46, 46, 46, 46]
+    }
+  },
+  { 
+    id: 'eighth-page', 
+    label: '1/8 Page', 
+    description: '64 x 45.5',
+    dimensions: '64 x 45.5',
+    areaPricing: {
+      // Per Issue pricing for areas 1-14 from subscription Excel data
+      perMonth: [54, 95, 134, 172, 209, 242, 269, 296, 324, 351, 378, 405, 432, 460],
+      // Per area pricing for areas 1-14 from Excel
+      perArea: [54, 48, 44, 43, 41, 40, 38, 37, 35, 35, 34, 33, 33, 32]
+    }
   }
 ];
 
@@ -349,6 +373,24 @@ export const durations: Duration[] = [
     label: '3 Issues', 
     months: 3, 
     discountMultiplier: 3.0
+  }
+];
+
+// Subscription duration options
+export const subscriptionDurations: Duration[] = [
+  { 
+    id: '6-months', 
+    label: '6 Months', 
+    months: 6, 
+    discountMultiplier: 6.0,
+    isSubscription: true
+  },
+  { 
+    id: '12-months', 
+    label: '12 Months', 
+    months: 12, 
+    discountMultiplier: 12.0,
+    isSubscription: true
   }
 ];
 
