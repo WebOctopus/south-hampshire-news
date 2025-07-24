@@ -167,7 +167,9 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
                       )}
                       <p className="text-sm text-community-green font-bold mt-2">
-                        From {formatPrice(Math.min(...size.areaPricing.perArea))} per area
+                        From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
+                          ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
+                          : 0)} per area
                       </p>
                     </div>
                   </div>

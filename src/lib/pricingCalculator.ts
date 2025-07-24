@@ -93,7 +93,10 @@ function getVolumeDiscount(areasCount: number): number {
 /**
  * Format price for display
  */
-export function formatPrice(price: number): string {
+export function formatPrice(price: number | undefined): string {
+  if (price === undefined || price === null || isNaN(price)) {
+    return '£0.00';
+  }
   return `£${price.toFixed(2)}`;
 }
 
