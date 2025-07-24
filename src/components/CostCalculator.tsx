@@ -144,42 +144,6 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             </CardContent>
           </Card>
 
-          {/* Select Advertisement Size */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                Select Advertisement Size
-              </h3>
-              <RadioGroup
-                value={formData.adSize}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              >
-                {adSizes.map((size) => (
-                  <div key={size.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value={size.id} id={size.id} className="mt-1" />
-                    <div className="flex-1">
-                      <Label htmlFor={size.id} className="font-medium cursor-pointer block">
-                        {size.label}
-                      </Label>
-                      {size.description && (
-                        <p className="text-sm text-gray-600 mt-1">{size.description}</p>
-                      )}
-                      {size.dimensions && (
-                        <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
-                      )}
-                      <p className="text-sm text-community-green font-bold mt-2">
-                        From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
-                          ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
-                          : 0)} per area
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-
           {/* Select Payment Structure */}
           <Card>
             <CardContent className="p-6">
@@ -213,6 +177,42 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     </p>
                   </div>
                 </div>
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Select Advertisement Size */}
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                Select Advertisement Size
+              </h3>
+              <RadioGroup
+                value={formData.adSize}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+              >
+                {adSizes.map((size) => (
+                  <div key={size.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value={size.id} id={size.id} className="mt-1" />
+                    <div className="flex-1">
+                      <Label htmlFor={size.id} className="font-medium cursor-pointer block">
+                        {size.label}
+                      </Label>
+                      {size.description && (
+                        <p className="text-sm text-gray-600 mt-1">{size.description}</p>
+                      )}
+                      {size.dimensions && (
+                        <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
+                      )}
+                      <p className="text-sm text-community-green font-bold mt-2">
+                        From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
+                          ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
+                          : 0)} per area
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </RadioGroup>
             </CardContent>
           </Card>
