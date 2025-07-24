@@ -16,8 +16,12 @@ export interface AdSize {
   id: string;
   label: string;
   description?: string;
-  basePrice: number; // Base price per area
-  dimensions?: string;
+  dimensions: string;
+  // Area-specific pricing for 1-3 issues (columns 1-14 from Excel)
+  areaPricing: {
+    perMonth: number[];
+    perArea: number[];
+  };
 }
 
 export interface Duration {
@@ -262,98 +266,89 @@ export const areas: Area[] = [
   }
 ];
 
-// Extended ad sizes based on real pricing structure
+// Ad sizes based on Excel pricing structure (1-3 issues fixed booking)
 export const adSizes: AdSize[] = [
   { 
-    id: 'business-card', 
-    label: 'Business Card', 
-    description: '90mm x 55mm',
-    basePrice: 85,
-    dimensions: '90mm x 55mm'
+    id: 'full-page', 
+    label: 'Full Page', 
+    description: '132 x 190',
+    dimensions: '132 x 190',
+    areaPricing: {
+      // Per month pricing for areas 1-14 from Excel
+      perMonth: [149, 291, 429, 564, 695, 823, 948, 1070, 1192, 1310, 1427, 1544, 1661, 1775],
+      // Per area pricing for areas 1-14 from Excel  
+      perArea: [298, 234, 276, 270, 262, 256, 250, 244, 240, 236, 234, 234, 234, 234]
+    }
   },
   { 
-    id: 'eighth-page', 
-    label: '1/8 Page', 
-    description: 'Quarter column',
-    basePrice: 165,
-    dimensions: '90mm x 130mm'
-  },
-  { 
-    id: 'quarter-page', 
-    label: '1/4 Page', 
-    description: 'Half column',
-    basePrice: 285,
-    dimensions: '186mm x 130mm'
+    id: 'two-thirds-page', 
+    label: '2/3 Page', 
+    description: '132 x 125.33',
+    dimensions: '132 x 125.33',
+    areaPricing: {
+      // Per month pricing for areas 1-14 from Excel
+      perMonth: [113, 220, 325, 428, 528, 625, 720, 813, 906, 996, 1085, 1174, 1263, 1350],
+      // Per area pricing for areas 1-14 from Excel
+      perArea: [226, 214, 210, 206, 200, 194, 190, 186, 182, 180, 178, 178, 178, 178]
+    }
   },
   { 
     id: 'half-page', 
     label: '1/2 Page', 
-    description: 'Full column or half page horizontal',
-    basePrice: 525,
-    dimensions: '186mm x 265mm or 380mm x 130mm'
+    description: '132 x 93',
+    dimensions: '132 x 93',
+    areaPricing: {
+      // Per month pricing for areas 1-14 from Excel
+      perMonth: [96, 176, 259, 341, 420, 497, 572, 646, 720, 792, 863, 934, 1005, 1075],
+      // Per area pricing for areas 1-14 from Excel
+      perArea: [180, 172, 166, 164, 158, 154, 150, 148, 146, 144, 142, 142, 142, 142]
+    }
   },
   { 
-    id: 'full-page', 
-    label: 'Full Page', 
-    description: 'Full page',
-    basePrice: 985,
-    dimensions: '380mm x 265mm'
+    id: 'one-third-page', 
+    label: '1/3 Page', 
+    description: '132 x 60.66',
+    dimensions: '132 x 60.66',
+    areaPricing: {
+      // Per month pricing for areas 1-14 from Excel
+      perMonth: [87, 170, 251, 330, 407, 482, 555, 626, 697, 766, 834, 902, 970, 1037],
+      // Per area pricing for areas 1-14 from Excel
+      perArea: [174, 166, 162, 158, 154, 150, 146, 142, 140, 138, 136, 136, 136, 136]
+    }
   },
   { 
-    id: 'double-page', 
-    label: 'Double Page Spread', 
-    description: 'Center spread',
-    basePrice: 1850,
-    dimensions: '760mm x 265mm'
-  },
-  { 
-    id: 'loose-insert', 
-    label: 'Loose Insert', 
-    description: 'A4/A5 loose insert',
-    basePrice: 425,
-    dimensions: 'A4 or A5'
+    id: 'quarter-page', 
+    label: '1/4 Page', 
+    description: '64 x 93',
+    dimensions: '64 x 93',
+    areaPricing: {
+      // Per month pricing for areas 1-14 from Excel
+      perMonth: [56, 110, 162, 213, 263, 311, 358, 404, 449, 494, 538, 582, 626, 670],
+      // Per area pricing for areas 1-14 from Excel
+      perArea: [112, 108, 104, 102, 100, 96, 94, 92, 90, 90, 88, 88, 88, 88]
+    }
   }
 ];
 
-// Extended duration options with proper discount multipliers
+// Duration options for 1,2 or 3 issues - fixed booking
 export const durations: Duration[] = [
   { 
-    id: '1-month', 
-    label: '1 Month', 
+    id: '1-issue', 
+    label: '1 Issue', 
     months: 1, 
     discountMultiplier: 1.0 
   },
   { 
-    id: '3-months', 
-    label: '3 Months', 
+    id: '2-issues', 
+    label: '2 Issues', 
+    months: 2, 
+    discountMultiplier: 2.0
+  },
+  { 
+    id: '3-issues', 
+    label: '3 Issues', 
     months: 3, 
-    discountMultiplier: 2.7 // 10% discount
-  },
-  { 
-    id: '6-months', 
-    label: '6 Months', 
-    months: 6, 
-    discountMultiplier: 5.1 // 15% discount
-  },
-  { 
-    id: '12-months', 
-    label: '12 Months', 
-    months: 12, 
-    discountMultiplier: 9.6 // 20% discount
-  },
-  { 
-    id: 'subscription-quarterly', 
-    label: 'Subscription (Quarterly)', 
-    months: 3, 
-    discountMultiplier: 2.4, // 20% subscription discount
-    isSubscription: true
-  },
-  { 
-    id: 'subscription-annually', 
-    label: 'Subscription (Annual)', 
-    months: 12, 
-    discountMultiplier: 8.4, // 30% subscription discount
-    isSubscription: true
+    discountMultiplier: 3.0
   }
 ];
 

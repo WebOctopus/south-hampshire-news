@@ -16,7 +16,7 @@ export interface PricingBreakdown {
 }
 
 /**
- * Calculate comprehensive advertising pricing with all discounts and multipliers
+ * Calculate comprehensive advertising pricing based on Excel structure for 1-3 issues fixed booking
  */
 export function calculateAdvertisingPrice(
   selectedAreaIds: string[],
@@ -36,11 +36,16 @@ export function calculateAdvertisingPrice(
     return null;
   }
 
-  // Calculate area-specific pricing
-  const areaBreakdown = selectedAreas.map(area => {
-    const basePrice = selectedAdSize.basePrice;
-    const multiplier = area.pricingMultipliers[adSizeId] || 1.0;
-    const multipliedPrice = basePrice * multiplier;
+  // Calculate area-specific pricing using Excel structure
+  const areaBreakdown = selectedAreas.map((area, index) => {
+    // Get area index (0-13 for areas 1-14)
+    const areaIndex = parseInt(area.id.replace('area', '')) - 1;
+    
+    // Use per-area pricing from Excel for base calculation
+    const basePrice = selectedAdSize.areaPricing.perArea[areaIndex] || selectedAdSize.areaPricing.perArea[0];
+    
+    // For 1-3 issues, we use the per-area pricing directly
+    const multipliedPrice = basePrice;
 
     return {
       area,
@@ -58,7 +63,7 @@ export function calculateAdvertisingPrice(
   const volumeDiscountAmount = subtotal * (volumeDiscount / 100);
   const subtotalAfterVolumeDiscount = subtotal - volumeDiscountAmount;
 
-  // Apply duration multiplier
+  // Apply duration multiplier (1, 2, or 3 issues)
   const finalTotal = subtotalAfterVolumeDiscount * selectedDuration.discountMultiplier;
 
   // Calculate total circulation
@@ -101,15 +106,15 @@ export function calculateCPM(totalPrice: number, totalCirculation: number): numb
 }
 
 /**
- * Get recommended duration based on business goals
+ * Get recommended duration based on business goals - simplified for 1-3 issues
  */
 export function getRecommendedDuration(areasCount: number): string[] {
   if (areasCount >= 10) {
-    return ['12-months', 'subscription-annually'];
+    return ['3-issues'];
   } else if (areasCount >= 6) {
-    return ['6-months', 'subscription-quarterly'];
+    return ['2-issues', '3-issues'];
   } else if (areasCount >= 3) {
-    return ['3-months', '6-months'];
+    return ['2-issues'];
   }
-  return ['1-month', '3-months'];
+  return ['1-issue', '2-issues'];
 }
