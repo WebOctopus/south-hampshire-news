@@ -38,7 +38,7 @@ export interface PricingTier {
 export const areas: Area[] = [
   { 
     id: 'area1', 
-    name: 'SOUTHAMPTON SUBURBS', 
+    name: 'SOUTHAMPTON CITY', 
     postcodes: 'SO15 SO16 SO17', 
     townsVillages: 'Chilworth, Upper Shirley, Rownhams, Bassett, Highfield', 
     circulation: 10000,
@@ -54,7 +54,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area2', 
-    name: 'CHANDLER\'S FORD & NORTH BADDESLEY', 
+    name: 'CHANDLER\'S FORD', 
     postcodes: 'SO53 SO52', 
     townsVillages: 'Chandler\'s Ford, North Baddesley', 
     circulation: 11300,
@@ -86,7 +86,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area4', 
-    name: 'HEDGE END & SURROUNDS', 
+    name: 'HEDGE END & BOTLEY', 
     postcodes: 'SO30', 
     townsVillages: 'Hedge End, West End, Botley', 
     circulation: 9400,
@@ -102,7 +102,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area5', 
-    name: 'LOCKS HEATH & SURROUNDS', 
+    name: 'LOCKS HEATH & VILLAGES', 
     postcodes: 'SO31', 
     townsVillages: 'Locks Heath, Warsash, Swanwick, Bursledon, Hamble, Netley', 
     circulation: 12000,
@@ -118,7 +118,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area6', 
-    name: 'FAREHAM & SURROUNDS', 
+    name: 'FAREHAM & VILLAGES', 
     postcodes: 'PO13 PO14 PO15', 
     townsVillages: 'Fareham, Titchfield, Stubbington, Lee on Solent, Hill Head', 
     circulation: 12100,
@@ -134,10 +134,10 @@ export const areas: Area[] = [
   },
   { 
     id: 'area7', 
-    name: 'WICKHAM & BISHOP\'S WALTHAM', 
+    name: 'MEON VALLEY', 
     postcodes: 'SO32 PO17', 
     townsVillages: 'Wickham, Bishop\'s Waltham', 
-    circulation: 14000,
+    circulation: 12400,
     pricingMultipliers: {
       'eighth-page': 1.05,
       'quarter-page': 1.05,
@@ -166,7 +166,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area9', 
-    name: 'ROMSEY & TEST VALLEY', 
+    name: 'ROMSEY & N BADDESLEY', 
     postcodes: 'SO51 SO20', 
     townsVillages: 'Romsey, Stockbridge, The Wellows, Braishfield, Ampfield, Kings Somborne', 
     circulation: 8600,
@@ -182,7 +182,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area10', 
-    name: 'WATERSIDE & TOTTON', 
+    name: 'TOTTON', 
     postcodes: 'SO40 SO45', 
     townsVillages: 'Totton, Marchwood, Hythe, Dibden, Dibden Purlieu, Holbury, Blackfield', 
     circulation: 7000,
@@ -198,7 +198,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area11', 
-    name: 'NEW FOREST TO LYMINGTON', 
+    name: 'NEW FOREST & WATERSIDE', 
     postcodes: 'SO41 SO42 SO43 BH24 4', 
     townsVillages: 'Lymington, Brockenhurst, Lyndhurst, New Milton, Beaulieu', 
     circulation: 10640,
@@ -214,10 +214,10 @@ export const areas: Area[] = [
   },
   { 
     id: 'area12', 
-    name: 'MEON VALLEY*', 
+    name: 'SHOLING, PEARTREE, ITCHEN, WOOLSTON', 
     postcodes: 'PO9 PO10 PO11 PO12', 
     townsVillages: 'Havant, Waterlooville, Emsworth, Cosham, Drayton, Denmead', 
-    circulation: 12400,
+    circulation: 7000,
     pricingMultipliers: {
       'eighth-page': 1.15,
       'quarter-page': 1.15,
@@ -230,7 +230,7 @@ export const areas: Area[] = [
   },
   { 
     id: 'area13', 
-    name: 'PORTSMOUTH NORTH', 
+    name: 'SOUTHAMPTON EAST', 
     postcodes: 'PO6 PO7 PO8', 
     townsVillages: 'Cosham, Drayton, Farlington, Widley, Purbrook', 
     circulation: 9200,
@@ -246,10 +246,10 @@ export const areas: Area[] = [
   },
   { 
     id: 'area14', 
-    name: 'PORTSMOUTH SOUTH', 
+    name: 'TEST VALLEY & STOCKBRIDGE', 
     postcodes: 'PO1 PO2 PO3 PO4 PO5', 
     townsVillages: 'Portsmouth, Southsea, Eastney, Milton, Fratton', 
-    circulation: 7000,
+    circulation: 8000,
     pricingMultipliers: {
       'eighth-page': 1.2,
       'quarter-page': 1.2,
