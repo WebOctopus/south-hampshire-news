@@ -36,27 +36,26 @@ export function calculateAdvertisingPrice(
     return null;
   }
 
-  // Calculate area-specific pricing using Excel structure
-  const areaBreakdown = selectedAreas.map((area, index) => {
-    // Get area index (0-13 for areas 1-14)
-    const areaIndex = parseInt(area.id.replace('area', '')) - 1;
-    
-    // Use per-area pricing from Excel for base calculation
-    const basePrice = selectedAdSize.areaPricing.perArea[areaIndex] || selectedAdSize.areaPricing.perArea[0];
-    
-    // For 1-3 issues, we use the per-area pricing directly
-    const multipliedPrice = basePrice;
+  // Calculate pricing based on total number of areas selected (cumulative pricing)
+  const areasCount = selectedAreas.length;
+  
+  // Use the perMonth pricing array as cumulative pricing for area counts
+  // Index 0 = 1 area, Index 1 = 2 areas, etc.
+  const cumulativePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
 
+  // Create area breakdown for display purposes - distribute the cumulative price evenly
+  const pricePerArea = cumulativePrice / areasCount;
+  const areaBreakdown = selectedAreas.map((area) => {
     return {
       area,
       adSize: selectedAdSize,
-      basePrice,
-      multipliedPrice
+      basePrice: pricePerArea,
+      multipliedPrice: pricePerArea
     };
   });
 
-  // Calculate subtotal before any discounts
-  const subtotal = areaBreakdown.reduce((sum, item) => sum + item.multipliedPrice, 0);
+  // Subtotal is the cumulative price for the selected number of areas
+  const subtotal = cumulativePrice;
 
   // Apply duration multiplier (1, 2, or 3 issues) - no volume discount for this payment type
   const finalTotal = subtotal * selectedDuration.discountMultiplier;
