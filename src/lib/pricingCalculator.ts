@@ -58,21 +58,16 @@ export function calculateAdvertisingPrice(
   // Calculate subtotal before any discounts
   const subtotal = areaBreakdown.reduce((sum, item) => sum + item.multipliedPrice, 0);
 
-  // Apply volume discount based on number of areas
-  const volumeDiscount = getVolumeDiscount(selectedAreas.length);
-  const volumeDiscountAmount = subtotal * (volumeDiscount / 100);
-  const subtotalAfterVolumeDiscount = subtotal - volumeDiscountAmount;
-
-  // Apply duration multiplier (1, 2, or 3 issues)
-  const finalTotal = subtotalAfterVolumeDiscount * selectedDuration.discountMultiplier;
+  // Apply duration multiplier (1, 2, or 3 issues) - no volume discount for this payment type
+  const finalTotal = subtotal * selectedDuration.discountMultiplier;
 
   // Calculate total circulation
   const totalCirculation = selectedAreas.reduce((sum, area) => sum + area.circulation, 0);
 
   return {
     subtotal,
-    volumeDiscount: volumeDiscountAmount,
-    volumeDiscountPercent: volumeDiscount,
+    volumeDiscount: 0,
+    volumeDiscountPercent: 0,
     durationMultiplier: selectedDuration.discountMultiplier,
     finalTotal,
     totalCirculation,
