@@ -41,7 +41,7 @@ export const areas: Area[] = [
     name: 'SOUTHAMPTON SUBURBS', 
     postcodes: 'SO15 SO16 SO17', 
     townsVillages: 'Chilworth, Upper Shirley, Rownhams, Bassett, Highfield', 
-    circulation: 13500,
+    circulation: 10000,
     pricingMultipliers: {
       'eighth-page': 1.0,
       'quarter-page': 1.0,
@@ -57,7 +57,7 @@ export const areas: Area[] = [
     name: 'CHANDLER\'S FORD & NORTH BADDESLEY', 
     postcodes: 'SO53 SO52', 
     townsVillages: 'Chandler\'s Ford, North Baddesley', 
-    circulation: 13500,
+    circulation: 11300,
     pricingMultipliers: {
       'eighth-page': 1.0,
       'quarter-page': 1.0,
@@ -73,7 +73,7 @@ export const areas: Area[] = [
     name: 'EASTLEIGH & VILLAGES', 
     postcodes: 'SO50', 
     townsVillages: 'Fair Oak, Bishopstoke, Horton Heath, Allbrook, Boyatt Wood, Eastleigh', 
-    circulation: 10500,
+    circulation: 12500,
     pricingMultipliers: {
       'eighth-page': 0.85,
       'quarter-page': 0.85,
@@ -89,7 +89,7 @@ export const areas: Area[] = [
     name: 'HEDGE END & SURROUNDS', 
     postcodes: 'SO30', 
     townsVillages: 'Hedge End, West End, Botley', 
-    circulation: 13000,
+    circulation: 9400,
     pricingMultipliers: {
       'eighth-page': 0.95,
       'quarter-page': 0.95,
@@ -105,7 +105,7 @@ export const areas: Area[] = [
     name: 'LOCKS HEATH & SURROUNDS', 
     postcodes: 'SO31', 
     townsVillages: 'Locks Heath, Warsash, Swanwick, Bursledon, Hamble, Netley', 
-    circulation: 13000,
+    circulation: 12000,
     pricingMultipliers: {
       'eighth-page': 0.95,
       'quarter-page': 0.95,
@@ -121,7 +121,7 @@ export const areas: Area[] = [
     name: 'FAREHAM & SURROUNDS', 
     postcodes: 'PO13 PO14 PO15', 
     townsVillages: 'Fareham, Titchfield, Stubbington, Lee on Solent, Hill Head', 
-    circulation: 14000,
+    circulation: 12100,
     pricingMultipliers: {
       'eighth-page': 1.05,
       'quarter-page': 1.05,
@@ -153,7 +153,7 @@ export const areas: Area[] = [
     name: 'WINCHESTER & VILLAGES', 
     postcodes: 'SO21 SO22 SO23', 
     townsVillages: 'Winchester, Otterbourne, Colden Common, Hursley, Crawley, South Wonston, Littleton, Sparsholt', 
-    circulation: 13500,
+    circulation: 12000,
     pricingMultipliers: {
       'eighth-page': 1.0,
       'quarter-page': 1.0,
@@ -169,7 +169,7 @@ export const areas: Area[] = [
     name: 'ROMSEY & TEST VALLEY', 
     postcodes: 'SO51 SO20', 
     townsVillages: 'Romsey, Stockbridge, The Wellows, Braishfield, Ampfield, Kings Somborne', 
-    circulation: 15000,
+    circulation: 8600,
     pricingMultipliers: {
       'eighth-page': 1.15,
       'quarter-page': 1.15,
@@ -185,7 +185,7 @@ export const areas: Area[] = [
     name: 'WATERSIDE & TOTTON', 
     postcodes: 'SO40 SO45', 
     townsVillages: 'Totton, Marchwood, Hythe, Dibden, Dibden Purlieu, Holbury, Blackfield', 
-    circulation: 14000,
+    circulation: 7000,
     pricingMultipliers: {
       'eighth-page': 1.05,
       'quarter-page': 1.05,
@@ -201,7 +201,7 @@ export const areas: Area[] = [
     name: 'NEW FOREST TO LYMINGTON', 
     postcodes: 'SO41 SO42 SO43 BH24 4', 
     townsVillages: 'Lymington, Brockenhurst, Lyndhurst, New Milton, Beaulieu', 
-    circulation: 13500,
+    circulation: 10640,
     pricingMultipliers: {
       'eighth-page': 1.0,
       'quarter-page': 1.0,
@@ -217,7 +217,7 @@ export const areas: Area[] = [
     name: 'MEON VALLEY*', 
     postcodes: 'PO9 PO10 PO11 PO12', 
     townsVillages: 'Havant, Waterlooville, Emsworth, Cosham, Drayton, Denmead', 
-    circulation: 15000,
+    circulation: 12400,
     pricingMultipliers: {
       'eighth-page': 1.15,
       'quarter-page': 1.15,
@@ -233,7 +233,7 @@ export const areas: Area[] = [
     name: 'PORTSMOUTH NORTH', 
     postcodes: 'PO6 PO7 PO8', 
     townsVillages: 'Cosham, Drayton, Farlington, Widley, Purbrook', 
-    circulation: 14500,
+    circulation: 9200,
     pricingMultipliers: {
       'eighth-page': 1.1,
       'quarter-page': 1.1,
@@ -249,7 +249,7 @@ export const areas: Area[] = [
     name: 'PORTSMOUTH SOUTH', 
     postcodes: 'PO1 PO2 PO3 PO4 PO5', 
     townsVillages: 'Portsmouth, Southsea, Eastney, Milton, Fratton', 
-    circulation: 16000,
+    circulation: 7000,
     pricingMultipliers: {
       'eighth-page': 1.2,
       'quarter-page': 1.2,
