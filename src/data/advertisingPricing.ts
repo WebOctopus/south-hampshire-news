@@ -311,7 +311,7 @@ export const adSizes: AdSize[] = [
     dimensions: '132 x 60.66',
     areaPricing: {
       // Per month pricing for areas 1-14 from Excel
-      perMonth: [87, 170, 251, 330, 407, 482, 555, 626, 697, 766, 834, 902, 970, 1037],
+      perMonth: [174, 331, 484, 632, 767, 898, 1020, 1141, 1263, 1385, 1507, 1629, 1750, 1872],
       // Per area pricing for areas 1-14 from Excel
       perArea: [174, 166, 162, 158, 154, 150, 146, 142, 140, 138, 136, 136, 136, 136]
     }
