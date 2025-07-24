@@ -27,6 +27,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     duration: ''
   });
 
+  const [selectedPricingModel, setSelectedPricingModel] = useState<string>('fixed');
+
 
 
   const handleAreaChange = (areaId: string, checked: boolean) => {
@@ -38,11 +40,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     }));
   };
 
-  const pricingBreakdown = calculateAdvertisingPrice(
+  const pricingBreakdown = selectedPricingModel === 'fixed' ? calculateAdvertisingPrice(
     formData.selectedAreas,
     formData.adSize,
     formData.duration
-  );
+  ) : null;
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
 
@@ -178,50 +180,106 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             </CardContent>
           </Card>
 
-          {/* Campaign Duration */}
+          {/* Select Payment Structure */}
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                Campaign Duration
+                Select Payment Structure
               </h3>
               <RadioGroup
-                value={formData.duration}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                value={selectedPricingModel}
+                onValueChange={setSelectedPricingModel}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                {durations.map((duration) => (
-                  <div key={duration.id} className={`flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 ${
-                    recommendedDurations.includes(duration.id) ? 'border-community-green border-2' : ''
-                  }`}>
-                    <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={duration.id} className="font-medium cursor-pointer">
-                          {duration.label}
-                        </Label>
-                        {recommendedDurations.includes(duration.id) && (
-                          <Badge variant="default" className="text-xs bg-community-green">
-                            Recommended
-                          </Badge>
-                        )}
-                        {duration.isSubscription && (
-                          <Badge variant="outline" className="text-xs">
-                            Subscription
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {duration.months} month{duration.months > 1 ? 's' : ''}
-                        {duration.discountMultiplier < duration.months && 
-                          ` • ${Math.round((1 - duration.discountMultiplier / duration.months) * 100)}% discount`
-                        }
-                      </p>
-                    </div>
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                  <RadioGroupItem value="fixed" id="fixed" className="mt-1" />
+                  <div className="flex-1">
+                    <Label htmlFor="fixed" className="font-medium cursor-pointer block">
+                      Fixed No Contract Price
+                    </Label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Pay as you go with no long-term commitment. Flexible pricing based on your selections.
+                    </p>
                   </div>
-                ))}
+                </div>
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                  <RadioGroupItem value="subscription" id="subscription" className="mt-1" />
+                  <div className="flex-1">
+                    <Label htmlFor="subscription" className="font-medium cursor-pointer block">
+                      Subscription Packages
+                    </Label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Monthly subscription plans with better rates and additional benefits.
+                    </p>
+                  </div>
+                </div>
               </RadioGroup>
             </CardContent>
           </Card>
+
+          {/* Campaign Duration */}
+          {selectedPricingModel === 'fixed' && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  Campaign Duration
+                </h3>
+                <RadioGroup
+                  value={formData.duration}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                  {durations.map((duration) => (
+                    <div key={duration.id} className={`flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 ${
+                      recommendedDurations.includes(duration.id) ? 'border-community-green border-2' : ''
+                    }`}>
+                      <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={duration.id} className="font-medium cursor-pointer">
+                            {duration.label}
+                          </Label>
+                          {recommendedDurations.includes(duration.id) && (
+                            <Badge variant="default" className="text-xs bg-community-green">
+                              Recommended
+                            </Badge>
+                          )}
+                          {duration.isSubscription && (
+                            <Badge variant="outline" className="text-xs">
+                              Subscription
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {duration.months} month{duration.months > 1 ? 's' : ''}
+                          {duration.discountMultiplier < duration.months && 
+                            ` • ${Math.round((1 - duration.discountMultiplier / duration.months) * 100)}% discount`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Subscription Packages */}
+          {selectedPricingModel === 'subscription' && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  Subscription Packages
+                </h3>
+                <div className="text-center py-8">
+                  <p className="text-gray-600 mb-4">Subscription packages are coming soon!</p>
+                  <p className="text-sm text-gray-500">
+                    We're working on exciting subscription plans that will offer better rates and additional benefits.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Summary */}
           <Card className="bg-gray-50">
@@ -304,11 +362,23 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 </div>
               ) : (
                 <div className="space-y-2 text-gray-600">
-                  <p>Please select areas, ad size, and duration to see pricing.</p>
+                  <p>
+                    {selectedPricingModel === 'subscription' 
+                      ? 'Please select areas and ad size to get a subscription quote.'
+                      : 'Please select areas, ad size, and duration to see pricing.'
+                    }
+                  </p>
                   <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg">
                     <div>
                       <p className="text-sm text-gray-500">Total Circulation</p>
-                      <p className="font-bold">-</p>
+                      <p className="font-bold">
+                        {formData.selectedAreas.length > 0 
+                          ? areas.filter(area => formData.selectedAreas.includes(area.id))
+                              .reduce((total, area) => total + area.circulation, 0)
+                              .toLocaleString()
+                          : '-'
+                        }
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Selected Areas</p>
@@ -321,9 +391,15 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               <div className="mt-6 space-y-2">
                 <Button 
                   className="w-full bg-community-green hover:bg-green-600"
-                  disabled={!formData.fullName || !formData.emailAddress || !formData.selectedAreas.length || !formData.adSize || !formData.duration}
+                  disabled={
+                    !formData.fullName || 
+                    !formData.emailAddress || 
+                    !formData.selectedAreas.length || 
+                    !formData.adSize || 
+                    (selectedPricingModel === 'fixed' && !formData.duration)
+                  }
                 >
-                  Request Quote
+                  {selectedPricingModel === 'subscription' ? 'Get Subscription Quote' : 'Request Quote'}
                 </Button>
                 <p className="text-xs text-gray-500 text-center">
                   * This is an estimated price. Final pricing may vary based on specific requirements and current promotions.
