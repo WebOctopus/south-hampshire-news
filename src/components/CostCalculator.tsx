@@ -309,6 +309,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         id={`free-${area.id}`}
                         checked={bogofFreeAreas.includes(area.id)}
                         onCheckedChange={(checked) => {
+                          console.log('Free area change:', { checked, currentFreeCount: bogofFreeAreas.length, paidCount: bogofPaidAreas.length });
                           if (checked && bogofFreeAreas.length < bogofPaidAreas.length) {
                             setBogofFreeAreas(prev => [...prev, area.id]);
                           } else if (!checked) {
