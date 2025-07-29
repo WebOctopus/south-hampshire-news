@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +28,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   });
 
   const [selectedPricingModel, setSelectedPricingModel] = useState<string>('fixed');
+  const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
+  const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
 
 
 
@@ -40,14 +42,24 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     }));
   };
 
+  // For BOGOF, use the paid areas for calculation
+  const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? bogofPaidAreas : formData.selectedAreas;
+  
   const pricingBreakdown = calculateAdvertisingPrice(
-    formData.selectedAreas,
+    effectiveSelectedAreas,
     formData.adSize,
     formData.duration,
-    selectedPricingModel === 'subscription'
+    selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof'
   );
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
+
+  // Auto-set duration for BOGOF
+  useEffect(() => {
+    if (selectedPricingModel === 'bogof') {
+      setFormData(prev => ({ ...prev, duration: '6-months' }));
+    }
+  }, [selectedPricingModel]);
 
   return (
     <Dialog>
@@ -111,11 +123,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
           </Card>
 
           {/* Select Distribution Areas */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                Select Distribution Areas
-              </h3>
+          {selectedPricingModel !== 'bogof' && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  Select Distribution Areas
+                </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {areas.map((area) => (
                   <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
@@ -144,6 +157,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               </div>
             </CardContent>
           </Card>
+          )}
 
           {/* Select Payment Structure */}
           <Card>
@@ -154,7 +168,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               <RadioGroup
                 value={selectedPricingModel}
                 onValueChange={setSelectedPricingModel}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                className="grid grid-cols-1 gap-4"
               >
                 <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
                   <RadioGroupItem value="fixed" id="fixed" className="mt-1" />
@@ -167,6 +181,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     </p>
                   </div>
                 </div>
+                
                 <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
                   <RadioGroupItem value="subscription" id="subscription" className="mt-1" />
                   <div className="flex-1">
@@ -178,9 +193,170 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     </p>
                   </div>
                 </div>
+
+                <div className="flex items-start space-x-3 p-4 border-2 border-community-green rounded-lg hover:bg-gray-50 bg-gradient-to-r from-green-50 to-emerald-50">
+                  <RadioGroupItem value="bogof" id="bogof" className="mt-1" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="bogof" className="font-medium cursor-pointer block">
+                        SUBSCRIPTION ADVERTISING WITH DISCOVER - CURRENT OFFER - BOGOF FOR 3 ISSUES
+                      </Label>
+                      <Badge className="bg-red-500 text-white text-xs font-bold">LIMITED OFFER</Badge>
+                    </div>
+                    <p className="text-sm text-gray-700 mt-2 font-medium">
+                      🎉 A great opportunity to double the amount of advertising at no extra cost to you.
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Effectively, half price for six months! Monthly payment plan on direct debit.
+                    </p>
+                    
+                    <div className="mt-3 space-y-2 text-sm">
+                      <div className="flex items-start space-x-2">
+                        <span className="text-community-green">✓</span>
+                        <span>Nominate up to 6 areas as "paid for" subscription</span>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <span className="text-community-green">✓</span>
+                        <span>We match with equal number of "free" areas (up to 6 more)</span>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <span className="text-community-green">✓</span>
+                        <span>Free areas run for first 6 months (3 bi-monthly issues)</span>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <span className="text-community-green">✓</span>
+                        <span>Complimentary editorial after 4th issue</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </RadioGroup>
             </CardContent>
           </Card>
+
+          {/* BOGOF Paid Areas Selection */}
+          {selectedPricingModel === 'bogof' && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  Select Your "Paid For" Areas (Up to 6)
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Choose up to 6 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {areas.map((area) => (
+                    <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                      <Checkbox
+                        id={`paid-${area.id}`}
+                        checked={bogofPaidAreas.includes(area.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked && bogofPaidAreas.length < 6) {
+                            setBogofPaidAreas(prev => [...prev, area.id]);
+                          } else if (!checked) {
+                            setBogofPaidAreas(prev => prev.filter(id => id !== area.id));
+                            // Also remove from free areas if it was selected
+                            setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                          }
+                        }}
+                        disabled={!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 6}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <Label htmlFor={`paid-${area.id}`} className="font-bold text-community-navy cursor-pointer block">
+                          {area.name}
+                        </Label>
+                        <p className="text-sm text-gray-700 font-medium mt-1">
+                          {area.postcodes}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {area.townsVillages}
+                        </p>
+                        <p className="text-sm text-community-green font-bold mt-2">
+                          Circulation: {area.circulation.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-600">ℹ️</span>
+                    <span className="text-sm font-medium text-blue-800">
+                      Selected: {bogofPaidAreas.length}/6 paid areas
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* BOGOF Free Areas Selection */}
+          {selectedPricingModel === 'bogof' && bogofPaidAreas.length > 0 && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  Select Your FREE Areas (Up to {bogofPaidAreas.length})
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Choose up to {bogofPaidAreas.length} additional areas that you'll receive FREE for the first 6 months (3 bi-monthly issues).
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {areas
+                    .filter(area => !bogofPaidAreas.includes(area.id))
+                    .map((area) => (
+                    <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 bg-gradient-to-r from-green-50 to-emerald-50">
+                      <Checkbox
+                        id={`free-${area.id}`}
+                        checked={bogofFreeAreas.includes(area.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked && bogofFreeAreas.length < bogofPaidAreas.length) {
+                            setBogofFreeAreas(prev => [...prev, area.id]);
+                          } else if (!checked) {
+                            setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                          }
+                        }}
+                        disabled={!bogofFreeAreas.includes(area.id) && bogofFreeAreas.length >= bogofPaidAreas.length}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={`free-${area.id}`} className="font-bold text-community-navy cursor-pointer block">
+                            {area.name}
+                          </Label>
+                          <Badge className="bg-green-500 text-white text-xs">FREE</Badge>
+                        </div>
+                        <p className="text-sm text-gray-700 font-medium mt-1">
+                          {area.postcodes}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {area.townsVillages}
+                        </p>
+                        <p className="text-sm text-community-green font-bold mt-2">
+                          Circulation: {area.circulation.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-600">🎉</span>
+                    <span className="text-sm font-medium text-green-800">
+                      Selected: {bogofFreeAreas.length}/{bogofPaidAreas.length} free areas for 6 months
+                    </span>
+                  </div>
+                  <div className="mt-2 text-xs text-green-700">
+                    Total areas: {bogofPaidAreas.length + bogofFreeAreas.length} | 
+                    Total circulation: {areas
+                      .filter(area => [...bogofPaidAreas, ...bogofFreeAreas].includes(area.id))
+                      .reduce((total, area) => total + area.circulation, 0)
+                      .toLocaleString()}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Select Advertisement Size */}
           <Card>
@@ -194,14 +370,14 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 {adSizes
-                  .filter(size => {
-                    // Show 1/6 Page and 1/8 Page only for subscription packages
-                    if (selectedPricingModel === 'subscription') {
-                      return true;
-                    } else {
-                      return !['sixth-page', 'eighth-page'].includes(size.id);
-                    }
-                  })
+                   .filter(size => {
+                     // Show 1/6 Page and 1/8 Page only for subscription packages and BOGOF
+                     if (selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof') {
+                       return true;
+                     } else {
+                       return !['sixth-page', 'eighth-page'].includes(size.id);
+                     }
+                   })
                   .map((size) => (
                   <div key={size.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
                     <RadioGroupItem value={size.id} id={size.id} className="mt-1" />
@@ -220,11 +396,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       {size.dimensions && (
                         <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
                       )}
-                      <p className="text-sm text-community-green font-bold mt-2">
-                        From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
-                          ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
-                          : 0)} per {selectedPricingModel === 'subscription' ? 'issue' : 'area'}
-                      </p>
+                       <p className="text-sm text-community-green font-bold mt-2">
+                         From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
+                           ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
+                           : 0)} per {selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof' ? 'issue' : 'area'}
+                       </p>
                     </div>
                   </div>
                 ))}
@@ -317,6 +493,34 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             </Card>
           )}
 
+          {/* BOGOF Duration - Fixed 6 months */}
+          {selectedPricingModel === 'bogof' && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  BOGOF Offer Duration
+                </h3>
+                <div className="p-4 border-2 border-community-green rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 bg-community-green rounded-full"></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Label className="font-medium">6 Months (3 Bi-monthly Issues)</Label>
+                        <Badge className="bg-red-500 text-white text-xs">FIXED OFFER</Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Your paid areas continue monthly • Free areas run for 3 issues only
+                      </p>
+                      <div className="mt-2 text-sm text-community-green">
+                        ✓ Account manager will contact you after 3 issues to discuss continuing free areas
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Summary */}
           <Card className="bg-gray-50">
             <CardContent className="p-6">
@@ -329,23 +533,48 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   {/* Campaign Overview */}
                   <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg">
                     <div>
-                      <p className="text-sm text-gray-600">Total Circulation</p>
-                      <p className="font-bold text-community-navy">{pricingBreakdown.totalCirculation.toLocaleString()}</p>
+                      <p className="text-sm text-gray-600">
+                        {selectedPricingModel === 'bogof' ? 'Total Circulation (Paid + Free)' : 'Total Circulation'}
+                      </p>
+                      <p className="font-bold text-community-navy">
+                        {selectedPricingModel === 'bogof' 
+                          ? areas.filter(area => [...bogofPaidAreas, ...bogofFreeAreas].includes(area.id))
+                              .reduce((total, area) => total + area.circulation, 0)
+                              .toLocaleString()
+                          : pricingBreakdown.totalCirculation.toLocaleString()
+                        }
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Cost Per Thousand (CPM)</p>
-                      <p className="font-bold text-community-navy">{formatPrice(calculateCPM(pricingBreakdown.finalTotal, pricingBreakdown.totalCirculation))}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Selected Areas</p>
-                      <p className="font-bold text-community-navy">{formData.selectedAreas.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">{selectedPricingModel === 'subscription' ? 'Subscription' : 'Campaign'} Duration</p>
                       <p className="font-bold text-community-navy">
-                        {selectedPricingModel === 'subscription' 
-                          ? subscriptionDurations.find(d => d.id === formData.duration)?.label || 'Not selected'
-                          : durations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                        {selectedPricingModel === 'bogof'
+                          ? formatPrice(calculateCPM(pricingBreakdown.finalTotal, areas.filter(area => [...bogofPaidAreas, ...bogofFreeAreas].includes(area.id)).reduce((total, area) => total + area.circulation, 0)))
+                          : formatPrice(calculateCPM(pricingBreakdown.finalTotal, pricingBreakdown.totalCirculation))
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">
+                        {selectedPricingModel === 'bogof' ? 'Areas (Paid/Free)' : 'Selected Areas'}
+                      </p>
+                      <p className="font-bold text-community-navy">
+                        {selectedPricingModel === 'bogof' 
+                          ? `${bogofPaidAreas.length}/${bogofFreeAreas.length} (${bogofPaidAreas.length + bogofFreeAreas.length} total)`
+                          : effectiveSelectedAreas.length
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">
+                        {selectedPricingModel === 'bogof' ? 'BOGOF Offer' : selectedPricingModel === 'subscription' ? 'Subscription' : 'Campaign'} Duration
+                      </p>
+                      <p className="font-bold text-community-navy">
+                        {selectedPricingModel === 'bogof' 
+                          ? '6 Months (3 Bi-monthly Issues)'
+                          : selectedPricingModel === 'subscription' 
+                            ? subscriptionDurations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                            : durations.find(d => d.id === formData.duration)?.label || 'Not selected'
                         }
                       </p>
                     </div>
@@ -355,10 +584,22 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
                   {/* Pricing Breakdown */}
                   <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Subtotal ({formData.selectedAreas.length} areas)</span>
-                      <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
-                    </div>
+                     <div className="flex justify-between">
+                       <span>
+                         {selectedPricingModel === 'bogof' 
+                           ? `Subtotal (${bogofPaidAreas.length} paid areas)`
+                           : `Subtotal (${effectiveSelectedAreas.length} areas)`
+                         }
+                       </span>
+                       <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
+                     </div>
+                     
+                     {selectedPricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                       <div className="flex justify-between text-green-600">
+                         <span>FREE Areas (6 months) - {bogofFreeAreas.length} areas</span>
+                         <span className="font-medium">£0.00</span>
+                       </div>
+                     )}
                     
                     {pricingBreakdown.volumeDiscountPercent > 0 && (
                       <div className="flex justify-between text-community-green">
@@ -435,12 +676,20 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   disabled={
                     !formData.fullName || 
                     !formData.emailAddress || 
-                    !formData.selectedAreas.length || 
                     !formData.adSize || 
-                    !formData.duration
+                    !formData.duration ||
+                    (selectedPricingModel === 'bogof' 
+                      ? bogofPaidAreas.length === 0 
+                      : effectiveSelectedAreas.length === 0
+                    )
                   }
                 >
-                  {selectedPricingModel === 'subscription' ? 'Get Subscription Quote' : 'Request Quote'}
+                  {selectedPricingModel === 'bogof' 
+                    ? 'Get BOGOF Quote' 
+                    : selectedPricingModel === 'subscription' 
+                      ? 'Get Subscription Quote' 
+                      : 'Request Quote'
+                  }
                 </Button>
                 <p className="text-xs text-gray-500 text-center">
                   * This is an estimated price. Final pricing may vary based on specific requirements and current promotions.
