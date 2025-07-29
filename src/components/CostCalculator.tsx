@@ -624,22 +624,61 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   </div>
 
                   {/* Area Breakdown */}
-                  {pricingBreakdown.areaBreakdown.length > 0 && (
+                  {selectedPricingModel === 'bogof' ? (
                     <details className="mt-4">
                       <summary className="cursor-pointer text-sm font-medium text-community-navy hover:text-community-green">
-                        View Area-by-Area Breakdown
+                        View Paid vs Free Areas Breakdown
                       </summary>
-                      <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
-                        {pricingBreakdown.areaBreakdown.map(({ area, basePrice, multipliedPrice }) => (
-                          <div key={area.id} className="flex justify-between text-sm p-2 bg-white rounded">
-                            <span className="truncate mr-2">{area.name}</span>
-                            <span className="font-medium">
-                              {formatPrice(basePrice)} → {formatPrice(multipliedPrice)}
-                            </span>
+                      <div className="mt-3 space-y-4 max-h-48 overflow-y-auto">
+                        {/* Paid Areas */}
+                        {bogofPaidAreas.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-semibold text-community-navy mb-2">Paid Areas ({bogofPaidAreas.length})</h4>
+                            <div className="space-y-2">
+                              {areas.filter(area => bogofPaidAreas.includes(area.id)).map((area) => (
+                                <div key={area.id} className="flex justify-between text-sm p-2 bg-blue-50 rounded border-l-4 border-blue-500">
+                                  <span className="truncate mr-2">{area.name}</span>
+                                  <span className="font-medium text-blue-700">PAID</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        ))}
+                        )}
+                        
+                        {/* Free Areas */}
+                        {bogofFreeAreas.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-semibold text-community-navy mb-2">Free Areas ({bogofFreeAreas.length})</h4>
+                            <div className="space-y-2">
+                              {areas.filter(area => bogofFreeAreas.includes(area.id)).map((area) => (
+                                <div key={area.id} className="flex justify-between text-sm p-2 bg-green-50 rounded border-l-4 border-green-500">
+                                  <span className="truncate mr-2">{area.name}</span>
+                                  <span className="font-medium text-green-700">FREE (6 months)</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </details>
+                  ) : (
+                    pricingBreakdown.areaBreakdown.length > 0 && (
+                      <details className="mt-4">
+                        <summary className="cursor-pointer text-sm font-medium text-community-navy hover:text-community-green">
+                          View Area-by-Area Breakdown
+                        </summary>
+                        <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
+                          {pricingBreakdown.areaBreakdown.map(({ area, basePrice, multipliedPrice }) => (
+                            <div key={area.id} className="flex justify-between text-sm p-2 bg-white rounded">
+                              <span className="truncate mr-2">{area.name}</span>
+                              <span className="font-medium">
+                                {formatPrice(basePrice)} → {formatPrice(multipliedPrice)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    )
                   )}
                 </div>
               ) : (
