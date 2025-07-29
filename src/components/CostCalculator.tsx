@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { areas, adSizes, durations } from '@/data/advertisingPricing';
+import { areas, adSizes, durations, subscriptionDurations } from '@/data/advertisingPricing';
 import { calculateAdvertisingPrice, formatPrice, calculateCPM, getRecommendedDuration } from '@/lib/pricingCalculator';
 
 interface CostCalculatorProps {
@@ -49,7 +49,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     effectiveSelectedAreas,
     formData.adSize,
     formData.duration,
-    selectedPricingModel === 'bogof'
+    selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof'
   );
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
@@ -145,6 +145,17 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   </div>
                 </div>
                 
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                  <RadioGroupItem value="subscription" id="subscription" className="mt-1" />
+                  <div className="flex-1">
+                    <Label htmlFor="subscription" className="font-medium cursor-pointer block">
+                      Subscription Packages
+                    </Label>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Monthly subscription plans with better rates and additional benefits.
+                    </p>
+                  </div>
+                </div>
 
                 <div className="flex items-start space-x-3 p-4 border-2 border-community-green rounded-lg hover:bg-gray-50 bg-gradient-to-r from-green-50 to-emerald-50">
                   <RadioGroupItem value="bogof" id="bogof" className="mt-1" />
@@ -298,6 +309,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         id={`free-${area.id}`}
                         checked={bogofFreeAreas.includes(area.id)}
                         onCheckedChange={(checked) => {
+                          console.log('Free area change:', { checked, currentFreeCount: bogofFreeAreas.length, paidCount: bogofPaidAreas.length });
                           if (checked && bogofFreeAreas.length < bogofPaidAreas.length) {
                             setBogofFreeAreas(prev => [...prev, area.id]);
                           } else if (!checked) {
@@ -359,8 +371,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               >
                 {adSizes
                    .filter(size => {
-                     // Show 1/6 Page and 1/8 Page only for BOGOF
-                     if (selectedPricingModel === 'bogof') {
+                     // Show 1/6 Page and 1/8 Page only for subscription packages and BOGOF
+                     if (selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof') {
                        return true;
                      } else {
                        return !['sixth-page', 'eighth-page'].includes(size.id);
@@ -374,7 +386,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         {size.label}
                         {(['sixth-page', 'eighth-page'].includes(size.id)) && (
                           <Badge variant="outline" className="ml-2 text-xs">
-                            BOGOF Only
+                            Subscription Only
                           </Badge>
                         )}
                       </Label>
@@ -385,9 +397,9 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
                       )}
                        <p className="text-sm text-community-green font-bold mt-2">
-                        From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
-                            ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
-                            : 0)} per {selectedPricingModel === 'bogof' ? 'issue' : 'area'}
+                         From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
+                           ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
+                           : 0)} per {selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof' ? 'issue' : 'area'}
                        </p>
                     </div>
                   </div>
@@ -423,6 +435,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                               Recommended
                             </Badge>
                           )}
+                          {duration.isSubscription && (
+                            <Badge variant="outline" className="text-xs">
+                              Subscription
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
                           {duration.months} month{duration.months > 1 ? 's' : ''}
@@ -438,6 +455,43 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             </Card>
           )}
 
+          {/* Subscription Duration */}
+          {selectedPricingModel === 'subscription' && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  Subscription Duration
+                </h3>
+                <RadioGroup
+                  value={formData.duration}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                >
+                  {subscriptionDurations.map((duration) => (
+                    <div key={duration.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={duration.id} className="font-medium cursor-pointer">
+                            {duration.label}
+                          </Label>
+                          <Badge variant="default" className="text-xs bg-community-green">
+                            Subscription
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {duration.months} months • Pay per issue
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Better rates with longer commitments
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </CardContent>
+            </Card>
+          )}
 
           {/* BOGOF Duration - Fixed 6 months */}
           {selectedPricingModel === 'bogof' && (
@@ -513,12 +567,14 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">
-                        {selectedPricingModel === 'bogof' ? 'BOGOF Offer' : 'Campaign'} Duration
+                        {selectedPricingModel === 'bogof' ? 'BOGOF Offer' : selectedPricingModel === 'subscription' ? 'Subscription' : 'Campaign'} Duration
                       </p>
                       <p className="font-bold text-community-navy">
                         {selectedPricingModel === 'bogof' 
                           ? '6 Months (3 Bi-monthly Issues)'
-                          : durations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                          : selectedPricingModel === 'subscription' 
+                            ? subscriptionDurations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                            : durations.find(d => d.id === formData.duration)?.label || 'Not selected'
                         }
                       </p>
                     </div>
@@ -553,8 +609,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     )}
                     
                     <div className="flex justify-between">
-                      <span>Duration Multiplier</span>
-                      <span className="font-medium">×{pricingBreakdown.durationMultiplier}</span>
+                      <span>{selectedPricingModel === 'subscription' ? 'Total Issues' : 'Duration Multiplier'}</span>
+                      <span className="font-medium">
+                        {selectedPricingModel === 'subscription' ? `${pricingBreakdown.durationMultiplier} issues` : `×${pricingBreakdown.durationMultiplier}`}
+                      </span>
                     </div>
                     
                     <Separator />
@@ -566,42 +624,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   </div>
 
                   {/* Area Breakdown */}
-                  {selectedPricingModel === 'bogof' && (bogofPaidAreas.length > 0 || bogofFreeAreas.length > 0) && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium text-community-navy mb-3">Selected Areas Breakdown</h4>
-                      <div className="space-y-3">
-                        {bogofPaidAreas.length > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-gray-600 mb-2">PAID AREAS ({bogofPaidAreas.length})</p>
-                            <div className="grid grid-cols-1 gap-1">
-                              {areas.filter(area => bogofPaidAreas.includes(area.id)).map(area => (
-                                <div key={area.id} className="flex justify-between text-sm p-2 bg-blue-50 rounded">
-                                  <span className="truncate mr-2">{area.name}</span>
-                                  <span className="text-xs text-gray-600">{area.circulation.toLocaleString()} circulation</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {bogofFreeAreas.length > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-green-600 mb-2">FREE AREAS ({bogofFreeAreas.length}) - 6 months only</p>
-                            <div className="grid grid-cols-1 gap-1">
-                              {areas.filter(area => bogofFreeAreas.includes(area.id)).map(area => (
-                                <div key={area.id} className="flex justify-between text-sm p-2 bg-green-50 rounded">
-                                  <span className="truncate mr-2">{area.name}</span>
-                                  <span className="text-xs text-green-600">{area.circulation.toLocaleString()} circulation</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Standard Area Breakdown for non-BOGOF */}
-                  {selectedPricingModel !== 'bogof' && pricingBreakdown.areaBreakdown.length > 0 && (
+                  {pricingBreakdown.areaBreakdown.length > 0 && (
                     <details className="mt-4">
                       <summary className="cursor-pointer text-sm font-medium text-community-navy hover:text-community-green">
                         View Area-by-Area Breakdown
@@ -622,7 +645,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               ) : (
                 <div className="space-y-2 text-gray-600">
                   <p>
-                    Please select areas, ad size, and duration to see pricing.
+                    {selectedPricingModel === 'subscription' 
+                      ? 'Please select areas and ad size to get a subscription quote.'
+                      : 'Please select areas, ad size, and duration to see pricing.'
+                    }
                   </p>
                   <div className="grid grid-cols-2 gap-4 p-4 bg-white rounded-lg">
                     <div>
@@ -660,7 +686,9 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 >
                   {selectedPricingModel === 'bogof' 
                     ? 'Get BOGOF Quote' 
-                    : 'Request Quote'
+                    : selectedPricingModel === 'subscription' 
+                      ? 'Get Subscription Quote' 
+                      : 'Request Quote'
                   }
                 </Button>
                 <p className="text-xs text-gray-500 text-center">
