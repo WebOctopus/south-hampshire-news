@@ -176,11 +176,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     <div className="mt-3 space-y-2 text-sm">
                       <div className="flex items-start space-x-2">
                         <span className="text-community-green">✓</span>
-                        <span>Nominate up to 6 areas as "paid for" subscription</span>
+                        <span>Nominate any number of areas as "paid for" subscription</span>
                       </div>
                       <div className="flex items-start space-x-2">
                         <span className="text-community-green">✓</span>
-                        <span>We match with equal number of "free" areas (up to 6 more)</span>
+                        <span>We match with equal number of "free" areas</span>
                       </div>
                       <div className="flex items-start space-x-2">
                         <span className="text-community-green">✓</span>
@@ -239,10 +239,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                  Select Your "Paid For" Areas (Up to 6)
+                  Select Your "Paid For" Areas
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Choose up to 6 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
+                  Choose any number of areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {areas.map((area) => (
@@ -251,15 +251,14 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         id={`paid-${area.id}`}
                         checked={bogofPaidAreas.includes(area.id)}
                         onCheckedChange={(checked) => {
-                          if (checked && bogofPaidAreas.length < 6) {
+                          if (checked) {
                             setBogofPaidAreas(prev => [...prev, area.id]);
-                          } else if (!checked) {
+                          } else {
                             setBogofPaidAreas(prev => prev.filter(id => id !== area.id));
                             // Also remove from free areas if it was selected
                             setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
                           }
                         }}
-                        disabled={!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 6}
                         className="mt-1"
                       />
                       <div className="flex-1 min-w-0">
@@ -283,7 +282,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   <div className="flex items-center gap-2">
                     <span className="text-blue-600">ℹ️</span>
                     <span className="text-sm font-medium text-blue-800">
-                      Selected: {bogofPaidAreas.length}/6 paid areas
+                      Selected: {bogofPaidAreas.length} paid areas
                     </span>
                   </div>
                 </div>
