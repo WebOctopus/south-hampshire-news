@@ -625,11 +625,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
                   {/* Area Breakdown */}
                   {selectedPricingModel === 'bogof' ? (
-                    <details className="mt-4">
-                      <summary className="cursor-pointer text-sm font-medium text-community-navy hover:text-community-green">
-                        View Paid vs Free Areas Breakdown
-                      </summary>
-                      <div className="mt-3 space-y-4 max-h-48 overflow-y-auto">
+                    <div className="mt-4">
+                      <h3 className="text-sm font-medium text-community-navy mb-3">
+                        Paid vs Free Areas Breakdown
+                      </h3>
+                      <div className="space-y-4 max-h-48 overflow-y-auto">
                         {/* Paid Areas */}
                         {bogofPaidAreas.length > 0 && (
                           <div>
@@ -660,7 +660,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                           </div>
                         )}
                       </div>
-                    </details>
+                    </div>
                   ) : (
                     pricingBreakdown.areaBreakdown.length > 0 && (
                       <details className="mt-4">
