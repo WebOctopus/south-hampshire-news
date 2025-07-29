@@ -122,43 +122,6 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             </CardContent>
           </Card>
 
-          {/* Select Distribution Areas */}
-          {selectedPricingModel !== 'bogof' && (
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                  Select Distribution Areas
-                </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {areas.map((area) => (
-                  <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                    <Checkbox
-                      id={area.id}
-                      checked={formData.selectedAreas.includes(area.id)}
-                      onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <Label htmlFor={area.id} className="font-bold text-community-navy cursor-pointer block">
-                        {area.name}
-                      </Label>
-                      <p className="text-sm text-gray-700 font-medium mt-1">
-                        {area.postcodes}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {area.townsVillages}
-                      </p>
-                      <p className="text-sm text-community-green font-bold mt-2">
-                        Circulation: {area.circulation.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          )}
-
           {/* Select Payment Structure */}
           <Card>
             <CardContent className="p-6">
@@ -233,6 +196,43 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               </RadioGroup>
             </CardContent>
           </Card>
+
+          {/* Select Distribution Areas */}
+          {selectedPricingModel !== 'bogof' && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                  Select Distribution Areas
+                </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {areas.map((area) => (
+                  <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                    <Checkbox
+                      id={area.id}
+                      checked={formData.selectedAreas.includes(area.id)}
+                      onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <Label htmlFor={area.id} className="font-bold text-community-navy cursor-pointer block">
+                        {area.name}
+                      </Label>
+                      <p className="text-sm text-gray-700 font-medium mt-1">
+                        {area.postcodes}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {area.townsVillages}
+                      </p>
+                      <p className="text-sm text-community-green font-bold mt-2">
+                        Circulation: {area.circulation.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          )}
 
           {/* BOGOF Paid Areas Selection */}
           {selectedPricingModel === 'bogof' && (
