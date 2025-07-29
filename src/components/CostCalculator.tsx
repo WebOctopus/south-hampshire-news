@@ -629,7 +629,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       <h3 className="text-sm font-medium text-community-navy mb-3">
                         Paid vs Free Areas Breakdown
                       </h3>
-                      <div className="space-y-4 max-h-48 overflow-y-auto">
+                      <div className="space-y-4">
                         {/* Paid Areas */}
                         {bogofPaidAreas.length > 0 && (
                           <div>
