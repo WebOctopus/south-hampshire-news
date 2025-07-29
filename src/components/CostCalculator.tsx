@@ -309,7 +309,6 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         id={`free-${area.id}`}
                         checked={bogofFreeAreas.includes(area.id)}
                         onCheckedChange={(checked) => {
-                          console.log('Free area change:', { checked, currentFreeCount: bogofFreeAreas.length, paidCount: bogofPaidAreas.length });
                           if (checked && bogofFreeAreas.length < bogofPaidAreas.length) {
                             setBogofFreeAreas(prev => [...prev, area.id]);
                           } else if (!checked) {
@@ -624,7 +623,42 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   </div>
 
                   {/* Area Breakdown */}
-                  {pricingBreakdown.areaBreakdown.length > 0 && (
+                  {selectedPricingModel === 'bogof' && (bogofPaidAreas.length > 0 || bogofFreeAreas.length > 0) && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium text-community-navy mb-3">Selected Areas Breakdown</h4>
+                      <div className="space-y-3">
+                        {bogofPaidAreas.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-2">PAID AREAS ({bogofPaidAreas.length})</p>
+                            <div className="grid grid-cols-1 gap-1">
+                              {areas.filter(area => bogofPaidAreas.includes(area.id)).map(area => (
+                                <div key={area.id} className="flex justify-between text-sm p-2 bg-blue-50 rounded">
+                                  <span className="truncate mr-2">{area.name}</span>
+                                  <span className="text-xs text-gray-600">{area.circulation.toLocaleString()} circulation</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {bogofFreeAreas.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-green-600 mb-2">FREE AREAS ({bogofFreeAreas.length}) - 6 months only</p>
+                            <div className="grid grid-cols-1 gap-1">
+                              {areas.filter(area => bogofFreeAreas.includes(area.id)).map(area => (
+                                <div key={area.id} className="flex justify-between text-sm p-2 bg-green-50 rounded">
+                                  <span className="truncate mr-2">{area.name}</span>
+                                  <span className="text-xs text-green-600">{area.circulation.toLocaleString()} circulation</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Standard Area Breakdown for non-BOGOF */}
+                  {selectedPricingModel !== 'bogof' && pricingBreakdown.areaBreakdown.length > 0 && (
                     <details className="mt-4">
                       <summary className="cursor-pointer text-sm font-medium text-community-navy hover:text-community-green">
                         View Area-by-Area Breakdown
