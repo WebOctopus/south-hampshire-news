@@ -546,15 +546,6 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Cost Per Thousand (CPM)</p>
-                      <p className="font-bold text-community-navy">
-                        {selectedPricingModel === 'bogof'
-                          ? formatPrice(calculateCPM(pricingBreakdown.finalTotal, areas.filter(area => [...bogofPaidAreas, ...bogofFreeAreas].includes(area.id)).reduce((total, area) => total + area.circulation, 0)))
-                          : formatPrice(calculateCPM(pricingBreakdown.finalTotal, pricingBreakdown.totalCirculation))
-                        }
-                      </p>
-                    </div>
-                    <div>
                       <p className="text-sm text-gray-600">
                         {selectedPricingModel === 'bogof' ? 'Areas (Paid/Free)' : 'Selected Areas'}
                       </p>
