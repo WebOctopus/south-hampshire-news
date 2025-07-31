@@ -162,9 +162,9 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Label htmlFor="bogof" className="font-medium cursor-pointer block">
-                        SUBSCRIPTION ADVERTISING WITH DISCOVER - CURRENT OFFER - BOGOF FOR 3 ISSUES
+                        SUBSCRIPTION ADVERTISING WITH DISCOVER - BOGOF FOR 3 ISSUES
                       </Label>
-                      <Badge className="bg-red-500 text-white text-xs font-bold">LIMITED OFFER</Badge>
+                      <Badge className="bg-community-green text-white text-xs font-bold">SUBSCRIPTION SPECIAL</Badge>
                     </div>
                     <p className="text-sm text-gray-700 mt-2 font-medium">
                       🎉 A great opportunity to double the amount of advertising at no extra cost to you.
