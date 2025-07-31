@@ -1,4 +1,4 @@
-import type { Area, AdSize, Duration, VolumeDiscount } from '@/hooks/usePricingData';
+import { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, type Area, type AdSize, type Duration } from '@/data/advertisingPricing';
 
 export interface PricingBreakdown {
   subtotal: number;
@@ -22,10 +22,6 @@ export function calculateAdvertisingPrice(
   selectedAreaIds: string[],
   adSizeId: string,
   durationId: string,
-  areas: Area[],
-  adSizes: AdSize[],
-  durations: Duration[],
-  volumeDiscounts: VolumeDiscount[],
   isSubscription: boolean = false
 ): PricingBreakdown | null {
   // Validate inputs
@@ -35,66 +31,57 @@ export function calculateAdvertisingPrice(
 
   const selectedAreas = areas.filter(area => selectedAreaIds.includes(area.id));
   const selectedAdSize = adSizes.find(size => size.id === adSizeId);
-  const selectedDuration = durations.find(duration => duration.id === durationId);
+  const allDurations = isSubscription ? subscriptionDurations : durations;
+  const selectedDuration = allDurations.find(duration => duration.id === durationId);
 
   if (!selectedAdSize || !selectedDuration || !selectedAreas.length) {
     return null;
   }
 
-  // Calculate pricing based on new database structure
+  // Calculate pricing based on model type
   const areasCount = selectedAreas.length;
-  let subtotal = 0;
-  let areaBreakdown: Array<{area: Area; adSize: AdSize; basePrice: number; multipliedPrice: number;}> = [];
+  let subtotal: number;
+  let areaBreakdown: Array<{area: Area; adSize: AdSize; basePrice: number; multipliedPrice: number;}>;
 
-  // Calculate price for each area individually using multipliers
-  selectedAreas.forEach((area) => {
-    let basePrice = selectedAdSize.base_price_per_area;
-    let multipliedPrice = basePrice;
-
-    // Apply area-specific multipliers based on ad size
-    switch (selectedAdSize.id) {
-      case 'quarter-page':
-        multipliedPrice = basePrice * area.quarter_page_multiplier;
-        break;
-      case 'half-page':
-        multipliedPrice = basePrice * area.half_page_multiplier;
-        break;
-      case 'full-page':
-        multipliedPrice = basePrice * area.full_page_multiplier;
-        break;
-      default:
-        multipliedPrice = basePrice * area.base_price_multiplier;
-        break;
-    }
-
-    areaBreakdown.push({
+  if (isSubscription) {
+    // For subscription: use per-issue pricing from Excel data
+    const perIssuePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
+    subtotal = perIssuePrice;
+    
+    // Create area breakdown - distribute per-issue price evenly
+    const pricePerArea = perIssuePrice / areasCount;
+    areaBreakdown = selectedAreas.map((area) => ({
       area,
       adSize: selectedAdSize,
-      basePrice,
-      multipliedPrice
-    });
+      basePrice: pricePerArea,
+      multipliedPrice: pricePerArea
+    }));
+  } else {
+    // For fixed pricing: use cumulative pricing model  
+    const cumulativePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
+    subtotal = cumulativePrice;
+    
+    // Create area breakdown - distribute cumulative price evenly
+    const pricePerArea = cumulativePrice / areasCount;
+    areaBreakdown = selectedAreas.map((area) => ({
+      area,
+      adSize: selectedAdSize,
+      basePrice: pricePerArea,
+      multipliedPrice: pricePerArea
+    }));
+  }
 
-    subtotal += multipliedPrice;
-  });
-
-  // Apply duration multiplier (convert discount percentage to multiplier)
-  const durationMultiplier = selectedDuration.duration_value * (1 - selectedDuration.discount_percentage / 100);
-  
-  // Apply volume discount
-  const volumeDiscountPercent = getVolumeDiscount(areasCount, volumeDiscounts);
-  const volumeDiscount = subtotal * (volumeDiscountPercent / 100);
-  const afterVolumeDiscount = subtotal - volumeDiscount;
-  
-  const finalTotal = afterVolumeDiscount * durationMultiplier;
+  // Apply duration multiplier
+  const finalTotal = subtotal * selectedDuration.discountMultiplier;
 
   // Calculate total circulation
   const totalCirculation = selectedAreas.reduce((sum, area) => sum + area.circulation, 0);
 
   return {
     subtotal,
-    volumeDiscount,
-    volumeDiscountPercent,
-    durationMultiplier,
+    volumeDiscount: 0,
+    volumeDiscountPercent: 0,
+    durationMultiplier: selectedDuration.discountMultiplier,
     finalTotal,
     totalCirculation,
     areaBreakdown
@@ -104,11 +91,11 @@ export function calculateAdvertisingPrice(
 /**
  * Get volume discount percentage based on number of areas selected
  */
-function getVolumeDiscount(areasCount: number, volumeDiscounts: VolumeDiscount[]): number {
+function getVolumeDiscount(areasCount: number): number {
   const tier = volumeDiscounts.find(
-    tier => areasCount >= tier.min_areas && (!tier.max_areas || areasCount <= tier.max_areas)
+    tier => areasCount >= tier.minAreas && areasCount <= tier.maxAreas
   );
-  return tier?.discount_percentage || 0;
+  return tier?.discountPercentage || 0;
 }
 
 /**
@@ -130,17 +117,15 @@ export function calculateCPM(totalPrice: number, totalCirculation: number): numb
 }
 
 /**
- * Get recommended duration based on business goals
+ * Get recommended duration based on business goals - simplified for 1-3 issues
  */
-export function getRecommendedDuration(areasCount: number, durations: Duration[]): string[] {
-  const availableDurations = durations.map(d => d.id);
-  
+export function getRecommendedDuration(areasCount: number): string[] {
   if (areasCount >= 10) {
-    return availableDurations.filter(id => id.includes('12-months') || id.includes('3-issues'));
+    return ['3-issues'];
   } else if (areasCount >= 6) {
-    return availableDurations.filter(id => id.includes('6-months') || id.includes('2-issues'));
+    return ['2-issues', '3-issues'];
   } else if (areasCount >= 3) {
-    return availableDurations.filter(id => id.includes('6-months') || id.includes('2-issues'));
+    return ['2-issues'];
   }
-  return availableDurations.filter(id => id.includes('1-issue') || id.includes('6-months'));
+  return ['1-issue', '2-issues'];
 }

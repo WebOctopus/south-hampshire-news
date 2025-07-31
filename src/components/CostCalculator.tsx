@@ -9,16 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { areas, adSizes, durations, subscriptionDurations } from '@/data/advertisingPricing';
 import { calculateAdvertisingPrice, formatPrice, calculateCPM, getRecommendedDuration } from '@/lib/pricingCalculator';
-import { usePricingData } from '@/hooks/usePricingData';
 
 interface CostCalculatorProps {
   children: React.ReactNode;
 }
 
 const CostCalculator = ({ children }: CostCalculatorProps) => {
-  const { areas, adSizes, durations, volumeDiscounts, isLoading } = usePricingData();
-  
   const [formData, setFormData] = useState({
     fullName: '',
     emailAddress: '',
@@ -51,39 +49,17 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     effectiveSelectedAreas,
     formData.adSize,
     formData.duration,
-    areas,
-    adSizes,
-    durations,
-    volumeDiscounts,
     selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof'
   );
 
-  const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length, durations);
+  const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
 
   // Auto-set duration for BOGOF
   useEffect(() => {
     if (selectedPricingModel === 'bogof') {
-      const sixMonthDuration = durations.find(d => d.duration_value === 6 && d.duration_type === 'months');
-      if (sixMonthDuration) {
-        setFormData(prev => ({ ...prev, duration: sixMonthDuration.id }));
-      }
+      setFormData(prev => ({ ...prev, duration: '6-months' }));
     }
-  }, [selectedPricingModel, durations]);
-
-  if (isLoading) {
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          {children}
-        </DialogTrigger>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-center p-8">
-            <div className="text-lg">Loading pricing data...</div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  }, [selectedPricingModel]);
 
   return (
     <Dialog>
@@ -241,9 +217,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       <Label htmlFor={area.id} className="font-bold text-community-navy cursor-pointer block">
                         {area.name}
                       </Label>
-                       <p className="text-sm text-gray-700 font-medium mt-1">
-                         {area.postcodes?.join(', ')}
-                       </p>
+                      <p className="text-sm text-gray-700 font-medium mt-1">
+                        {area.postcodes}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {area.townsVillages}
+                      </p>
                       <p className="text-sm text-community-green font-bold mt-2">
                         Circulation: {area.circulation.toLocaleString()}
                       </p>
@@ -286,9 +265,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         <Label htmlFor={`paid-${area.id}`} className="font-bold text-community-navy cursor-pointer block">
                           {area.name}
                         </Label>
-                         <p className="text-sm text-gray-700 font-medium mt-1">
-                           {area.postcodes?.join(', ')}
-                         </p>
+                        <p className="text-sm text-gray-700 font-medium mt-1">
+                          {area.postcodes}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {area.townsVillages}
+                        </p>
                         <p className="text-sm text-community-green font-bold mt-2">
                           Circulation: {area.circulation.toLocaleString()}
                         </p>
@@ -344,9 +326,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                           </Label>
                           <Badge className="bg-green-500 text-white text-xs">FREE</Badge>
                         </div>
-                         <p className="text-sm text-gray-700 font-medium mt-1">
-                           {area.postcodes?.join(', ')}
-                         </p>
+                        <p className="text-sm text-gray-700 font-medium mt-1">
+                          {area.postcodes}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {area.townsVillages}
+                        </p>
                         <p className="text-sm text-community-green font-bold mt-2">
                           Circulation: {area.circulation.toLocaleString()}
                         </p>
@@ -384,22 +369,38 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                 {adSizes.map((size) => (
+                {adSizes
+                   .filter(size => {
+                     // Show 1/6 Page and 1/8 Page only for subscription packages and BOGOF
+                     if (selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof') {
+                       return true;
+                     } else {
+                       return !['sixth-page', 'eighth-page'].includes(size.id);
+                     }
+                   })
+                  .map((size) => (
                   <div key={size.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
                     <RadioGroupItem value={size.id} id={size.id} className="mt-1" />
                     <div className="flex-1">
-                       <Label htmlFor={size.id} className="font-medium cursor-pointer block">
-                         {size.name}
+                      <Label htmlFor={size.id} className="font-medium cursor-pointer block">
+                        {size.label}
                         {(['sixth-page', 'eighth-page'].includes(size.id)) && (
                           <Badge variant="outline" className="ml-2 text-xs">
                             Subscription Only
                           </Badge>
                         )}
                       </Label>
-                       <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
-                        <p className="text-sm text-community-green font-bold mt-2">
-                          From {formatPrice(size.base_price_per_area)} per area
-                        </p>
+                      {size.description && (
+                        <p className="text-sm text-gray-600 mt-1">{size.description}</p>
+                      )}
+                      {size.dimensions && (
+                        <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
+                      )}
+                       <p className="text-sm text-community-green font-bold mt-2">
+                         From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
+                           ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
+                           : 0)} per {selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof' ? 'issue' : 'area'}
+                       </p>
                     </div>
                   </div>
                 ))}
@@ -426,25 +427,25 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                           <Label htmlFor={duration.id} className="font-medium cursor-pointer">
-                             {duration.name}
+                          <Label htmlFor={duration.id} className="font-medium cursor-pointer">
+                            {duration.label}
                           </Label>
                           {recommendedDurations.includes(duration.id) && (
                             <Badge variant="default" className="text-xs bg-community-green">
                               Recommended
                             </Badge>
                           )}
-                           {duration.duration_type === 'subscription' && (
-                             <Badge variant="outline" className="text-xs">
-                               Subscription
-                             </Badge>
-                           )}
-                         </div>
-                         <p className="text-sm text-gray-600 mt-1">
-                           {duration.duration_value} {duration.duration_type}
-                           {duration.discount_percentage > 0 && 
-                             ` • ${duration.discount_percentage}% discount`
-                           }
+                          {duration.isSubscription && (
+                            <Badge variant="outline" className="text-xs">
+                              Subscription
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {duration.months} month{duration.months > 1 ? 's' : ''}
+                          {duration.discountMultiplier < duration.months && 
+                            ` • ${Math.round((1 - duration.discountMultiplier / duration.months) * 100)}% discount`
+                          }
                         </p>
                       </div>
                     </div>
@@ -466,20 +467,20 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 >
-                  {durations.filter(d => d.duration_type === 'subscription' || d.duration_type === 'months').map((duration) => (
+                  {subscriptionDurations.map((duration) => (
                     <div key={duration.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
                       <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                           <Label htmlFor={duration.id} className="font-medium cursor-pointer">
-                             {duration.name}
+                          <Label htmlFor={duration.id} className="font-medium cursor-pointer">
+                            {duration.label}
                           </Label>
                           <Badge variant="default" className="text-xs bg-community-green">
                             Subscription
                           </Badge>
                         </div>
-                         <p className="text-sm text-gray-600 mt-1">
-                           {duration.duration_value} {duration.duration_type} • Pay per issue
+                        <p className="text-sm text-gray-600 mt-1">
+                          {duration.months} months • Pay per issue
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           Better rates with longer commitments
@@ -572,8 +573,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         {selectedPricingModel === 'bogof' 
                           ? '6 Months (3 Bi-monthly Issues)'
                           : selectedPricingModel === 'subscription' 
-                           ? durations.find(d => d.id === formData.duration)?.name || 'Not selected'
-                             : durations.find(d => d.id === formData.duration)?.name || 'Not selected'
+                            ? subscriptionDurations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                            : durations.find(d => d.id === formData.duration)?.label || 'Not selected'
                         }
                       </p>
                     </div>
