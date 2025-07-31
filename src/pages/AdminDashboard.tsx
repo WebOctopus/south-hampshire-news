@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import PricingManagement from '@/components/PricingManagement';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus } from 'lucide-react';
 
@@ -309,10 +310,11 @@ const AdminDashboard = () => {
           </div>
 
           <Tabs defaultValue="businesses" className="mb-8">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="businesses">Business Management</TabsTrigger>
               <TabsTrigger value="users">User Management</TabsTrigger>
               <TabsTrigger value="stories">Story Management</TabsTrigger>
+              <TabsTrigger value="pricing">Pricing Management</TabsTrigger>
             </TabsList>
 
             <TabsContent value="businesses">
@@ -603,6 +605,10 @@ const AdminDashboard = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="pricing">
+              <PricingManagement />
             </TabsContent>
           </Tabs>
         </div>

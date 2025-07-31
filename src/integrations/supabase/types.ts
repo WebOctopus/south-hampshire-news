@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_sizes: {
+        Row: {
+          base_price_per_area: number
+          base_price_per_month: number
+          created_at: string
+          dimensions: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          base_price_per_area?: number
+          base_price_per_month?: number
+          created_at?: string
+          dimensions: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          base_price_per_area?: number
+          base_price_per_month?: number
+          created_at?: string
+          dimensions?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       business_categories: {
         Row: {
           created_at: string
@@ -225,6 +261,87 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_areas: {
+        Row: {
+          base_price_multiplier: number
+          circulation: number
+          created_at: string
+          full_page_multiplier: number
+          half_page_multiplier: number
+          id: string
+          is_active: boolean
+          name: string
+          postcodes: string[]
+          quarter_page_multiplier: number
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          base_price_multiplier?: number
+          circulation?: number
+          created_at?: string
+          full_page_multiplier?: number
+          half_page_multiplier?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          postcodes?: string[]
+          quarter_page_multiplier?: number
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          base_price_multiplier?: number
+          circulation?: number
+          created_at?: string
+          full_page_multiplier?: number
+          half_page_multiplier?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          postcodes?: string[]
+          quarter_page_multiplier?: number
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_durations: {
+        Row: {
+          created_at: string
+          discount_percentage: number
+          duration_type: string
+          duration_value: number
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percentage?: number
+          duration_type: string
+          duration_value: number
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_percentage?: number
+          duration_type?: string
+          duration_value?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -249,6 +366,48 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      special_deals: {
+        Row: {
+          created_at: string
+          deal_type: string
+          deal_value: number
+          description: string | null
+          id: string
+          is_active: boolean
+          min_areas: number | null
+          name: string
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          deal_type: string
+          deal_value?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_areas?: number | null
+          name: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          deal_type?: string
+          deal_value?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          min_areas?: number | null
+          name?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Relationships: []
       }
@@ -321,6 +480,36 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      volume_discounts: {
+        Row: {
+          created_at: string
+          discount_percentage: number
+          id: string
+          is_active: boolean
+          max_areas: number | null
+          min_areas: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          max_areas?: number | null
+          min_areas: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          max_areas?: number | null
+          min_areas?: number
+          updated_at?: string
         }
         Relationships: []
       }
