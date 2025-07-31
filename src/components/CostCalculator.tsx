@@ -33,33 +33,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
 
-  if (loading) {
-    return (
-      <Dialog>
-        <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent>
-          <div className="flex items-center justify-center p-6">
-            <div className="text-center">Loading pricing data...</div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  if (error) {
-    return (
-      <Dialog>
-        <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent>
-          <div className="flex items-center justify-center p-6">
-            <div className="text-center text-red-600">Error loading pricing data: {error}</div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-
+  // Auto-set duration for BOGOF - this hook must be called every render
+  useEffect(() => {
+    if (selectedPricingModel === 'bogof') {
+      setFormData(prev => ({ ...prev, duration: '6-months' }));
+    }
+  }, [selectedPricingModel]);
 
   const handleAreaChange = (areaId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -86,12 +65,32 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
 
-  // Auto-set duration for BOGOF
-  useEffect(() => {
-    if (selectedPricingModel === 'bogof') {
-      setFormData(prev => ({ ...prev, duration: '6-months' }));
-    }
-  }, [selectedPricingModel]);
+  // NOW we can do conditional rendering after all hooks are called
+  if (loading) {
+    return (
+      <Dialog>
+        <DialogTrigger asChild>{children}</DialogTrigger>
+        <DialogContent>
+          <div className="flex items-center justify-center p-6">
+            <div className="text-center">Loading pricing data...</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (error) {
+    return (
+      <Dialog>
+        <DialogTrigger asChild>{children}</DialogTrigger>
+        <DialogContent>
+          <div className="flex items-center justify-center p-6">
+            <div className="text-center text-red-600">Error loading pricing data: {error}</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog>
