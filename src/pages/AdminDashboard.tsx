@@ -15,24 +15,8 @@ import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import PricingManagement from '@/components/PricingManagement';
-import ContentManagement from '@/components/ContentManagement';
-import MediaLibrary from '@/components/MediaLibrary';
 import { User } from '@supabase/supabase-js';
-import { 
-  Shield, 
-  Users, 
-  Building2, 
-  Calendar, 
-  FileText, 
-  Upload, 
-  Plus, 
-  Settings, 
-  Globe, 
-  Image,
-  Layout,
-  Palette,
-  Database
-} from 'lucide-react';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -284,126 +268,54 @@ const AdminDashboard = () => {
             </p>
           </div>
 
-
-          <Tabs defaultValue="dashboard" className="mb-8">
-            <TabsList className="grid w-full grid-cols-7">
-              <TabsTrigger value="dashboard" className="flex items-center gap-1">
-                <Database className="h-4 w-4" />
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger value="content" className="flex items-center gap-1">
-                <Settings className="h-4 w-4" />
-                Content
-              </TabsTrigger>
-              <TabsTrigger value="media" className="flex items-center gap-1">
-                <Image className="h-4 w-4" />
-                Media
-              </TabsTrigger>
-              <TabsTrigger value="businesses" className="flex items-center gap-1">
-                <Building2 className="h-4 w-4" />
-                Businesses
-              </TabsTrigger>
-              <TabsTrigger value="users" className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                Users
-              </TabsTrigger>
-              <TabsTrigger value="stories" className="flex items-center gap-1">
-                <FileText className="h-4 w-4" />
-                Stories
-              </TabsTrigger>
-              <TabsTrigger value="pricing" className="flex items-center gap-1">
-                <Globe className="h-4 w-4" />
-                Pricing
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="dashboard">
-              {/* Stats Cards - Keep existing ones */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <Building2 className="h-8 w-8 text-blue-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Businesses</p>
-                        <p className="text-2xl font-bold text-gray-900">{businesses.length}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <Users className="h-8 w-8 text-green-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Users</p>
-                        <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <FileText className="h-8 w-8 text-purple-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Total Stories</p>
-                        <p className="text-2xl font-bold text-gray-900">{stories.length}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center">
-                      <Globe className="h-8 w-8 text-orange-600" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">Site Status</p>
-                        <p className="text-2xl font-bold text-gray-900">Live</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Button variant="outline" className="h-24 flex flex-col gap-2">
-                      <Plus className="h-6 w-6" />
-                      <span>Create Story</span>
-                    </Button>
-                    <Button variant="outline" className="h-24 flex flex-col gap-2">
-                      <Upload className="h-6 w-6" />
-                      <span>Upload Media</span>
-                    </Button>
-                    <Button variant="outline" className="h-24 flex flex-col gap-2">
-                      <Settings className="h-6 w-6" />
-                      <span>Site Settings</span>
-                    </Button>
-                    <Button variant="outline" className="h-24 flex flex-col gap-2">
-                      <Layout className="h-6 w-6" />
-                      <span>Manage Pages</span>
-                    </Button>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Building2 className="h-8 w-8 text-blue-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Businesses</p>
+                    <p className="text-2xl font-bold text-gray-900">{businesses.length}</p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </CardContent>
+            </Card>
 
-            <TabsContent value="content">
-              <ContentManagement />
-            </TabsContent>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Users className="h-8 w-8 text-green-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <TabsContent value="media">
-              <MediaLibrary />
-            </TabsContent>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <FileText className="h-8 w-8 text-purple-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Stories</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stories.length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Tabs defaultValue="businesses" className="mb-8">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="businesses">Business Management</TabsTrigger>
+              <TabsTrigger value="users">User Management</TabsTrigger>
+              <TabsTrigger value="stories">Story Management</TabsTrigger>
+              <TabsTrigger value="pricing">Pricing Management</TabsTrigger>
+            </TabsList>
 
             <TabsContent value="businesses">
               <Card>

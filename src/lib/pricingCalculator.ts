@@ -1,4 +1,4 @@
-import type { PricingArea, AdSize, Duration, VolumeDiscount } from '@/hooks/usePricingData';
+import { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, type Area, type AdSize, type Duration } from '@/data/advertisingPricing';
 
 export interface PricingBreakdown {
   subtotal: number;
@@ -8,7 +8,7 @@ export interface PricingBreakdown {
   finalTotal: number;
   totalCirculation: number;
   areaBreakdown: Array<{
-    area: PricingArea;
+    area: Area;
     adSize: AdSize;
     basePrice: number;
     multipliedPrice: number;
@@ -22,11 +22,7 @@ export function calculateAdvertisingPrice(
   selectedAreaIds: string[],
   adSizeId: string,
   durationId: string,
-  isSubscription: boolean = false,
-  areas: PricingArea[] = [],
-  adSizes: AdSize[] = [],
-  durations: Duration[] = [],
-  subscriptionDurations: Duration[] = []
+  isSubscription: boolean = false
 ): PricingBreakdown | null {
   // Validate inputs
   if (!selectedAreaIds.length || !adSizeId || !durationId) {
@@ -45,7 +41,7 @@ export function calculateAdvertisingPrice(
   // Calculate pricing based on model type
   const areasCount = selectedAreas.length;
   let subtotal: number;
-  let areaBreakdown: Array<{area: PricingArea; adSize: AdSize; basePrice: number; multipliedPrice: number;}>;
+  let areaBreakdown: Array<{area: Area; adSize: AdSize; basePrice: number; multipliedPrice: number;}>;
 
   if (isSubscription) {
     // For subscription: use per-issue pricing from Excel data
@@ -95,11 +91,11 @@ export function calculateAdvertisingPrice(
 /**
  * Get volume discount percentage based on number of areas selected
  */
-function getVolumeDiscount(areasCount: number, volumeDiscounts: VolumeDiscount[] = []): number {
+function getVolumeDiscount(areasCount: number): number {
   const tier = volumeDiscounts.find(
-    tier => areasCount >= tier.min_areas && (!tier.max_areas || areasCount <= tier.max_areas)
+    tier => areasCount >= tier.minAreas && areasCount <= tier.maxAreas
   );
-  return tier?.discount_percentage || 0;
+  return tier?.discountPercentage || 0;
 }
 
 /**
