@@ -617,10 +617,31 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     
                     <Separator />
                     
-                    <div className="flex justify-between text-xl font-bold text-community-navy">
-                      <span>Total Price:</span>
-                      <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
-                    </div>
+                     <div className="flex justify-between text-xl font-bold text-community-navy">
+                       <span>
+                         {selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof' 
+                           ? 'Monthly Payment:' 
+                           : 'Total Price:'
+                         }
+                       </span>
+                       <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                     </div>
+                     
+                     {(selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof') && (
+                       <div className="text-sm text-gray-600 space-y-1">
+                         <p>• Paid monthly by direct debit</p>
+                         <p>• All prices subject to VAT</p>
+                         {selectedPricingModel === 'subscription' && (
+                           <p>• Annual payment option available with discount</p>
+                         )}
+                       </div>
+                     )}
+                     
+                     {selectedPricingModel === 'fixed' && (
+                       <div className="text-sm text-gray-600">
+                         <p>• All prices subject to VAT</p>
+                       </div>
+                     )}
                   </div>
 
                   {/* Area Breakdown */}
