@@ -101,7 +101,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
 
-  // Enhanced loading state calculation
+  // Enhanced loading state calculation - v2.0
   const isLoading = Object.values(loadingStates).some(state => state);
   
   // Load all pricing data from database with enhanced error handling
