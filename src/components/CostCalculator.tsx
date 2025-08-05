@@ -104,107 +104,68 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   // Enhanced loading state calculation - v2.0
   const isLoading = Object.values(loadingStates).some(state => state);
   
-  // Enhanced loading with simplified, faster approach
+  // Simplified data loading with proper error handling
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    let isCancelled = false;
+    let mounted = true;
     
-    const loadPricingData = async (attempt = 1) => {
-      const maxRetries = 2;
-      const timeoutMs = 5000; // Reduced to 5 seconds
-      
-      if (isCancelled) return;
-      
+    const loadPricingData = async () => {
       try {
-        console.log(`🔄 Loading pricing data (attempt ${attempt}/${maxRetries})`);
+        console.log('🔄 Loading pricing data...');
         
-        // Create a timeout promise that rejects
-        const timeoutPromise = new Promise((_, reject) => {
-          timeoutId = setTimeout(() => {
-            reject(new Error(`Query timeout after ${timeoutMs}ms`));
-          }, timeoutMs);
-        });
+        // Load data sequentially to avoid overwhelming the connection
+        const [adSizesResult, areasResult, durationsResult, volumeDiscountsResult] = await Promise.all([
+          supabase
+            .from('ad_sizes')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order'),
+          
+          supabase
+            .from('pricing_areas')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order'),
+          
+          supabase
+            .from('pricing_durations')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order'),
+          
+          supabase
+            .from('volume_discounts')
+            .select('*')
+            .eq('is_active', true)
+            .order('min_areas')
+        ]);
 
-        // Load all data in parallel with simplified queries
-        console.log('📊 Loading all pricing data...');
-        
-        const queries = await Promise.race([
-          Promise.all([
-            // Simplified ad sizes query
-            supabase
-              .from('ad_sizes')
-              .select('id, name, dimensions, available_for, fixed_pricing_per_issue, subscription_pricing_per_issue, base_price_per_area, base_price_per_month')
-              .eq('is_active', true)
-              .order('sort_order'),
-            
-            // Simplified areas query  
-            supabase
-              .from('pricing_areas')
-              .select('id, name, postcodes, circulation, base_price_multiplier, quarter_page_multiplier, half_page_multiplier, full_page_multiplier')
-              .eq('is_active', true)
-              .order('sort_order'),
-            
-            // Simplified durations query
-            supabase
-              .from('pricing_durations')
-              .select('id, name, duration_value, duration_type, discount_percentage')
-              .eq('is_active', true)
-              .order('sort_order'),
-            
-            // Simplified volume discounts query
-            supabase
-              .from('volume_discounts')
-              .select('id, min_areas, max_areas, discount_percentage')
-              .eq('is_active', true)
-              .order('min_areas')
-          ]),
-          timeoutPromise
-        ]) as any;
+        if (!mounted) return;
 
-        clearTimeout(timeoutId);
+        // Check for errors
+        if (adSizesResult.error) throw adSizesResult.error;
+        if (areasResult.error) throw areasResult.error;
+        if (durationsResult.error) throw durationsResult.error;
+        if (volumeDiscountsResult.error) throw volumeDiscountsResult.error;
 
-        if (isCancelled) return;
+        // Process the data
+        const transformedAdSizes = (adSizesResult.data || []).map(item => ({
+          ...item,
+          available_for: Array.isArray(item.available_for) 
+            ? item.available_for 
+            : ['fixed', 'subscription']
+        }));
 
-        const [adSizesResult, areasResult, durationsResult, volumeDiscountsResult] = queries;
-
-        // Check for errors in any of the queries
-        if (adSizesResult.error) throw new Error(`Ad sizes: ${adSizesResult.error.message}`);
-        if (areasResult.error) throw new Error(`Areas: ${areasResult.error.message}`);
-        if (durationsResult.error) throw new Error(`Durations: ${durationsResult.error.message}`);
-        if (volumeDiscountsResult.error) throw new Error(`Volume discounts: ${volumeDiscountsResult.error.message}`);
-
-        // Process ad sizes with better error handling
-        const transformedAdSizes = (adSizesResult.data || []).map((item, index) => {
-          try {
-            return {
-              ...item,
-              available_for: Array.isArray(item.available_for) 
-                ? item.available_for 
-                : (typeof item.available_for === 'string' 
-                  ? JSON.parse(item.available_for || '["fixed", "subscription"]') 
-                  : ['fixed', 'subscription'])
-            };
-          } catch (parseError) {
-            console.warn(`⚠️ Failed to parse ad size ${index}:`, parseError);
-            return {
-              ...item,
-              available_for: ['fixed', 'subscription']
-            };
-          }
-        });
-
-        // Process durations
         const fixedDurations = (durationsResult.data || []).filter(d => d.duration_type === 'fixed');
         const subDurations = (durationsResult.data || []).filter(d => d.duration_type === 'subscription');
 
-        // Update all state at once to minimize re-renders
+        // Update state
         setDbAdSizes(transformedAdSizes);
         setAreas(areasResult.data || []);
         setDurations(fixedDurations);
         setSubscriptionDurations(subDurations);
         setVolumeDiscounts(volumeDiscountsResult.data || []);
 
-        // Reset loading states all at once
+        // Clear loading states
         setLoadingStates({
           areas: false,
           adSizes: false,
@@ -212,12 +173,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
           volumeDiscounts: false
         });
 
-        // Reset error state
         setHasError(false);
         setErrorDetails('');
-        setRetryCount(0);
         
-        console.log('🎉 All pricing data loaded successfully!', {
+        console.log('✅ Pricing data loaded successfully!', {
           adSizes: transformedAdSizes.length,
           areas: (areasResult.data || []).length,
           fixedDurations: fixedDurations.length,
@@ -228,47 +187,25 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
       } catch (error: any) {
         console.error('❌ Error loading pricing data:', error);
         
-        if (isCancelled) return;
+        if (!mounted) return;
         
-        const errorMessage = error.message || 'Unknown error occurred';
-        setErrorDetails(errorMessage);
         setHasError(true);
+        setErrorDetails(error.message || 'Failed to load pricing data');
         
-        // Reset loading states on error
+        // Clear loading states even on error
         setLoadingStates({
           areas: false,
           adSizes: false,
           durations: false,
           volumeDiscounts: false
         });
-        
-        // Retry logic with exponential backoff
-        if (attempt < maxRetries) {
-          const retryDelay = Math.min(1000 * attempt, 3000); // Max 3s delay
-          console.log(`🔄 Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
-          
-          setRetryCount(attempt);
-          
-          setTimeout(() => {
-            if (!isCancelled) {
-              loadPricingData(attempt + 1);
-            }
-          }, retryDelay);
-        } else {
-          console.error('💥 All retry attempts failed');
-          setRetryCount(maxRetries);
-        }
-      } finally {
-        if (timeoutId) clearTimeout(timeoutId);
       }
     };
 
     loadPricingData();
 
-    // Cleanup function
     return () => {
-      isCancelled = true;
-      if (timeoutId) clearTimeout(timeoutId);
+      mounted = false;
     };
   }, []);
 
