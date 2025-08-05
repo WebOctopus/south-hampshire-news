@@ -101,7 +101,6 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
   const { toast } = useToast();
 
   useEffect(() => {
-    loadAllData();
     initializeDefaultData();
   }, []);
 
