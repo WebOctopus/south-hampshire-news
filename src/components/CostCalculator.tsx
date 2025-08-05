@@ -96,15 +96,15 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   // Data loading with proper error handling
   useEffect(() => {
     let mounted = true;
-    let isLoading = false; // Prevent multiple simultaneous calls
+    let loadingInProgress = false; // Prevent multiple simultaneous calls
     
     const loadPricingData = async () => {
-      if (isLoading) {
+      if (loadingInProgress) {
         console.log('🚫 Already loading, skipping...');
         return;
       }
       
-      isLoading = true;
+      loadingInProgress = true;
       
       try {
         console.log('🔄 Loading pricing data...');
@@ -216,7 +216,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         setErrorDetails(error.message || 'Failed to load pricing data');
         setIsLoading(false);
       } finally {
-        isLoading = false;
+        loadingInProgress = false;
       }
     };
 
