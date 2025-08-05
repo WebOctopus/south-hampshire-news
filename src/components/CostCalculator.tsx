@@ -62,18 +62,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   const [subscriptionDurations, setSubscriptionDurations] = useState<Duration[]>([]);
   const [volumeDiscounts, setVolumeDiscounts] = useState<VolumeDiscount[]>([]);
   
-  // Enhanced loading states
-  const [loadingStates, setLoadingStates] = useState({
-    areas: true,
-    adSizes: true,
-    durations: true,
-    volumeDiscounts: true
-  });
-  const [retryCount, setRetryCount] = useState(0);
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [errorDetails, setErrorDetails] = useState<string>('');
-
-
 
   const handleAreaChange = (areaId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -100,11 +92,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   );
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
-
-  // Enhanced loading state calculation - v2.0
-  const isLoading = Object.values(loadingStates).some(state => state);
   
-  // Simplified data loading with proper error handling
+  // Data loading with proper error handling
   useEffect(() => {
     let mounted = true;
     
@@ -112,7 +101,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
       try {
         console.log('🔄 Loading pricing data...');
         
-        // Load data sequentially to avoid overwhelming the connection
+        // Load data in parallel
         const [adSizesResult, areasResult, durationsResult, volumeDiscountsResult] = await Promise.all([
           supabase
             .from('ad_sizes')
@@ -165,14 +154,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         setSubscriptionDurations(subDurations);
         setVolumeDiscounts(volumeDiscountsResult.data || []);
 
-        // Clear loading states
-        setLoadingStates({
-          areas: false,
-          adSizes: false,
-          durations: false,
-          volumeDiscounts: false
-        });
-
+        // Clear loading state
+        setIsLoading(false);
         setHasError(false);
         setErrorDetails('');
         
@@ -191,14 +174,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         
         setHasError(true);
         setErrorDetails(error.message || 'Failed to load pricing data');
-        
-        // Clear loading states even on error
-        setLoadingStates({
-          areas: false,
-          adSizes: false,
-          durations: false,
-          volumeDiscounts: false
-        });
+        setIsLoading(false);
       }
     };
 
@@ -503,15 +479,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 <div className="text-center py-4">
                   <div className="space-y-2">
                     <div className="animate-pulse">Loading ad sizes...</div>
-                    {hasError && (
-                      <div className="text-red-500 text-sm">
-                        <p>⚠️ {errorDetails}</p>
-                        {retryCount < 3 && <p>Retrying... (attempt {retryCount + 1}/3)</p>}
-                        {retryCount >= 3 && (
-                          <p>All retries failed. Please refresh the page to try again.</p>
-                        )}
-                      </div>
-                    )}
+                     {hasError && (
+                       <div className="text-red-500 text-sm">
+                         <p>⚠️ {errorDetails}</p>
+                         <p>Please refresh the page to try again.</p>
+                       </div>
+                     )}
                   </div>
                 </div>
               ) : hasError ? (
