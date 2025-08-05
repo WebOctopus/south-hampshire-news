@@ -104,47 +104,77 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   // Enhanced loading state calculation - v2.0
   const isLoading = Object.values(loadingStates).some(state => state);
   
-  // Load all pricing data from database with enhanced error handling
+  // Enhanced loading with simplified, faster approach
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    let retryTimeoutId: NodeJS.Timeout;
+    let isCancelled = false;
     
     const loadPricingData = async (attempt = 1) => {
-      const maxRetries = 3;
-      const timeoutMs = 10000; // 10 seconds
+      const maxRetries = 2;
+      const timeoutMs = 5000; // Reduced to 5 seconds
+      
+      if (isCancelled) return;
       
       try {
         console.log(`🔄 Loading pricing data (attempt ${attempt}/${maxRetries})`);
         
-        // Set timeout protection
+        // Create a timeout promise that rejects
         const timeoutPromise = new Promise((_, reject) => {
           timeoutId = setTimeout(() => {
-            reject(new Error(`Timeout: Data loading took longer than ${timeoutMs}ms`));
+            reject(new Error(`Query timeout after ${timeoutMs}ms`));
           }, timeoutMs);
         });
 
-        // Load ad sizes with enhanced error handling
-        console.log('📊 Loading ad sizes...');
-        setLoadingStates(prev => ({ ...prev, adSizes: true }));
+        // Load all data in parallel with simplified queries
+        console.log('📊 Loading all pricing data...');
         
-        const adSizesPromise = supabase
-          .from('ad_sizes')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true });
-
-        const { data: adSizesData, error: adSizesError } = await Promise.race([
-          adSizesPromise, 
+        const queries = await Promise.race([
+          Promise.all([
+            // Simplified ad sizes query
+            supabase
+              .from('ad_sizes')
+              .select('id, name, dimensions, available_for, fixed_pricing_per_issue, subscription_pricing_per_issue, base_price_per_area, base_price_per_month')
+              .eq('is_active', true)
+              .order('sort_order'),
+            
+            // Simplified areas query  
+            supabase
+              .from('pricing_areas')
+              .select('id, name, postcodes, circulation, base_price_multiplier, quarter_page_multiplier, half_page_multiplier, full_page_multiplier')
+              .eq('is_active', true)
+              .order('sort_order'),
+            
+            // Simplified durations query
+            supabase
+              .from('pricing_durations')
+              .select('id, name, duration_value, duration_type, discount_percentage')
+              .eq('is_active', true)
+              .order('sort_order'),
+            
+            // Simplified volume discounts query
+            supabase
+              .from('volume_discounts')
+              .select('id, min_areas, max_areas, discount_percentage')
+              .eq('is_active', true)
+              .order('min_areas')
+          ]),
           timeoutPromise
         ]) as any;
 
-        if (adSizesError) {
-          console.error('❌ Ad sizes error:', adSizesError);
-          throw new Error(`Ad sizes fetch failed: ${adSizesError.message}`);
-        }
-        
-        // Enhanced data transformation with validation
-        const transformedAdSizes = (adSizesData || []).map((item, index) => {
+        clearTimeout(timeoutId);
+
+        if (isCancelled) return;
+
+        const [adSizesResult, areasResult, durationsResult, volumeDiscountsResult] = queries;
+
+        // Check for errors in any of the queries
+        if (adSizesResult.error) throw new Error(`Ad sizes: ${adSizesResult.error.message}`);
+        if (areasResult.error) throw new Error(`Areas: ${areasResult.error.message}`);
+        if (durationsResult.error) throw new Error(`Durations: ${durationsResult.error.message}`);
+        if (volumeDiscountsResult.error) throw new Error(`Volume discounts: ${volumeDiscountsResult.error.message}`);
+
+        // Process ad sizes with better error handling
+        const transformedAdSizes = (adSizesResult.data || []).map((item, index) => {
           try {
             return {
               ...item,
@@ -162,116 +192,49 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             };
           }
         });
-        
-        console.log(`✅ Loaded ${transformedAdSizes.length} ad sizes`);
+
+        // Process durations
+        const fixedDurations = (durationsResult.data || []).filter(d => d.duration_type === 'fixed');
+        const subDurations = (durationsResult.data || []).filter(d => d.duration_type === 'subscription');
+
+        // Update all state at once to minimize re-renders
         setDbAdSizes(transformedAdSizes);
-        setLoadingStates(prev => ({ ...prev, adSizes: false }));
-
-        // Load pricing areas with enhanced error handling
-        console.log('🗺️ Loading pricing areas...');
-        setLoadingStates(prev => ({ ...prev, areas: true }));
-        
-        const areasPromise = supabase
-          .from('pricing_areas')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true });
-
-        const { data: areasData, error: areasError } = await Promise.race([
-          areasPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (areasError) {
-          console.error('❌ Areas error:', areasError);
-          throw new Error(`Areas fetch failed: ${areasError.message}`);
-        }
-        
-        console.log(`✅ Loaded ${(areasData || []).length} areas`);
-        setAreas(areasData || []);
-        setLoadingStates(prev => ({ ...prev, areas: false }));
-
-        // Load pricing durations with enhanced error handling
-        console.log('⏱️ Loading pricing durations...');
-        setLoadingStates(prev => ({ ...prev, durations: true }));
-        
-        const durationsPromise = supabase
-          .from('pricing_durations')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true });
-
-        const { data: durationsData, error: durationsError } = await Promise.race([
-          durationsPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (durationsError) {
-          console.error('❌ Durations error:', durationsError);
-          throw new Error(`Durations fetch failed: ${durationsError.message}`);
-        }
-        
-        // Enhanced duration filtering with validation
-        const fixedDurations = (durationsData || []).filter(d => {
-          if (!d.duration_type) {
-            console.warn('⚠️ Duration missing type:', d);
-            return false;
-          }
-          return d.duration_type === 'fixed';
-        });
-        
-        const subDurations = (durationsData || []).filter(d => {
-          if (!d.duration_type) {
-            console.warn('⚠️ Duration missing type:', d);
-            return false;
-          }
-          return d.duration_type === 'subscription';
-        });
-        
-        console.log(`✅ Loaded ${fixedDurations.length} fixed durations, ${subDurations.length} subscription durations`);
+        setAreas(areasResult.data || []);
         setDurations(fixedDurations);
         setSubscriptionDurations(subDurations);
-        setLoadingStates(prev => ({ ...prev, durations: false }));
+        setVolumeDiscounts(volumeDiscountsResult.data || []);
 
-        // Load volume discounts with enhanced error handling
-        console.log('🎯 Loading volume discounts...');
-        setLoadingStates(prev => ({ ...prev, volumeDiscounts: true }));
-        
-        const volumeDiscountsPromise = supabase
-          .from('volume_discounts')
-          .select('*')
-          .eq('is_active', true)
-          .order('min_areas', { ascending: true });
+        // Reset loading states all at once
+        setLoadingStates({
+          areas: false,
+          adSizes: false,
+          durations: false,
+          volumeDiscounts: false
+        });
 
-        const { data: volumeDiscountsData, error: volumeDiscountsError } = await Promise.race([
-          volumeDiscountsPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (volumeDiscountsError) {
-          console.error('❌ Volume discounts error:', volumeDiscountsError);
-          throw new Error(`Volume discounts fetch failed: ${volumeDiscountsError.message}`);
-        }
-        
-        console.log(`✅ Loaded ${(volumeDiscountsData || []).length} volume discounts`);
-        setVolumeDiscounts(volumeDiscountsData || []);
-        setLoadingStates(prev => ({ ...prev, volumeDiscounts: false }));
-
-        // Reset error state on success
+        // Reset error state
         setHasError(false);
         setErrorDetails('');
         setRetryCount(0);
         
-        console.log('🎉 All pricing data loaded successfully!');
+        console.log('🎉 All pricing data loaded successfully!', {
+          adSizes: transformedAdSizes.length,
+          areas: (areasResult.data || []).length,
+          fixedDurations: fixedDurations.length,
+          subscriptionDurations: subDurations.length,
+          volumeDiscounts: (volumeDiscountsResult.data || []).length
+        });
         
       } catch (error: any) {
         console.error('❌ Error loading pricing data:', error);
+        
+        if (isCancelled) return;
         
         const errorMessage = error.message || 'Unknown error occurred';
         setErrorDetails(errorMessage);
         setHasError(true);
         
-        // Reset all loading states on error
+        // Reset loading states on error
         setLoadingStates({
           areas: false,
           adSizes: false,
@@ -279,14 +242,17 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
           volumeDiscounts: false
         });
         
-        // Implement retry logic
+        // Retry logic with exponential backoff
         if (attempt < maxRetries) {
-          const retryDelay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff, max 5s
+          const retryDelay = Math.min(1000 * attempt, 3000); // Max 3s delay
           console.log(`🔄 Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
           
           setRetryCount(attempt);
-          retryTimeoutId = setTimeout(() => {
-            loadPricingData(attempt + 1);
+          
+          setTimeout(() => {
+            if (!isCancelled) {
+              loadPricingData(attempt + 1);
+            }
           }, retryDelay);
         } else {
           console.error('💥 All retry attempts failed');
@@ -301,8 +267,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
     // Cleanup function
     return () => {
+      isCancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
-      if (retryTimeoutId) clearTimeout(retryTimeoutId);
     };
   }, []);
 
