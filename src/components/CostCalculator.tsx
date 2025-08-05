@@ -130,11 +130,27 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
         if (!mounted) return;
 
-        // Check for errors
-        if (adSizesResult.error) throw adSizesResult.error;
-        if (areasResult.error) throw areasResult.error;
-        if (durationsResult.error) throw durationsResult.error;
-        if (volumeDiscountsResult.error) throw volumeDiscountsResult.error;
+        // Check for errors with detailed logging
+        console.log('🔍 Checking query results...');
+        if (adSizesResult.error) {
+          console.error('❌ Ad sizes error:', adSizesResult.error);
+          throw adSizesResult.error;
+        }
+        if (areasResult.error) {
+          console.error('❌ Areas error:', areasResult.error);
+          throw areasResult.error;
+        }
+        if (durationsResult.error) {
+          console.error('❌ Durations error:', durationsResult.error);
+          throw durationsResult.error;
+        }
+        if (volumeDiscountsResult.error) {
+          console.error('❌ Volume discounts error:', volumeDiscountsResult.error);
+          throw volumeDiscountsResult.error;
+        }
+
+        console.log('✅ All queries successful, processing data...');
+        console.log('📊 Raw ad sizes:', adSizesResult.data);
 
         // Process the data
         const transformedAdSizes = (adSizesResult.data || []).map(item => ({
@@ -144,18 +160,31 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             : ['fixed', 'subscription']
         }));
 
+        console.log('📊 Transformed ad sizes:', transformedAdSizes);
+
         const fixedDurations = (durationsResult.data || []).filter(d => d.duration_type === 'fixed');
         const subDurations = (durationsResult.data || []).filter(d => d.duration_type === 'subscription');
 
-        // Update state
+        console.log('⏱️ Fixed durations:', fixedDurations);
+        console.log('⏱️ Subscription durations:', subDurations);
+
+        // Update state with logging
+        console.log('🔄 Setting state - ad sizes count:', transformedAdSizes.length);
         setDbAdSizes(transformedAdSizes);
+        
+        console.log('🔄 Setting state - areas count:', (areasResult.data || []).length);
         setAreas(areasResult.data || []);
+        
+        console.log('🔄 Setting state - durations...');
         setDurations(fixedDurations);
         setSubscriptionDurations(subDurations);
         setVolumeDiscounts(volumeDiscountsResult.data || []);
 
-        // Clear loading state
+        // Clear loading state with logging
+        console.log('🔄 About to clear loading state. Current isLoading:', true);
         setIsLoading(false);
+        console.log('✅ Loading state should now be false');
+        
         setHasError(false);
         setErrorDetails('');
         
