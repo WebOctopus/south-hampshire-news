@@ -20,10 +20,12 @@ export type Database = {
           base_price_per_month: number
           created_at: string
           dimensions: string
+          fixed_pricing_per_issue: Json | null
           id: string
           is_active: boolean
           name: string
           sort_order: number | null
+          subscription_pricing_per_issue: Json | null
           updated_at: string
         }
         Insert: {
@@ -31,10 +33,12 @@ export type Database = {
           base_price_per_month?: number
           created_at?: string
           dimensions: string
+          fixed_pricing_per_issue?: Json | null
           id?: string
           is_active?: boolean
           name: string
           sort_order?: number | null
+          subscription_pricing_per_issue?: Json | null
           updated_at?: string
         }
         Update: {
@@ -42,10 +46,12 @@ export type Database = {
           base_price_per_month?: number
           created_at?: string
           dimensions?: string
+          fixed_pricing_per_issue?: Json | null
           id?: string
           is_active?: boolean
           name?: string
           sort_order?: number | null
+          subscription_pricing_per_issue?: Json | null
           updated_at?: string
         }
         Relationships: []
@@ -207,6 +213,72 @@ export type Database = {
           },
         ]
       }
+      component_settings: {
+        Row: {
+          component_name: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          component_name: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          component_name?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          settings?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_blocks: {
+        Row: {
+          block_type: string
+          content: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          position: string | null
+          settings: Json | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          block_type: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          position?: string | null
+          settings?: Json | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          block_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          position?: string | null
+          settings?: Json | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           area: string
@@ -260,6 +332,128 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      media_library: {
+        Row: {
+          alt_text: string | null
+          caption: string | null
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          alt_text?: string | null
+          caption?: string | null
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          alt_text?: string | null
+          caption?: string | null
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      navigation_menus: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          location: string
+          menu_items: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          location: string
+          menu_items?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          location?: string
+          menu_items?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pages: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          parent_id: string | null
+          slug: string
+          sort_order: number | null
+          template: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          parent_id?: string | null
+          slug: string
+          sort_order?: number | null
+          template?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number | null
+          template?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pricing_areas: {
         Row: {
@@ -369,6 +563,36 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_type: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_type?: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_type?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       special_deals: {
         Row: {
           created_at: string
@@ -455,6 +679,33 @@ export type Database = {
           is_published?: boolean
           published_at?: string | null
           title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      theme_settings: {
+        Row: {
+          created_at: string
+          id: string
+          setting_group: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          setting_group: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          setting_group?: string
+          setting_key?: string
+          setting_value?: string
           updated_at?: string
         }
         Relationships: []
