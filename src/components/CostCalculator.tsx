@@ -390,6 +390,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Choose up to {bogofPaidAreas.length} additional areas that you'll receive FREE for the first 6 months (3 bi-monthly issues).
+                  Available free areas: {areas.filter(area => !bogofPaidAreas.includes(area.id)).length}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {areas
