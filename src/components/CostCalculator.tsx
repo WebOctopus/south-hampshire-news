@@ -235,10 +235,14 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
   // Auto-set duration for BOGOF
   useEffect(() => {
-    if (selectedPricingModel === 'bogof') {
-      setFormData(prev => ({ ...prev, duration: '6-months' }));
+    if (selectedPricingModel === 'bogof' && subscriptionDurations.length > 0) {
+      // Find the 6-month subscription duration
+      const sixMonthDuration = subscriptionDurations.find(d => d.duration_value === 6);
+      if (sixMonthDuration) {
+        setFormData(prev => ({ ...prev, duration: sixMonthDuration.id }));
+      }
     }
-  }, [selectedPricingModel]);
+  }, [selectedPricingModel, subscriptionDurations]);
 
   return (
     <Dialog>
