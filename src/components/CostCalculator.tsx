@@ -95,14 +95,12 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   
   // Data loading with proper error handling
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
     
     const loadPricingData = async () => {
-      console.log('🔄 Loading pricing data...');
+      console.log('🔄 Starting to load pricing data...');
       
       try {
-        console.log('🔄 Loading pricing data...');
-        
         // Load data in parallel
         const [adSizesResult, areasResult, durationsResult, volumeDiscountsResult] = await Promise.all([
           supabase
@@ -130,32 +128,18 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             .order('min_areas')
         ]);
 
-        if (!mounted) {
+        if (!isMounted) {
           console.log('🚫 Component unmounted, aborting...');
           return;
         }
 
-        // Check for errors with detailed logging
-        console.log('🔍 Checking query results...');
-        if (adSizesResult.error) {
-          console.error('❌ Ad sizes error:', adSizesResult.error);
-          throw adSizesResult.error;
-        }
-        if (areasResult.error) {
-          console.error('❌ Areas error:', areasResult.error);
-          throw areasResult.error;
-        }
-        if (durationsResult.error) {
-          console.error('❌ Durations error:', durationsResult.error);
-          throw durationsResult.error;
-        }
-        if (volumeDiscountsResult.error) {
-          console.error('❌ Volume discounts error:', volumeDiscountsResult.error);
-          throw volumeDiscountsResult.error;
-        }
+        // Check for errors
+        if (adSizesResult.error) throw adSizesResult.error;
+        if (areasResult.error) throw areasResult.error;
+        if (durationsResult.error) throw durationsResult.error;
+        if (volumeDiscountsResult.error) throw volumeDiscountsResult.error;
 
         console.log('✅ All queries successful, processing data...');
-        console.log('📊 Raw ad sizes:', adSizesResult.data);
 
         // Process the data
         const transformedAdSizes = (adSizesResult.data || []).map(item => ({
@@ -165,58 +149,45 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             : ['fixed', 'subscription']
         }));
 
-        console.log('📊 Transformed ad sizes:', transformedAdSizes);
-
         const fixedDurations = (durationsResult.data || []).filter(d => d.duration_type === 'fixed');
         const subDurations = (durationsResult.data || []).filter(d => d.duration_type === 'subscription');
 
-        console.log('⏱️ Fixed durations:', fixedDurations);
-        console.log('⏱️ Subscription durations:', subDurations);
-
-        // Update state with logging
-        console.log('🔄 Setting state - ad sizes count:', transformedAdSizes.length);
-        setDbAdSizes(transformedAdSizes);
-        
-        console.log('🔄 Setting state - areas count:', (areasResult.data || []).length);
-        setAreas(areasResult.data || []);
-        
-        console.log('🔄 Setting state - durations...');
-        setDurations(fixedDurations);
-        setSubscriptionDurations(subDurations);
-        setVolumeDiscounts(volumeDiscountsResult.data || []);
-
-        // Clear loading state with logging
-        console.log('🔄 About to clear loading state. Current isLoading:', true);
-        setIsLoading(false);
-        console.log('✅ Loading state should now be false');
-        
-        setHasError(false);
-        setErrorDetails('');
-        
-        console.log('✅ Pricing data loaded successfully!', {
-          adSizes: transformedAdSizes.length,
-          areas: (areasResult.data || []).length,
-          fixedDurations: fixedDurations.length,
-          subscriptionDurations: subDurations.length,
-          volumeDiscounts: (volumeDiscountsResult.data || []).length
-        });
+        // Update all state in a single batch to ensure proper re-render
+        if (isMounted) {
+          setDbAdSizes(transformedAdSizes);
+          setAreas(areasResult.data || []);
+          setDurations(fixedDurations);
+          setSubscriptionDurations(subDurations);
+          setVolumeDiscounts(volumeDiscountsResult.data || []);
+          setHasError(false);
+          setErrorDetails('');
+          // Set loading to false last to ensure all data is set
+          setIsLoading(false);
+          
+          console.log('✅ Pricing data loaded successfully!', {
+            adSizes: transformedAdSizes.length,
+            areas: (areasResult.data || []).length,
+            fixedDurations: fixedDurations.length,
+            subscriptionDurations: subDurations.length,
+            volumeDiscounts: (volumeDiscountsResult.data || []).length
+          });
+        }
         
       } catch (error: any) {
         console.error('❌ Error loading pricing data:', error);
         
-        if (!mounted) return;
-        
-        setHasError(true);
-        setErrorDetails(error.message || 'Failed to load pricing data');
-        setIsLoading(false);
+        if (isMounted) {
+          setHasError(true);
+          setErrorDetails(error.message || 'Failed to load pricing data');
+          setIsLoading(false);
+        }
       }
     };
 
-    // Only load data once
     loadPricingData();
 
     return () => {
-      mounted = false;
+      isMounted = false;
     };
   }, []); // Empty dependency array to prevent re-runs
 
