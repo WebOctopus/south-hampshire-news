@@ -96,15 +96,9 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   // Data loading with proper error handling
   useEffect(() => {
     let mounted = true;
-    let loadingInProgress = false; // Prevent multiple simultaneous calls
     
     const loadPricingData = async () => {
-      if (loadingInProgress) {
-        console.log('🚫 Already loading, skipping...');
-        return;
-      }
-      
-      loadingInProgress = true;
+      console.log('🔄 Loading pricing data...');
       
       try {
         console.log('🔄 Loading pricing data...');
@@ -215,18 +209,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         setHasError(true);
         setErrorDetails(error.message || 'Failed to load pricing data');
         setIsLoading(false);
-      } finally {
-        loadingInProgress = false;
       }
     };
 
-    // Only load if we don't already have data
-    if (dbAdSizes.length === 0 && areas.length === 0) {
-      loadPricingData();
-    } else {
-      console.log('📊 Data already loaded, skipping fetch');
-      setIsLoading(false);
-    }
+    // Only load data once
+    loadPricingData();
 
     return () => {
       mounted = false;
@@ -527,37 +514,57 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
                 Select Advertisement Size
               </h3>
-              {isLoading ? (
-                <div className="text-center py-4">
-                  <div className="space-y-2">
-                    <div className="animate-pulse">Loading ad sizes...</div>
-                     {hasError && (
-                       <div className="text-red-500 text-sm">
-                         <p>⚠️ {errorDetails}</p>
-                         <p>Please refresh the page to try again.</p>
-                       </div>
-                     )}
-                  </div>
-                </div>
-              ) : hasError ? (
-                <div className="text-center py-8 space-y-3">
-                  <div className="text-red-500">
-                    <p className="font-medium">❌ Failed to load ad sizes</p>
-                    <p className="text-sm">{errorDetails}</p>
-                  </div>
-                  <Button 
-                    onClick={() => window.location.reload()} 
-                    variant="outline" 
-                    size="sm"
-                  >
-                    Refresh Page
-                  </Button>
-                </div>
-              ) : dbAdSizes.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
-                  No ad sizes available. Please contact support.
-                </div>
-              ) : (
+               {(() => {
+                console.log('🔍 Ad sizes render check:', { 
+                  isLoading, 
+                  hasError, 
+                  dbAdSizesLength: dbAdSizes.length,
+                  areasLength: areas.length 
+                });
+                
+                if (isLoading) {
+                  return (
+                    <div className="text-center py-4">
+                      <div className="space-y-2">
+                        <div className="animate-pulse">Loading ad sizes...</div>
+                        {hasError && (
+                          <div className="text-red-500 text-sm">
+                            <p>⚠️ {errorDetails}</p>
+                            <p>Please refresh the page to try again.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+                
+                if (hasError) {
+                  return (
+                    <div className="text-center py-8 space-y-3">
+                      <div className="text-red-500">
+                        <p className="font-medium">❌ Failed to load ad sizes</p>
+                        <p className="text-sm">{errorDetails}</p>
+                      </div>
+                      <Button 
+                        onClick={() => window.location.reload()} 
+                        variant="outline" 
+                        size="sm"
+                      >
+                        Refresh Page
+                      </Button>
+                    </div>
+                  );
+                }
+                
+                if (dbAdSizes.length === 0) {
+                  return (
+                    <div className="text-center py-4 text-gray-500">
+                      No ad sizes available. Please contact support.
+                    </div>
+                  );
+                }
+                
+                return (
                 <RadioGroup
                   value={formData.adSize}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
@@ -595,10 +602,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       </div>
                     );
                   })}
-                </RadioGroup>
-              )}
-            </CardContent>
-          </Card>
+                 </RadioGroup>
+                );
+               })()}
+             </CardContent>
+           </Card>
 
           {/* Campaign Duration */}
           {selectedPricingModel === 'fixed' && (
