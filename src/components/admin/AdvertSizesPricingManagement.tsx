@@ -23,6 +23,7 @@ interface AdSize {
   base_price_per_month: number;
   fixed_pricing_per_issue: Record<string, number>;
   subscription_pricing_per_issue: Record<string, number>;
+  available_for: string[];
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -45,6 +46,7 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
     base_price_per_month: 0,
     fixed_pricing_per_issue: {} as Record<string, number>,
     subscription_pricing_per_issue: {} as Record<string, number>,
+    available_for: ['fixed', 'subscription'] as string[],
     is_active: true,
     sort_order: 0
   });
@@ -119,7 +121,12 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
           : (item.fixed_pricing_per_issue || {}),
         subscription_pricing_per_issue: typeof item.subscription_pricing_per_issue === 'string'
           ? JSON.parse(item.subscription_pricing_per_issue || '{}')
-          : (item.subscription_pricing_per_issue || {})
+          : (item.subscription_pricing_per_issue || {}),
+        available_for: Array.isArray(item.available_for) 
+          ? item.available_for 
+          : (typeof item.available_for === 'string' 
+            ? JSON.parse(item.available_for || '["fixed", "subscription"]') 
+            : ['fixed', 'subscription'])
       }));
 
       setAdSizes(transformedData);
@@ -144,6 +151,7 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
       base_price_per_month: 0,
       fixed_pricing_per_issue: {},
       subscription_pricing_per_issue: {},
+      available_for: ['fixed', 'subscription'],
       is_active: true,
       sort_order: adSizes.length + 1
     });
@@ -160,6 +168,7 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
         base_price_per_month: adSize.base_price_per_month,
         fixed_pricing_per_issue: adSize.fixed_pricing_per_issue || {},
         subscription_pricing_per_issue: adSize.subscription_pricing_per_issue || {},
+        available_for: adSize.available_for || ['fixed', 'subscription'],
         is_active: adSize.is_active,
         sort_order: adSize.sort_order
       });
@@ -463,6 +472,59 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
                   />
                 </div>
 
+                <div className="space-y-3">
+                  <Label>Available For</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="fixed_available"
+                        checked={formData.available_for.includes('fixed')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              available_for: [...prev.available_for.filter(type => type !== 'fixed'), 'fixed']
+                            }));
+                          } else {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              available_for: prev.available_for.filter(type => type !== 'fixed')
+                            }));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <Label htmlFor="fixed_available" className="text-sm font-normal">Fixed Pricing</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="subscription_available"
+                        checked={formData.available_for.includes('subscription')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              available_for: [...prev.available_for.filter(type => type !== 'subscription'), 'subscription']
+                            }));
+                          } else {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              available_for: prev.available_for.filter(type => type !== 'subscription')
+                            }));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <Label htmlFor="subscription_available" className="text-sm font-normal">Subscription Pricing</Label>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Select which pricing types this ad size should be available for
+                  </p>
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="is_active"
@@ -524,6 +586,7 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
                         <TableHead>Dimensions</TableHead>
                         <TableHead>Fixed Price</TableHead>
                         <TableHead>Subscription Price</TableHead>
+                        <TableHead>Available For</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Order</TableHead>
                         <TableHead>Actions</TableHead>
@@ -536,6 +599,16 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
                           <TableCell>{adSize.dimensions}</TableCell>
                           <TableCell>£{adSize.base_price_per_area.toFixed(2)}</TableCell>
                           <TableCell>£{adSize.base_price_per_month.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              {adSize.available_for?.includes('fixed') && (
+                                <Badge variant="outline" className="text-xs">Fixed</Badge>
+                              )}
+                              {adSize.available_for?.includes('subscription') && (
+                                <Badge variant="outline" className="text-xs">Subscription</Badge>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell>
                             <Badge 
                               variant={adSize.is_active ? "default" : "secondary"}

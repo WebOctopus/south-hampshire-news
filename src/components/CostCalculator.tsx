@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { areas, adSizes, durations, subscriptionDurations } from '@/data/advertisingPricing';
 import { calculateAdvertisingPrice, formatPrice, calculateCPM, getRecommendedDuration } from '@/lib/pricingCalculator';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CostCalculatorProps {
   children: React.ReactNode;
@@ -30,6 +31,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   const [selectedPricingModel, setSelectedPricingModel] = useState<string>('fixed');
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
+  const [dbAdSizes, setDbAdSizes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
 
 
@@ -53,6 +56,42 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   );
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
+
+  // Load ad sizes from database
+  useEffect(() => {
+    const loadAdSizes = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('ad_sizes')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (error) {
+          console.error('Error loading ad sizes:', error);
+          setDbAdSizes([]);
+        } else {
+          // Transform the data to ensure JSON fields are properly parsed
+          const transformedData = (data || []).map(item => ({
+            ...item,
+            available_for: Array.isArray(item.available_for) 
+              ? item.available_for 
+              : (typeof item.available_for === 'string' 
+                ? JSON.parse(item.available_for || '["fixed", "subscription"]') 
+                : ['fixed', 'subscription'])
+          }));
+          setDbAdSizes(transformedData);
+        }
+      } catch (error) {
+        console.error('Error loading ad sizes:', error);
+        setDbAdSizes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAdSizes();
+  }, []);
 
   // Auto-set duration for BOGOF
   useEffect(() => {
@@ -352,47 +391,48 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
               <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
                 Select Advertisement Size
               </h3>
-              <RadioGroup
-                value={formData.adSize}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-              >
-                {adSizes
+              {loading ? (
+                <div className="text-center py-4">Loading ad sizes...</div>
+              ) : (
+                <RadioGroup
+                  value={formData.adSize}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, adSize: value }))}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                >
+                {dbAdSizes
                    .filter(size => {
-                     // Show 1/6 Page and 1/8 Page only for subscription packages and BOGOF
-                     if (selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof') {
-                       return true;
-                     } else {
-                       return !['sixth-page', 'eighth-page'].includes(size.id);
-                     }
+                     // Filter based on available_for field in database
+                     const pricingType = selectedPricingModel === 'bogof' ? 'subscription' : selectedPricingModel;
+                     return size.available_for && size.available_for.includes(pricingType);
                    })
-                  .map((size) => (
-                  <div key={size.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value={size.id} id={size.id} className="mt-1" />
-                    <div className="flex-1">
-                      <Label htmlFor={size.id} className="font-medium cursor-pointer block">
-                        {size.label}
-                        {(['sixth-page', 'eighth-page'].includes(size.id)) && (
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            Subscription Only
-                          </Badge>
-                        )}
-                      </Label>
-                      {size.description && (
-                        <p className="text-sm text-gray-600 mt-1">{size.description}</p>
-                      )}
-                      {size.dimensions && (
-                        <p className="text-xs text-gray-500 mt-1">{size.dimensions}</p>
-                      )}
-                       <p className="text-sm text-community-green font-bold mt-2">
-                         From {formatPrice(size.areaPricing?.perArea && size.areaPricing.perArea.length > 0 
-                           ? Math.min(...size.areaPricing.perArea.filter(price => price !== undefined && price !== null))
-                           : 0)} per {selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof' ? 'issue' : 'area'}
-                       </p>
-                    </div>
-                  </div>
-                ))}
-              </RadioGroup>
+                  .map((size) => {
+                    // Map database ad size to expected format
+                    const mappedSize = {
+                      id: size.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+                      label: size.name,
+                      dimensions: size.dimensions
+                    };
+                     return (
+                      <div key={mappedSize.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                        <RadioGroupItem value={mappedSize.id} id={mappedSize.id} className="mt-1" />
+                        <div className="flex-1">
+                          <Label htmlFor={mappedSize.id} className="font-medium cursor-pointer block">
+                            {mappedSize.label}
+                            {(selectedPricingModel === 'fixed' && !size.available_for.includes('fixed')) && (
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                Subscription Only
+                              </Badge>
+                            )}
+                          </Label>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {mappedSize.dimensions}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              )}
             </CardContent>
           </Card>
 

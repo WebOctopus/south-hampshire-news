@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       ad_sizes: {
         Row: {
+          available_for: Json | null
           base_price_per_area: number
           base_price_per_month: number
           created_at: string
@@ -29,6 +30,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          available_for?: Json | null
           base_price_per_area?: number
           base_price_per_month?: number
           created_at?: string
@@ -42,6 +44,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          available_for?: Json | null
           base_price_per_area?: number
           base_price_per_month?: number
           created_at?: string
