@@ -153,7 +153,9 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
 
       } catch (error) {
         console.error('Error loading pricing data:', error);
+        console.error('Error details:', error.message, error.stack);
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     };
