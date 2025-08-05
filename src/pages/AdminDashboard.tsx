@@ -20,6 +20,7 @@ import LocationsManagement from '@/components/admin/LocationsManagement';
 import AdvertSizesPricingManagement from '@/components/admin/AdvertSizesPricingManagement';
 import SubscriptionSettingsManagement from '@/components/admin/SubscriptionSettingsManagement';
 import CalculatorPreview from '@/components/admin/CalculatorPreview';
+import IssuePricingManagement from '@/components/admin/IssuePricingManagement';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Clock, TrendingUp, Receipt, Tag } from 'lucide-react';
 
@@ -703,12 +704,9 @@ const AdminDashboard = () => {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Issue-Based Pricing</h2>
-              <p className="text-muted-foreground">Manage pricing for specific publication issues.</p>
+              <p className="text-muted-foreground">Configure pricing for each ad size based on the number of issues published.</p>
             </div>
-            <div className="text-center py-8 text-muted-foreground">
-              <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p>Issue-based pricing management functionality coming soon.</p>
-            </div>
+            <IssuePricingManagement onStatsUpdate={() => {}} />
           </div>
         );
 
