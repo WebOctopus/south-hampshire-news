@@ -266,7 +266,7 @@ export const areas: Area[] = [
   }
 ];
 
-// Ad sizes based on Excel pricing structure (1-3 issues fixed booking)
+// Ad sizes based on Excel pricing structure - updated to match subscription Excel sheet
 export const adSizes: AdSize[] = [
   { 
     id: 'full-page', 
@@ -274,10 +274,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 190',
     dimensions: '132 x 190',
     areaPricing: {
-      // Per month pricing for areas 1-14 from Excel
-      perMonth: [298, 582, 858, 1128, 1390, 1646, 1896, 2140, 2384, 2620, 2854, 3088, 3322, 3550],
+      // Per issue pricing for areas 1-14 from subscription Excel sheet
+      perMonth: [254, 476, 684, 884, 1080, 1268, 1448, 1620, 1788, 1952, 2112, 2272, 2432, 2592],
       // Per area pricing for areas 1-14 from Excel  
-      perArea: [298, 234, 276, 270, 262, 256, 250, 244, 240, 236, 234, 234, 234, 234]
+      perArea: [254, 222, 208, 200, 196, 188, 180, 172, 168, 164, 160, 160, 160, 160]
     }
   },
   { 
@@ -286,10 +286,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 125.33',
     dimensions: '132 x 125.33',
     areaPricing: {
-      // Per month pricing for areas 1-14 from Excel
-      perMonth: [226, 429, 628, 820, 997, 1166, 1324, 1483, 1641, 1799, 1957, 2115, 2274, 2432],
+      // Per issue pricing for areas 1-14 from subscription Excel sheet
+      perMonth: [204, 357, 504, 647, 785, 908, 1010, 1112, 1214, 1316, 1418, 1520, 1622, 1724],
       // Per area pricing for areas 1-14 from Excel
-      perArea: [226, 214, 210, 206, 200, 194, 190, 186, 182, 180, 178, 178, 178, 178]
+      perArea: [204, 153, 147, 143, 138, 123, 102, 102, 102, 102, 102, 102, 102, 102]
     }
   },
   { 
@@ -298,10 +298,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 93',
     dimensions: '132 x 93',
     areaPricing: {
-      // Per month pricing for areas 1-14 from Excel
-      perMonth: [180, 342, 500, 653, 794, 929, 1055, 1181, 1307, 1433, 1559, 1685, 1811, 1937],
+      // Per issue pricing for areas 1-14 from subscription Excel sheet
+      perMonth: [153, 268, 378, 485, 589, 681, 757, 834, 910, 987, 1063, 1140, 1216, 1293],
       // Per area pricing for areas 1-14 from Excel
-      perArea: [180, 172, 166, 164, 158, 154, 150, 148, 146, 144, 142, 142, 142, 142]
+      perArea: [153, 115, 110, 107, 104, 92, 76, 77, 76, 77, 76, 77, 76, 77]
     }
   },
   { 
@@ -310,10 +310,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 60.66',
     dimensions: '132 x 60.66',
     areaPricing: {
-      // Per month pricing for areas 1-14 from Excel
-      perMonth: [174, 331, 484, 632, 767, 898, 1020, 1141, 1263, 1385, 1507, 1629, 1750, 1872],
+      // Per issue pricing for areas 1-14 from subscription Excel sheet
+      perMonth: [148, 259, 365, 469, 569, 658, 732, 806, 880, 954, 1028, 1102, 1176, 1250],
       // Per area pricing for areas 1-14 from Excel
-      perArea: [174, 166, 162, 158, 154, 150, 146, 142, 140, 138, 136, 136, 136, 136]
+      perArea: [148, 111, 106, 104, 100, 89, 74, 74, 74, 74, 74, 74, 74, 74]
     }
   },
   { 
@@ -322,10 +322,10 @@ export const adSizes: AdSize[] = [
     description: '64 x 93',
     dimensions: '64 x 93',
     areaPricing: {
-      // Per month pricing for areas 1-14 from Excel
-      perMonth: [112, 213, 311, 407, 494, 578, 656, 735, 813, 892, 970, 1048, 1127, 1205],
+      // Per issue pricing for areas 1-14 from subscription Excel sheet
+      perMonth: [95, 167, 235, 302, 367, 424, 471, 519, 566, 614, 662, 709, 757, 804],
       // Per area pricing for areas 1-14 from Excel
-      perArea: [112, 108, 104, 102, 100, 96, 94, 92, 90, 90, 88, 88, 88, 88]
+      perArea: [95, 72, 68, 67, 65, 57, 47, 48, 47, 48, 48, 47, 48, 47]
     }
   },
   { 
@@ -334,10 +334,10 @@ export const adSizes: AdSize[] = [
     description: '64 x 60.66',
     dimensions: '64 x 60.66',
     areaPricing: {
-      // Per Issue pricing for areas 1-14 from subscription Excel data
+      // Per issue pricing for areas 1-14 from subscription Excel sheet
       perMonth: [73, 128, 181, 232, 281, 325, 362, 398, 435, 471, 508, 545, 581, 618],
       // Per area pricing for areas 1-14 from Excel
-      perArea: [73, 64, 60, 58, 56, 54, 52, 50, 48, 48, 46, 46, 46, 46]
+      perArea: [73, 55, 53, 51, 49, 44, 37, 36, 37, 36, 37, 37, 36, 37]
     }
   },
   { 
@@ -346,10 +346,10 @@ export const adSizes: AdSize[] = [
     description: '64 x 45.5',
     dimensions: '64 x 45.5',
     areaPricing: {
-      // Per Issue pricing for areas 1-14 from subscription Excel data
+      // Per issue pricing for areas 1-14 from subscription Excel sheet
       perMonth: [54, 95, 134, 172, 209, 242, 269, 296, 324, 351, 378, 405, 432, 460],
       // Per area pricing for areas 1-14 from Excel
-      perArea: [54, 48, 44, 43, 41, 40, 38, 37, 35, 35, 34, 33, 33, 32]
+      perArea: [54, 41, 39, 38, 37, 33, 27, 27, 28, 27, 27, 27, 27, 28]
     }
   }
 ];
