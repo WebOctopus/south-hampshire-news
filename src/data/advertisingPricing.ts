@@ -266,7 +266,7 @@ export const areas: Area[] = [
   }
 ];
 
-// Ad sizes based on Excel pricing structure - updated to match subscription Excel sheet
+// Ad sizes based on Excel pricing structure - Fixed rates for 1-3 issues (non-subscription)
 export const adSizes: AdSize[] = [
   { 
     id: 'full-page', 
@@ -274,10 +274,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 190',
     dimensions: '132 x 190',
     areaPricing: {
-      // Per issue pricing for areas 1-14 from subscription Excel sheet
-      perMonth: [254, 476, 684, 884, 1080, 1268, 1448, 1620, 1788, 1952, 2112, 2272, 2432, 2592],
-      // Per area pricing for areas 1-14 from Excel  
-      perArea: [254, 222, 208, 200, 196, 188, 180, 172, 168, 164, 160, 160, 160, 160]
+      // Fixed rates pricing for areas 1-14 from Excel (cumulative pricing)
+      perMonth: [298, 582, 858, 1128, 1390, 1646, 1896, 2140, 2384, 2620, 2854, 3088, 3322, 3550],
+      // Per area pricing for areas 1-14 (individual area rates)
+      perArea: [298, 284, 276, 270, 262, 256, 250, 244, 240, 236, 234, 234, 234, 228]
     }
   },
   { 
@@ -286,10 +286,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 125.33',
     dimensions: '132 x 125.33',
     areaPricing: {
-      // Per issue pricing for areas 1-14 from subscription Excel sheet
-      perMonth: [204, 357, 504, 647, 785, 908, 1010, 1112, 1214, 1316, 1418, 1520, 1622, 1724],
-      // Per area pricing for areas 1-14 from Excel
-      perArea: [204, 153, 147, 143, 138, 123, 102, 102, 102, 102, 102, 102, 102, 102]
+      // Fixed rates pricing for areas 1-14 from Excel (cumulative pricing)
+      perMonth: [226, 429, 628, 820, 997, 1166, 1324, 1483, 1641, 1799, 1957, 2115, 2274, 2432],
+      // Per area pricing for areas 1-14 (individual area rates)
+      perArea: [226, 203, 199, 192, 177, 169, 158, 159, 158, 158, 158, 158, 159, 158]
     }
   },
   { 
@@ -298,10 +298,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 93',
     dimensions: '132 x 93',
     areaPricing: {
-      // Per issue pricing for areas 1-14 from subscription Excel sheet
-      perMonth: [153, 268, 378, 485, 589, 681, 757, 834, 910, 987, 1063, 1140, 1216, 1293],
-      // Per area pricing for areas 1-14 from Excel
-      perArea: [153, 115, 110, 107, 104, 92, 76, 77, 76, 77, 76, 77, 76, 77]
+      // Fixed rates pricing for areas 1-14 from Excel (cumulative pricing)
+      perMonth: [180, 342, 500, 653, 794, 929, 1055, 1181, 1307, 1433, 1559, 1685, 1811, 1937],
+      // Per area pricing for areas 1-14 (individual area rates)
+      perArea: [180, 162, 158, 153, 141, 135, 126, 126, 126, 126, 126, 126, 126, 126]
     }
   },
   { 
@@ -310,10 +310,10 @@ export const adSizes: AdSize[] = [
     description: '132 x 60.66',
     dimensions: '132 x 60.66',
     areaPricing: {
-      // Per issue pricing for areas 1-14 from subscription Excel sheet
-      perMonth: [148, 259, 365, 469, 569, 658, 732, 806, 880, 954, 1028, 1102, 1176, 1250],
-      // Per area pricing for areas 1-14 from Excel
-      perArea: [148, 111, 106, 104, 100, 89, 74, 74, 74, 74, 74, 74, 74, 74]
+      // Fixed rates pricing for areas 1-14 from Excel (cumulative pricing)
+      perMonth: [174, 331, 484, 632, 767, 898, 1020, 1141, 1263, 1385, 1507, 1629, 1750, 1872],
+      // Per area pricing for areas 1-14 (individual area rates)
+      perArea: [174, 157, 153, 148, 135, 131, 122, 121, 122, 122, 122, 122, 121, 122]
     }
   },
   { 
@@ -322,10 +322,10 @@ export const adSizes: AdSize[] = [
     description: '64 x 93',
     dimensions: '64 x 93',
     areaPricing: {
-      // Per issue pricing for areas 1-14 from subscription Excel sheet
-      perMonth: [95, 167, 235, 302, 367, 424, 471, 519, 566, 614, 662, 709, 757, 804],
-      // Per area pricing for areas 1-14 from Excel
-      perArea: [95, 72, 68, 67, 65, 57, 47, 48, 47, 48, 48, 47, 48, 47]
+      // Fixed rates pricing for areas 1-14 from Excel (cumulative pricing)
+      perMonth: [112, 213, 311, 407, 494, 578, 656, 735, 813, 892, 970, 1048, 1127, 1205],
+      // Per area pricing for areas 1-14 (individual area rates)
+      perArea: [112, 101, 98, 96, 87, 84, 78, 79, 78, 79, 78, 78, 79, 78]
     }
   },
   { 
