@@ -1,4 +1,39 @@
-import { areas, fixedRatesAdSizes, subscriptionAdSizes, durations, subscriptionDurations, volumeDiscounts, type Area, type AdSize, type Duration } from '@/data/advertisingPricing';
+// Database interface types for pricing calculator
+interface DbArea {
+  id: string;
+  name: string;
+  postcodes: string[];
+  circulation: number;
+  base_price_multiplier: number;
+  quarter_page_multiplier: number;
+  half_page_multiplier: number;
+  full_page_multiplier: number;
+}
+
+interface DbAdSize {
+  id: string;
+  name: string;
+  dimensions: string;
+  base_price_per_month: number;
+  base_price_per_area: number;
+  fixed_pricing_per_issue: any;
+  subscription_pricing_per_issue: any;
+}
+
+interface DbDuration {
+  id: string;
+  name: string;
+  duration_value: number;
+  discount_percentage: number;
+  duration_type: string;
+}
+
+interface DbVolumeDiscount {
+  id: string;
+  min_areas: number;
+  max_areas: number | null;
+  discount_percentage: number;
+}
 
 export interface PricingBreakdown {
   subtotal: number;
@@ -8,8 +43,8 @@ export interface PricingBreakdown {
   finalTotal: number;
   totalCirculation: number;
   areaBreakdown: Array<{
-    area: Area;
-    adSize: AdSize;
+    area: DbArea;
+    adSize: DbAdSize;
     basePrice: number;
     multipliedPrice: number;
   }>;
@@ -22,18 +57,25 @@ export function calculateAdvertisingPrice(
   selectedAreaIds: string[],
   adSizeId: string,
   durationId: string,
-  isSubscription: boolean = false
+  isSubscription: boolean = false,
+  areas: DbArea[] = [],
+  adSizes: DbAdSize[] = [],
+  durations: DbDuration[] = [],
+  subscriptionDurations: DbDuration[] = [],
+  volumeDiscounts: DbVolumeDiscount[] = []
 ): PricingBreakdown | null {
   // Validate inputs
-  if (!selectedAreaIds.length || !adSizeId || !durationId) {
+  if (!selectedAreaIds.length || !adSizeId || !durationId || !areas.length || !adSizes.length) {
     return null;
   }
 
   const selectedAreas = areas.filter(area => selectedAreaIds.includes(area.id));
   
-  // Use the correct ad sizes based on pricing model
-  const adSizesData = isSubscription ? subscriptionAdSizes : fixedRatesAdSizes;
-  const selectedAdSize = adSizesData.find(size => size.id === adSizeId);
+  // Find the ad size by matching name
+  const selectedAdSize = adSizes.find(size => {
+    const mappedId = size.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    return mappedId === adSizeId;
+  });
   
   const allDurations = isSubscription ? subscriptionDurations : durations;
   const selectedDuration = allDurations.find(duration => duration.id === durationId);
@@ -45,15 +87,21 @@ export function calculateAdvertisingPrice(
   // Calculate pricing based on model type
   const areasCount = selectedAreas.length;
   let subtotal: number;
-  let areaBreakdown: Array<{area: Area; adSize: AdSize; basePrice: number; multipliedPrice: number;}>;
+  let areaBreakdown: Array<{area: DbArea; adSize: DbAdSize; basePrice: number; multipliedPrice: number;}>;
 
   if (isSubscription) {
-    // For subscription: use per-issue pricing from Excel data
-    const perIssuePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
-    subtotal = perIssuePrice;
+    // For subscription: use database pricing
+    const subscriptionPricing = selectedAdSize.subscription_pricing_per_issue;
+    let basePrice = selectedAdSize.base_price_per_month;
     
-    // Create area breakdown - distribute per-issue price evenly
-    const pricePerArea = perIssuePrice / areasCount;
+    if (subscriptionPricing && Array.isArray(subscriptionPricing)) {
+      basePrice = subscriptionPricing[areasCount - 1] || selectedAdSize.base_price_per_month;
+    }
+    
+    subtotal = basePrice;
+    
+    // Create area breakdown
+    const pricePerArea = basePrice / areasCount;
     areaBreakdown = selectedAreas.map((area) => ({
       area,
       adSize: selectedAdSize,
@@ -61,12 +109,18 @@ export function calculateAdvertisingPrice(
       multipliedPrice: pricePerArea
     }));
   } else {
-    // For fixed pricing: use cumulative pricing model  
-    const cumulativePrice = selectedAdSize.areaPricing.perMonth[areasCount - 1] || selectedAdSize.areaPricing.perMonth[0];
-    subtotal = cumulativePrice;
+    // For fixed pricing: use database pricing
+    const fixedPricing = selectedAdSize.fixed_pricing_per_issue;
+    let basePrice = selectedAdSize.base_price_per_month;
     
-    // Create area breakdown - distribute cumulative price evenly
-    const pricePerArea = cumulativePrice / areasCount;
+    if (fixedPricing && Array.isArray(fixedPricing)) {
+      basePrice = fixedPricing[areasCount - 1] || selectedAdSize.base_price_per_month;
+    }
+    
+    subtotal = basePrice;
+    
+    // Create area breakdown
+    const pricePerArea = basePrice / areasCount;
     areaBreakdown = selectedAreas.map((area) => ({
       area,
       adSize: selectedAdSize,
@@ -75,8 +129,10 @@ export function calculateAdvertisingPrice(
     }));
   }
 
-  // Apply duration multiplier
-  const finalTotal = subtotal * selectedDuration.discountMultiplier;
+  // Apply duration multiplier (convert discount percentage to multiplier)
+  const durationMultiplier = selectedDuration.duration_value;
+  const discountMultiplier = 1 - (selectedDuration.discount_percentage / 100);
+  const finalTotal = subtotal * durationMultiplier * discountMultiplier;
 
   // Calculate total circulation
   const totalCirculation = selectedAreas.reduce((sum, area) => sum + area.circulation, 0);
@@ -85,7 +141,7 @@ export function calculateAdvertisingPrice(
     subtotal,
     volumeDiscount: 0,
     volumeDiscountPercent: 0,
-    durationMultiplier: selectedDuration.discountMultiplier,
+    durationMultiplier: durationMultiplier,
     finalTotal,
     totalCirculation,
     areaBreakdown
@@ -95,11 +151,11 @@ export function calculateAdvertisingPrice(
 /**
  * Get volume discount percentage based on number of areas selected
  */
-function getVolumeDiscount(areasCount: number): number {
+function getVolumeDiscount(areasCount: number, volumeDiscounts: DbVolumeDiscount[]): number {
   const tier = volumeDiscounts.find(
-    tier => areasCount >= tier.minAreas && areasCount <= tier.maxAreas
+    tier => areasCount >= tier.min_areas && (tier.max_areas === null || areasCount <= tier.max_areas)
   );
-  return tier?.discountPercentage || 0;
+  return tier?.discount_percentage || 0;
 }
 
 /**

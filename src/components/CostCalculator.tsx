@@ -9,12 +9,37 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { areas, adSizes, durations, subscriptionDurations } from '@/data/advertisingPricing';
 import { calculateAdvertisingPrice, formatPrice, calculateCPM, getRecommendedDuration } from '@/lib/pricingCalculator';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CostCalculatorProps {
   children: React.ReactNode;
+}
+
+interface Area {
+  id: string;
+  name: string;
+  postcodes: string[];
+  circulation: number;
+  base_price_multiplier: number;
+  quarter_page_multiplier: number;
+  half_page_multiplier: number;
+  full_page_multiplier: number;
+}
+
+interface Duration {
+  id: string;
+  name: string;
+  duration_value: number;
+  discount_percentage: number;
+  duration_type: string;
+}
+
+interface VolumeDiscount {
+  id: string;
+  min_areas: number;
+  max_areas: number | null;
+  discount_percentage: number;
 }
 
 const CostCalculator = ({ children }: CostCalculatorProps) => {
@@ -32,6 +57,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [dbAdSizes, setDbAdSizes] = useState<any[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
+  const [durations, setDurations] = useState<Duration[]>([]);
+  const [subscriptionDurations, setSubscriptionDurations] = useState<Duration[]>([]);
+  const [volumeDiscounts, setVolumeDiscounts] = useState<VolumeDiscount[]>([]);
   const [loading, setLoading] = useState(true);
 
 
@@ -52,45 +81,84 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     effectiveSelectedAreas,
     formData.adSize,
     formData.duration,
-    selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof'
+    selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof',
+    areas,
+    dbAdSizes,
+    durations,
+    subscriptionDurations,
+    volumeDiscounts
   );
 
   const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
 
-  // Load ad sizes from database
+  // Load all pricing data from database
   useEffect(() => {
-    const loadAdSizes = async () => {
+    const loadPricingData = async () => {
       try {
-        const { data, error } = await supabase
+        // Load ad sizes
+        const { data: adSizesData, error: adSizesError } = await supabase
           .from('ad_sizes')
           .select('*')
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
 
-        if (error) {
-          console.error('Error loading ad sizes:', error);
-          setDbAdSizes([]);
-        } else {
-          // Transform the data to ensure JSON fields are properly parsed
-          const transformedData = (data || []).map(item => ({
-            ...item,
-            available_for: Array.isArray(item.available_for) 
-              ? item.available_for 
-              : (typeof item.available_for === 'string' 
-                ? JSON.parse(item.available_for || '["fixed", "subscription"]') 
-                : ['fixed', 'subscription'])
-          }));
-          setDbAdSizes(transformedData);
-        }
+        if (adSizesError) throw adSizesError;
+        
+        // Transform the data to ensure JSON fields are properly parsed
+        const transformedAdSizes = (adSizesData || []).map(item => ({
+          ...item,
+          available_for: Array.isArray(item.available_for) 
+            ? item.available_for 
+            : (typeof item.available_for === 'string' 
+              ? JSON.parse(item.available_for || '["fixed", "subscription"]') 
+              : ['fixed', 'subscription'])
+        }));
+        setDbAdSizes(transformedAdSizes);
+
+        // Load pricing areas
+        const { data: areasData, error: areasError } = await supabase
+          .from('pricing_areas')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (areasError) throw areasError;
+        setAreas(areasData || []);
+
+        // Load pricing durations
+        const { data: durationsData, error: durationsError } = await supabase
+          .from('pricing_durations')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (durationsError) throw durationsError;
+        
+        // Filter durations by type
+        const fixedDurations = durationsData?.filter(d => d.duration_type === 'fixed') || [];
+        const subDurations = durationsData?.filter(d => d.duration_type === 'subscription') || [];
+        
+        setDurations(fixedDurations);
+        setSubscriptionDurations(subDurations);
+
+        // Load volume discounts
+        const { data: volumeDiscountsData, error: volumeDiscountsError } = await supabase
+          .from('volume_discounts')
+          .select('*')
+          .eq('is_active', true)
+          .order('min_areas', { ascending: true });
+
+        if (volumeDiscountsError) throw volumeDiscountsError;
+        setVolumeDiscounts(volumeDiscountsData || []);
+
       } catch (error) {
-        console.error('Error loading ad sizes:', error);
-        setDbAdSizes([]);
+        console.error('Error loading pricing data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadAdSizes();
+    loadPricingData();
   }, []);
 
   // Auto-set duration for BOGOF
@@ -245,10 +313,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         {area.name}
                       </Label>
                       <p className="text-sm text-gray-700 font-medium mt-1">
-                        {area.postcodes}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {area.townsVillages}
+                        {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : area.postcodes}
                       </p>
                       <p className="text-sm text-community-green font-bold mt-2">
                         Circulation: {area.circulation.toLocaleString()}
@@ -293,10 +358,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                           {area.name}
                         </Label>
                         <p className="text-sm text-gray-700 font-medium mt-1">
-                          {area.postcodes}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                          {area.townsVillages}
+                          {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : area.postcodes}
                         </p>
                         <p className="text-sm text-community-green font-bold mt-2">
                           Circulation: {area.circulation.toLocaleString()}
@@ -354,10 +416,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                           <Badge className="bg-green-500 text-white text-xs">FREE</Badge>
                         </div>
                         <p className="text-sm text-gray-700 font-medium mt-1">
-                          {area.postcodes}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                          {area.townsVillages}
+                          {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : area.postcodes}
                         </p>
                         <p className="text-sm text-community-green font-bold mt-2">
                           Circulation: {area.circulation.toLocaleString()}
@@ -456,23 +515,18 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <Label htmlFor={duration.id} className="font-medium cursor-pointer">
-                            {duration.label}
+                            {duration.name}
                           </Label>
                           {recommendedDurations.includes(duration.id) && (
                             <Badge variant="default" className="text-xs bg-community-green">
                               Recommended
                             </Badge>
                           )}
-                          {duration.isSubscription && (
-                            <Badge variant="outline" className="text-xs">
-                              Subscription
-                            </Badge>
-                          )}
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {duration.months} month{duration.months > 1 ? 's' : ''}
-                          {duration.discountMultiplier < duration.months && 
-                            ` • ${Math.round((1 - duration.discountMultiplier / duration.months) * 100)}% discount`
+                          {duration.duration_value} month{duration.duration_value > 1 ? 's' : ''}
+                          {duration.discount_percentage > 0 && 
+                            ` • ${duration.discount_percentage}% discount`
                           }
                         </p>
                       </div>
@@ -501,14 +555,14 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <Label htmlFor={duration.id} className="font-medium cursor-pointer">
-                            {duration.label}
+                            {duration.name}
                           </Label>
                           <Badge variant="default" className="text-xs bg-community-green">
                             Subscription
                           </Badge>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {duration.months} months • Pay per issue
+                          {duration.duration_value} months • Pay per issue
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           Better rates with longer commitments
@@ -592,8 +646,8 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         {selectedPricingModel === 'bogof' 
                           ? '6 Months (3 Bi-monthly Issues)'
                           : selectedPricingModel === 'subscription' 
-                            ? subscriptionDurations.find(d => d.id === formData.duration)?.label || 'Not selected'
-                            : durations.find(d => d.id === formData.duration)?.label || 'Not selected'
+                            ? subscriptionDurations.find(d => d.id === formData.duration)?.name || 'Not selected'
+                            : durations.find(d => d.id === formData.duration)?.name || 'Not selected'
                         }
                       </p>
                     </div>
