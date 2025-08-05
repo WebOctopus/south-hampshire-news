@@ -16,8 +16,12 @@ import Footer from '@/components/Footer';
 import PricingManagement from '@/components/PricingManagement';
 import CostCalculatorManagement from '@/components/admin/CostCalculatorManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import LocationsManagement from '@/components/admin/LocationsManagement';
+import AdvertSizesPricingManagement from '@/components/admin/AdvertSizesPricingManagement';
+import SubscriptionSettingsManagement from '@/components/admin/SubscriptionSettingsManagement';
+import CalculatorPreview from '@/components/admin/CalculatorPreview';
 import { User } from '@supabase/supabase-js';
-import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Clock, TrendingUp, Receipt, Tag } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -622,7 +626,105 @@ const AdminDashboard = () => {
         return <PricingManagement />;
 
       case 'calculator':
-        return <CostCalculatorManagement />;
+      case 'calculator-locations':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Locations Management</h2>
+              <p className="text-muted-foreground">Manage advertising distribution areas and their pricing multipliers.</p>
+            </div>
+            <LocationsManagement onStatsUpdate={() => {}} />
+          </div>
+        );
+
+      case 'calculator-ad-sizes':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Ad Sizes & Pricing</h2>
+              <p className="text-muted-foreground">Manage advertisement sizes and their pricing structure.</p>
+            </div>
+            <AdvertSizesPricingManagement onStatsUpdate={() => {}} />
+          </div>
+        );
+
+      case 'calculator-subscriptions':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Subscription Settings</h2>
+              <p className="text-muted-foreground">Configure subscription durations and discount rates.</p>
+            </div>
+            <SubscriptionSettingsManagement onStatsUpdate={() => {}} />
+          </div>
+        );
+
+      case 'calculator-durations':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Duration Management</h2>
+              <p className="text-muted-foreground">Manage pricing duration options and their discounts.</p>
+            </div>
+            <div className="text-center py-8 text-muted-foreground">
+              <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>Duration management functionality coming soon.</p>
+            </div>
+          </div>
+        );
+
+      case 'calculator-volume-discounts':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Volume Discounts</h2>
+              <p className="text-muted-foreground">Configure volume-based discount tiers for bulk purchases.</p>
+            </div>
+            <div className="text-center py-8 text-muted-foreground">
+              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>Volume discount management functionality coming soon.</p>
+            </div>
+          </div>
+        );
+
+      case 'calculator-preview':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Calculator Preview</h2>
+              <p className="text-muted-foreground">Preview and test the cost calculator functionality.</p>
+            </div>
+            <CalculatorPreview />
+          </div>
+        );
+
+      case 'calculator-issue-pricing':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Issue-Based Pricing</h2>
+              <p className="text-muted-foreground">Manage pricing for specific publication issues.</p>
+            </div>
+            <div className="text-center py-8 text-muted-foreground">
+              <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>Issue-based pricing management functionality coming soon.</p>
+            </div>
+          </div>
+        );
+
+      case 'calculator-special-deals':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Special Deals</h2>
+              <p className="text-muted-foreground">Create and manage special promotional offers and deals.</p>
+            </div>
+            <div className="text-center py-8 text-muted-foreground">
+              <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>Special deals management functionality coming soon.</p>
+            </div>
+          </div>
+        );
 
       default:
         return <div>Section not found</div>;

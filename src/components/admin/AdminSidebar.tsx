@@ -10,7 +10,14 @@ import {
   BarChart3,
   Shield,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  MapPin,
+  Package,
+  Clock,
+  TrendingUp,
+  Monitor,
+  Receipt,
+  Tag
 } from "lucide-react"
 
 import {
@@ -55,7 +62,50 @@ const menuItems = [
   {
     title: "Cost Calculator",
     icon: Calculator,
-    section: "calculator"
+    section: "calculator",
+    hasSubmenu: true,
+    subItems: [
+      {
+        title: "Locations",
+        icon: MapPin,
+        section: "calculator-locations"
+      },
+      {
+        title: "Ad Size & Pricing",
+        icon: Package,
+        section: "calculator-ad-sizes"
+      },
+      {
+        title: "Subscription Settings",
+        icon: Settings,
+        section: "calculator-subscriptions"
+      },
+      {
+        title: "Durations",
+        icon: Clock,
+        section: "calculator-durations"
+      },
+      {
+        title: "Volume Discount",
+        icon: TrendingUp,
+        section: "calculator-volume-discounts"
+      },
+      {
+        title: "Preview Calculator",
+        icon: Monitor,
+        section: "calculator-preview"
+      },
+      {
+        title: "Issue-Based Pricing",
+        icon: Receipt,
+        section: "calculator-issue-pricing"
+      },
+      {
+        title: "Special Deals",
+        icon: Tag,
+        section: "calculator-special-deals"
+      }
+    ]
   }
 ]
 
@@ -67,6 +117,15 @@ interface AdminSidebarProps {
 export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarProps) {
   const { state } = useSidebar()
   const collapsed = state === "collapsed"
+  const [expandedItems, setExpandedItems] = useState<string[]>(['calculator']) // Default expand calculator
+
+  const toggleExpanded = (section: string) => {
+    setExpandedItems(prev => 
+      prev.includes(section) 
+        ? prev.filter(item => item !== section)
+        : [...prev, section]
+    )
+  }
 
   return (
     <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
@@ -88,21 +147,59 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
-                <SidebarMenuItem key={item.section}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={activeSection === item.section}
-                    className="cursor-pointer"
-                  >
-                    <button
-                      onClick={() => onSectionChange(item.section)}
-                      className="flex items-center gap-3 w-full text-left"
+                <div key={item.section}>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={activeSection === item.section}
+                      className="cursor-pointer"
                     >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                      {!collapsed && <span className="text-sm">{item.title}</span>}
-                    </button>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                      <button
+                        onClick={() => {
+                          if (item.hasSubmenu) {
+                            toggleExpanded(item.section)
+                          } else {
+                            onSectionChange(item.section)
+                          }
+                        }}
+                        className="flex items-center justify-between w-full text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          {!collapsed && <span className="text-sm">{item.title}</span>}
+                        </div>
+                        {item.hasSubmenu && !collapsed && (
+                          expandedItems.includes(item.section) 
+                            ? <ChevronDown className="h-4 w-4" />
+                            : <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  
+                  {/* Submenu */}
+                  {item.hasSubmenu && expandedItems.includes(item.section) && !collapsed && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {item.subItems?.map((subItem) => (
+                        <SidebarMenuItem key={subItem.section}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={activeSection === subItem.section}
+                            className="cursor-pointer text-sm"
+                          >
+                            <button
+                              onClick={() => onSectionChange(subItem.section)}
+                              className="flex items-center gap-3 w-full text-left"
+                            >
+                              <subItem.icon className="h-3 w-3 flex-shrink-0" />
+                              <span className="text-xs">{subItem.title}</span>
+                            </button>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
