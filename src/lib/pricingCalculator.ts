@@ -1,4 +1,4 @@
-import { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, type Area, type AdSize, type Duration } from '@/data/advertisingPricing';
+import { areas, fixedRatesAdSizes, subscriptionAdSizes, durations, subscriptionDurations, volumeDiscounts, type Area, type AdSize, type Duration } from '@/data/advertisingPricing';
 
 export interface PricingBreakdown {
   subtotal: number;
@@ -30,7 +30,11 @@ export function calculateAdvertisingPrice(
   }
 
   const selectedAreas = areas.filter(area => selectedAreaIds.includes(area.id));
-  const selectedAdSize = adSizes.find(size => size.id === adSizeId);
+  
+  // Use the correct ad sizes based on pricing model
+  const adSizesData = isSubscription ? subscriptionAdSizes : fixedRatesAdSizes;
+  const selectedAdSize = adSizesData.find(size => size.id === adSizeId);
+  
   const allDurations = isSubscription ? subscriptionDurations : durations;
   const selectedDuration = allDurations.find(duration => duration.id === durationId);
 

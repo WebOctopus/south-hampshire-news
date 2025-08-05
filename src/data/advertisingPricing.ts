@@ -266,8 +266,8 @@ export const areas: Area[] = [
   }
 ];
 
-// Ad sizes based on Excel pricing structure - Fixed rates for 1-3 issues (non-subscription)
-export const adSizes: AdSize[] = [
+// Fixed rates ad sizes for non-subscription pricing (1-3 issues)
+export const fixedRatesAdSizes: AdSize[] = [
   { 
     id: 'full-page', 
     label: 'Full Page', 
@@ -334,9 +334,9 @@ export const adSizes: AdSize[] = [
     description: '64 x 60.66',
     dimensions: '64 x 60.66',
     areaPricing: {
-      // Per issue pricing for areas 1-14 from subscription Excel sheet
+      // Fixed rates pricing for areas 1-14 from Excel (cumulative pricing)
       perMonth: [73, 128, 181, 232, 281, 325, 362, 398, 435, 471, 508, 545, 581, 618],
-      // Per area pricing for areas 1-14 from Excel
+      // Per area pricing for areas 1-14 (individual area rates)
       perArea: [73, 55, 53, 51, 49, 44, 37, 36, 37, 36, 37, 37, 36, 37]
     }
   },
@@ -346,13 +346,104 @@ export const adSizes: AdSize[] = [
     description: '64 x 45.5',
     dimensions: '64 x 45.5',
     areaPricing: {
-      // Per issue pricing for areas 1-14 from subscription Excel sheet
+      // Fixed rates pricing for areas 1-14 from Excel (cumulative pricing)
       perMonth: [54, 95, 134, 172, 209, 242, 269, 296, 324, 351, 378, 405, 432, 460],
-      // Per area pricing for areas 1-14 from Excel
+      // Per area pricing for areas 1-14 (individual area rates)
       perArea: [54, 41, 39, 38, 37, 33, 27, 27, 28, 27, 27, 27, 27, 28]
     }
   }
 ];
+
+// Subscription ad sizes for subscription pricing
+export const subscriptionAdSizes: AdSize[] = [
+  { 
+    id: 'full-page', 
+    label: 'Full Page', 
+    description: '132 x 190',
+    dimensions: '132 x 190',
+    areaPricing: {
+      // Subscription per issue pricing for areas 1-14 from Excel
+      perMonth: [254, 476, 684, 884, 1080, 1268, 1448, 1620, 1788, 1952, 2112, 2272, 2432, 2592],
+      // Per area pricing for areas 1-14
+      perArea: [254, 222, 208, 200, 196, 188, 180, 172, 168, 164, 160, 160, 160, 160]
+    }
+  },
+  { 
+    id: 'two-thirds-page', 
+    label: '2/3 Page', 
+    description: '132 x 125.33',
+    dimensions: '132 x 125.33',
+    areaPricing: {
+      // Subscription per issue pricing for areas 1-14 from Excel
+      perMonth: [204, 357, 504, 647, 785, 908, 1010, 1112, 1214, 1316, 1418, 1520, 1622, 1724],
+      // Per area pricing for areas 1-14
+      perArea: [204, 153, 147, 143, 138, 123, 102, 102, 102, 102, 102, 102, 102, 102]
+    }
+  },
+  { 
+    id: 'half-page', 
+    label: '1/2 Page', 
+    description: '132 x 93',
+    dimensions: '132 x 93',
+    areaPricing: {
+      // Subscription per issue pricing for areas 1-14 from Excel
+      perMonth: [153, 268, 378, 485, 589, 681, 757, 834, 910, 987, 1063, 1140, 1216, 1293],
+      // Per area pricing for areas 1-14
+      perArea: [153, 115, 110, 107, 104, 92, 76, 77, 76, 77, 76, 77, 76, 77]
+    }
+  },
+  { 
+    id: 'one-third-page', 
+    label: '1/3 Page', 
+    description: '132 x 60.66',
+    dimensions: '132 x 60.66',
+    areaPricing: {
+      // Subscription per issue pricing for areas 1-14 from Excel
+      perMonth: [148, 259, 365, 469, 569, 658, 732, 806, 880, 954, 1028, 1102, 1176, 1250],
+      // Per area pricing for areas 1-14
+      perArea: [148, 111, 106, 104, 100, 89, 74, 74, 74, 74, 74, 74, 74, 74]
+    }
+  },
+  { 
+    id: 'quarter-page', 
+    label: '1/4 Page', 
+    description: '64 x 93',
+    dimensions: '64 x 93',
+    areaPricing: {
+      // Subscription per issue pricing for areas 1-14 from Excel
+      perMonth: [95, 167, 235, 302, 367, 424, 471, 519, 566, 614, 662, 709, 757, 804],
+      // Per area pricing for areas 1-14
+      perArea: [95, 72, 68, 67, 65, 57, 47, 48, 47, 48, 48, 47, 48, 47]
+    }
+  },
+  { 
+    id: 'sixth-page', 
+    label: '1/6 Page', 
+    description: '64 x 60.66',
+    dimensions: '64 x 60.66',
+    areaPricing: {
+      // Subscription per issue pricing for areas 1-14 from Excel
+      perMonth: [73, 128, 181, 232, 281, 325, 362, 398, 435, 471, 508, 545, 581, 618],
+      // Per area pricing for areas 1-14
+      perArea: [73, 55, 53, 51, 49, 44, 37, 36, 37, 36, 37, 37, 36, 37]
+    }
+  },
+  { 
+    id: 'eighth-page', 
+    label: '1/8 Page', 
+    description: '64 x 45.5',
+    dimensions: '64 x 45.5',
+    areaPricing: {
+      // Subscription per issue pricing for areas 1-14 from Excel
+      perMonth: [54, 95, 134, 172, 209, 242, 269, 296, 324, 351, 378, 405, 432, 460],
+      // Per area pricing for areas 1-14
+      perArea: [54, 41, 39, 38, 37, 33, 27, 27, 28, 27, 27, 27, 27, 28]
+    }
+  }
+];
+
+// Default export for backward compatibility (uses fixed rates)
+export const adSizes = fixedRatesAdSizes;
 
 // Duration options for 1,2 or 3 issues - fixed booking
 export const durations: Duration[] = [
