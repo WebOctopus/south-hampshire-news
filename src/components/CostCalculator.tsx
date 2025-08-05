@@ -636,15 +636,31 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     
                     <Separator />
                     
-                     <div className="flex justify-between text-xl font-bold text-community-navy">
-                       <span>
-                         {selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof' 
-                           ? 'Monthly Payment:' 
-                           : 'Total Price:'
-                         }
-                       </span>
-                       <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
-                     </div>
+                     {selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof' ? (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-lg font-semibold text-community-navy">
+                            <span>Monthly Cost Breakdown:</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Monthly Payment:</span>
+                            <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Duration (months):</span>
+                            <span className="font-medium">{pricingBreakdown.durationMultiplier}</span>
+                          </div>
+                          <Separator />
+                          <div className="flex justify-between text-xl font-bold text-community-navy">
+                            <span>Total Campaign Cost:</span>
+                            <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between text-xl font-bold text-community-navy">
+                          <span>Total Price:</span>
+                          <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                        </div>
+                      )}
                      
                      {(selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof') && (
                        <div className="text-sm text-gray-600 space-y-1">
