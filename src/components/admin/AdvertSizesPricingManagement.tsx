@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DollarSign, Plus, Edit, Trash2, Upload, Download, Percent } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -590,113 +591,150 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
         </TabsContent>
 
         <TabsContent value="issues">
-          {/* Issue-Based Pricing Management */}
-          <div className="space-y-6">
-            {adSizes.map((adSize) => (
-              <Card key={adSize.id} className="w-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{adSize.name} - Issue-Based Pricing</span>
-                    <Badge variant="outline">{adSize.dimensions}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Fixed Rates Table */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-community-navy">Fixed Rates</h3>
-                      <div className="overflow-x-auto">
-                        <Table className="text-sm">
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-20">Issues</TableHead>
-                              <TableHead>Per Issue (£)</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {Array.from({ length: 14 }, (_, i) => i + 1).map((issueCount) => {
-                              const currentPrice = adSize.fixed_pricing_per_issue?.[issueCount.toString()] || 0;
-                              return (
-                                <TableRow key={`fixed-${issueCount}`}>
-                                  <TableCell className="font-medium">{issueCount}</TableCell>
-                                  <TableCell>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      value={currentPrice}
-                                      onChange={(e) => {
-                                        const newPrice = parseFloat(e.target.value) || 0;
-                                        const updatedPricing = {
-                                          ...adSize.fixed_pricing_per_issue,
-                                          [issueCount.toString()]: newPrice
-                                        };
-                                        handleUpdateIssuePricing(adSize.id, 'fixed_pricing_per_issue', updatedPricing);
-                                      }}
-                                      className="w-full h-8"
-                                    />
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
+          {/* Issue-Based Pricing Management with Accordion */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Issue-Based Pricing Management
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Configure pricing for each ad size based on number of issues. Click to expand each section.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full">
+                {adSizes.map((adSize) => (
+                  <AccordionItem key={adSize.id} value={adSize.id} className="border rounded-lg mb-4 last:mb-0">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline bg-muted/50 rounded-t-lg data-[state=open]:rounded-b-none">
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                          <span className="font-semibold text-lg">{adSize.name}</span>
+                          <Badge variant="outline" className="bg-background">
+                            {adSize.dimensions}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>
+                            Fixed: £{adSize.base_price_per_area.toFixed(2)}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            Subscription: £{adSize.base_price_per_month.toFixed(2)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6 pt-2 bg-background rounded-b-lg">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Fixed Rates Table */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-community-navy flex items-center gap-2">
+                            Fixed Rates
+                            <Badge variant="secondary" className="text-xs">
+                              One-time booking
+                            </Badge>
+                          </h3>
+                          <div className="overflow-x-auto">
+                            <Table className="text-sm">
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-20">Issues</TableHead>
+                                  <TableHead>Per Issue (£)</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {Array.from({ length: 14 }, (_, i) => i + 1).map((issueCount) => {
+                                  const currentPrice = adSize.fixed_pricing_per_issue?.[issueCount.toString()] || 0;
+                                  return (
+                                    <TableRow key={`fixed-${issueCount}`}>
+                                      <TableCell className="font-medium">{issueCount}</TableCell>
+                                      <TableCell>
+                                        <Input
+                                          type="number"
+                                          step="0.01"
+                                          value={currentPrice}
+                                          onChange={(e) => {
+                                            const newPrice = parseFloat(e.target.value) || 0;
+                                            const updatedPricing = {
+                                              ...adSize.fixed_pricing_per_issue,
+                                              [issueCount.toString()]: newPrice
+                                            };
+                                            handleUpdateIssuePricing(adSize.id, 'fixed_pricing_per_issue', updatedPricing);
+                                          }}
+                                          className="w-full h-8"
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
 
-                    {/* Subscription Rates Table */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-community-navy">Subscription Rates</h3>
-                      <div className="overflow-x-auto">
-                        <Table className="text-sm">
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-20">Issues</TableHead>
-                              <TableHead>Per Issue (£)</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {Array.from({ length: 14 }, (_, i) => i + 1).map((issueCount) => {
-                              const currentPrice = adSize.subscription_pricing_per_issue?.[issueCount.toString()] || 0;
-                              return (
-                                <TableRow key={`subscription-${issueCount}`}>
-                                  <TableCell className="font-medium">{issueCount}</TableCell>
-                                  <TableCell>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      value={currentPrice}
-                                      onChange={(e) => {
-                                        const newPrice = parseFloat(e.target.value) || 0;
-                                        const updatedPricing = {
-                                          ...adSize.subscription_pricing_per_issue,
-                                          [issueCount.toString()]: newPrice
-                                        };
-                                        handleUpdateIssuePricing(adSize.id, 'subscription_pricing_per_issue', updatedPricing);
-                                      }}
-                                      className="w-full h-8"
-                                    />
-                                  </TableCell>
+                        {/* Subscription Rates Table */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-community-navy flex items-center gap-2">
+                            Subscription Rates
+                            <Badge variant="secondary" className="text-xs">
+                              Monthly subscription
+                            </Badge>
+                          </h3>
+                          <div className="overflow-x-auto">
+                            <Table className="text-sm">
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-20">Issues</TableHead>
+                                  <TableHead>Per Issue (£)</TableHead>
                                 </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
+                              </TableHeader>
+                              <TableBody>
+                                {Array.from({ length: 14 }, (_, i) => i + 1).map((issueCount) => {
+                                  const currentPrice = adSize.subscription_pricing_per_issue?.[issueCount.toString()] || 0;
+                                  return (
+                                    <TableRow key={`subscription-${issueCount}`}>
+                                      <TableCell className="font-medium">{issueCount}</TableCell>
+                                      <TableCell>
+                                        <Input
+                                          type="number"
+                                          step="0.01"
+                                          value={currentPrice}
+                                          onChange={(e) => {
+                                            const newPrice = parseFloat(e.target.value) || 0;
+                                            const updatedPricing = {
+                                              ...adSize.subscription_pricing_per_issue,
+                                              [issueCount.toString()]: newPrice
+                                            };
+                                            handleUpdateIssuePricing(adSize.id, 'subscription_pricing_per_issue', updatedPricing);
+                                          }}
+                                          className="w-full h-8"
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 pt-4 border-t">
-                    <Button 
-                      onClick={() => saveIssuePricing(adSize.id)}
-                      className="w-full"
-                    >
-                      Save {adSize.name} Pricing
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      
+                      <div className="mt-6 pt-4 border-t">
+                        <Button 
+                          onClick={() => saveIssuePricing(adSize.id)}
+                          className="w-full"
+                          variant={tempPricingUpdates[adSize.id] ? "default" : "outline"}
+                        >
+                          {tempPricingUpdates[adSize.id] ? "Save Changes" : "No Changes"} - {adSize.name} Pricing
+                        </Button>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="bulk">
