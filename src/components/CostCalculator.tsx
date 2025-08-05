@@ -144,18 +144,6 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     </p>
                   </div>
                 </div>
-                
-                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                  <RadioGroupItem value="subscription" id="subscription" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="subscription" className="font-medium cursor-pointer block">
-                      Subscription Packages
-                    </Label>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Monthly subscription plans with better rates and additional benefits.
-                    </p>
-                  </div>
-                </div>
 
                 <div className="flex items-start space-x-3 p-4 border-2 border-community-green rounded-lg hover:bg-gray-50 bg-gradient-to-r from-green-50 to-emerald-50">
                   <RadioGroupItem value="bogof" id="bogof" className="mt-1" />
