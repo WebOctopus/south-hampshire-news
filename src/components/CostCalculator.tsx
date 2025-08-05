@@ -96,8 +96,16 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   // Data loading with proper error handling
   useEffect(() => {
     let mounted = true;
+    let isLoading = false; // Prevent multiple simultaneous calls
     
     const loadPricingData = async () => {
+      if (isLoading) {
+        console.log('🚫 Already loading, skipping...');
+        return;
+      }
+      
+      isLoading = true;
+      
       try {
         console.log('🔄 Loading pricing data...');
         
@@ -128,7 +136,10 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
             .order('min_areas')
         ]);
 
-        if (!mounted) return;
+        if (!mounted) {
+          console.log('🚫 Component unmounted, aborting...');
+          return;
+        }
 
         // Check for errors with detailed logging
         console.log('🔍 Checking query results...');
@@ -204,15 +215,23 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         setHasError(true);
         setErrorDetails(error.message || 'Failed to load pricing data');
         setIsLoading(false);
+      } finally {
+        isLoading = false;
       }
     };
 
-    loadPricingData();
+    // Only load if we don't already have data
+    if (dbAdSizes.length === 0 && areas.length === 0) {
+      loadPricingData();
+    } else {
+      console.log('📊 Data already loaded, skipping fetch');
+      setIsLoading(false);
+    }
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, []); // Empty dependency array to prevent re-runs
 
   // Auto-set duration for BOGOF
   useEffect(() => {
