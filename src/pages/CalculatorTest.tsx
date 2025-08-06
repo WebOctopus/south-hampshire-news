@@ -415,16 +415,22 @@ const CalculatorTest = () => {
                     Loading durations...
                   </div>
                 ) : (
-                  <Select value={selectedDuration} onValueChange={setSelectedDuration}>
+                  <Select value={selectedDuration} onValueChange={(value) => {
+                    console.log('Duration selected:', value);
+                    setSelectedDuration(value);
+                  }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Choose campaign duration" />
                     </SelectTrigger>
                     <SelectContent>
-                      {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
-                        <SelectItem key={duration.id} value={duration.id}>
-                          {duration.name}
-                        </SelectItem>
-                      ))}
+                      {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => {
+                        console.log('Rendering duration option:', duration);
+                        return (
+                          <SelectItem key={duration.id} value={duration.id}>
+                            {duration.name}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 )}
