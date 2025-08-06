@@ -596,9 +596,11 @@ const Advertising = () => {
               <p className="text-lg text-gray-700 mb-4">
                 Get an <span className="font-bold text-community-green">instant quote</span> for any combination of areas using our cost calculator
               </p>
-              <Button className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg">
-                GET INSTANT QUOTE
-              </Button>
+              <CostCalculator>
+                <Button className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg">
+                  GET INSTANT QUOTE
+                </Button>
+              </CostCalculator>
             </div>
           </div>
 
@@ -619,7 +621,9 @@ const Advertising = () => {
                   </p>
                 </div>
                 <div className="text-center">
-                  <Button className="bg-community-green hover:bg-green-600">COST CALCULATOR</Button>
+                  <CostCalculator>
+                    <Button className="bg-community-green hover:bg-green-600">COST CALCULATOR</Button>
+                  </CostCalculator>
                 </div>
               </div>
             </CardContent>

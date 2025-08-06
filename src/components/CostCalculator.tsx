@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { calculateAdvertisingPrice, formatPrice, calculateCPM, getRecommendedDuration } from '@/lib/pricingCalculator';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface CostCalculatorProps {
   children: React.ReactNode;
@@ -62,134 +63,180 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   const [subscriptionDurations, setSubscriptionDurations] = useState<Duration[]>([]);
   const [volumeDiscounts, setVolumeDiscounts] = useState<VolumeDiscount[]>([]);
   
-  // Loading states
+  // Enhanced loading states
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [errorDetails, setErrorDetails] = useState<string>('');
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  const { toast } = useToast();
 
-  const handleAreaChange = (areaId: string, checked: boolean) => {
+  const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
       selectedAreas: checked 
         ? [...prev.selectedAreas, areaId]
         : prev.selectedAreas.filter(id => id !== areaId)
     }));
-  };
+  }, []);
 
-  // For BOGOF, use the paid areas for calculation
-  const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? bogofPaidAreas : formData.selectedAreas;
+  // Memoized calculations to prevent unnecessary re-renders
+  const effectiveSelectedAreas = useMemo(() => 
+    selectedPricingModel === 'bogof' ? bogofPaidAreas : formData.selectedAreas,
+    [selectedPricingModel, bogofPaidAreas, formData.selectedAreas]
+  );
   
-  const pricingBreakdown = calculateAdvertisingPrice(
-    effectiveSelectedAreas,
-    formData.adSize,
-    formData.duration,
-    selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof',
-    areas,
-    dbAdSizes,
-    durations,
-    subscriptionDurations,
-    volumeDiscounts
+  const pricingBreakdown = useMemo(() => 
+    calculateAdvertisingPrice(
+      effectiveSelectedAreas,
+      formData.adSize,
+      formData.duration,
+      selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof',
+      areas,
+      dbAdSizes,
+      durations,
+      subscriptionDurations,
+      volumeDiscounts
+    ),
+    [effectiveSelectedAreas, formData.adSize, formData.duration, selectedPricingModel, areas, dbAdSizes, durations, subscriptionDurations, volumeDiscounts]
   );
 
-  const recommendedDurations = getRecommendedDuration(formData.selectedAreas.length);
+  const recommendedDurations = useMemo(() => 
+    getRecommendedDuration(formData.selectedAreas.length),
+    [formData.selectedAreas.length]
+  );
   
-  // Data loading with proper error handling
-  useEffect(() => {
-    let isMounted = true;
-    
-    const loadPricingData = async () => {
-      console.log('🔄 Starting to load pricing data...');
-      
-      try {
-        // Load data in parallel
-        const [adSizesResult, areasResult, durationsResult, volumeDiscountsResult] = await Promise.all([
-          supabase
-            .from('ad_sizes')
-            .select('*')
-            .eq('is_active', true)
-            .order('sort_order'),
-          
-          supabase
-            .from('pricing_areas')
-            .select('*')
-            .eq('is_active', true)
-            .order('sort_order'),
-          
-          supabase
-            .from('pricing_durations')
-            .select('*')
-            .eq('is_active', true)
-            .order('sort_order'),
-          
-          supabase
-            .from('volume_discounts')
-            .select('*')
-            .eq('is_active', true)
-            .order('min_areas')
-        ]);
-
-        if (!isMounted) {
-          console.log('🚫 Component unmounted, aborting...');
-          return;
-        }
-
-        // Check for errors
-        if (adSizesResult.error) throw adSizesResult.error;
-        if (areasResult.error) throw areasResult.error;
-        if (durationsResult.error) throw durationsResult.error;
-        if (volumeDiscountsResult.error) throw volumeDiscountsResult.error;
-
-        console.log('✅ All queries successful, processing data...');
-
-        // Process the data
-        const transformedAdSizes = (adSizesResult.data || []).map(item => ({
-          ...item,
-          available_for: Array.isArray(item.available_for) 
-            ? item.available_for 
-            : ['fixed', 'subscription']
-        }));
-
-        const fixedDurations = (durationsResult.data || []).filter(d => d.duration_type === 'fixed');
-        const subDurations = (durationsResult.data || []).filter(d => d.duration_type === 'subscription');
-
-        // Update all state in a single batch to ensure proper re-render
-        if (isMounted) {
-          setDbAdSizes(transformedAdSizes);
-          setAreas(areasResult.data || []);
-          setDurations(fixedDurations);
-          setSubscriptionDurations(subDurations);
-          setVolumeDiscounts(volumeDiscountsResult.data || []);
-          setHasError(false);
-          setErrorDetails('');
-          // Set loading to false last to ensure all data is set
-          setIsLoading(false);
-          
-          console.log('✅ Pricing data loaded successfully!', {
-            adSizes: transformedAdSizes.length,
-            areas: (areasResult.data || []).length,
-            fixedDurations: fixedDurations.length,
-            subscriptionDurations: subDurations.length,
-            volumeDiscounts: (volumeDiscountsResult.data || []).length
-          });
-        }
-        
-      } catch (error: any) {
-        console.error('❌ Error loading pricing data:', error);
-        
-        if (isMounted) {
-          setHasError(true);
-          setErrorDetails(error.message || 'Failed to load pricing data');
-          setIsLoading(false);
-        }
+  // Enhanced data loading with retry logic and timeout
+  const loadPricingData = useCallback(async (isRetry = false) => {
+    try {
+      if (isRetry) {
+        setIsRetrying(true);
+        setHasError(false);
+      } else {
+        setIsLoading(true);
+        setRetryCount(0);
       }
-    };
+      
+      console.log(`🔄 ${isRetry ? 'Retrying' : 'Starting'} to load pricing data... (attempt ${retryCount + 1})`);
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 15 seconds')), 15000);
+      });
+      
+      // Load data in parallel with timeout
+      const dataPromise = Promise.all([
+        supabase
+          .from('ad_sizes')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order'),
+        
+        supabase
+          .from('pricing_areas')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order'),
+        
+        supabase
+          .from('pricing_durations')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order'),
+        
+        supabase
+          .from('volume_discounts')
+          .select('*')
+          .eq('is_active', true)
+          .order('min_areas')
+      ]);
 
+      const [adSizesResult, areasResult, durationsResult, volumeDiscountsResult] = await Promise.race([
+        dataPromise,
+        timeoutPromise
+      ]) as any[];
+
+      // Check for errors
+      const errors = [adSizesResult.error, areasResult.error, durationsResult.error, volumeDiscountsResult.error].filter(Boolean);
+      if (errors.length > 0) {
+        throw new Error(`Database errors: ${errors.map(e => e.message).join(', ')}`);
+      }
+
+      console.log('✅ All queries successful, processing data...');
+
+      // Process the data
+      const transformedAdSizes = (adSizesResult.data || []).map(item => ({
+        ...item,
+        available_for: Array.isArray(item.available_for) 
+          ? item.available_for 
+          : ['fixed', 'subscription']
+      }));
+
+      const fixedDurations = (durationsResult.data || []).filter(d => d.duration_type === 'fixed');
+      const subDurations = (durationsResult.data || []).filter(d => d.duration_type === 'subscription');
+
+      // Validate data integrity
+      if (!transformedAdSizes.length || !areasResult.data?.length) {
+        throw new Error('No data available. Please contact support.');
+      }
+
+      // Update all state atomically
+      setDbAdSizes(transformedAdSizes);
+      setAreas(areasResult.data || []);
+      setDurations(fixedDurations);
+      setSubscriptionDurations(subDurations);
+      setVolumeDiscounts(volumeDiscountsResult.data || []);
+      setHasError(false);
+      setErrorDetails('');
+      setIsLoading(false);
+      setIsRetrying(false);
+      
+      console.log('✅ Pricing data loaded successfully!', {
+        adSizes: transformedAdSizes.length,
+        areas: (areasResult.data || []).length,
+        fixedDurations: fixedDurations.length,
+        subscriptionDurations: subDurations.length,
+        volumeDiscounts: (volumeDiscountsResult.data || []).length
+      });
+
+      if (isRetry) {
+        toast({
+          title: "Data loaded successfully",
+          description: "Pricing information has been refreshed.",
+        });
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Error loading pricing data:', error);
+      
+      setHasError(true);
+      setErrorDetails(error.message || 'Failed to load pricing data');
+      setIsLoading(false);
+      setIsRetrying(false);
+      
+      if (isRetry) {
+        toast({
+          variant: "destructive",
+          title: "Failed to load data",
+          description: error.message || 'Unable to load pricing information. Please try again.',
+        });
+      }
+    }
+  }, [retryCount, toast]);
+
+  // Auto-retry logic
+  const handleRetry = useCallback(() => {
+    if (retryCount < 3) {
+      setRetryCount(prev => prev + 1);
+      loadPricingData(true);
+    }
+  }, [loadPricingData, retryCount]);
+
+  // Initial data load
+  useEffect(() => {
     loadPricingData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []); // Empty dependency array to prevent re-runs
+  }, []);
 
   // Auto-set duration for BOGOF
   useEffect(() => {
@@ -212,6 +259,9 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
           <DialogTitle className="text-2xl font-heading font-bold text-community-navy">
             Advertising Cost Calculator
           </DialogTitle>
+          <DialogDescription>
+            Calculate your advertising costs across different areas and pricing models
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -333,29 +383,39 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
                   Select Distribution Areas
                 </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {areas.map((area) => (
-                  <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                    <Checkbox
-                      id={area.id}
-                      checked={formData.selectedAreas.includes(area.id)}
-                      onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <Label htmlFor={area.id} className="font-bold text-community-navy cursor-pointer block">
-                        {area.name}
-                      </Label>
-                      <p className="text-sm text-gray-700 font-medium mt-1">
-                        {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : area.postcodes}
-                      </p>
-                      <p className="text-sm text-community-green font-bold mt-2">
-                        Circulation: {area.circulation.toLocaleString()}
-                      </p>
+               {isLoading ? (
+                <div className="text-center py-4">
+                  <div className="animate-pulse">Loading distribution areas...</div>
+                </div>
+              ) : areas.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">
+                  No distribution areas available. Please try refreshing.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {areas.map((area) => (
+                    <div key={area.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                      <Checkbox
+                        id={area.id}
+                        checked={formData.selectedAreas.includes(area.id)}
+                        onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <Label htmlFor={area.id} className="font-bold text-community-navy cursor-pointer block">
+                          {area.name}
+                        </Label>
+                        <p className="text-sm text-gray-700 font-medium mt-1">
+                          {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : area.postcodes}
+                        </p>
+                        <p className="text-sm text-community-green font-bold mt-2">
+                          Circulation: {area.circulation.toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
           )}
@@ -486,24 +546,17 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 Select Advertisement Size
               </h3>
                {(() => {
-                console.log('🔍 Ad sizes render check:', { 
-                  isLoading, 
-                  hasError, 
-                  dbAdSizesLength: dbAdSizes.length,
-                  areasLength: areas.length 
-                });
-                
-                if (isLoading) {
+                if (isLoading || isRetrying) {
                   return (
-                    <div className="text-center py-4">
+                    <div className="text-center py-8 space-y-4">
+                      <div className="animate-spin w-8 h-8 border-4 border-community-green border-t-transparent rounded-full mx-auto"></div>
                       <div className="space-y-2">
-                        <div className="animate-pulse">Loading ad sizes...</div>
-                        {hasError && (
-                          <div className="text-red-500 text-sm">
-                            <p>⚠️ {errorDetails}</p>
-                            <p>Please refresh the page to try again.</p>
-                          </div>
-                        )}
+                        <p className="font-medium">
+                          {isRetrying ? 'Retrying data load...' : 'Loading ad sizes and pricing...'}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          This may take a few moments
+                        </p>
                       </div>
                     </div>
                   );
@@ -511,26 +564,45 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                 
                 if (hasError) {
                   return (
-                    <div className="text-center py-8 space-y-3">
-                      <div className="text-red-500">
-                        <p className="font-medium">❌ Failed to load ad sizes</p>
+                    <div className="text-center py-8 space-y-4">
+                      <div className="text-red-500 space-y-2">
+                        <p className="font-medium">❌ Failed to load pricing data</p>
                         <p className="text-sm">{errorDetails}</p>
                       </div>
-                      <Button 
-                        onClick={() => window.location.reload()} 
-                        variant="outline" 
-                        size="sm"
-                      >
-                        Refresh Page
-                      </Button>
+                      <div className="flex gap-2 justify-center">
+                        {retryCount < 3 && (
+                          <Button 
+                            onClick={handleRetry}
+                            variant="outline" 
+                            size="sm"
+                            className="bg-community-green/10 hover:bg-community-green/20"
+                          >
+                            Retry ({3 - retryCount} left)
+                          </Button>
+                        )}
+                        <Button 
+                          onClick={() => window.location.reload()} 
+                          variant="outline" 
+                          size="sm"
+                        >
+                          Refresh Page
+                        </Button>
+                      </div>
                     </div>
                   );
                 }
                 
                 if (dbAdSizes.length === 0) {
                   return (
-                    <div className="text-center py-4 text-gray-500">
-                      No ad sizes available. Please contact support.
+                    <div className="text-center py-8 space-y-3">
+                      <p className="text-gray-500">No ad sizes available</p>
+                      <Button 
+                        onClick={handleRetry}
+                        variant="outline" 
+                        size="sm"
+                      >
+                        Retry Loading
+                      </Button>
                     </div>
                   );
                 }
