@@ -87,12 +87,14 @@ export function calculateAdvertisingPrice(
   let areaBreakdown: Array<{area: DbArea; adSize: DbAdSize; basePrice: number; multipliedPrice: number;}>;
 
   if (isSubscription) {
-    // For subscription: use database pricing
+    // For subscription: use issue-based pricing from database
     const subscriptionPricing = selectedAdSize.subscription_pricing_per_issue;
     let basePrice = selectedAdSize.base_price_per_month;
     
-    if (subscriptionPricing && Array.isArray(subscriptionPricing)) {
-      basePrice = subscriptionPricing[areasCount - 1] || selectedAdSize.base_price_per_month;
+    // Check if we have issue-based pricing configured for this number of areas
+    if (subscriptionPricing && typeof subscriptionPricing === 'object') {
+      const issuePriceKey = areasCount.toString();
+      basePrice = subscriptionPricing[issuePriceKey] || selectedAdSize.base_price_per_month;
     }
     
     subtotal = basePrice;
@@ -106,12 +108,14 @@ export function calculateAdvertisingPrice(
       multipliedPrice: pricePerArea
     }));
   } else {
-    // For fixed pricing: use database pricing
+    // For fixed pricing: use issue-based pricing from database
     const fixedPricing = selectedAdSize.fixed_pricing_per_issue;
     let basePrice = selectedAdSize.base_price_per_month;
     
-    if (fixedPricing && Array.isArray(fixedPricing)) {
-      basePrice = fixedPricing[areasCount - 1] || selectedAdSize.base_price_per_month;
+    // Check if we have issue-based pricing configured for this number of areas
+    if (fixedPricing && typeof fixedPricing === 'object') {
+      const issuePriceKey = areasCount.toString();
+      basePrice = fixedPricing[issuePriceKey] || selectedAdSize.base_price_per_month;
     }
     
     subtotal = basePrice;
