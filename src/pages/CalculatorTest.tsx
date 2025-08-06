@@ -30,6 +30,7 @@ const CalculatorTest = () => {
     company: "",
   });
   const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof'>('fixed');
+  const [prevPricingModel, setPrevPricingModel] = useState<string>('fixed');
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
@@ -90,8 +91,6 @@ const CalculatorTest = () => {
     );
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
-  // Manage duration selection with better state tracking
-  const [prevPricingModel, setPrevPricingModel] = useState<string>(pricingModel);
   
   React.useEffect(() => {
     console.log('Duration useEffect triggered:', {
@@ -453,16 +452,11 @@ const CalculatorTest = () => {
                       <SelectValue placeholder="Choose campaign duration" />
                     </SelectTrigger>
                     <SelectContent className="z-50">
-                      {React.useMemo(() => {
-                        const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-                        console.log('Rendering duration options for', pricingModel, ':', relevantDurations);
-                        
-                        return relevantDurations.map((duration) => (
-                          <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
-                            {duration.name}
-                          </SelectItem>
-                        ));
-                      }, [pricingModel, durations, subscriptionDurations])}
+                      {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
+                        <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
+                          {duration.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}

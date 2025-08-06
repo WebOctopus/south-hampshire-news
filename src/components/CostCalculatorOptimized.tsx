@@ -30,6 +30,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
   });
 
   const [selectedPricingModel, setSelectedPricingModel] = useState<string>('fixed');
+  const [prevPricingModel, setPrevPricingModel] = useState<string>('fixed');
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   
@@ -83,8 +84,6 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
     [formData.selectedAreas.length]
   );
 
-  // Manage duration selection with better state tracking
-  const [prevPricingModel, setPrevPricingModel] = useState<string>(selectedPricingModel);
   
   React.useEffect(() => {
     console.log('Duration useEffect triggered:', {
@@ -545,26 +544,21 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                       className="grid grid-cols-1 gap-4"
                       key={`duration-radio-${selectedPricingModel}`}
                     >
-                      {React.useMemo(() => {
-                        const relevantDurations = (selectedPricingModel === 'subscription') ? subscriptionDurations : durations;
-                        console.log('Rendering duration options for', selectedPricingModel, ':', relevantDurations);
-                        
-                        return relevantDurations.map((duration) => (
-                          <div key={`${selectedPricingModel}-${duration.id}`} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                            <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
-                            <div className="flex-1">
-                              <Label htmlFor={duration.id} className="font-bold text-community-navy cursor-pointer block">
-                                {duration.name}
-                              </Label>
-                              {duration.discount_percentage > 0 && (
-                                <Badge className="mt-1 bg-community-green text-white">
-                                  {duration.discount_percentage}% discount
-                                </Badge>
-                              )}
-                            </div>
+                      {(selectedPricingModel === 'subscription' ? subscriptionDurations : durations).map((duration) => (
+                        <div key={`${selectedPricingModel}-${duration.id}`} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                          <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
+                          <div className="flex-1">
+                            <Label htmlFor={duration.id} className="font-bold text-community-navy cursor-pointer block">
+                              {duration.name}
+                            </Label>
+                            {duration.discount_percentage > 0 && (
+                              <Badge className="mt-1 bg-community-green text-white">
+                                {duration.discount_percentage}% discount
+                              </Badge>
+                            )}
                           </div>
-                        ));
-                      }, [selectedPricingModel, durations, subscriptionDurations])}
+                        </div>
+                      ))}
                     </RadioGroup>
                   )}
                 </CardContent>
