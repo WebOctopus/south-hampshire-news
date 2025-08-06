@@ -392,7 +392,11 @@ const CalculatorTest = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {adSizes
-                        .filter(size => size.available_for.includes(pricingModel))
+                        .filter(size => {
+                          // For BOGOF, treat it as subscription since it's essentially a subscription deal
+                          const modelToCheck = pricingModel === 'bogof' ? 'subscription' : pricingModel;
+                          return size.available_for.includes(modelToCheck);
+                        })
                         .map((size) => (
                           <SelectItem key={size.id} value={size.id}>
                             {size.name} - {size.dimensions}
