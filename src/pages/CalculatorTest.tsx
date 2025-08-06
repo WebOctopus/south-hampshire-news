@@ -90,10 +90,18 @@ const CalculatorTest = () => {
     );
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
-  // Clear duration when switching pricing models to force user selection
+  // Auto-select duration if only one option is available, or clear when switching models
   React.useEffect(() => {
-    setSelectedDuration("");
-  }, [pricingModel]);
+    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+    
+    if (relevantDurations.length === 1) {
+      // Auto-select if only one duration option
+      setSelectedDuration(relevantDurations[0].id);
+    } else {
+      // Clear selection when switching models to force user choice
+      setSelectedDuration("");
+    }
+  }, [pricingModel, durations, subscriptionDurations]);
 
   const handleSubmit = () => {
     // Validation
