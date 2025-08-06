@@ -90,16 +90,50 @@ const CalculatorTest = () => {
     );
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
-  // Auto-select duration if only one option is available, or clear when switching models
+  // Manage duration selection with better state tracking
+  const [prevPricingModel, setPrevPricingModel] = useState<string>(pricingModel);
+  
   React.useEffect(() => {
-    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-    
-    if (relevantDurations.length === 1) {
-      // Auto-select if only one duration option
-      setSelectedDuration(relevantDurations[0].id);
-    } else {
-      // Clear selection when switching models to force user choice
-      setSelectedDuration("");
+    console.log('Duration useEffect triggered:', {
+      pricingModel,
+      prevPricingModel,
+      durationsLength: durations?.length,
+      subscriptionDurationsLength: subscriptionDurations?.length,
+      currentSelectedDuration: selectedDuration
+    });
+
+    try {
+      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      
+      console.log('Relevant durations for', pricingModel, ':', relevantDurations);
+      
+      // Only clear duration when pricing model actually changes (not on initial load or data updates)
+      if (pricingModel !== prevPricingModel && prevPricingModel !== null) {
+        console.log('Pricing model changed from', prevPricingModel, 'to', pricingModel, '- clearing duration');
+        setSelectedDuration("");
+        setPrevPricingModel(pricingModel);
+        return;
+      }
+      
+      // Auto-select if only one duration option and no duration currently selected
+      if (relevantDurations?.length === 1 && !selectedDuration) {
+        console.log('Auto-selecting single duration:', relevantDurations[0]);
+        setSelectedDuration(relevantDurations[0].id);
+      }
+      
+      // Validate current selection is still valid for the current model
+      if (selectedDuration && relevantDurations?.length > 0) {
+        const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
+        if (!isValidSelection) {
+          console.log('Current duration selection invalid for', pricingModel, '- clearing');
+          setSelectedDuration("");
+        }
+      }
+      
+      // Update previous model reference
+      setPrevPricingModel(pricingModel);
+    } catch (error) {
+      console.error('Error in duration useEffect:', error);
     }
   }, [pricingModel, durations, subscriptionDurations]);
 
@@ -415,22 +449,28 @@ const CalculatorTest = () => {
                     Loading durations...
                   </div>
                 ) : (
-                  <Select value={selectedDuration} onValueChange={(value) => {
-                    console.log('Duration selected:', value);
-                    setSelectedDuration(value);
-                  }}>
+                  <Select 
+                    value={selectedDuration} 
+                    onValueChange={(value) => {
+                      console.log('Duration selected:', value, 'for pricing model:', pricingModel);
+                      setSelectedDuration(value);
+                    }}
+                    key={`duration-select-${pricingModel}`}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose campaign duration" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => {
-                        console.log('Rendering duration option:', duration);
-                        return (
-                          <SelectItem key={duration.id} value={duration.id}>
+                    <SelectContent className="z-50">
+                      {React.useMemo(() => {
+                        const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+                        console.log('Rendering duration options for', pricingModel, ':', relevantDurations);
+                        
+                        return relevantDurations.map((duration) => (
+                          <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
                             {duration.name}
                           </SelectItem>
-                        );
-                      })}
+                        ));
+                      }, [pricingModel, durations, subscriptionDurations])}
                     </SelectContent>
                   </Select>
                 )}
