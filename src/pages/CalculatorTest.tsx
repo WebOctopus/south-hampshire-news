@@ -72,12 +72,28 @@ const CalculatorTest = () => {
 
   const pricingBreakdown = useMemo(() => {
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
+      console.log('Pricing calculation skipped:', {
+        selectedAdSize: !!selectedAdSize,
+        selectedDuration: !!selectedDuration,
+        effectiveSelectedAreasLength: effectiveSelectedAreas.length,
+        pricingModel,
+        bogofPaidAreas: bogofPaidAreas.length,
+        selectedAreas: selectedAreas.length
+      });
       return null;
     }
 
     const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
     
-    return calculateAdvertisingPrice(
+    console.log('Calculating pricing with:', {
+      effectiveSelectedAreas,
+      selectedAdSize,
+      selectedDuration,
+      pricingModel,
+      relevantDurations: relevantDurations.length
+    });
+
+    const result = calculateAdvertisingPrice(
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
@@ -88,7 +104,10 @@ const CalculatorTest = () => {
       subscriptionDurations,
       volumeDiscounts
     );
-  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts]);
+
+    console.log('Pricing calculation result:', result);
+    return result;
+  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
   // Auto-set duration for BOGOF
   React.useEffect(() => {
