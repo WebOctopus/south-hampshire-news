@@ -71,11 +71,8 @@ export function calculateAdvertisingPrice(
 
   const selectedAreas = areas.filter(area => selectedAreaIds.includes(area.id));
   
-  // Find the ad size by matching name
-  const selectedAdSize = adSizes.find(size => {
-    const mappedId = size.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    return mappedId === adSizeId;
-  });
+  // Find the ad size by ID
+  const selectedAdSize = adSizes.find(size => size.id === adSizeId);
   
   const allDurations = isSubscription ? subscriptionDurations : durations;
   const selectedDuration = allDurations.find(duration => duration.id === durationId);
