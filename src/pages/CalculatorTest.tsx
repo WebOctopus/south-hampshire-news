@@ -248,10 +248,6 @@ const CalculatorTest = () => {
                     <Label htmlFor="fixed">Fixed No Contract Price</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="subscription" id="subscription" />
-                    <Label htmlFor="subscription">Subscription Advertising</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
                     <RadioGroupItem value="bogof" id="bogof" />
                     <Label htmlFor="bogof">BOGOF - Buy One Get One Free</Label>
                   </div>
