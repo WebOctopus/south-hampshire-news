@@ -101,52 +101,11 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
   const { toast } = useToast();
 
   useEffect(() => {
-    initializeDefaultData();
+    loadAllData();
   }, []);
 
-  const initializeDefaultData = async () => {
-    try {
-      // Check if data already exists
-      const { data: existingDurations } = await supabase
-        .from('pricing_durations')
-        .select('id')
-        .limit(1);
-
-      const { data: existingVolumeDiscounts } = await supabase
-        .from('volume_discounts')
-        .select('id')
-        .limit(1);
-
-      // Initialize durations if none exist
-      if (existingDurations && existingDurations.length === 0) {
-        const defaultDurations = [
-          { name: '1 Issue', duration_type: 'fixed', duration_value: 1, discount_percentage: 0, is_active: true, sort_order: 1 },
-          { name: '2 Issues', duration_type: 'fixed', duration_value: 2, discount_percentage: 10, is_active: true, sort_order: 2 },
-          { name: '3 Issues', duration_type: 'fixed', duration_value: 3, discount_percentage: 15, is_active: true, sort_order: 3 },
-          { name: '6 Months', duration_type: 'subscription', duration_value: 6, discount_percentage: 20, is_active: true, sort_order: 4 },
-          { name: '12 Months', duration_type: 'subscription', duration_value: 12, discount_percentage: 25, is_active: true, sort_order: 5 }
-        ];
-
-        await supabase.from('pricing_durations').insert(defaultDurations);
-      }
-
-      // Initialize volume discounts if none exist
-      if (existingVolumeDiscounts && existingVolumeDiscounts.length === 0) {
-        const defaultVolumeDiscounts = [
-          { min_areas: 1, max_areas: 2, discount_percentage: 0, is_active: true },
-          { min_areas: 3, max_areas: 5, discount_percentage: 5, is_active: true },
-          { min_areas: 6, max_areas: 9, discount_percentage: 10, is_active: true },
-          { min_areas: 10, max_areas: 14, discount_percentage: 15, is_active: true }
-        ];
-
-        await supabase.from('volume_discounts').insert(defaultVolumeDiscounts);
-      }
-
-      loadAllData();
-    } catch (error) {
-      console.error('Error initializing default data:', error);
-    }
-  };
+  // This function is removed to prevent auto-recreation of deleted data
+  // Default data should be handled during initial database setup, not in the UI
 
   const loadAllData = async () => {
     try {
