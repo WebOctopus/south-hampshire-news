@@ -477,6 +477,39 @@ const CalculatorTest = () => {
                          <span>Total Circulation:</span>
                          <span>{pricingBreakdown.totalCirculation.toLocaleString()}</span>
                        </div>
+                       
+                       {/* Areas Breakdown */}
+                       <div className="mt-4 space-y-3">
+                         <div>
+                           <h4 className="font-medium text-sm mb-2">Areas You're Paying For:</h4>
+                           <div className="space-y-1">
+                             {areas
+                               .filter(area => effectiveSelectedAreas.includes(area.id))
+                               .map(area => (
+                                 <div key={area.id} className="flex justify-between text-sm bg-blue-50 px-2 py-1 rounded">
+                                   <span>{area.name}</span>
+                                   <span>{area.circulation.toLocaleString()} circulation</span>
+                                 </div>
+                               ))}
+                           </div>
+                         </div>
+                         
+                         {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                           <div>
+                             <h4 className="font-medium text-sm mb-2 text-green-700">Areas You Get FREE:</h4>
+                             <div className="space-y-1">
+                               {areas
+                                 .filter(area => bogofFreeAreas.includes(area.id))
+                                 .map(area => (
+                                   <div key={area.id} className="flex justify-between text-sm bg-green-50 px-2 py-1 rounded">
+                                     <span>{area.name}</span>
+                                     <span>{area.circulation.toLocaleString()} circulation</span>
+                                   </div>
+                                 ))}
+                             </div>
+                           </div>
+                         )}
+                       </div>
                        {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
                          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
                            <p className="text-sm text-green-800 font-medium">
