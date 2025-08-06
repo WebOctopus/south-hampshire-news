@@ -634,20 +634,20 @@ const AdvertisingNew = () => {
                         <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
                       </div>
                     )}
-                    {pricingBreakdown.durationDiscountAmount > 0 && (
+                    {pricingBreakdown.durationMultiplier < 1 && (
                       <div className="flex justify-between text-green-600">
                         <span>Duration Discount:</span>
-                        <span className="font-medium">-{formatPrice(pricingBreakdown.durationDiscountAmount)}</span>
+                        <span className="font-medium">-{formatPrice(pricingBreakdown.subtotal * (1 - pricingBreakdown.durationMultiplier))}</span>
                       </div>
                     )}
                     <Separator />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total Price:</span>
-                      <span>{formatPrice(pricingBreakdown.totalPrice)}</span>
+                      <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600">
                       <span>Cost per 1,000 (CPM):</span>
-                      <span>{formatPrice(pricingBreakdown.totalPrice / pricingBreakdown.totalCirculation * 1000)}</span>
+                      <span>{formatPrice(pricingBreakdown.finalTotal / pricingBreakdown.totalCirculation * 1000)}</span>
                     </div>
                   </div>
 
