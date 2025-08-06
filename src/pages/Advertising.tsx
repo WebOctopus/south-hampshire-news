@@ -264,11 +264,9 @@ const Advertising = () => {
           {/* Call to Action */}
           <div className="text-center mt-12">
             <div className="inline-flex flex-col sm:flex-row gap-4">
-              <CostCalculator>
-                <Button className="bg-community-green hover:bg-community-green/90 text-white px-8 py-3 font-bold rounded-full border border-community-green/20 hover:shadow-lg hover:shadow-community-green/30 transition-all duration-300">
-                  EXPLORE ALL EDITIONS
-                </Button>
-              </CostCalculator>
+              <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
+                EXPLORE ALL EDITIONS
+              </Button>
               <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
                 VIEW DISTRIBUTION MAP
               </Button>
@@ -598,11 +596,9 @@ const Advertising = () => {
               <p className="text-lg text-gray-700 mb-4">
                 Get an <span className="font-bold text-community-green">instant quote</span> for any combination of areas using our cost calculator
               </p>
-              <CostCalculator>
-                <Button className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg">
-                  GET INSTANT QUOTE
-                </Button>
-              </CostCalculator>
+              <Button className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg">
+                GET INSTANT QUOTE
+              </Button>
             </div>
           </div>
 
@@ -623,9 +619,7 @@ const Advertising = () => {
                   </p>
                 </div>
                 <div className="text-center">
-                  <CostCalculator>
-                    <Button className="bg-community-green hover:bg-green-600">COST CALCULATOR</Button>
-                  </CostCalculator>
+                  <Button className="bg-community-green hover:bg-green-600">COST CALCULATOR</Button>
                 </div>
               </div>
             </CardContent>
@@ -663,11 +657,9 @@ const Advertising = () => {
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <CostCalculator>
-                          <Button className="w-full">
-                            REQUEST A QUOTE
-                          </Button>
-                        </CostCalculator>
+                        <Button className="w-full">
+                          REQUEST A QUOTE
+                        </Button>
                       </div>
                     </div>
                   </AccordionContent>
