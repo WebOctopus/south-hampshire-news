@@ -218,14 +218,6 @@ const CalculatorTest = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Debug Info */}
-              <Alert>
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription>
-                  Data Status: {isLoading ? 'Loading...' : `${areas.length} areas, ${adSizes.length} ad sizes, ${durations.length} durations loaded`}
-                </AlertDescription>
-              </Alert>
-
               {/* Contact Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Contact Information</h3>
