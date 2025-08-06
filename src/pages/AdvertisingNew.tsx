@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Loader2, AlertCircle } from "lucide-react";
+import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
@@ -580,99 +580,126 @@ const AdvertisingNew = () => {
               </div>
 
               {/* Duration Selection */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
-                {isLoading ? (
-                  <div className="flex items-center justify-center p-4">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading durations...
-                  </div>
-                ) : (
-                  <Select value={selectedDuration} onValueChange={setSelectedDuration}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose campaign duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {((pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations)
-                        .map((duration) => (
+              {pricingModel !== 'bogof' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center p-4">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Loading durations...
+                    </div>
+                  ) : (
+                    <Select value={selectedDuration} onValueChange={setSelectedDuration}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose campaign duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(pricingModel === 'subscription' ? subscriptionDurations : durations).map((duration) => (
                           <SelectItem key={duration.id} value={duration.id}>
                             {duration.name}
                             {duration.discount_percentage > 0 && (
-                              <span className="text-green-600 ml-1">
+                              <span className="text-green-600 ml-2">
                                 ({duration.discount_percentage}% discount)
                               </span>
                             )}
                           </SelectItem>
                         ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              {/* Pricing Summary */}
-              {pricingBreakdown && (
-                <div className="space-y-4">
-                  <Separator />
-                  <h3 className="text-lg font-semibold">Pricing Summary</h3>
-                  
-                  <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                    <div className="flex justify-between">
-                      <span>Selected Areas:</span>
-                      <span className="font-medium">{effectiveSelectedAreas.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Total Circulation:</span>
-                      <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Base Price:</span>
-                      <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
-                    </div>
-                    {pricingBreakdown.volumeDiscount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                        <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
-                      </div>
-                    )}
-                    {pricingBreakdown.durationMultiplier < 1 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Duration Discount:</span>
-                        <span className="font-medium">-{formatPrice(pricingBreakdown.subtotal * (1 - pricingBreakdown.durationMultiplier))}</span>
-                      </div>
-                    )}
-                    <Separator />
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total Price:</span>
-                      <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Cost per 1,000 (CPM):</span>
-                      <span>{formatPrice(pricingBreakdown.finalTotal / pricingBreakdown.totalCirculation * 1000)}</span>
-                    </div>
-                  </div>
-
-                  {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                    <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                      <h4 className="font-semibold text-green-800 mb-2">BOGOF Bonus!</h4>
-                      <p className="text-green-700 text-sm">
-                        You'll get {bogofFreeAreas.length} additional areas FREE for the first 6 months, 
-                        reaching an extra {areas.filter(a => bogofFreeAreas.includes(a.id)).reduce((sum, area) => sum + area.circulation, 0).toLocaleString()} homes!
-                      </p>
-                    </div>
+                      </SelectContent>
+                    </Select>
                   )}
                 </div>
               )}
 
+              {/* Fixed 6-month for BOGOF */}
+              {pricingModel === 'bogof' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Campaign Duration</h3>
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <span className="font-medium text-green-800">
+                        6 Months Fixed (Required for BOGOF)
+                      </span>
+                    </div>
+                    <p className="text-sm text-green-700 mt-1">
+                      BOGOF campaigns run for a fixed 6-month period to give you maximum value.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Pricing Summary */}
+              {pricingBreakdown && (
+                <>
+                  <Separator />
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Pricing Summary</h3>
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                      <div className="flex justify-between">
+                        <span>Selected Areas:</span>
+                        <span className="font-medium">{effectiveSelectedAreas.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Total Circulation:</span>
+                        <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Base Price:</span>
+                        <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
+                      </div>
+                      {pricingBreakdown.volumeDiscount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                          <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                        </div>
+                      )}
+                      {pricingBreakdown.durationMultiplier < 1 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Duration Discount:</span>
+                          <span className="font-medium">-{formatPrice(pricingBreakdown.subtotal * (1 - pricingBreakdown.durationMultiplier))}</span>
+                        </div>
+                      )}
+                      <Separator />
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>Total Price:</span>
+                        <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Cost per 1,000 (CPM):</span>
+                        <span>{formatPrice(pricingBreakdown.finalTotal / pricingBreakdown.totalCirculation * 1000)}</span>
+                      </div>
+                      
+                     </div>
+
+                    {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                      <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                        <h4 className="font-semibold text-green-800 mb-2">BOGOF Bonus!</h4>
+                        <p className="text-green-700 text-sm">
+                          You'll get {bogofFreeAreas.length} additional areas FREE for the first 6 months, 
+                          reaching an extra {areas.filter(a => bogofFreeAreas.includes(a.id)).reduce((sum, area) => sum + area.circulation, 0).toLocaleString()} homes!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
               {/* Submit Button */}
-              <div className="pt-4">
-                <Button 
-                  onClick={handleSubmit}
-                  className="w-full bg-community-green hover:bg-community-green/90 text-white font-bold py-3"
-                  size="lg"
-                >
-                  Get My Quote
-                </Button>
-              </div>
+              <Button 
+                onClick={handleSubmit}
+                className="w-full"
+                size="lg"
+                disabled={
+                  !formData.name || 
+                  !formData.email || 
+                  !formData.phone || 
+                  effectiveSelectedAreas.length === 0 || 
+                  !selectedAdSize || 
+                  (!selectedDuration && pricingModel !== 'bogof')
+                }
+              >
+                Request Your Quote
+              </Button>
             </CardContent>
           </Card>
         </div>
