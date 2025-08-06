@@ -19,6 +19,7 @@ import Story from "./pages/Story";
 import StoriesArchive from "./pages/StoriesArchive";
 import BusinessDetail from "./pages/BusinessDetail";
 import CalculatorTest from "./pages/CalculatorTest";
+import AdvertisingNew from "./pages/AdvertisingNew";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +52,7 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/calculator-test" element={<CalculatorTest />} />
+          <Route path="/advertising-new" element={<AdvertisingNew />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
