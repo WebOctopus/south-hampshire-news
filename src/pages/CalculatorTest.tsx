@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
@@ -30,7 +31,8 @@ const CalculatorTest = () => {
   });
   const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof'>('fixed');
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-  const [bogofSelectedAreas, setBogofSelectedAreas] = useState<string[]>([]);
+  const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
+  const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
 
@@ -59,33 +61,27 @@ const CalculatorTest = () => {
   });
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
-    if (pricingModel === 'bogof') {
-      setBogofSelectedAreas(prev => 
-        checked ? [...prev, areaId] : prev.filter(id => id !== areaId)
-      );
-    } else {
-      setSelectedAreas(prev => 
-        checked ? [...prev, areaId] : prev.filter(id => id !== areaId)
-      );
-    }
-  }, [pricingModel]);
+    setSelectedAreas(prev => 
+      checked ? [...prev, areaId] : prev.filter(id => id !== areaId)
+    );
+  }, []);
 
   const effectiveSelectedAreas = useMemo(() => {
-    return pricingModel === 'bogof' ? bogofSelectedAreas : selectedAreas;
-  }, [pricingModel, selectedAreas, bogofSelectedAreas]);
+    return pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
+  }, [pricingModel, selectedAreas, bogofPaidAreas]);
 
   const pricingBreakdown = useMemo(() => {
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
       return null;
     }
 
-    const relevantDurations = pricingModel === 'subscription' ? subscriptionDurations : durations;
+    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
     
     return calculateAdvertisingPrice(
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
-      pricingModel === 'subscription',
+      pricingModel === 'subscription' || pricingModel === 'bogof',
       areas,
       adSizes,
       relevantDurations,
@@ -93,6 +89,16 @@ const CalculatorTest = () => {
       volumeDiscounts
     );
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts]);
+
+  // Auto-set duration for BOGOF
+  React.useEffect(() => {
+    if (pricingModel === 'bogof' && subscriptionDurations.length > 0) {
+      const sixMonthDuration = subscriptionDurations.find(d => d.duration_value === 6);
+      if (sixMonthDuration) {
+        setSelectedDuration(sixMonthDuration.id);
+      }
+    }
+  }, [pricingModel, subscriptionDurations]);
 
   const handleSubmit = () => {
     // Validation
@@ -250,42 +256,126 @@ const CalculatorTest = () => {
               </div>
 
               {/* Distribution Areas */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Select Distribution Areas</h3>
-                {isLoading ? (
-                  <div className="flex items-center justify-center p-8">
-                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    Loading distribution areas...
-                  </div>
-                ) : areas.length === 0 ? (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      No distribution areas available. Please check the admin configuration.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {areas.map((area) => (
-                      <div key={area.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={area.id}
-                          checked={effectiveSelectedAreas.includes(area.id)}
-                          onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
-                        />
-                        <Label htmlFor={area.id} className="flex-1">
-                          <div>
-                            <div className="font-medium">{area.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              Circulation: {area.circulation.toLocaleString()}
+              {pricingModel !== 'bogof' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Select Distribution Areas</h3>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center p-8">
+                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                      Loading distribution areas...
+                    </div>
+                  ) : areas.length === 0 ? (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        No distribution areas available. Please check the admin configuration.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {areas.map((area) => (
+                        <div key={area.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={area.id}
+                            checked={selectedAreas.includes(area.id)}
+                            onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                          />
+                          <Label htmlFor={area.id} className="flex-1">
+                            <div>
+                              <div className="font-medium">{area.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                Circulation: {area.circulation.toLocaleString()}
+                              </div>
                             </div>
-                          </div>
-                        </Label>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* BOGOF Areas Selection */}
+              {pricingModel === 'bogof' && (
+                <>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Select Your "Paid For" Areas</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Choose at least 3 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
+                    </p>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center p-8">
+                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                        Loading areas...
                       </div>
-                    ))}
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {areas.map((area) => (
+                          <div key={area.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`paid-${area.id}`}
+                              checked={bogofPaidAreas.includes(area.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setBogofPaidAreas(prev => [...prev, area.id]);
+                                } else {
+                                  setBogofPaidAreas(prev => prev.filter(id => id !== area.id));
+                                  setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`paid-${area.id}`} className="flex-1">
+                              <div>
+                                <div className="font-medium">{area.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  Circulation: {area.circulation.toLocaleString()}
+                                </div>
+                              </div>
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+
+                  {bogofPaidAreas.length >= 3 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Select Your "Free" Areas</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Choose up to {bogofPaidAreas.length} areas that you'll get for FREE for the first 6 months.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {areas
+                          .filter(area => !bogofPaidAreas.includes(area.id))
+                          .map((area) => (
+                            <div key={area.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`free-${area.id}`}
+                                checked={bogofFreeAreas.includes(area.id)}
+                                disabled={bogofFreeAreas.length >= bogofPaidAreas.length && !bogofFreeAreas.includes(area.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setBogofFreeAreas(prev => [...prev, area.id]);
+                                  } else {
+                                    setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={`free-${area.id}`} className="flex-1">
+                                <div>
+                                  <div className="font-medium">{area.name}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    Circulation: {area.circulation.toLocaleString()}
+                                  </div>
+                                </div>
+                              </Label>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* Ad Size Selection */}
               <div className="space-y-4">
@@ -327,7 +417,7 @@ const CalculatorTest = () => {
                       <SelectValue placeholder="Choose campaign duration" />
                     </SelectTrigger>
                     <SelectContent>
-                      {(pricingModel === 'subscription' ? subscriptionDurations : durations).map((duration) => (
+                      {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
                         <SelectItem key={duration.id} value={duration.id}>
                           {duration.name}
                           {duration.discount_percentage > 0 && (
@@ -349,11 +439,28 @@ const CalculatorTest = () => {
                   <div className="bg-muted p-4 rounded-lg">
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>Total Areas:</span>
+                        <span>Selected Areas:</span>
                         <span>{effectiveSelectedAreas.length}</span>
                       </div>
+                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                        <div className="flex justify-between">
+                          <span>Free Areas:</span>
+                          <span>{bogofFreeAreas.length}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
-                        <span>Total Price:</span>
+                        <span>Subtotal:</span>
+                        <span>{formatPrice(pricingBreakdown.subtotal)}</span>
+                      </div>
+                      {pricingBreakdown.volumeDiscountPercent > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                          <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                        </div>
+                      )}
+                      <Separator />
+                      <div className="flex justify-between">
+                        <span className="font-bold">Total Price:</span>
                         <span className="font-bold text-lg">
                           {formatPrice(pricingBreakdown.finalTotal)}
                         </span>
@@ -362,6 +469,13 @@ const CalculatorTest = () => {
                         <span>Total Circulation:</span>
                         <span>{pricingBreakdown.totalCirculation.toLocaleString()}</span>
                       </div>
+                      {pricingModel === 'bogof' && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                          <p className="text-sm text-green-800 font-medium">
+                            🎉 BOGOF Special: You'll also get {bogofFreeAreas.length} free areas for 6 months!
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
