@@ -1,15 +1,162 @@
-import { useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Navigation from "@/components/Navigation";
-import AdvertisingCalculator from "@/components/AdvertisingCalculator";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
+import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Loader2, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { usePricingData } from "@/hooks/usePricingData";
+import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+}
 
 const AdvertisingNew = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+  });
+  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof'>('fixed');
+  const [prevPricingModel, setPrevPricingModel] = useState<string>('fixed');
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
+  const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
+  const [selectedAdSize, setSelectedAdSize] = useState<string>("");
+  const [selectedDuration, setSelectedDuration] = useState<string>("");
+
+  // Use the pricing data hook
+  const {
+    areas,
+    adSizes,
+    durations,
+    subscriptionDurations,
+    volumeDiscounts,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = usePricingData();
+
+  const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
+    setSelectedAreas(prev => 
+      checked ? [...prev, areaId] : prev.filter(id => id !== areaId)
+    );
+  }, []);
+
+  const effectiveSelectedAreas = useMemo(() => {
+    return pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
+  }, [pricingModel, selectedAreas, bogofPaidAreas]);
+
+  const pricingBreakdown = useMemo(() => {
+    if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
+      return null;
+    }
+
+    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+    
+    return calculateAdvertisingPrice(
+      effectiveSelectedAreas,
+      selectedAdSize,
+      selectedDuration,
+      pricingModel === 'subscription' || pricingModel === 'bogof',
+      areas,
+      adSizes,
+      relevantDurations,
+      subscriptionDurations,
+      volumeDiscounts
+    );
+  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts]);
+
+  useEffect(() => {
+    try {
+      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      
+      // Only clear duration when pricing model actually changes
+      if (pricingModel !== prevPricingModel && prevPricingModel !== null) {
+        setSelectedDuration("");
+        setPrevPricingModel(pricingModel);
+        return;
+      }
+      
+      // Auto-select if only one duration option and no duration currently selected
+      if (relevantDurations?.length === 1 && !selectedDuration) {
+        setSelectedDuration(relevantDurations[0].id);
+      }
+      
+      // Validate current selection is still valid for the current model
+      if (selectedDuration && relevantDurations?.length > 0) {
+        const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
+        if (!isValidSelection) {
+          setSelectedDuration("");
+        }
+      }
+      
+      setPrevPricingModel(pricingModel);
+    } catch (error) {
+      console.error('Error in duration useEffect:', error);
+    }
+  }, [pricingModel, durations, subscriptionDurations]);
+
+  const handleSubmit = () => {
+    // Validation
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in your contact details.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (effectiveSelectedAreas.length === 0) {
+      toast({
+        title: "No Areas Selected",
+        description: "Please select at least one distribution area.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedAdSize) {
+      toast({
+        title: "No Ad Size Selected",
+        description: "Please select an advertisement size.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedDuration) {
+      toast({
+        title: "No Duration Selected", 
+        description: "Please select a campaign duration.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Quote Request Sent!",
+      description: "We'll contact you within 24 hours with your personalized quote.",
+    });
+  };
+
   const stats = [{
     number: "250+",
     label: "Current Advertisers",
@@ -149,18 +296,31 @@ const AdvertisingNew = () => {
     title: "CHANDLER'S FORD & EASTLEIGH"
   }];
 
-  useEffect(() => {
-    // Handle scrolling to hash on page load
-    const hash = window.location.hash;
-    if (hash) {
-      const element = document.getElementById(hash.substring(1));
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
-    }
-  }, []);
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-destructive flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                Failed to Load Data
+              </CardTitle>
+              <CardDescription>
+                {error?.message || "Unable to load pricing data"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={refetch} variant="outline">
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,11 +328,9 @@ const AdvertisingNew = () => {
       
       {/* Hero Banner */}
       <section className="relative bg-gradient-to-r from-community-navy to-community-green text-white py-20 overflow-hidden">
-        {/* Background Image */}
         <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{
           backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
         }} />
-        {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-community-navy/80 to-community-green/80" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -182,13 +340,13 @@ const AdvertisingNew = () => {
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             We can't promise to find you a mate, but we will match you up with new customers!
           </p>
-          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-lg p-1 inline-block">
-            <span className="text-green-400 font-bold text-sm">✓ WORKING CALCULATOR</span>
+          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-lg p-3 inline-block">
+            <span className="text-green-400 font-bold text-lg">✓ NEW WORKING CALCULATOR</span>
           </div>
         </div>
       </section>
 
-      {/* NEW: Dedicated Calculator Section */}
+      {/* Calculator Section */}
       <section id="calculator" className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -200,11 +358,323 @@ const AdvertisingNew = () => {
             </p>
           </div>
           
-          <AdvertisingCalculator>
-            <Button size="lg" className="bg-community-green hover:bg-community-green/90 text-white px-8 py-3 font-bold">
-              CALCULATE YOUR QUOTE
-            </Button>
-          </AdvertisingCalculator>
+          <Card>
+            <CardHeader>
+              <CardTitle>Advertising Cost Calculator</CardTitle>
+              <CardDescription>
+                Fill in your details and select your preferences to get an instant quote
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Contact Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="company">Company Name</Label>
+                    <Input
+                      id="company"
+                      value={formData.company}
+                      onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                      placeholder="Enter your company name"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Structure */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Select Payment Structure</h3>
+                <RadioGroup 
+                  value={pricingModel} 
+                  onValueChange={(value: 'fixed' | 'subscription' | 'bogof') => setPricingModel(value)}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fixed" id="fixed" />
+                    <Label htmlFor="fixed">Fixed No Contract Price</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="bogof" id="bogof" />
+                    <Label htmlFor="bogof">BOGOF - Buy One Get One Free</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Distribution Areas */}
+              {pricingModel !== 'bogof' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Select Distribution Areas</h3>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center p-8">
+                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                      Loading distribution areas...
+                    </div>
+                  ) : areas.length === 0 ? (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        No distribution areas available. Please check the admin configuration.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {areas.map((area) => (
+                        <div key={area.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={area.id}
+                            checked={selectedAreas.includes(area.id)}
+                            onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                          />
+                          <Label htmlFor={area.id} className="flex-1">
+                            <div>
+                              <div className="font-medium">{area.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                Circulation: {area.circulation.toLocaleString()}
+                              </div>
+                            </div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* BOGOF Areas Selection */}
+              {pricingModel === 'bogof' && (
+                <>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Select Your "Paid For" Areas</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Choose at least 3 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
+                    </p>
+                    {isLoading ? (
+                      <div className="flex items-center justify-center p-8">
+                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                        Loading areas...
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {areas.map((area) => (
+                          <div key={area.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`paid-${area.id}`}
+                              checked={bogofPaidAreas.includes(area.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setBogofPaidAreas(prev => [...prev, area.id]);
+                                } else {
+                                  setBogofPaidAreas(prev => prev.filter(id => id !== area.id));
+                                  setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`paid-${area.id}`} className="flex-1">
+                              <div>
+                                <div className="font-medium">{area.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  Circulation: {area.circulation.toLocaleString()}
+                                </div>
+                              </div>
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {bogofPaidAreas.length >= 3 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Select Your "Free" Areas</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Choose up to {bogofPaidAreas.length} areas that you'll get for FREE for the first 6 months.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {areas
+                          .filter(area => !bogofPaidAreas.includes(area.id))
+                          .map((area) => (
+                            <div key={area.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`free-${area.id}`}
+                                checked={bogofFreeAreas.includes(area.id)}
+                                disabled={bogofFreeAreas.length >= bogofPaidAreas.length && !bogofFreeAreas.includes(area.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setBogofFreeAreas(prev => [...prev, area.id]);
+                                  } else {
+                                    setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={`free-${area.id}`} className="flex-1">
+                                <div>
+                                  <div className="font-medium">{area.name}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    Circulation: {area.circulation.toLocaleString()}
+                                  </div>
+                                </div>
+                              </Label>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Ad Size Selection */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Select Advertisement Size</h3>
+                {isLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading ad sizes...
+                  </div>
+                ) : (
+                  <Select value={selectedAdSize} onValueChange={setSelectedAdSize}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose an advertisement size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {adSizes
+                        .filter(size => {
+                          const modelToCheck = pricingModel === 'bogof' ? 'subscription' : pricingModel;
+                          return size.available_for.includes(modelToCheck);
+                        })
+                        .map((size) => (
+                          <SelectItem key={size.id} value={size.id}>
+                            {size.name} ({size.dimensions})
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {/* Duration Selection */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
+                {isLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading durations...
+                  </div>
+                ) : (
+                  <Select value={selectedDuration} onValueChange={setSelectedDuration}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose campaign duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {((pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations)
+                        .map((duration) => (
+                          <SelectItem key={duration.id} value={duration.id}>
+                            {duration.name}
+                            {duration.discount_percentage > 0 && (
+                              <span className="text-green-600 ml-1">
+                                ({duration.discount_percentage}% discount)
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {/* Pricing Summary */}
+              {pricingBreakdown && (
+                <div className="space-y-4">
+                  <Separator />
+                  <h3 className="text-lg font-semibold">Pricing Summary</h3>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                    <div className="flex justify-between">
+                      <span>Selected Areas:</span>
+                      <span className="font-medium">{effectiveSelectedAreas.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total Circulation:</span>
+                      <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Base Price:</span>
+                      <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
+                    </div>
+                    {pricingBreakdown.volumeDiscount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                        <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                      </div>
+                    )}
+                    {pricingBreakdown.durationDiscountAmount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Duration Discount:</span>
+                        <span className="font-medium">-{formatPrice(pricingBreakdown.durationDiscountAmount)}</span>
+                      </div>
+                    )}
+                    <Separator />
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total Price:</span>
+                      <span>{formatPrice(pricingBreakdown.totalPrice)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Cost per 1,000 (CPM):</span>
+                      <span>{formatPrice(pricingBreakdown.totalPrice / pricingBreakdown.totalCirculation * 1000)}</span>
+                    </div>
+                  </div>
+
+                  {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                    <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                      <h4 className="font-semibold text-green-800 mb-2">BOGOF Bonus!</h4>
+                      <p className="text-green-700 text-sm">
+                        You'll get {bogofFreeAreas.length} additional areas FREE for the first 6 months, 
+                        reaching an extra {areas.filter(a => bogofFreeAreas.includes(a.id)).reduce((sum, area) => sum + area.circulation, 0).toLocaleString()} homes!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div className="pt-4">
+                <Button 
+                  onClick={handleSubmit}
+                  className="w-full bg-community-green hover:bg-community-green/90 text-white font-bold py-3"
+                  size="lg"
+                >
+                  Get My Quote
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -232,7 +702,6 @@ const AdvertisingNew = () => {
 
       {/* Magazine Covers Carousel */}
       <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
-        {/* Futuristic Background Effects */}
         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,255,255,0.03)_50%,transparent_75%,transparent_100%)] bg-[length:30px_30px] animate-pulse" />
         <div className="absolute top-0 left-0 w-96 h-96 bg-community-green/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-community-navy/20 rounded-full blur-3xl" />
@@ -263,7 +732,6 @@ const AdvertisingNew = () => {
                       <CardContent className="p-6">
                         <div className="relative overflow-hidden rounded-lg">
                           <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
-                          {/* Futuristic Overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                             <h3 className="text-white font-bold text-sm mb-2">{cover.title}</h3>
@@ -273,7 +741,6 @@ const AdvertisingNew = () => {
                             </div>
                           </div>
                         </div>
-                        {/* Glow Effect */}
                         <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       </CardContent>
                     </Card>
@@ -281,13 +748,11 @@ const AdvertisingNew = () => {
                 ))}
               </CarouselContent>
               
-              {/* Custom Navigation Buttons */}
               <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
               <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
             </Carousel>
           </div>
 
-          {/* Call to Action */}
           <div className="text-center mt-12">
             <div className="inline-flex flex-col sm:flex-row gap-4">
               <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
