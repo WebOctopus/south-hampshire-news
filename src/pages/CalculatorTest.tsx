@@ -443,7 +443,7 @@ const CalculatorTest = () => {
                          </div>
                        )}
                        <div className="flex justify-between">
-                         <span>Subtotal:</span>
+                         <span>Monthly Subtotal:</span>
                          <span>{formatPrice(pricingBreakdown.subtotal)}</span>
                        </div>
                        {pricingBreakdown.volumeDiscountPercent > 0 && (
