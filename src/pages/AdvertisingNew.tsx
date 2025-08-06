@@ -81,7 +81,7 @@ const AdvertisingNew = () => {
       subscriptionDurations,
       volumeDiscounts
     );
-  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts]);
+  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
   useEffect(() => {
     try {
