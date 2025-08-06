@@ -90,15 +90,10 @@ const CalculatorTest = () => {
     );
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
-  // Auto-set duration for BOGOF
+  // Clear duration when switching pricing models to force user selection
   React.useEffect(() => {
-    if (pricingModel === 'bogof' && subscriptionDurations.length > 0) {
-      const sixMonthDuration = subscriptionDurations.find(d => d.duration_value === 6);
-      if (sixMonthDuration) {
-        setSelectedDuration(sixMonthDuration.id);
-      }
-    }
-  }, [pricingModel, subscriptionDurations]);
+    setSelectedDuration("");
+  }, [pricingModel]);
 
   const handleSubmit = () => {
     // Validation
@@ -424,11 +419,6 @@ const CalculatorTest = () => {
                       {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
                         <SelectItem key={duration.id} value={duration.id}>
                           {duration.name}
-                          {duration.discount_percentage > 0 && (
-                            <span className="text-green-600 ml-1">
-                              ({duration.discount_percentage}% discount)
-                            </span>
-                          )}
                         </SelectItem>
                       ))}
                     </SelectContent>
