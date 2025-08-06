@@ -18,6 +18,7 @@ import AddEvent from "./pages/AddEvent";
 import Story from "./pages/Story";
 import StoriesArchive from "./pages/StoriesArchive";
 import BusinessDetail from "./pages/BusinessDetail";
+import CalculatorTest from "./pages/CalculatorTest";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -49,6 +50,7 @@ const App = () => (
               <AddEvent />
             </ProtectedRoute>
           } />
+          <Route path="/calculator-test" element={<CalculatorTest />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
