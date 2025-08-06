@@ -436,40 +436,59 @@ const CalculatorTest = () => {
                         <span>Selected Areas:</span>
                         <span>{effectiveSelectedAreas.length}</span>
                       </div>
-                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                        <div className="flex justify-between">
-                          <span>Free Areas:</span>
-                          <span>{bogofFreeAreas.length}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span>Subtotal:</span>
-                        <span>{formatPrice(pricingBreakdown.subtotal)}</span>
-                      </div>
-                      {pricingBreakdown.volumeDiscountPercent > 0 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                          <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
-                        </div>
-                      )}
-                      <Separator />
-                      <div className="flex justify-between">
-                        <span className="font-bold">Total Price:</span>
-                        <span className="font-bold text-lg">
-                          {formatPrice(pricingBreakdown.finalTotal)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total Circulation:</span>
-                        <span>{pricingBreakdown.totalCirculation.toLocaleString()}</span>
-                      </div>
-                      {pricingModel === 'bogof' && (
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
-                          <p className="text-sm text-green-800 font-medium">
-                            🎉 BOGOF Special: You'll also get {bogofFreeAreas.length} free areas for 6 months!
-                          </p>
-                        </div>
-                      )}
+                       {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                         <div className="flex justify-between">
+                           <span>Free Areas:</span>
+                           <span>{bogofFreeAreas.length}</span>
+                         </div>
+                       )}
+                       <div className="flex justify-between">
+                         <span>Subtotal:</span>
+                         <span>{formatPrice(pricingBreakdown.subtotal)}</span>
+                       </div>
+                       {pricingBreakdown.volumeDiscountPercent > 0 && (
+                         <div className="flex justify-between text-green-600">
+                           <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                           <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                         </div>
+                       )}
+                       {(() => {
+                         const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+                         const selectedDurationData = relevantDurations.find(d => d.id === selectedDuration);
+                         const durationDiscountPercent = selectedDurationData?.discount_percentage || 0;
+                         const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
+                         const durationDiscountAmount = subtotalAfterVolume * (durationDiscountPercent / 100);
+                         
+                         return durationDiscountPercent > 0 && (
+                           <div className="flex justify-between text-green-600">
+                             <span>Campaign Discount ({durationDiscountPercent}%):</span>
+                             <span>-{formatPrice(durationDiscountAmount)}</span>
+                           </div>
+                         );
+                       })()}
+                       <Separator />
+                       <div className="flex justify-between">
+                         <span className="font-bold">Total Price:</span>
+                         <span className="font-bold text-lg">
+                           {formatPrice(pricingBreakdown.finalTotal)}
+                         </span>
+                       </div>
+                       <div className="flex justify-between">
+                         <span>Total Circulation:</span>
+                         <span>{pricingBreakdown.totalCirculation.toLocaleString()}</span>
+                       </div>
+                       {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                           <p className="text-sm text-green-800 font-medium">
+                             🎉 BOGOF Special: You'll also get {bogofFreeAreas.length} free areas {(() => {
+                               const relevantDurations = subscriptionDurations;
+                               const selectedDurationData = relevantDurations.find(d => d.id === selectedDuration);
+                               const durationValue = selectedDurationData?.duration_value || 6;
+                               return `for ${durationValue} months`;
+                             })()} at no extra cost!
+                           </p>
+                         </div>
+                       )}
                     </div>
                   </div>
                 </div>
