@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import Navigation from "@/components/Navigation";
-import CostCalculator from "@/components/CostCalculator";
+import CostCalculatorOptimized from "@/components/CostCalculatorOptimized";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -178,11 +178,11 @@ const Advertising = () => {
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             We can't promise to find you a mate, but we will match you up with new customers!
           </p>
-          <CostCalculator>
+          <CostCalculatorOptimized>
             <Button size="lg" className="bg-white text-community-navy hover:bg-gray-100 px-8 py-3 font-bold">
               GET INSTANT QUOTE
             </Button>
-          </CostCalculator>
+          </CostCalculatorOptimized>
         </div>
       </section>
 
@@ -596,11 +596,11 @@ const Advertising = () => {
               <p className="text-lg text-gray-700 mb-4">
                 Get an <span className="font-bold text-community-green">instant quote</span> for any combination of areas using our cost calculator
               </p>
-              <CostCalculator>
+              <CostCalculatorOptimized>
                 <Button className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg">
                   GET INSTANT QUOTE
                 </Button>
-              </CostCalculator>
+              </CostCalculatorOptimized>
             </div>
           </div>
 
@@ -621,9 +621,9 @@ const Advertising = () => {
                   </p>
                 </div>
                 <div className="text-center">
-                  <CostCalculator>
+                  <CostCalculatorOptimized>
                     <Button className="bg-community-green hover:bg-green-600">COST CALCULATOR</Button>
-                  </CostCalculator>
+                  </CostCalculatorOptimized>
                 </div>
               </div>
             </CardContent>
