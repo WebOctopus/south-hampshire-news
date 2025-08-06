@@ -83,6 +83,53 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
     [formData.selectedAreas.length]
   );
 
+  // Manage duration selection with better state tracking
+  const [prevPricingModel, setPrevPricingModel] = useState<string>(selectedPricingModel);
+  
+  React.useEffect(() => {
+    console.log('Duration useEffect triggered:', {
+      selectedPricingModel,
+      prevPricingModel,
+      durationsLength: durations?.length,
+      subscriptionDurationsLength: subscriptionDurations?.length,
+      currentSelectedDuration: formData.duration
+    });
+
+    try {
+      const relevantDurations = (selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof') ? subscriptionDurations : durations;
+      
+      console.log('Relevant durations for', selectedPricingModel, ':', relevantDurations);
+      
+      // Only clear duration when pricing model actually changes (not on initial load or data updates)
+      if (selectedPricingModel !== prevPricingModel && prevPricingModel !== null) {
+        console.log('Pricing model changed from', prevPricingModel, 'to', selectedPricingModel, '- clearing duration');
+        setFormData(prev => ({ ...prev, duration: "" }));
+        setPrevPricingModel(selectedPricingModel);
+        return;
+      }
+      
+      // Auto-select if only one duration option and no duration currently selected
+      if (relevantDurations?.length === 1 && !formData.duration) {
+        console.log('Auto-selecting single duration:', relevantDurations[0]);
+        setFormData(prev => ({ ...prev, duration: relevantDurations[0].id }));
+      }
+      
+      // Validate current selection is still valid for the current model
+      if (formData.duration && relevantDurations?.length > 0) {
+        const isValidSelection = relevantDurations.some(d => d.id === formData.duration);
+        if (!isValidSelection) {
+          console.log('Current duration selection invalid for', selectedPricingModel, '- clearing');
+          setFormData(prev => ({ ...prev, duration: "" }));
+        }
+      }
+      
+      // Update previous model reference
+      setPrevPricingModel(selectedPricingModel);
+    } catch (error) {
+      console.error('Error in duration useEffect:', error);
+    }
+  }, [selectedPricingModel, durations, subscriptionDurations]);
+
   // Auto-set duration for BOGOF
   React.useEffect(() => {
     if (selectedPricingModel === 'bogof' && subscriptionDurations.length > 0) {
@@ -491,24 +538,33 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                   ) : (
                     <RadioGroup
                       value={formData.duration}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, duration: value }))}
+                      onValueChange={(value) => {
+                        console.log('Duration selected:', value, 'for pricing model:', selectedPricingModel);
+                        setFormData(prev => ({ ...prev, duration: value }));
+                      }}
                       className="grid grid-cols-1 gap-4"
+                      key={`duration-radio-${selectedPricingModel}`}
                     >
-                      {(selectedPricingModel === 'subscription' ? subscriptionDurations : durations).map((duration) => (
-                        <div key={duration.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                          <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
-                          <div className="flex-1">
-                            <Label htmlFor={duration.id} className="font-bold text-community-navy cursor-pointer block">
-                              {duration.name}
-                            </Label>
-                            {duration.discount_percentage > 0 && (
-                              <Badge className="mt-1 bg-community-green text-white">
-                                {duration.discount_percentage}% discount
-                              </Badge>
-                            )}
+                      {React.useMemo(() => {
+                        const relevantDurations = (selectedPricingModel === 'subscription') ? subscriptionDurations : durations;
+                        console.log('Rendering duration options for', selectedPricingModel, ':', relevantDurations);
+                        
+                        return relevantDurations.map((duration) => (
+                          <div key={`${selectedPricingModel}-${duration.id}`} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                            <RadioGroupItem value={duration.id} id={duration.id} className="mt-1" />
+                            <div className="flex-1">
+                              <Label htmlFor={duration.id} className="font-bold text-community-navy cursor-pointer block">
+                                {duration.name}
+                              </Label>
+                              {duration.discount_percentage > 0 && (
+                                <Badge className="mt-1 bg-community-green text-white">
+                                  {duration.discount_percentage}% discount
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ));
+                      }, [selectedPricingModel, durations, subscriptionDurations])}
                     </RadioGroup>
                   )}
                 </CardContent>
