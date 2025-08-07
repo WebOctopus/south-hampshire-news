@@ -124,7 +124,7 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
     } catch (error) {
       console.error('Error in duration useEffect:', error);
     }
-  }, [pricingModel, durations, subscriptionDurations]);
+  }, [pricingModel, durations, subscriptionDurations, formData.duration, prevPricingModel]);
 
   // Auto-set duration for BOGOF
   React.useEffect(() => {
@@ -567,11 +567,24 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
                   <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
                     Pricing Summary
                   </h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="font-medium">Subtotal:</span>
-                      <span className="font-bold">{formatPrice(pricingBreakdown.subtotal)}</span>
-                    </div>
+                   <div className="space-y-4">
+                     {/* Show paid/free areas breakdown for subscription pricing */}
+                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                       <div className="flex justify-between items-center py-2 border-b">
+                         <span>Paid Areas:</span>
+                         <span className="font-medium">{bogofPaidAreas.length}</span>
+                       </div>
+                     )}
+                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                       <div className="flex justify-between items-center py-2 border-b">
+                         <span>Free Areas:</span>
+                         <span className="font-medium">{bogofFreeAreas.length}</span>
+                       </div>
+                     )}
+                     <div className="flex justify-between items-center py-2 border-b">
+                       <span className="font-medium">Monthly Subtotal:</span>
+                       <span className="font-bold">{formatPrice(pricingBreakdown.subtotal)}</span>
+                     </div>
                     
                     {pricingBreakdown.durationMultiplier < 1 && (
                       <div className="flex justify-between items-center py-2 border-b text-green-600">
