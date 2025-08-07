@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import LocationsManagement from './LocationsManagement';
 import AdvertSizesPricingManagement from './AdvertSizesPricingManagement';
 import SubscriptionSettingsManagement from './SubscriptionSettingsManagement';
-import CalculatorPreview from './CalculatorPreview';
+
 
 const CostCalculatorManagement = () => {
   const [activeTab, setActiveTab] = useState('locations');
@@ -146,7 +146,12 @@ const CostCalculatorManagement = () => {
             </TabsContent>
 
             <TabsContent value="preview" className="mt-6">
-              <CalculatorPreview />
+              <div className="text-center p-8">
+                <p className="text-gray-600">Calculator preview functionality has been moved to the main advertising page.</p>
+                <Button onClick={() => window.open('/advertising', '_blank')} className="mt-4">
+                  View Live Calculator
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>

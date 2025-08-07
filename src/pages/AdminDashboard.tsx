@@ -19,7 +19,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import LocationsManagement from '@/components/admin/LocationsManagement';
 import AdvertSizesPricingManagement from '@/components/admin/AdvertSizesPricingManagement';
 import SubscriptionSettingsManagement from '@/components/admin/SubscriptionSettingsManagement';
-import CalculatorPreview from '@/components/admin/CalculatorPreview';
+
 import IssuePricingManagement from '@/components/admin/IssuePricingManagement';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Clock, TrendingUp, Receipt, Tag } from 'lucide-react';
@@ -679,7 +679,12 @@ const AdminDashboard = () => {
       case 'calculator-preview':
         return (
           <div className="space-y-6">
-            <CalculatorPreview />
+            <div className="text-center p-8">
+              <p className="text-gray-600">Calculator preview functionality has been moved to the main advertising page.</p>
+              <Button onClick={() => window.open('/advertising', '_blank')} className="mt-4">
+                View Live Calculator
+              </Button>
+            </div>
           </div>
         );
 
