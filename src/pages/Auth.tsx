@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import TestAuthButton from '@/components/TestAuthButton';
+
 
 const Auth = () => {
   const [signInEmail, setSignInEmail] = useState('');
@@ -175,8 +175,6 @@ const Auth = () => {
               <CardTitle className="text-center">Get Started</CardTitle>
             </CardHeader>
             <CardContent>
-              <TestAuthButton />
-              
               <Tabs defaultValue="signin" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>
