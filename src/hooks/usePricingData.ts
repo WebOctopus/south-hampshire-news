@@ -45,21 +45,29 @@ export interface DbVolumeDiscount {
   is_active: boolean;
 }
 
-// Individual hooks for each data type with error boundaries
+// Individual hooks for each data type with standardized cache config
 export function useAreas() {
   return useQuery({
     queryKey: ['pricing_areas'],
     queryFn: async () => {
+      console.log('[usePricingData] Fetching areas...');
       const { data, error } = await supabase
         .from('pricing_areas')
         .select('*')
         .eq('is_active', true)
         .order('sort_order');
       
-      if (error) throw error;
+      if (error) {
+        console.error('[usePricingData] Areas fetch error:', error);
+        throw error;
+      }
+      console.log('[usePricingData] Areas fetched successfully:', data?.length);
       return data as DbArea[];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
@@ -67,22 +75,32 @@ export function useAdSizes() {
   return useQuery({
     queryKey: ['ad_sizes'],
     queryFn: async () => {
+      console.log('[usePricingData] Fetching ad sizes...');
       const { data, error } = await supabase
         .from('ad_sizes')
         .select('*')
         .eq('is_active', true)
         .order('sort_order');
       
-      if (error) throw error;
+      if (error) {
+        console.error('[usePricingData] Ad sizes fetch error:', error);
+        throw error;
+      }
       
-      return (data || []).map(item => ({
+      const processedData = (data || []).map(item => ({
         ...item,
         available_for: Array.isArray(item.available_for) 
           ? item.available_for 
           : ['fixed', 'subscription']
       })) as DbAdSize[];
+      
+      console.log('[usePricingData] Ad sizes fetched successfully:', processedData.length);
+      return processedData;
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
@@ -90,16 +108,24 @@ export function useDurations() {
   return useQuery({
     queryKey: ['pricing_durations'],
     queryFn: async () => {
+      console.log('[usePricingData] Fetching durations...');
       const { data, error } = await supabase
         .from('pricing_durations')
         .select('*')
         .eq('is_active', true)
         .order('sort_order');
       
-      if (error) throw error;
+      if (error) {
+        console.error('[usePricingData] Durations fetch error:', error);
+        throw error;
+      }
+      console.log('[usePricingData] Durations fetched successfully:', data?.length);
       return data as DbDuration[];
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
@@ -107,34 +133,64 @@ export function useVolumeDiscounts() {
   return useQuery({
     queryKey: ['volume_discounts'],
     queryFn: async () => {
+      console.log('[usePricingData] Fetching volume discounts...');
       const { data, error } = await supabase
         .from('volume_discounts')
         .select('*')
         .eq('is_active', true)
         .order('min_areas');
       
-      if (error) throw error;
+      if (error) {
+        console.error('[usePricingData] Volume discounts fetch error:', error);
+        throw error;
+      }
+      console.log('[usePricingData] Volume discounts fetched successfully:', data?.length);
       return data as DbVolumeDiscount[];
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
-// Optimized combined hook that uses individual queries
+// Optimized combined hook with improved loading state logic
 export function usePricingData() {
   const areasQuery = useAreas();
   const adSizesQuery = useAdSizes();
   const durationsQuery = useDurations();
   const volumeDiscountsQuery = useVolumeDiscounts();
 
-  const isLoading = areasQuery.isLoading || adSizesQuery.isLoading || 
-                   durationsQuery.isLoading || volumeDiscountsQuery.isLoading;
+  // Improved loading logic - only show loading if we have NO data and queries are loading
+  const hasAnyData = (areasQuery.data?.length || 0) > 0 || 
+                    (adSizesQuery.data?.length || 0) > 0 || 
+                    (durationsQuery.data?.length || 0) > 0 || 
+                    (volumeDiscountsQuery.data?.length || 0) > 0;
+
+  // Only show loading state if no cached data exists AND queries are actually loading
+  const isInitialLoading = (areasQuery.isLoading && !areasQuery.data) || 
+                          (adSizesQuery.isLoading && !adSizesQuery.data) || 
+                          (durationsQuery.isLoading && !durationsQuery.data) || 
+                          (volumeDiscountsQuery.isLoading && !volumeDiscountsQuery.data);
+  
+  const isLoading = !hasAnyData && isInitialLoading;
   
   const isError = areasQuery.isError || adSizesQuery.isError || 
                  durationsQuery.isError || volumeDiscountsQuery.isError;
   
   const error = areasQuery.error || adSizesQuery.error || 
                durationsQuery.error || volumeDiscountsQuery.error;
+
+  // Debug logging for loading states
+  console.log('[usePricingData] Loading states:', {
+    isLoading,
+    isInitialLoading,
+    hasAnyData,
+    areas: { loading: areasQuery.isLoading, data: areasQuery.data?.length },
+    adSizes: { loading: adSizesQuery.isLoading, data: adSizesQuery.data?.length },
+    durations: { loading: durationsQuery.isLoading, data: durationsQuery.data?.length },
+    volumeDiscounts: { loading: volumeDiscountsQuery.isLoading, data: volumeDiscountsQuery.data?.length }
+  });
 
   // Separate durations by type
   const fixedDurations = durationsQuery.data?.filter(d => d.duration_type === 'fixed') || [];
