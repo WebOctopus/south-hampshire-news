@@ -630,10 +630,6 @@ const AdminDashboard = () => {
       case 'calculator-locations':
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Locations Management</h2>
-              <p className="text-muted-foreground">Manage advertising distribution areas and their pricing multipliers.</p>
-            </div>
             <LocationsManagement onStatsUpdate={() => {}} />
           </div>
         );
@@ -641,10 +637,6 @@ const AdminDashboard = () => {
       case 'calculator-ad-sizes':
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Ad Sizes & Pricing</h2>
-              <p className="text-muted-foreground">Manage advertisement sizes and their pricing structure.</p>
-            </div>
             <AdvertSizesPricingManagement onStatsUpdate={() => {}} />
           </div>
         );
@@ -687,10 +679,6 @@ const AdminDashboard = () => {
       case 'calculator-preview':
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Calculator Preview</h2>
-              <p className="text-muted-foreground">Preview and test the cost calculator functionality.</p>
-            </div>
             <CalculatorPreview />
           </div>
         );
@@ -698,10 +686,6 @@ const AdminDashboard = () => {
       case 'calculator-issue-pricing':
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Issue-Based Pricing</h2>
-              <p className="text-muted-foreground">Configure pricing for each ad size based on the number of issues published.</p>
-            </div>
             <IssuePricingManagement onStatsUpdate={() => {}} />
           </div>
         );
