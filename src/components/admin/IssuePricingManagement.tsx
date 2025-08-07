@@ -8,6 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DollarSign, Receipt } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useUpdateAdSizePricing, usePricingInvalidation } from '@/hooks/usePricingMutations';
 
 interface AdSize {
   id: string;
@@ -33,6 +34,8 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
   const [loading, setLoading] = useState(true);
   const [tempPricingUpdates, setTempPricingUpdates] = useState<Record<string, AdSize>>({});
   const { toast } = useToast();
+  const updateAdSizePricingMutation = useUpdateAdSizePricing();
+  const { invalidateSpecific } = usePricingInvalidation();
 
   useEffect(() => {
     loadAdSizes();
@@ -67,7 +70,9 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
       }));
 
       setAdSizes(transformedData);
-      onStatsUpdate();
+      if (onStatsUpdate) {
+        onStatsUpdate();
+      }
     } catch (error) {
       console.error('Error loading ad sizes:', error);
       toast({
@@ -107,21 +112,10 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
     if (!updatedAdSize) return;
 
     try {
-      const { error } = await supabase
-        .from('ad_sizes')
-        .update({
-          fixed_pricing_per_issue: updatedAdSize.fixed_pricing_per_issue,
-          subscription_pricing_per_issue: updatedAdSize.subscription_pricing_per_issue
-        })
-        .eq('id', adSizeId);
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Success",
-        description: `Issue pricing updated for ${updatedAdSize.name}.`
+      await updateAdSizePricingMutation.mutateAsync({
+        adSizeId,
+        fixedPricing: updatedAdSize.fixed_pricing_per_issue,
+        subscriptionPricing: updatedAdSize.subscription_pricing_per_issue
       });
 
       // Remove from temp updates
@@ -131,14 +125,11 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
         return newUpdates;
       });
 
+      // Trigger stats update and reload local data
       onStatsUpdate();
-    } catch (error: any) {
-      console.error('Error saving issue pricing:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save issue pricing.",
-        variant: "destructive"
-      });
+      await loadAdSizes();
+    } catch (error) {
+      // Error is handled by the mutation hook
     }
   };
 

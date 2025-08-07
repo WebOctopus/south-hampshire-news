@@ -4,17 +4,20 @@ import { ReactNode } from 'react';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
-      gcTime: 15 * 60 * 1000, // 15 minutes
-      retry: 3,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      refetchOnWindowFocus: false, // Prevent unnecessary refetches
-      refetchOnReconnect: false, // Prevent reconnection refetches
-      refetchOnMount: true, // Always fetch fresh data on mount
-      networkMode: 'always', // Always attempt network requests
+      staleTime: 2 * 60 * 1000, // 2 minutes - faster refresh for pricing data
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2, // Fewer retries for faster feedback
+      retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 5000),
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true, // Refetch on reconnect for fresh data
+      refetchOnMount: true,
+      networkMode: 'always',
     },
   },
 });
+
+// Export the queryClient for manual cache operations
+export { queryClient };
 
 interface QueryProviderProps {
   children: ReactNode;

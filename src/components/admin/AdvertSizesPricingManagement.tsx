@@ -14,6 +14,7 @@ import { DollarSign, Plus, Edit, Trash2, Upload, Download, Percent } from 'lucid
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { fixedRatesAdSizes, subscriptionAdSizes } from '@/data/advertisingPricing';
+import { useUpdateAdSizePricing, usePricingInvalidation } from '@/hooks/usePricingMutations';
 
 interface AdSize {
   id: string;
@@ -55,6 +56,8 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
     type: 'increase' as 'increase' | 'decrease'
   });
   const { toast } = useToast();
+  const updateAdSizePricingMutation = useUpdateAdSizePricing();
+  const { invalidateSpecific } = usePricingInvalidation();
   
   // State for temporarily storing pricing updates before saving
   const [tempPricingUpdates, setTempPricingUpdates] = useState<Record<string, AdSize>>({});
@@ -130,7 +133,9 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
       }));
 
       setAdSizes(transformedData);
-      onStatsUpdate();
+      if (onStatsUpdate) {
+        onStatsUpdate();
+      }
     } catch (error) {
       console.error('Error loading ad sizes:', error);
       toast({
@@ -213,7 +218,9 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
 
       setIsDialogOpen(false);
       resetForm();
-      loadAdSizes();
+      await loadAdSizes();
+      // Invalidate queries to refresh all components
+      invalidateSpecific('adSizes');
     } catch (error: any) {
       console.error('Error saving ad size:', error);
       toast({
@@ -240,7 +247,8 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
         description: "Ad size deleted successfully."
       });
 
-      loadAdSizes();
+      await loadAdSizes();
+      invalidateSpecific('adSizes');
     } catch (error: any) {
       console.error('Error deleting ad size:', error);
       toast({
@@ -285,7 +293,8 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
       });
 
       setBulkAdjustment({ percentage: 0, type: 'increase' });
-      loadAdSizes();
+      await loadAdSizes();
+      invalidateSpecific('adSizes');
     } catch (error: any) {
       console.error('Error adjusting prices:', error);
       toast({
@@ -342,21 +351,10 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
       const updatedAdSize = tempPricingUpdates[adSizeId] || adSizes.find(size => size.id === adSizeId);
       if (!updatedAdSize) return;
 
-      const { error } = await supabase
-        .from('ad_sizes')
-        .update({
-          fixed_pricing_per_issue: updatedAdSize.fixed_pricing_per_issue,
-          subscription_pricing_per_issue: updatedAdSize.subscription_pricing_per_issue
-        })
-        .eq('id', adSizeId);
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Success",
-        description: `${updatedAdSize.name} pricing updated successfully.`
+      await updateAdSizePricingMutation.mutateAsync({
+        adSizeId,
+        fixedPricing: updatedAdSize.fixed_pricing_per_issue,
+        subscriptionPricing: updatedAdSize.subscription_pricing_per_issue
       });
 
       // Remove from temp updates
@@ -366,14 +364,10 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
         return updated;
       });
 
-      loadAdSizes();
-    } catch (error: any) {
-      console.error('Error saving issue pricing:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save pricing.",
-        variant: "destructive"
-      });
+      // Reload the data to ensure consistency
+      await loadAdSizes();
+    } catch (error) {
+      // Error is handled by the mutation hook
     }
   };
 

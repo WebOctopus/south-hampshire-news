@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calculator, MapPin, DollarSign, Clock, Eye } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { usePricingInvalidation } from '@/hooks/usePricingMutations';
 import LocationsManagement from './LocationsManagement';
 import AdvertSizesPricingManagement from './AdvertSizesPricingManagement';
 import SubscriptionSettingsManagement from './SubscriptionSettingsManagement';
@@ -21,9 +22,13 @@ const CostCalculatorManagement = () => {
     volumeDiscounts: 0
   });
   const { toast } = useToast();
+  const { invalidateAll } = usePricingInvalidation();
 
   const loadStats = async () => {
     try {
+      // Invalidate all pricing-related queries to ensure fresh data
+      invalidateAll();
+      
       // You can implement actual stats loading here
       setStats({
         totalLocations: 14,
