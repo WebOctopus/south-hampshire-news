@@ -51,23 +51,31 @@ export function useAreas() {
     queryKey: ['pricing_areas'],
     queryFn: async () => {
       console.log('[usePricingData] Fetching areas...');
-      const { data, error } = await supabase
-        .from('pricing_areas')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
-      
-      if (error) {
-        console.error('[usePricingData] Areas fetch error:', error);
+      try {
+        const { data, error } = await supabase
+          .from('pricing_areas')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+        
+        if (error) {
+          console.error('[usePricingData] Areas fetch error:', error);
+          throw new Error(`Failed to fetch pricing areas: ${error.message}`);
+        }
+        
+        console.log('[usePricingData] Areas fetched successfully:', data?.length || 0);
+        return (data || []) as DbArea[];
+      } catch (error) {
+        console.error('[usePricingData] Network error fetching areas:', error);
         throw error;
       }
-      console.log('[usePricingData] Areas fetched successfully:', data?.length);
-      return data as DbArea[];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
     gcTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    retry: (failureCount, error) => {
+      console.log(`[usePricingData] Areas retry attempt ${failureCount}:`, error);
+      return failureCount < 3;
+    },
   });
 }
 
@@ -76,31 +84,38 @@ export function useAdSizes() {
     queryKey: ['ad_sizes'],
     queryFn: async () => {
       console.log('[usePricingData] Fetching ad sizes...');
-      const { data, error } = await supabase
-        .from('ad_sizes')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
-      
-      if (error) {
-        console.error('[usePricingData] Ad sizes fetch error:', error);
+      try {
+        const { data, error } = await supabase
+          .from('ad_sizes')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+        
+        if (error) {
+          console.error('[usePricingData] Ad sizes fetch error:', error);
+          throw new Error(`Failed to fetch ad sizes: ${error.message}`);
+        }
+        
+        const processedData = (data || []).map(item => ({
+          ...item,
+          available_for: Array.isArray(item.available_for) 
+            ? item.available_for 
+            : ['fixed', 'subscription']
+        })) as DbAdSize[];
+        
+        console.log('[usePricingData] Ad sizes fetched successfully:', processedData.length);
+        return processedData;
+      } catch (error) {
+        console.error('[usePricingData] Network error fetching ad sizes:', error);
         throw error;
       }
-      
-      const processedData = (data || []).map(item => ({
-        ...item,
-        available_for: Array.isArray(item.available_for) 
-          ? item.available_for 
-          : ['fixed', 'subscription']
-      })) as DbAdSize[];
-      
-      console.log('[usePricingData] Ad sizes fetched successfully:', processedData.length);
-      return processedData;
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
     gcTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    retry: (failureCount, error) => {
+      console.log(`[usePricingData] Ad sizes retry attempt ${failureCount}:`, error);
+      return failureCount < 3;
+    },
   });
 }
 
@@ -109,23 +124,31 @@ export function useDurations() {
     queryKey: ['pricing_durations'],
     queryFn: async () => {
       console.log('[usePricingData] Fetching durations...');
-      const { data, error } = await supabase
-        .from('pricing_durations')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order');
-      
-      if (error) {
-        console.error('[usePricingData] Durations fetch error:', error);
+      try {
+        const { data, error } = await supabase
+          .from('pricing_durations')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+        
+        if (error) {
+          console.error('[usePricingData] Durations fetch error:', error);
+          throw new Error(`Failed to fetch durations: ${error.message}`);
+        }
+        
+        console.log('[usePricingData] Durations fetched successfully:', data?.length || 0);
+        return (data || []) as DbDuration[];
+      } catch (error) {
+        console.error('[usePricingData] Network error fetching durations:', error);
         throw error;
       }
-      console.log('[usePricingData] Durations fetched successfully:', data?.length);
-      return data as DbDuration[];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
     gcTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    retry: (failureCount, error) => {
+      console.log(`[usePricingData] Durations retry attempt ${failureCount}:`, error);
+      return failureCount < 3;
+    },
   });
 }
 
@@ -134,23 +157,31 @@ export function useVolumeDiscounts() {
     queryKey: ['volume_discounts'],
     queryFn: async () => {
       console.log('[usePricingData] Fetching volume discounts...');
-      const { data, error } = await supabase
-        .from('volume_discounts')
-        .select('*')
-        .eq('is_active', true)
-        .order('min_areas');
-      
-      if (error) {
-        console.error('[usePricingData] Volume discounts fetch error:', error);
+      try {
+        const { data, error } = await supabase
+          .from('volume_discounts')
+          .select('*')
+          .eq('is_active', true)
+          .order('min_areas');
+        
+        if (error) {
+          console.error('[usePricingData] Volume discounts fetch error:', error);
+          throw new Error(`Failed to fetch volume discounts: ${error.message}`);
+        }
+        
+        console.log('[usePricingData] Volume discounts fetched successfully:', data?.length || 0);
+        return (data || []) as DbVolumeDiscount[];
+      } catch (error) {
+        console.error('[usePricingData] Network error fetching volume discounts:', error);
         throw error;
       }
-      console.log('[usePricingData] Volume discounts fetched successfully:', data?.length);
-      return data as DbVolumeDiscount[];
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
     gcTime: 15 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    retry: (failureCount, error) => {
+      console.log(`[usePricingData] Volume discounts retry attempt ${failureCount}:`, error);
+      return failureCount < 3;
+    },
   });
 }
 

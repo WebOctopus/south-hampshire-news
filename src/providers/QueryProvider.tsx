@@ -4,13 +4,14 @@ import { ReactNode } from 'react';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 minutes - standardized
+      staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
       gcTime: 15 * 60 * 1000, // 15 minutes
       retry: 3,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false, // Prevent unnecessary refetches
       refetchOnReconnect: false, // Prevent reconnection refetches
-      refetchOnMount: false, // Use cached data when available
+      refetchOnMount: true, // Always fetch fresh data on mount
+      networkMode: 'always', // Always attempt network requests
     },
   },
 });
