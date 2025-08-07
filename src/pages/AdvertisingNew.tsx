@@ -643,8 +643,21 @@ const AdvertisingNew = () => {
                         <span>Total Circulation:</span>
                         <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
                       </div>
+                      {/* Show paid/free areas breakdown for subscription pricing */}
+                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                        <div className="flex justify-between">
+                          <span>Paid Areas:</span>
+                          <span className="font-medium">{effectiveSelectedAreas.length}</span>
+                        </div>
+                      )}
+                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                        <div className="flex justify-between">
+                          <span>Free Areas:</span>
+                          <span className="font-medium">{bogofFreeAreas.length}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
-                        <span>Base Price:</span>
+                        <span>Monthly Subtotal:</span>
                         <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
                       </div>
                       {pricingBreakdown.volumeDiscount > 0 && (
