@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Monitor,
   Receipt,
-  Tag
+  Tag,
+  Home
 } from "lucide-react"
 
 import {
@@ -195,9 +196,20 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Settings Section */}
+        {/* Navigation Section */}
         <div className="mt-auto p-4 border-t">
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink 
+                  to="/" 
+                  className="flex items-center gap-3 w-full text-left text-muted-foreground hover:text-foreground"
+                >
+                  <Home className="h-4 w-4 flex-shrink-0" />
+                  {!collapsed && <span className="text-sm">Back to Website</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <button className="flex items-center gap-3 w-full text-left text-muted-foreground hover:text-foreground">
