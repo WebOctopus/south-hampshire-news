@@ -21,7 +21,6 @@ import AdvertSizesPricingManagement from '@/components/admin/AdvertSizesPricingM
 import SubscriptionSettingsManagement from '@/components/admin/SubscriptionSettingsManagement';
 import CalculatorPreview from '@/components/admin/CalculatorPreview';
 import IssuePricingManagement from '@/components/admin/IssuePricingManagement';
-import { SpecialDealsManagement } from '@/components/admin/SpecialDealsManagement';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Clock, TrendingUp, Receipt, Tag } from 'lucide-react';
 
@@ -692,7 +691,18 @@ const AdminDashboard = () => {
         );
 
       case 'calculator-special-deals':
-        return <SpecialDealsManagement />;
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Special Deals</h2>
+              <p className="text-muted-foreground">Create and manage special promotional offers and deals.</p>
+            </div>
+            <div className="text-center py-8 text-muted-foreground">
+              <Tag className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p>Special deals management functionality coming soon.</p>
+            </div>
+          </div>
+        );
 
       default:
         return <div>Section not found</div>;
