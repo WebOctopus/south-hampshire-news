@@ -42,7 +42,7 @@ const Advertising = () => {
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
 
-  // Use the pricing data hook
+  // Use the pricing data hook  
   const {
     areas,
     adSizes,
@@ -54,6 +54,11 @@ const Advertising = () => {
     error,
     refetch
   } = usePricingData();
+
+  // Individual loading states for better UX
+  const areasLoading = isLoading && areas.length === 0;
+  const adSizesLoading = isLoading && adSizes.length === 0;
+  const durationsLoading = isLoading && durations.length === 0;
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
     setSelectedAreas(prev => 
@@ -588,7 +593,7 @@ const Advertising = () => {
                 {pricingModel !== 'bogof' && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Select Distribution Areas</h3>
-                    {isLoading ? (
+                    {areasLoading ? (
                       <div className="flex items-center justify-center p-8">
                         <Loader2 className="h-6 w-6 animate-spin mr-2" />
                         Loading distribution areas...
@@ -632,7 +637,7 @@ const Advertising = () => {
                       <p className="text-sm text-muted-foreground">
                         Choose at least 3 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
                       </p>
-                      {isLoading ? (
+                      {areasLoading ? (
                         <div className="flex items-center justify-center p-8">
                           <Loader2 className="h-6 w-6 animate-spin mr-2" />
                           Loading areas...
@@ -709,7 +714,7 @@ const Advertising = () => {
                 {/* Ad Size Selection */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Select Advertisement Size</h3>
-                  {isLoading ? (
+                  {adSizesLoading ? (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       Loading ad sizes...
@@ -739,7 +744,7 @@ const Advertising = () => {
                 {(pricingModel !== 'bogof' || (pricingModel === 'bogof' && bogofPaidAreas.length >= 3)) && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
-                    {isLoading ? (
+                    {durationsLoading ? (
                       <div className="flex items-center justify-center p-4">
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         Loading durations...
@@ -801,6 +806,7 @@ const Advertising = () => {
                   className="w-full"
                   size="lg"
                   disabled={
+                    areasLoading || adSizesLoading || durationsLoading ||
                     !formData.name || 
                     !formData.email || 
                     !formData.phone ||
@@ -809,7 +815,7 @@ const Advertising = () => {
                     !selectedDuration
                   }
                 >
-                  {isLoading ? (
+                  {areasLoading || adSizesLoading || durationsLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       Loading...
