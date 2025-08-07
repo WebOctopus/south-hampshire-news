@@ -81,16 +81,6 @@ const menuItems = [
         section: "calculator-subscriptions"
       },
       {
-        title: "Durations",
-        icon: Clock,
-        section: "calculator-durations"
-      },
-      {
-        title: "Volume Discount",
-        icon: TrendingUp,
-        section: "calculator-volume-discounts"
-      },
-      {
         title: "Preview Calculator",
         icon: Monitor,
         section: "calculator-preview"
