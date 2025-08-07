@@ -568,60 +568,85 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
                     Pricing Summary
                   </h3>
                    <div className="space-y-4">
-                     {/* Show paid/free areas breakdown for subscription pricing */}
+                     {/* Basic summary info */}
+                     <div className="flex justify-between items-center">
+                       <span>Selected Areas:</span>
+                       <span className="font-medium">{effectiveSelectedAreas.length}</span>
+                     </div>
+                     
                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                       <div className="flex justify-between items-center py-2 border-b">
-                         <span>Paid Areas:</span>
-                         <span className="font-medium">{bogofPaidAreas.length}</span>
-                       </div>
-                     )}
-                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                       <div className="flex justify-between items-center py-2 border-b">
+                       <div className="flex justify-between items-center">
                          <span>Free Areas:</span>
                          <span className="font-medium">{bogofFreeAreas.length}</span>
                        </div>
                      )}
-                     <div className="flex justify-between items-center py-2 border-b">
-                       <span className="font-medium">Monthly Subtotal:</span>
+                     
+                     <div className="flex justify-between items-center">
+                       <span>Monthly Subtotal:</span>
                        <span className="font-bold">{formatPrice(pricingBreakdown.subtotal)}</span>
                      </div>
-                    
-                    {pricingBreakdown.durationMultiplier < 1 && (
-                      <div className="flex justify-between items-center py-2 border-b text-green-600">
-                        <span>Duration Discount:</span>
-                        <span>-{formatPrice(pricingBreakdown.subtotal * (1 - pricingBreakdown.durationMultiplier))}</span>
-                      </div>
-                    )}
-                    
-                    {pricingBreakdown.volumeDiscount > 0 && (
-                      <div className="flex justify-between items-center py-2 border-b text-green-600">
-                        <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                        <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
-                      </div>
-                    )}
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-lg font-bold text-community-navy">Total:</span>
-                      <span className="text-lg font-bold text-community-green">
-                        {formatPrice(pricingBreakdown.finalTotal)}
-                      </span>
-                    </div>
+                     
+                     <div className="flex justify-between items-center">
+                       <span className="font-bold">Total Price:</span>
+                       <span className="font-bold text-community-green">{formatPrice(pricingBreakdown.finalTotal)}</span>
+                     </div>
+                     
+                     <div className="flex justify-between items-center">
+                       <span>Total Circulation:</span>
+                       <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
+                     </div>
 
-                    {pricingModel === 'subscription' && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        *Monthly subscription price
-                      </p>
-                    )}
+                     {/* Areas You're Paying For section */}
+                     {effectiveSelectedAreas.length > 0 && (
+                       <div className="mt-6">
+                         <h4 className="font-bold text-community-navy mb-3">Areas You're Paying For:</h4>
+                         <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                           {effectiveSelectedAreas.map((areaId) => {
+                             const area = areas.find(a => a.id === areaId);
+                             return area ? (
+                               <div key={area.id} className="flex justify-between items-center">
+                                 <span className="text-sm">{area.name}</span>
+                                 <span className="text-sm font-medium">{area.circulation.toLocaleString()} circulation</span>
+                               </div>
+                             ) : null;
+                           })}
+                         </div>
+                       </div>
+                     )}
 
-                    {pricingModel === 'bogof' && (
-                      <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                        <p className="text-sm font-medium text-green-800">
-                          BOGOF Benefit: You're getting {bogofFreeAreas.length} additional areas FREE for 6 months!
-                        </p>
-                      </div>
-                    )}
+                     {/* Areas You Get FREE section */}
+                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                       <div className="mt-6">
+                         <h4 className="font-bold text-green-700 mb-3">Areas You Get FREE:</h4>
+                         <div className="bg-green-50 rounded-lg p-4 space-y-2">
+                           {bogofFreeAreas.map((areaId) => {
+                             const area = areas.find(a => a.id === areaId);
+                             return area ? (
+                               <div key={area.id} className="flex justify-between items-center">
+                                 <span className="text-sm">{area.name}</span>
+                                 <span className="text-sm font-medium">{area.circulation.toLocaleString()} circulation</span>
+                               </div>
+                             ) : null;
+                           })}
+                         </div>
+                       </div>
+                     )}
+
+                     {/* BOGOF Special banner */}
+                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                       <div className="mt-4 p-4 bg-green-100 border border-green-200 rounded-lg">
+                         <p className="text-sm font-medium text-green-800 flex items-center gap-2">
+                           <span>🎉</span>
+                           BOGOF Special: You'll also get {bogofFreeAreas.length} free areas for 6 months at no extra cost!
+                         </p>
+                       </div>
+                     )}
+
+                     {pricingModel === 'subscription' && (
+                       <p className="text-sm text-gray-600 mt-2">
+                         *Monthly subscription price
+                       </p>
+                     )}
                   </div>
                 </CardContent>
               </Card>
