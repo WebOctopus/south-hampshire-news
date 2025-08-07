@@ -652,10 +652,6 @@ const AdminDashboard = () => {
       case 'calculator-subscriptions':
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Subscription Settings</h2>
-              <p className="text-muted-foreground">Configure subscription durations and discount rates.</p>
-            </div>
             <SubscriptionSettingsManagement onStatsUpdate={() => {}} />
           </div>
         );
