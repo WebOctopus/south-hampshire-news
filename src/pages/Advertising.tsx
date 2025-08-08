@@ -143,6 +143,19 @@ const CalculatorTest = () => {
     }
   }, [pricingModel, durations, subscriptionDurations]);
 
+  // Handle scrolling to hash on page load (must be before any conditional returns)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.getElementById(hash.substring(1));
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
   const handleSubmit = () => {
     // Validation
     if (!formData.name || !formData.email || !formData.phone) {
@@ -352,18 +365,6 @@ const CalculatorTest = () => {
     title: "CHANDLER'S FORD & EASTLEIGH"
   }];
 
-  useEffect(() => {
-    // Handle scrolling to hash on page load
-    const hash = window.location.hash;
-    if (hash) {
-      const element = document.getElementById(hash.substring(1));
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
-    }
-  }, []);
 
   return <div className="min-h-screen bg-gray-50">
       <Navigation />
