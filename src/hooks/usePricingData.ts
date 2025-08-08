@@ -44,6 +44,41 @@ export interface DbVolumeDiscount {
   discount_percentage: number;
   is_active: boolean;
 }
+// Lightweight timeout wrapper to surface browser-specific hanging requests
+async function withTimeout<T = any>(promise: any, label: string, ms = 12000): Promise<T> {
+  const thenable = Promise.resolve(promise as any);
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      console.warn(`[usePricingData] ${label} request timed out after ${ms}ms`);
+      reject(new Error(`${label} request timed out after ${ms}ms`));
+    }, ms);
+    thenable
+      .then((res: any) => {
+        clearTimeout(timer);
+        resolve(res as T);
+      })
+      .catch((err: any) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
+
+// Log basic browser info once per session
+const __uaLogged = (globalThis as any).__pricingUaLogged ?? false;
+if (!__uaLogged) {
+  try {
+    const uaInfo = {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      vendor: navigator.vendor,
+    };
+    console.info('[usePricingData] Browser info:', uaInfo);
+  } catch (e) {
+    // ignore
+  }
+  (globalThis as any).__pricingUaLogged = true;
+}
 
 // Individual hooks for each data type with standardized cache config
 export function useAreas() {
@@ -52,11 +87,14 @@ export function useAreas() {
     queryFn: async () => {
       console.log('[usePricingData] Fetching areas...');
       try {
-        const { data, error } = await supabase
-          .from('pricing_areas')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order');
+        const { data, error } = await withTimeout(
+          supabase
+            .from('pricing_areas')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order'),
+          'pricing_areas'
+        );
         
         if (error) {
           console.error('[usePricingData] Areas fetch error:', error);
@@ -85,11 +123,14 @@ export function useAdSizes() {
     queryFn: async () => {
       console.log('[usePricingData] Fetching ad sizes...');
       try {
-        const { data, error } = await supabase
-          .from('ad_sizes')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order');
+        const { data, error } = await withTimeout(
+          supabase
+            .from('ad_sizes')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order'),
+          'ad_sizes'
+        );
         
         if (error) {
           console.error('[usePricingData] Ad sizes fetch error:', error);
@@ -125,11 +166,14 @@ export function useDurations() {
     queryFn: async () => {
       console.log('[usePricingData] Fetching durations...');
       try {
-        const { data, error } = await supabase
-          .from('pricing_durations')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order');
+        const { data, error } = await withTimeout(
+          supabase
+            .from('pricing_durations')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order'),
+          'pricing_durations'
+        );
         
         if (error) {
           console.error('[usePricingData] Durations fetch error:', error);
@@ -158,11 +202,14 @@ export function useVolumeDiscounts() {
     queryFn: async () => {
       console.log('[usePricingData] Fetching volume discounts...');
       try {
-        const { data, error } = await supabase
-          .from('volume_discounts')
-          .select('*')
-          .eq('is_active', true)
-          .order('min_areas');
+        const { data, error } = await withTimeout(
+          supabase
+            .from('volume_discounts')
+            .select('*')
+            .eq('is_active', true)
+            .order('min_areas'),
+          'volume_discounts'
+        );
         
         if (error) {
           console.error('[usePricingData] Volume discounts fetch error:', error);
