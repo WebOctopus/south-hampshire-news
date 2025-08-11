@@ -121,6 +121,25 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    const savePending = async () => {
+      if (!user) return;
+      const pending = localStorage.getItem('pendingQuote');
+      if (!pending) return;
+      try {
+        const parsed = JSON.parse(pending);
+        const payload = { ...parsed, user_id: user.id } as any;
+        const { error } = await supabase.from('quotes').insert(payload);
+        if (error) throw error;
+        toast({ title: 'Quote saved', description: 'We saved your quote to your dashboard.' });
+        localStorage.removeItem('pendingQuote');
+      } catch (e: any) {
+        console.error('Pending quote save failed', e);
+      }
+    };
+    savePending();
+  }, [user]);
+
   // Set default tab based on whether user has existing business
   useEffect(() => {
     if (hasExistingBusiness && !editingBusiness) {

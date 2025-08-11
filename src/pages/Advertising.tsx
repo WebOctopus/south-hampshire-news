@@ -271,7 +271,7 @@ const effectiveSelectedAreas = useMemo(() => {
         total_circulation: pricingBreakdown.totalCirculation,
         volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
         duration_discount_percent: durationDiscountPercent,
-        pricing_breakdown: pricingBreakdown,
+        pricing_breakdown: JSON.parse(JSON.stringify(pricingBreakdown)) as any,
         selections: {
           pricingModel,
           selectedAdSize,
@@ -279,12 +279,13 @@ const effectiveSelectedAreas = useMemo(() => {
           selectedAreas,
           bogofPaidAreas,
           bogofFreeAreas
-        }
+        } as any
       };
 
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { error } = await supabase.from('quotes').insert([{ ...basePayload, user_id: session.user.id }]);
+        const payloadForDb = { ...basePayload, user_id: session.user.id } as any;
+        const { error } = await supabase.from('quotes').insert(payloadForDb);
         if (error) throw error;
         toast({ title: "Saved", description: "Quote saved to your dashboard." });
       } else {
