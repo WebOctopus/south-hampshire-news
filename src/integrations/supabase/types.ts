@@ -566,6 +566,90 @@ export type Database = {
         }
         Relationships: []
       }
+      quotes: {
+        Row: {
+          ad_size_id: string | null
+          bogof_free_area_ids: string[] | null
+          bogof_paid_area_ids: string[] | null
+          company: string | null
+          contact_name: string | null
+          created_at: string
+          duration_discount_percent: number | null
+          duration_id: string | null
+          duration_multiplier: number | null
+          email: string
+          final_total: number | null
+          id: string
+          monthly_price: number
+          notes: string | null
+          phone: string | null
+          pricing_breakdown: Json
+          pricing_model: string
+          selected_area_ids: string[] | null
+          selections: Json
+          subtotal: number | null
+          title: string | null
+          total_circulation: number | null
+          updated_at: string
+          user_id: string
+          volume_discount_percent: number | null
+        }
+        Insert: {
+          ad_size_id?: string | null
+          bogof_free_area_ids?: string[] | null
+          bogof_paid_area_ids?: string[] | null
+          company?: string | null
+          contact_name?: string | null
+          created_at?: string
+          duration_discount_percent?: number | null
+          duration_id?: string | null
+          duration_multiplier?: number | null
+          email: string
+          final_total?: number | null
+          id?: string
+          monthly_price?: number
+          notes?: string | null
+          phone?: string | null
+          pricing_breakdown?: Json
+          pricing_model: string
+          selected_area_ids?: string[] | null
+          selections?: Json
+          subtotal?: number | null
+          title?: string | null
+          total_circulation?: number | null
+          updated_at?: string
+          user_id: string
+          volume_discount_percent?: number | null
+        }
+        Update: {
+          ad_size_id?: string | null
+          bogof_free_area_ids?: string[] | null
+          bogof_paid_area_ids?: string[] | null
+          company?: string | null
+          contact_name?: string | null
+          created_at?: string
+          duration_discount_percent?: number | null
+          duration_id?: string | null
+          duration_multiplier?: number | null
+          email?: string
+          final_total?: number | null
+          id?: string
+          monthly_price?: number
+          notes?: string | null
+          phone?: string | null
+          pricing_breakdown?: Json
+          pricing_model?: string
+          selected_area_ids?: string[] | null
+          selections?: Json
+          subtotal?: number | null
+          title?: string | null
+          total_circulation?: number | null
+          updated_at?: string
+          user_id?: string
+          volume_discount_percent?: number | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string

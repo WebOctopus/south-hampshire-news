@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FormData {
   name: string;
@@ -48,6 +49,7 @@ const CalculatorTest = () => {
 const [selectedDuration, setSelectedDuration] = useState<string>("");
 const [upsellOpen, setUpsellOpen] = useState(false);
 const [upsellDismissed, setUpsellDismissed] = useState(false);
+const [saving, setSaving] = useState(false);
 
   // Use the pricing data hook
   const {
@@ -226,6 +228,83 @@ const effectiveSelectedAreas = useMemo(() => {
       title: "Quote Request Sent!",
       description: "We'll contact you within 24 hours with your personalized quote.",
     });
+  };
+
+  const handleSaveQuote = async () => {
+    if (!pricingBreakdown) {
+      toast({ title: "Missing Selection", description: "Complete your selections first.", variant: "destructive" });
+      return;
+    }
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast({ title: "Missing Information", description: "Please fill in your contact details.", variant: "destructive" });
+      return;
+    }
+    if (effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration) {
+      toast({ title: "Incomplete", description: "Please select areas, ad size and duration.", variant: "destructive" });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const durationData = relevantDurations.find(d => d.id === selectedDuration);
+      const durationDiscountPercent = durationData?.discount_percentage || 0;
+      const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
+      const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+
+      const basePayload = {
+        email: formData.email,
+        contact_name: formData.name,
+        company: formData.company || null,
+        phone: formData.phone || null,
+        title: `Quote - ${new Date().toLocaleDateString()}`,
+        pricing_model: pricingModel,
+        ad_size_id: selectedAdSize,
+        duration_id: selectedDuration,
+        selected_area_ids: effectiveSelectedAreas,
+        bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
+        bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
+        monthly_price: monthlyFinal,
+        subtotal: pricingBreakdown.subtotal,
+        final_total: pricingBreakdown.finalTotal,
+        duration_multiplier: pricingBreakdown.durationMultiplier,
+        total_circulation: pricingBreakdown.totalCirculation,
+        volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
+        duration_discount_percent: durationDiscountPercent,
+        pricing_breakdown: pricingBreakdown,
+        selections: {
+          pricingModel,
+          selectedAdSize,
+          selectedDuration,
+          selectedAreas,
+          bogofPaidAreas,
+          bogofFreeAreas
+        }
+      };
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { error } = await supabase.from('quotes').insert([{ ...basePayload, user_id: session.user.id }]);
+        if (error) throw error;
+        toast({ title: "Saved", description: "Quote saved to your dashboard." });
+      } else {
+        localStorage.setItem('pendingQuote', JSON.stringify(basePayload));
+        const { error } = await supabase.auth.signInWithOtp({
+          email: formData.email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: { display_name: formData.name, phone: formData.phone, company: formData.company }
+          }
+        });
+        if (error) throw error;
+        toast({ title: "Confirm your email", description: "We sent you a sign-in link. After you verify, your quote will be saved automatically." });
+      }
+    } catch (err: any) {
+      console.error('Save quote error:', err);
+      toast({ title: "Error", description: err.message || 'Failed to save quote.', variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (isError) {
