@@ -186,12 +186,14 @@ const effectiveSelectedAreas = useMemo(() => {
     }
   }, []);
 
-  const handleSubmit = () => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleGetQuote = async () => {
     // Validation
-    if (!formData.name || !formData.email || !formData.phone) {
+    if (!formData.name || !formData.email) {
       toast({
         title: "Missing Information",
-        description: "Please fill in your contact details.",
+        description: "Please fill in your name and email.",
         variant: "destructive",
       });
       return;
@@ -217,17 +219,64 @@ const effectiveSelectedAreas = useMemo(() => {
 
     if (!selectedDuration) {
       toast({
-        title: "No Duration Selected", 
+        title: "No Duration Selected",
         description: "Please select a campaign duration.",
         variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Quote Request Sent!",
-      description: "We'll contact you within 24 hours with your personalized quote.",
-    });
+    setSubmitting(true);
+    try {
+      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const durationData = relevantDurations.find(d => d.id === selectedDuration);
+      const durationDiscountPercent = durationData?.discount_percentage || 0;
+      const subtotalAfterVolume = pricingBreakdown?.subtotal ? pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0) : 0;
+      const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+
+      const payload = {
+        contact_name: formData.name,
+        email: formData.email,
+        phone: formData.phone || '',
+        company: formData.company || '',
+        title: 'Quote Request',
+        pricing_model: pricingModel,
+        ad_size_id: selectedAdSize,
+        duration_id: selectedDuration,
+        selected_area_ids: effectiveSelectedAreas,
+        bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
+        bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
+        monthly_price: monthlyFinal,
+        subtotal: pricingBreakdown?.subtotal || 0,
+        final_total: pricingBreakdown?.finalTotal || 0,
+        duration_multiplier: pricingBreakdown?.durationMultiplier || 1,
+        total_circulation: pricingBreakdown?.totalCirculation || 0,
+        volume_discount_percent: pricingBreakdown?.volumeDiscountPercent || 0,
+        duration_discount_percent: durationDiscountPercent,
+        pricing_breakdown: JSON.parse(JSON.stringify(pricingBreakdown || {})) as any,
+        selections: {
+          pricingModel,
+          selectedAdSize,
+          selectedDuration,
+          selectedAreas,
+          bogofPaidAreas,
+          bogofFreeAreas
+        } as any
+      };
+
+      const { error } = await supabase.from('quote_requests').insert(payload);
+      if (error) throw error;
+      
+      toast({
+        title: "Quote Request Sent!",
+        description: "Our sales team will contact you within 24 hours to discuss your advertising needs.",
+      });
+    } catch (err: any) {
+      console.error('Submit quote error:', err);
+      toast({ title: "Error", description: err.message || 'Failed to submit quote request.', variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSaveQuote = async () => {
@@ -1178,14 +1227,25 @@ const effectiveSelectedAreas = useMemo(() => {
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <Button 
-                onClick={handleSubmit}
-                className="w-full"
-                disabled={!formData.name || !formData.email || !formData.phone || effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
-              >
-                Get Your Quote
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                <Button 
+                  onClick={handleGetQuote}
+                  className="w-full"
+                  disabled={submitting || !formData.name || !formData.email || effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
+                >
+                  {submitting ? "Sending..." : "Get My Quote"}
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={handleSaveQuote}
+                  className="w-full"
+                  disabled={saving || !formData.email || effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
+                >
+                  {saving ? "Saving..." : "Save My Quote"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

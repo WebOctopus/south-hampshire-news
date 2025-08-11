@@ -566,6 +566,108 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_requests: {
+        Row: {
+          ad_size_id: string | null
+          assigned_to: string | null
+          bogof_free_area_ids: string[] | null
+          bogof_paid_area_ids: string[] | null
+          company: string | null
+          contact_name: string
+          created_at: string
+          duration_discount_percent: number | null
+          duration_id: string | null
+          duration_multiplier: number | null
+          email: string
+          final_total: number | null
+          id: string
+          monthly_price: number
+          notes: string | null
+          phone: string | null
+          pricing_breakdown: Json
+          pricing_model: string
+          selected_area_ids: string[] | null
+          selections: Json
+          status: string
+          subtotal: number | null
+          title: string | null
+          total_circulation: number | null
+          updated_at: string
+          volume_discount_percent: number | null
+        }
+        Insert: {
+          ad_size_id?: string | null
+          assigned_to?: string | null
+          bogof_free_area_ids?: string[] | null
+          bogof_paid_area_ids?: string[] | null
+          company?: string | null
+          contact_name: string
+          created_at?: string
+          duration_discount_percent?: number | null
+          duration_id?: string | null
+          duration_multiplier?: number | null
+          email: string
+          final_total?: number | null
+          id?: string
+          monthly_price?: number
+          notes?: string | null
+          phone?: string | null
+          pricing_breakdown?: Json
+          pricing_model: string
+          selected_area_ids?: string[] | null
+          selections?: Json
+          status?: string
+          subtotal?: number | null
+          title?: string | null
+          total_circulation?: number | null
+          updated_at?: string
+          volume_discount_percent?: number | null
+        }
+        Update: {
+          ad_size_id?: string | null
+          assigned_to?: string | null
+          bogof_free_area_ids?: string[] | null
+          bogof_paid_area_ids?: string[] | null
+          company?: string | null
+          contact_name?: string
+          created_at?: string
+          duration_discount_percent?: number | null
+          duration_id?: string | null
+          duration_multiplier?: number | null
+          email?: string
+          final_total?: number | null
+          id?: string
+          monthly_price?: number
+          notes?: string | null
+          phone?: string | null
+          pricing_breakdown?: Json
+          pricing_model?: string
+          selected_area_ids?: string[] | null
+          selections?: Json
+          status?: string
+          subtotal?: number | null
+          title?: string | null
+          total_circulation?: number | null
+          updated_at?: string
+          volume_discount_percent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_requests_ad_size_id_fkey"
+            columns: ["ad_size_id"]
+            isOneToOne: false
+            referencedRelation: "ad_sizes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_requests_duration_id_fkey"
+            columns: ["duration_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_durations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quotes: {
         Row: {
           ad_size_id: string | null
