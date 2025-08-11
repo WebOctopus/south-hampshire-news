@@ -13,6 +13,8 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { User } from '@supabase/supabase-js';
 import { Edit, Calendar, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatPrice } from '@/lib/pricingCalculator';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +25,9 @@ const Dashboard = () => {
   const [editingBusiness, setEditingBusiness] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [quotes, setQuotes] = useState<any[]>([]);
+  const [viewingQuote, setViewingQuote] = useState<any | null>(null);
+  const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('create');
   
   const hasExistingBusiness = businesses.length > 0;
@@ -102,15 +107,25 @@ const Dashboard = () => {
 
   const loadEvents = async () => {
     if (!user) return;
-    
     const { data } = await supabase
       .from('events')
       .select('*')
       .eq('user_id', user.id)
       .order('date', { ascending: true });
-    
     if (data) {
       setEvents(data);
+    }
+  };
+
+  const loadQuotes = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('quotes')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (data) {
+      setQuotes(data);
     }
   };
 
@@ -118,6 +133,7 @@ const Dashboard = () => {
     if (user) {
       loadBusinesses();
       loadEvents();
+      loadQuotes();
     }
   }, [user]);
 
@@ -133,6 +149,8 @@ const Dashboard = () => {
         if (error) throw error;
         toast({ title: 'Quote saved', description: 'We saved your quote to your dashboard.' });
         localStorage.removeItem('pendingQuote');
+        await loadQuotes();
+        setActiveTab('quotes');
       } catch (e: any) {
         console.error('Pending quote save failed', e);
       }
@@ -372,6 +390,24 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteQuote = async (quoteId: string) => {
+    if (!confirm('Are you sure you want to delete this quote?')) return;
+    setDeletingQuoteId(quoteId);
+    try {
+      const { error } = await supabase
+        .from('quotes')
+        .delete()
+        .eq('id', quoteId);
+      if (error) throw error;
+      toast({ title: 'Deleted', description: 'Quote deleted successfully.' });
+      await loadQuotes();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setDeletingQuoteId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -395,7 +431,7 @@ const Dashboard = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger 
                 value="create" 
                 disabled={hasExistingBusiness && !editingBusiness}
@@ -407,6 +443,7 @@ const Dashboard = () => {
                 {editingEvent ? 'Edit Event' : 'Create Event'}
               </TabsTrigger>
               <TabsTrigger value="events">Your Events ({events.length})</TabsTrigger>
+              <TabsTrigger value="quotes">Saved Quotes ({quotes.length})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="create">
@@ -926,6 +963,118 @@ const Dashboard = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="quotes">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Saved Quotes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {quotes.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>You don't have any saved quotes yet.</p>
+                      <p className="mt-2">Use the Advertising Cost Calculator to save a quote.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Saved On</TableHead>
+                            <TableHead>Pricing Model</TableHead>
+                            <TableHead>Monthly Price</TableHead>
+                            <TableHead>Areas</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {quotes.map((q) => (
+                            <TableRow key={q.id}>
+                              <TableCell className="font-medium">{q.title || 'Untitled Quote'}</TableCell>
+                              <TableCell>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</TableCell>
+                              <TableCell className="capitalize">{q.pricing_model}</TableCell>
+                              <TableCell>{formatPrice(Number(q.monthly_price || 0))}</TableCell>
+                              <TableCell>{Array.isArray(q.selected_area_ids) ? q.selected_area_ids.length : 0}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setViewingQuote(q)}
+                                  >
+                                    View
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteQuote(q.id)}
+                                    disabled={deletingQuoteId === q.id}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    {deletingQuoteId === q.id ? 'Deleting...' : 'Delete'}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Dialog open={!!viewingQuote} onOpenChange={(open) => setViewingQuote(open ? viewingQuote : null)}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{viewingQuote?.title || 'Quote details'}</DialogTitle>
+                    <DialogDescription>
+                      {viewingQuote?.created_at ? new Date(viewingQuote.created_at).toLocaleString() : ''}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span>Pricing Model</span>
+                      <span className="capitalize">{viewingQuote?.pricing_model}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Monthly Price</span>
+                      <span className="font-medium">{formatPrice(Number(viewingQuote?.monthly_price || 0))}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Areas</span>
+                      <span>{Array.isArray(viewingQuote?.selected_area_ids) ? viewingQuote.selected_area_ids.length : 0}</span>
+                    </div>
+                    {viewingQuote?.duration_id && (
+                      <div className="flex justify-between">
+                        <span>Duration</span>
+                        <span>{viewingQuote.duration_id}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span>Contact Email</span>
+                      <span>{viewingQuote?.email}</span>
+                    </div>
+                    {viewingQuote?.phone && (
+                      <div className="flex justify-between">
+                        <span>Phone</span>
+                        <span>{viewingQuote.phone}</span>
+                      </div>
+                    )}
+                    {viewingQuote?.company && (
+                      <div className="flex justify-between">
+                        <span>Company</span>
+                        <span>{viewingQuote.company}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 text-right">
+                    <Button variant="outline" onClick={() => setViewingQuote(null)}>Close</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </TabsContent>
           </Tabs>
         </div>
