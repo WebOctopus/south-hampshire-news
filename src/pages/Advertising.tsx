@@ -925,13 +925,21 @@ const effectiveSelectedAreas = useMemo(() => {
                            </div>
                          );
                        })()}
-                       <Separator />
-                       <div className="flex justify-between">
-                         <span className="font-bold">Total Price:</span>
-                         <span className="font-bold text-lg">
-                           {formatPrice(pricingBreakdown.finalTotal)}
-                         </span>
-                       </div>
+<Separator />
+{(() => {
+  const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+  const selectedDurationData = relevantDurations.find(d => d.id === selectedDuration);
+  const durationDiscountPercent = selectedDurationData?.discount_percentage || 0;
+  const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
+  const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+  return (
+    <div className="flex justify-between">
+      <span className="font-bold">Monthly Price:</span>
+      <span className="font-bold text-lg">{formatPrice(monthlyFinal)}</span>
+    </div>
+  );
+})()}
+
                        <div className="flex justify-between">
                          <span>Total Circulation:</span>
                          <span>{pricingBreakdown.totalCirculation.toLocaleString()}</span>
