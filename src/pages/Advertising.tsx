@@ -786,7 +786,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </div>
 
                   {bogofPaidAreas.length >= 3 && (
-                    <div className="space-y-4">
+                    <div id="free-areas" className="space-y-4">
                       <h3 className="text-lg font-semibold">Select Your "Free" Areas</h3>
                       <p className="text-sm text-muted-foreground">
                         Choose up to {bogofPaidAreas.length} areas that you'll get for FREE for the first 6 months.
@@ -969,7 +969,23 @@ const effectiveSelectedAreas = useMemo(() => {
                            </div>
                          )}
                        </div>
-                       {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                       {pricingModel === 'bogof' && bogofPaidAreas.length >= 3 && bogofFreeAreas.length === 0 && (
+                          <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded flex items-center justify-between gap-2">
+                            <p className="text-sm">
+                              You’ve unlocked free areas with BOGOF. Pick them now.
+                            </p>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const el = document.getElementById('free-areas');
+                                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }}
+                            >
+                              Pick Your Free Areas now
+                            </Button>
+                          </div>
+                        )}
+                        {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
                          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
                            <p className="text-sm text-green-800 font-medium">
                              🎉 BOGOF Special: You'll also get {bogofFreeAreas.length} free areas {(() => {
