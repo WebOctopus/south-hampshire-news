@@ -581,7 +581,7 @@ const CalculatorTest = () => {
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-xs">
-                            <p>Pay per individual edition with no long-term commitment. Choose exactly which issues you want your advert to appear in. Perfect for one-off campaigns or testing specific markets.</p>
+                            <p>Short term advertising, the more areas you pick the cheaper your advert becomes print per 1000 e.g Pick 14 areas and receive 30% discount (You get a better deal with the BOGOF offer once you hit over 2 areas)</p>
                           </TooltipContent>
                         </Tooltip>
                       </Label>
