@@ -888,8 +888,52 @@ const effectiveSelectedAreas = useMemo(() => {
               {/* Pricing Summary */}
               {pricingBreakdown && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Pricing Summary</h3>
-                  <div className="bg-muted p-4 rounded-lg">
+<h3 className="text-lg font-semibold">Pricing Summary</h3>
+<p className="text-sm text-muted-foreground">
+  {(() => {
+    const areasCount = effectiveSelectedAreas.length;
+    const adSizeName = adSizes.find(s => s.id === selectedAdSize)?.name || "your selected size";
+    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+    const durationData = relevantDurations.find(d => d.id === selectedDuration);
+    const durationName = durationData?.name || "";
+    const durationDiscountPercent = durationData?.discount_percentage || 0;
+    const volumePercent = pricingBreakdown.volumeDiscountPercent || 0;
+    const monthlySubtotal = pricingBreakdown.subtotal;
+    const monthlyAfterVolume = monthlySubtotal - pricingBreakdown.volumeDiscount;
+    const monthlyFinal = monthlyAfterVolume * (1 - durationDiscountPercent / 100);
+    const circulation = pricingBreakdown.totalCirculation.toLocaleString();
+    const plural = (n: number) => (n === 1 ? '' : 's');
+
+    if (pricingModel === 'bogof') {
+      return (
+        <>
+          BOGOF subscription: You pay for {bogofPaidAreas.length} area{plural(bogofPaidAreas.length)} at {adSizeName} and can select {bogofPaidAreas.length} matching free area{plural(bogofPaidAreas.length)} for the first 6 months. Monthly base is {formatPrice(monthlySubtotal)}
+          {volumePercent > 0 && <> minus {volumePercent}% volume discount</>}
+          {durationDiscountPercent > 0 && <> and {durationDiscountPercent}% campaign discount{durationName && <> for {durationName}</>}</>}, giving a monthly price of <strong>{formatPrice(monthlyFinal)}</strong>. Estimated monthly circulation: {circulation}.
+        </>
+      );
+    }
+
+    if (pricingModel === 'subscription') {
+      return (
+        <>
+          Subscription: {areasCount} area{plural(areasCount)} at {adSizeName}. Monthly base is {formatPrice(monthlySubtotal)}
+          {volumePercent > 0 && <> minus {volumePercent}% volume discount</>}
+          {durationDiscountPercent > 0 && <> and {durationDiscountPercent}% campaign discount{durationName && <> for {durationName}</>}</>}, giving a monthly price of <strong>{formatPrice(monthlyFinal)}</strong>. Estimated monthly circulation: {circulation}.
+        </>
+      );
+    }
+
+    return (
+      <>
+        Fixed price: {areasCount} area{plural(areasCount)} at {adSizeName}. Monthly base is {formatPrice(monthlySubtotal)}
+        {volumePercent > 0 && <> minus {volumePercent}% volume discount</>}
+        {durationDiscountPercent > 0 && <> and {durationDiscountPercent}% campaign discount{durationName && <> for {durationName}</>}</>}, giving a monthly price of <strong>{formatPrice(monthlyFinal)}</strong>. Estimated monthly circulation: {circulation}.
+      </>
+    );
+  })()}
+</p>
+<div className="bg-muted p-4 rounded-lg">
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span>Selected Areas:</span>
