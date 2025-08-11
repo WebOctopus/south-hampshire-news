@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
@@ -566,39 +567,92 @@ const CalculatorTest = () => {
 
               {/* Payment Structure */}
               <TooltipProvider>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <h3 className="text-lg font-semibold">Select Payment Structure</h3>
                   <RadioGroup 
                     value={pricingModel} 
                     onValueChange={(value: 'fixed' | 'subscription' | 'bogof') => setPricingModel(value)}
+                    className="space-y-4"
                   >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="fixed" id="fixed" />
-                      <Label htmlFor="fixed" className="flex items-center gap-2">
-                        Fixed No Contract Price
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs">
-                            <p>Short term advertising, the more areas you pick the cheaper your advert becomes print per 1000 e.g Pick 14 areas and receive 30% discount (You get a better deal with the BOGOF offer once you hit over 2 areas)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </Label>
+                    {/* Fixed Price Option */}
+                    <div 
+                      className={cn(
+                        "relative rounded-lg border-2 p-6 cursor-pointer transition-all duration-200 hover:shadow-md",
+                        pricingModel === 'fixed' 
+                          ? "border-primary bg-primary/5 shadow-sm" 
+                          : "border-border bg-card hover:border-muted-foreground/30"
+                      )}
+                      onClick={() => setPricingModel('fixed')}
+                    >
+                      <div className="flex items-start space-x-4">
+                        <RadioGroupItem value="fixed" id="fixed" className="mt-1" />
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="fixed" className="text-base font-medium cursor-pointer">
+                              Fixed No Contract Price
+                            </Label>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-primary transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <p>Short term advertising, the more areas you pick the cheaper your advert becomes print per 1000 e.g Pick 14 areas and receive 30% discount (You get a better deal with the BOGOF offer once you hit over 2 areas)</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            Pay per individual edition with no long-term commitment. Perfect for one-off campaigns or testing specific markets.
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                            <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
+                            Flexible & No Contract
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="bogof" id="bogof" />
-                      <Label htmlFor="bogof" className="flex items-center gap-2">
-                        BOGOF - Buy One Get One Free
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs">
-                            <p>Long Term Investment - Best Value for Money: Once you choose more than 2 areas you get the option to pick the same amount free e.g buy 4 get 4 free. This is for a min term of 6-months. After 6-months you get to choose your best performing area with a full page.</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </Label>
+
+                    {/* BOGOF Option */}
+                    <div 
+                      className={cn(
+                        "relative rounded-lg border-2 p-6 cursor-pointer transition-all duration-200 hover:shadow-md",
+                        pricingModel === 'bogof' 
+                          ? "border-primary bg-primary/5 shadow-sm" 
+                          : "border-border bg-card hover:border-muted-foreground/30"
+                      )}
+                      onClick={() => setPricingModel('bogof')}
+                    >
+                      <div className="flex items-start space-x-4">
+                        <RadioGroupItem value="bogof" id="bogof" className="mt-1" />
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="bogof" className="text-base font-medium cursor-pointer">
+                              BOGOF - Buy One Get One Free
+                            </Label>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-primary transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <p>Long Term Investment - Best Value for Money: Once you choose more than 2 areas you get the option to pick the same amount free e.g buy 4 get 4 free. This is for a min term of 6-months. After 6-months you get to choose your best performing area with a full page.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            Best value for money! Choose multiple areas and get the same amount free. Minimum 6-month commitment with performance tracking.
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                            <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
+                            Best Value & Long-term Growth
+                          </div>
+                        </div>
+                      </div>
+                      {pricingModel === 'bogof' && (
+                        <div className="absolute top-3 right-3">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                            Selected
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </RadioGroup>
                 </div>
