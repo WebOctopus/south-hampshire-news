@@ -595,7 +595,7 @@ const CalculatorTest = () => {
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-xs">
-                            <p>Special promotional offer! Book advertising in one area and receive advertising in a second area completely free. Great value for expanding your reach across multiple locations.</p>
+                            <p>Long Term Investment - Best Value for Money: Once you choose more than 2 areas you get the option to pick the same amount free e.g buy 4 get 4 free. This is for a min term of 6-months. After 6-months you get to choose your best performing area with a full page.</p>
                           </TooltipContent>
                         </Tooltip>
                       </Label>
