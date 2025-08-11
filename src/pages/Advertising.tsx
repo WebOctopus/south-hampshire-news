@@ -20,6 +20,7 @@ import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
 
@@ -44,7 +45,9 @@ const CalculatorTest = () => {
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
-  const [selectedDuration, setSelectedDuration] = useState<string>("");
+const [selectedDuration, setSelectedDuration] = useState<string>("");
+const [upsellOpen, setUpsellOpen] = useState(false);
+const [upsellDismissed, setUpsellDismissed] = useState(false);
 
   // Use the pricing data hook
   const {
@@ -76,7 +79,30 @@ const CalculatorTest = () => {
     );
   }, []);
 
-  const effectiveSelectedAreas = useMemo(() => {
+const maybeOpenUpsell = useCallback(() => {
+  if (pricingModel === 'fixed' && selectedAreas.length > 2 && !upsellDismissed) {
+    setUpsellOpen(true);
+  }
+}, [pricingModel, selectedAreas.length, upsellDismissed]);
+
+const handleUpsellNo = useCallback(() => {
+  setUpsellOpen(false);
+  setUpsellDismissed(true);
+}, []);
+
+const handleUpsellYes = useCallback(() => {
+  setUpsellOpen(false);
+  setUpsellDismissed(true);
+  setPricingModel('bogof');
+  setBogofPaidAreas(Array.from(new Set([...selectedAreas])));
+  if (selectedAreas.length >= 3) {
+    toast({ title: "Switched to BOGOF", description: "Great choice! Now pick your free areas." });
+  } else {
+    toast({ title: "Almost there", description: "Choose 1 more paid area to unlock your free areas." });
+  }
+}, [selectedAreas, toast]);
+
+const effectiveSelectedAreas = useMemo(() => {
     return pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   }, [pricingModel, selectedAreas, bogofPaidAreas]);
 
@@ -563,7 +589,25 @@ const CalculatorTest = () => {
                 Fill in your details and select your preferences to get an instant quote
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+<CardContent className="space-y-6">
+  <Dialog open={upsellOpen} onOpenChange={setUpsellOpen}>
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>Get Better Value with BOGOF</DialogTitle>
+        <DialogDescription>
+          You’ve selected multiple areas on Fixed. With our BOGOF subscription, pay for your chosen areas and get the same number free for 6 months — best value for multi-area campaigns.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="text-sm text-muted-foreground">
+        Keep your current area choices as paid. Once you’ve selected at least 3 paid areas, you’ll unlock matching free areas.
+      </div>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button variant="outline" onClick={handleUpsellNo}>No Thanks</Button>
+        <Button onClick={handleUpsellYes}>Yes Please</Button>
+      </div>
+    </DialogContent>
+  </Dialog>
+
 
               {/* Payment Structure */}
               <TooltipProvider>
@@ -781,7 +825,7 @@ const CalculatorTest = () => {
               )}
 
               {/* Ad Size Selection */}
-              <div className="space-y-4">
+<div className="space-y-4" onMouseEnter={maybeOpenUpsell}>
                 <h3 className="text-lg font-semibold">Select Advertisement Size</h3>
                 {isLoading ? (
                   <div className="flex items-center justify-center p-4">
