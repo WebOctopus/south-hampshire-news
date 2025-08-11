@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
@@ -18,6 +18,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
 
@@ -572,11 +573,35 @@ const CalculatorTest = () => {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="fixed" id="fixed" />
-                    <Label htmlFor="fixed">Fixed No Contract Price</Label>
+                    <Label htmlFor="fixed" className="flex items-center gap-2">
+                      Fixed No Contract Price
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p>Pay per individual edition with no long-term commitment. Choose exactly which issues you want your advert to appear in. Perfect for one-off campaigns or testing specific markets.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="bogof" id="bogof" />
-                    <Label htmlFor="bogof">BOGOF - Buy One Get One Free</Label>
+                    <Label htmlFor="bogof" className="flex items-center gap-2">
+                      BOGOF - Buy One Get One Free
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p>Special promotional offer! Book advertising in one area and receive advertising in a second area completely free. Great value for expanding your reach across multiple locations.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
                   </div>
                 </RadioGroup>
               </div>
