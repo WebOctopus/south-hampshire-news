@@ -565,17 +565,17 @@ const CalculatorTest = () => {
             <CardContent className="space-y-6">
 
               {/* Payment Structure */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Select Payment Structure</h3>
-                <RadioGroup 
-                  value={pricingModel} 
-                  onValueChange={(value: 'fixed' | 'subscription' | 'bogof') => setPricingModel(value)}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="fixed" id="fixed" />
-                    <Label htmlFor="fixed" className="flex items-center gap-2">
-                      Fixed No Contract Price
-                      <TooltipProvider>
+              <TooltipProvider>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Select Payment Structure</h3>
+                  <RadioGroup 
+                    value={pricingModel} 
+                    onValueChange={(value: 'fixed' | 'subscription' | 'bogof') => setPricingModel(value)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="fixed" id="fixed" />
+                      <Label htmlFor="fixed" className="flex items-center gap-2">
+                        Fixed No Contract Price
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
@@ -584,14 +584,12 @@ const CalculatorTest = () => {
                             <p>Pay per individual edition with no long-term commitment. Choose exactly which issues you want your advert to appear in. Perfect for one-off campaigns or testing specific markets.</p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="bogof" id="bogof" />
-                    <Label htmlFor="bogof" className="flex items-center gap-2">
-                      BOGOF - Buy One Get One Free
-                      <TooltipProvider>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="bogof" id="bogof" />
+                      <Label htmlFor="bogof" className="flex items-center gap-2">
+                        BOGOF - Buy One Get One Free
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
@@ -600,11 +598,11 @@ const CalculatorTest = () => {
                             <p>Special promotional offer! Book advertising in one area and receive advertising in a second area completely free. Great value for expanding your reach across multiple locations.</p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </TooltipProvider>
 
               {/* Distribution Areas */}
               {pricingModel !== 'bogof' && (
