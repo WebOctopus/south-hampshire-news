@@ -923,7 +923,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     )}
                   </div>
 
-                  {bogofPaidAreas.length >= 3 && (
+                  {bogofPaidAreas.length >= 1 && (
                     <div id="free-areas" className="space-y-4">
                       <h3 className="text-lg font-semibold">Select Your "Free" Areas</h3>
                       <p className="text-sm text-muted-foreground">
@@ -1159,7 +1159,7 @@ const effectiveSelectedAreas = useMemo(() => {
                            </div>
                          )}
                        </div>
-                       {pricingModel === 'bogof' && bogofPaidAreas.length >= 3 && bogofFreeAreas.length === 0 && (
+                       {pricingModel === 'bogof' && bogofPaidAreas.length >= 1 && bogofFreeAreas.length === 0 && (
                           <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded flex items-center justify-between gap-2">
                             <p className="text-sm">
                               You’ve unlocked free areas with BOGOF. Pick them now.

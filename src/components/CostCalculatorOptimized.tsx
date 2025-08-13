@@ -313,7 +313,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                       <div className="mt-3 space-y-2 text-sm">
                         <div className="flex items-start space-x-2">
                           <span className="text-community-green">✓</span>
-                          <span>Nominate at least 3 areas as "paid for" subscription</span>
+                          <span>Nominate at least 1 area as "paid for" subscription</span>
                         </div>
                         <div className="flex items-start space-x-2">
                           <span className="text-community-green">✓</span>
@@ -393,7 +393,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                       Select Your "Paid For" Areas
                     </h3>
                     <p className="text-sm text-gray-600 mb-4">
-                      Choose at least 3 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
+                      Choose at least 1 area that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
                     </p>
                     {isLoading ? (
                       <div className="flex items-center justify-center py-8">
@@ -435,7 +435,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                   </CardContent>
                 </Card>
 
-                {bogofPaidAreas.length >= 3 && (
+                {bogofPaidAreas.length >= 1 && (
                   <Card>
                     <CardContent className="p-6">
                       <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
@@ -621,7 +621,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                   effectiveSelectedAreas.length === 0 || 
                   !formData.adSize ||
                   (!formData.duration && selectedPricingModel !== 'bogof') ||
-                  (selectedPricingModel === 'bogof' && bogofPaidAreas.length < 3)
+                  (selectedPricingModel === 'bogof' && bogofPaidAreas.length < 1)
                 }
                 className="bg-community-green hover:bg-community-green/90 text-white px-8 py-2"
               >

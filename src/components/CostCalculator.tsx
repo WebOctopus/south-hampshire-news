@@ -355,7 +355,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                     <div className="mt-3 space-y-2 text-sm">
                       <div className="flex items-start space-x-2">
                         <span className="text-community-green">✓</span>
-                        <span>Nominate at least 3 areas as "paid for" subscription</span>
+                        <span>Nominate at least 1 area as "paid for" subscription</span>
                       </div>
                       <div className="flex items-start space-x-2">
                         <span className="text-community-green">✓</span>
@@ -428,7 +428,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   Select Your "Paid For" Areas
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Choose at least 3 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
+                  Choose at least 1 area that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {areas.map((area) => (
@@ -465,7 +465,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                   <div className="flex items-center gap-2">
                     <span className="text-blue-600">ℹ️</span>
                     <span className="text-sm font-medium text-blue-800">
-                      Selected: {bogofPaidAreas.length} paid areas {bogofPaidAreas.length < 3 ? `(minimum 3 required)` : ''}
+                      Selected: {bogofPaidAreas.length} paid areas {bogofPaidAreas.length < 1 ? `(minimum 1 required)` : ''}
                     </span>
                   </div>
                 </div>
@@ -474,7 +474,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
           )}
 
           {/* BOGOF Free Areas Selection */}
-          {selectedPricingModel === 'bogof' && bogofPaidAreas.length >= 3 && (
+          {selectedPricingModel === 'bogof' && bogofPaidAreas.length >= 1 && (
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-lg font-heading font-bold text-community-navy mb-4">

@@ -474,7 +474,7 @@ const AdvertisingNew = () => {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Select Your "Paid For" Areas</h3>
                     <p className="text-sm text-muted-foreground">
-                      Choose at least 3 areas that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
+                      Choose at least 1 area that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
                     </p>
                     {isLoading ? (
                       <div className="flex items-center justify-center p-8">
@@ -511,7 +511,7 @@ const AdvertisingNew = () => {
                     )}
                   </div>
 
-                  {bogofPaidAreas.length >= 3 && (
+                  {bogofPaidAreas.length >= 1 && (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Select Your "Free" Areas</h3>
                       <p className="text-sm text-muted-foreground">
