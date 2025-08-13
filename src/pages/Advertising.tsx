@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import React, { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ interface FormData {
 
 const CalculatorTest = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -342,16 +344,38 @@ const effectiveSelectedAreas = useMemo(() => {
         if (error) throw error;
         toast({ title: "Saved", description: "Quote saved to your dashboard." });
       } else {
-        localStorage.setItem('pendingQuote', JSON.stringify(basePayload));
-        const { error } = await supabase.auth.signInWithOtp({
+        // Create account automatically and log them in
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
+          password: Math.random().toString(36).substring(2, 15), // Generate random password
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { display_name: formData.name, phone: formData.phone, company: formData.company }
+            data: { 
+              display_name: formData.name, 
+              phone: formData.phone, 
+              company: formData.company 
+            }
           }
         });
-        if (error) throw error;
-        toast({ title: "Confirm your email", description: "We sent you a sign-in link. After you verify, your quote will be saved automatically." });
+
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // Save the quote with the new user ID
+          const payloadForDb = { ...basePayload, user_id: authData.user.id } as any;
+          const { error: quotesError } = await supabase.from('quotes').insert(payloadForDb);
+          if (quotesError) throw quotesError;
+          
+          toast({ 
+            title: "Account Created & Quote Saved!", 
+            description: "Your account has been created and quote saved. Check your email to verify your account." 
+          });
+          
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
+        }
       }
     } catch (err: any) {
       console.error('Save quote error:', err);
