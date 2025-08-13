@@ -103,6 +103,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
 
     setSubmitting(true);
     try {
+      console.log('Starting quote save...');
       const relevantDurationData = relevantDurations.find(d => d.id === selectedDuration);
       const durationDiscountPercent = relevantDurationData?.discount_percentage || 0;
       const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
@@ -138,10 +139,13 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
         }
       };
 
+      console.log('About to call onSave with:', updatedQuote);
       await onSave(updatedQuote);
+      console.log('onSave completed successfully');
     } catch (error) {
       console.error('Error saving quote:', error);
     } finally {
+      console.log('Setting submitting to false');
       setSubmitting(false);
     }
   };
