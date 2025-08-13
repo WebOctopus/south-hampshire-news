@@ -1,8 +1,10 @@
-import { MapPin, Phone, Mail, ExternalLink, Star } from 'lucide-react';
+import { MapPin, Phone, Mail, ExternalLink, Star, Lock } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BusinessCardProps {
   business: {
@@ -29,6 +31,22 @@ interface BusinessCardProps {
 
 const BusinessCard = ({ business }: BusinessCardProps) => {
   const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleCardClick = () => {
     navigate(`/business/${business.id}`);
@@ -53,6 +71,11 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
     if (business.phone) {
       window.open(`tel:${business.phone}`);
     }
+  };
+
+  const handleAuthRequired = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate('/auth');
   };
 
   return (
@@ -103,23 +126,35 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
 
         {/* Contact Info */}
         <div className="space-y-2">
-          {business.phone && (
+          {isAuthenticated ? (
+            <>
+              {business.phone && (
+                <button
+                  onClick={handlePhoneClick}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-community-green transition-colors w-full text-left"
+                >
+                  <Phone className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{business.phone}</span>
+                </button>
+              )}
+              
+              {business.email && (
+                <button
+                  onClick={handleEmailClick}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-community-green transition-colors w-full text-left"
+                >
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{business.email}</span>
+                </button>
+              )}
+            </>
+          ) : (
             <button
-              onClick={handlePhoneClick}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-community-green transition-colors w-full text-left"
+              onClick={handleAuthRequired}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-community-green transition-colors w-full text-left p-2 border border-gray-200 rounded-md bg-gray-50"
             >
-              <Phone className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{business.phone}</span>
-            </button>
-          )}
-          
-          {business.email && (
-            <button
-              onClick={handleEmailClick}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-community-green transition-colors w-full text-left"
-            >
-              <Mail className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{business.email}</span>
+              <Lock className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Sign in to view contact details</span>
             </button>
           )}
         </div>

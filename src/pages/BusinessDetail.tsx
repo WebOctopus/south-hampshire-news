@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Phone, Mail, ExternalLink, Clock, Star, ImageIcon } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Mail, ExternalLink, Clock, Star, ImageIcon, Lock } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,22 @@ const BusinessDetail = () => {
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -169,27 +185,42 @@ const BusinessDetail = () => {
           
           {/* Mobile Contact Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
-            {business.phone && (
-              <Button
-                onClick={handlePhoneClick}
-                variant="outline"
-                className="w-full text-sm"
-                size="sm"
-              >
-                <Phone className="h-4 w-4 mr-2" />
-                Call
-              </Button>
-            )}
-            {business.email && (
-              <Button
-                onClick={handleEmailClick}
-                variant="outline"
-                className="w-full text-sm"
-                size="sm"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Email
-              </Button>
+            {isAuthenticated ? (
+              <>
+                {business.phone && (
+                  <Button
+                    onClick={handlePhoneClick}
+                    variant="outline"
+                    className="w-full text-sm"
+                    size="sm"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Call
+                  </Button>
+                )}
+                {business.email && (
+                  <Button
+                    onClick={handleEmailClick}
+                    variant="outline"
+                    className="w-full text-sm"
+                    size="sm"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Link to="/auth" className="col-span-full">
+                <Button
+                  variant="outline"
+                  className="w-full text-sm"
+                  size="sm"
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  Sign in to view contact details
+                </Button>
+              </Link>
             )}
             {business.website && (
               <Button
@@ -286,25 +317,39 @@ const BusinessDetail = () => {
 
             {/* Desktop Contact Actions */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {business.phone && (
-                <Button
-                  onClick={handlePhoneClick}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Call
-                </Button>
-              )}
-              {business.email && (
-                <Button
-                  onClick={handleEmailClick}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Email
-                </Button>
+              {isAuthenticated ? (
+                <>
+                  {business.phone && (
+                    <Button
+                      onClick={handlePhoneClick}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call
+                    </Button>
+                  )}
+                  {business.email && (
+                    <Button
+                      onClick={handleEmailClick}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Email
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Link to="/auth" className="col-span-full">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Sign in to view contact details
+                  </Button>
+                </Link>
               )}
               {business.website && (
                 <Button
@@ -345,27 +390,40 @@ const BusinessDetail = () => {
                 </div>
               )}
 
-              {business.phone && (
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                  <a
-                    href={`tel:${business.phone}`}
-                    className="text-community-green hover:text-green-600 transition-colors"
-                  >
-                    {business.phone}
-                  </a>
-                </div>
-              )}
+              {isAuthenticated ? (
+                <>
+                  {business.phone && (
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      <a
+                        href={`tel:${business.phone}`}
+                        className="text-community-green hover:text-green-600 transition-colors"
+                      >
+                        {business.phone}
+                      </a>
+                    </div>
+                  )}
 
-              {business.email && (
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                  <a
-                    href={`mailto:${business.email}`}
-                    className="text-community-green hover:text-green-600 transition-colors"
-                  >
-                    {business.email}
-                  </a>
+                  {business.email && (
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      <a
+                        href={`mailto:${business.email}`}
+                        className="text-community-green hover:text-green-600 transition-colors"
+                      >
+                        {business.email}
+                      </a>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                  <Lock className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                  <div className="text-gray-600">
+                    <Link to="/auth" className="text-community-green hover:text-green-600 transition-colors">
+                      Sign in to view contact details
+                    </Link>
+                  </div>
                 </div>
               )}
 
