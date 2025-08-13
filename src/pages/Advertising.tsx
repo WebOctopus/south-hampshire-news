@@ -995,7 +995,18 @@ const effectiveSelectedAreas = useMemo(() => {
                     Loading ad sizes...
                   </div>
                 ) : (
-                  <Select value={selectedAdSize} onValueChange={setSelectedAdSize}>
+                  <Select 
+                    value={selectedAdSize} 
+                    onValueChange={(value) => {
+                      // Prevent scrolling on mobile when selection changes
+                      const scrollPosition = window.scrollY;
+                      setSelectedAdSize(value);
+                      // Restore scroll position after React re-render
+                      setTimeout(() => {
+                        window.scrollTo(0, scrollPosition);
+                      }, 0);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose an advertisement size" />
                     </SelectTrigger>
