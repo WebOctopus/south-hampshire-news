@@ -45,7 +45,7 @@ export interface DbVolumeDiscount {
   is_active: boolean;
 }
 // Lightweight timeout wrapper to surface browser-specific hanging requests
-async function withTimeout<T = any>(promise: any, label: string, ms = 12000): Promise<T> {
+async function withTimeout<T = any>(promise: any, label: string, ms = 30000): Promise<T> {
   const thenable = Promise.resolve(promise as any);
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -108,12 +108,13 @@ export function useAreas() {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
-    gcTime: 15 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Areas retry attempt ${failureCount}:`, error);
-      return failureCount < 3;
+      console.log(`[usePricingData] Areas retry attempt ${failureCount + 1}:`, error);
+      return failureCount < 2; // Only retry twice
     },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 }
 
@@ -151,12 +152,13 @@ export function useAdSizes() {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
-    gcTime: 15 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Ad sizes retry attempt ${failureCount}:`, error);
-      return failureCount < 3;
+      console.log(`[usePricingData] Ad sizes retry attempt ${failureCount + 1}:`, error);
+      return failureCount < 2; // Only retry twice
     },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 }
 
@@ -187,12 +189,13 @@ export function useDurations() {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
-    gcTime: 15 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Durations retry attempt ${failureCount}:`, error);
-      return failureCount < 3;
+      console.log(`[usePricingData] Durations retry attempt ${failureCount + 1}:`, error);
+      return failureCount < 2; // Only retry twice
     },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 }
 
@@ -223,12 +226,13 @@ export function useVolumeDiscounts() {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for better freshness
-    gcTime: 15 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Volume discounts retry attempt ${failureCount}:`, error);
-      return failureCount < 3;
+      console.log(`[usePricingData] Volume discounts retry attempt ${failureCount + 1}:`, error);
+      return failureCount < 2; // Only retry twice
     },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 }
 
