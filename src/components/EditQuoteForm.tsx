@@ -7,27 +7,20 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
-import { DbArea, DbAdSize, DbDuration } from '@/hooks/usePricingData';
+import { usePricingData } from '@/hooks/usePricingData';
 
 interface EditQuoteFormProps {
   quote: any;
-  areas: DbArea[];
-  adSizes: DbAdSize[];
-  durations: DbDuration[];
-  subscriptionDurations: DbDuration[];
   onSave: (updatedQuote: any) => void;
   onCancel: () => void;
 }
 
 const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   quote,
-  areas,
-  adSizes,
-  durations,
-  subscriptionDurations,
   onSave,
   onCancel
 }) => {
+  const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
   const [formData, setFormData] = useState({
     contact_name: quote.contact_name || '',
     email: quote.email || '',
@@ -152,6 +145,14 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
       setSubmitting(false);
     }
   };
+
+  if (pricingLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div>Loading pricing data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

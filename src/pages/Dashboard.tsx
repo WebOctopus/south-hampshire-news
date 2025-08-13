@@ -18,7 +18,6 @@ import { User } from '@supabase/supabase-js';
 import { Edit, Calendar, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
-import { usePricingData } from '@/hooks/usePricingData';
 import EditQuoteForm from '@/components/EditQuoteForm';
 
 const Dashboard = () => {
@@ -39,7 +38,6 @@ const Dashboard = () => {
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -1104,10 +1102,6 @@ const Dashboard = () => {
                   
                   {editingQuote && <EditQuoteForm 
                     quote={editingQuote}
-                    areas={areas}
-                    adSizes={adSizes}
-                    durations={durations}
-                    subscriptionDurations={subscriptionDurations}
                     onSave={async (updatedQuote) => {
                       try {
                         const { error } = await supabase
