@@ -67,13 +67,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
+        setUser(session.user);
+      } catch (error) {
+        console.error('Auth check error:', error);
         navigate('/auth');
-        return;
+      } finally {
+        setLoading(false);
       }
-      setUser(session.user);
-      setLoading(false);
     };
 
     const loadCategories = async () => {
