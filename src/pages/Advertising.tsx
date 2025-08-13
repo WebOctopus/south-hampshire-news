@@ -719,7 +719,12 @@ const effectiveSelectedAreas = useMemo(() => {
               </CardDescription>
             </CardHeader>
 <CardContent className="space-y-6">
-  <Dialog open={upsellOpen} onOpenChange={setUpsellOpen}>
+  <Dialog open={upsellOpen} onOpenChange={(open) => {
+    setUpsellOpen(open);
+    if (!open) {
+      setUpsellDismissed(true);
+    }
+  }}>
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>Get Better Value with BOGOF</DialogTitle>
