@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
@@ -15,6 +18,8 @@ import { User } from '@supabase/supabase-js';
 import { Edit, Calendar, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
+import { usePricingData } from '@/hooks/usePricingData';
+import EditQuoteForm from '@/components/EditQuoteForm';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -27,12 +32,14 @@ const Dashboard = () => {
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [viewingQuote, setViewingQuote] = useState<any | null>(null);
+  const [editingQuote, setEditingQuote] = useState<any | null>(null);
   const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('create');
   
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -998,24 +1005,33 @@ const Dashboard = () => {
                               <TableCell>{formatPrice(Number(q.monthly_price || 0))}</TableCell>
                               <TableCell>{Array.isArray(q.selected_area_ids) ? q.selected_area_ids.length : 0}</TableCell>
                               <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setViewingQuote(q)}
-                                  >
-                                    View
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteQuote(q.id)}
-                                    disabled={deletingQuoteId === q.id}
-                                    className="text-red-600 hover:text-red-700"
-                                  >
-                                    {deletingQuoteId === q.id ? 'Deleting...' : 'Delete'}
-                                  </Button>
-                                </div>
+                                 <div className="flex gap-2">
+                                   <Button
+                                     variant="outline"
+                                     size="sm"
+                                     onClick={() => setViewingQuote(q)}
+                                   >
+                                     View
+                                   </Button>
+                                   <Button
+                                     variant="outline"
+                                     size="sm"
+                                     onClick={() => setEditingQuote(q)}
+                                     className="flex items-center gap-1"
+                                   >
+                                     <Edit size={14} />
+                                     Edit
+                                   </Button>
+                                   <Button
+                                     variant="outline"
+                                     size="sm"
+                                     onClick={() => handleDeleteQuote(q.id)}
+                                     disabled={deletingQuoteId === q.id}
+                                     className="text-red-600 hover:text-red-700"
+                                   >
+                                     {deletingQuoteId === q.id ? 'Deleting...' : 'Delete'}
+                                   </Button>
+                                 </div>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -1073,6 +1089,51 @@ const Dashboard = () => {
                   <div className="mt-4 text-right">
                     <Button variant="outline" onClick={() => setViewingQuote(null)}>Close</Button>
                   </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Edit Quote Dialog */}
+              <Dialog open={!!editingQuote} onOpenChange={(open) => setEditingQuote(open ? editingQuote : null)}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Edit Quote</DialogTitle>
+                    <DialogDescription>
+                      Update your advertising quote details
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  {editingQuote && <EditQuoteForm 
+                    quote={editingQuote}
+                    areas={areas}
+                    adSizes={adSizes}
+                    durations={durations}
+                    subscriptionDurations={subscriptionDurations}
+                    onSave={async (updatedQuote) => {
+                      try {
+                        const { error } = await supabase
+                          .from('quotes')
+                          .update(updatedQuote)
+                          .eq('id', editingQuote.id);
+                        
+                        if (error) throw error;
+                        
+                        toast({
+                          title: "Quote Updated",
+                          description: "Your quote has been updated successfully."
+                        });
+                        
+                        setEditingQuote(null);
+                        await loadQuotes();
+                      } catch (error: any) {
+                        toast({
+                          title: "Error",
+                          description: error.message,
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                    onCancel={() => setEditingQuote(null)}
+                  />}
                 </DialogContent>
               </Dialog>
             </TabsContent>
