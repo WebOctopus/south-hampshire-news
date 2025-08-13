@@ -593,6 +593,7 @@ export type Database = {
           title: string | null
           total_circulation: number | null
           updated_at: string
+          user_id: string | null
           volume_discount_percent: number | null
         }
         Insert: {
@@ -621,6 +622,7 @@ export type Database = {
           title?: string | null
           total_circulation?: number | null
           updated_at?: string
+          user_id?: string | null
           volume_discount_percent?: number | null
         }
         Update: {
@@ -649,6 +651,7 @@ export type Database = {
           title?: string | null
           total_circulation?: number | null
           updated_at?: string
+          user_id?: string | null
           volume_discount_percent?: number | null
         }
         Relationships: [

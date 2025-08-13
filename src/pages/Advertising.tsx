@@ -234,6 +234,9 @@ const effectiveSelectedAreas = useMemo(() => {
       const subtotalAfterVolume = pricingBreakdown?.subtotal ? pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0) : 0;
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
 
+      // Get current user for request association
+      const { data: { user } } = await supabase.auth.getUser();
+
       const payload = {
         contact_name: formData.name,
         email: formData.email,
@@ -261,7 +264,8 @@ const effectiveSelectedAreas = useMemo(() => {
           selectedAreas,
           bogofPaidAreas,
           bogofFreeAreas
-        } as any
+        } as any,
+        user_id: user?.id || null  // Associate with user if authenticated
       };
 
       const { error } = await supabase.from('quote_requests').insert(payload);
