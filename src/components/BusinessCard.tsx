@@ -12,8 +12,8 @@ interface BusinessCardProps {
     name: string;
     description: string;
     category_id: string;
-    email: string;
-    phone: string;
+    email?: string; // Optional for public users
+    phone?: string; // Optional for public users
     website: string;
     address_line1: string;
     address_line2: string;

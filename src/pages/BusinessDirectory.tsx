@@ -22,8 +22,8 @@ interface Business {
   name: string;
   description: string;
   category_id: string;
-  email: string;
-  phone: string;
+  email?: string; // Optional for public users
+  phone?: string; // Optional for public users
   website: string;
   address_line1: string;
   address_line2: string;
@@ -34,6 +34,7 @@ interface Business {
   images: string[];
   is_verified: boolean;
   featured: boolean;
+  owner_id?: string; // Optional for public users
   business_categories: BusinessCategory;
 }
 
@@ -43,10 +44,23 @@ const BusinessDirectory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // Check authentication status
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
     fetchCategories();
     fetchBusinesses();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const fetchCategories = async () => {
@@ -63,39 +77,78 @@ const BusinessDirectory = () => {
   };
 
   const fetchBusinesses = async () => {
-    let query = supabase
-      .from('businesses')
-      .select(`
-        *,
-        business_categories (
-          id,
-          name,
-          description,
-          icon,
-          slug
-        )
-      `)
-      .eq('is_active', true)
-      .order('featured', { ascending: false })
-      .order('name');
+    try {
+      let query;
+      
+      if (user) {
+        // Authenticated users get full information
+        query = supabase
+          .from('businesses')
+          .select(`
+            *,
+            business_categories (
+              id,
+              name,
+              description,
+              icon,
+              slug
+            )
+          `)
+          .eq('is_active', true);
+      } else {
+        // Public users get limited, safe information only (no email, phone, owner_id)
+        query = supabase
+          .from('businesses')
+          .select(`
+            id,
+            name,
+            description,
+            address_line1,
+            address_line2,
+            city,
+            postcode,
+            website,
+            logo_url,
+            featured_image_url,
+            images,
+            is_verified,
+            featured,
+            category_id,
+            business_categories (
+              id,
+              name,
+              description,
+              icon,
+              slug
+            )
+          `)
+          .eq('is_active', true);
+      }
 
-    if (selectedCategory !== 'all') {
-      query = query.eq('category_id', selectedCategory);
-    }
+      if (selectedCategory !== 'all') {
+        query = query.eq('category_id', selectedCategory);
+      }
 
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error fetching businesses:', error);
-    } else {
-      setBusinesses(data || []);
+      query = query
+        .order('featured', { ascending: false })
+        .order('name');
+
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching businesses:', error);
+      } else {
+        setBusinesses((data as Business[]) || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchBusinesses:', error);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchBusinesses();
-  }, [selectedCategory]);
+  }, [selectedCategory, user]);
 
   const filteredBusinesses = businesses.filter(business =>
     business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
