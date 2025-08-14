@@ -883,13 +883,22 @@ const effectiveSelectedAreas = useMemo(() => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {areas.map((area) => (
-                        <div key={area.id} className="flex items-center space-x-2">
+                        <div 
+                          key={area.id} 
+                          className="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
+                          style={{
+                            borderColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                            backgroundColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary) / 0.05)' : 'transparent'
+                          }}
+                          onClick={() => handleAreaChange(area.id, !selectedAreas.includes(area.id))}
+                        >
                           <Checkbox
                             id={area.id}
                             checked={selectedAreas.includes(area.id)}
                             onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                            className="pointer-events-none"
                           />
-                          <Label htmlFor={area.id} className="flex-1">
+                          <Label htmlFor={area.id} className="flex-1 cursor-pointer">
                             <div>
                               <div className="font-medium">{area.name}</div>
                               <div className="text-sm text-muted-foreground">
@@ -920,7 +929,23 @@ const effectiveSelectedAreas = useMemo(() => {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {areas.map((area) => (
-                          <div key={area.id} className="flex items-center space-x-2">
+                          <div 
+                            key={area.id} 
+                            className="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
+                            style={{
+                              borderColor: bogofPaidAreas.includes(area.id) ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                              backgroundColor: bogofPaidAreas.includes(area.id) ? 'hsl(var(--primary) / 0.05)' : 'transparent'
+                            }}
+                            onClick={() => {
+                              const checked = !bogofPaidAreas.includes(area.id);
+                              if (checked) {
+                                setBogofPaidAreas(prev => [...prev, area.id]);
+                              } else {
+                                setBogofPaidAreas(prev => prev.filter(id => id !== area.id));
+                                setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                              }
+                            }}
+                          >
                             <Checkbox
                               id={`paid-${area.id}`}
                               checked={bogofPaidAreas.includes(area.id)}
@@ -932,8 +957,9 @@ const effectiveSelectedAreas = useMemo(() => {
                                   setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
                                 }
                               }}
+                              className="pointer-events-none"
                             />
-                            <Label htmlFor={`paid-${area.id}`} className="flex-1">
+                            <Label htmlFor={`paid-${area.id}`} className="flex-1 cursor-pointer">
                               <div>
                                 <div className="font-medium">{area.name}</div>
                                 <div className="text-sm text-muted-foreground">
@@ -956,30 +982,54 @@ const effectiveSelectedAreas = useMemo(() => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {areas
                           .filter(area => !bogofPaidAreas.includes(area.id))
-                          .map((area) => (
-                            <div key={area.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`free-${area.id}`}
-                                checked={bogofFreeAreas.includes(area.id)}
-                                disabled={bogofFreeAreas.length >= bogofPaidAreas.length && !bogofFreeAreas.includes(area.id)}
-                                onCheckedChange={(checked) => {
+                          .map((area) => {
+                            const isDisabled = bogofFreeAreas.length >= bogofPaidAreas.length && !bogofFreeAreas.includes(area.id);
+                            return (
+                              <div 
+                                key={area.id} 
+                                className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all duration-200 ${
+                                  isDisabled 
+                                    ? 'cursor-not-allowed opacity-50' 
+                                    : 'cursor-pointer hover:bg-gray-50 hover:border-primary/30'
+                                }`}
+                                style={{
+                                  borderColor: bogofFreeAreas.includes(area.id) ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                                  backgroundColor: bogofFreeAreas.includes(area.id) ? 'hsl(var(--primary) / 0.05)' : 'transparent'
+                                }}
+                                onClick={() => {
+                                  if (isDisabled) return;
+                                  const checked = !bogofFreeAreas.includes(area.id);
                                   if (checked) {
                                     setBogofFreeAreas(prev => [...prev, area.id]);
                                   } else {
                                     setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
                                   }
                                 }}
-                              />
-                              <Label htmlFor={`free-${area.id}`} className="flex-1">
-                                <div>
-                                  <div className="font-medium">{area.name}</div>
-                                  <div className="text-sm text-muted-foreground">
-                                    Circulation: {area.circulation.toLocaleString()}
+                              >
+                                <Checkbox
+                                  id={`free-${area.id}`}
+                                  checked={bogofFreeAreas.includes(area.id)}
+                                  disabled={isDisabled}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setBogofFreeAreas(prev => [...prev, area.id]);
+                                    } else {
+                                      setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
+                                    }
+                                  }}
+                                  className="pointer-events-none"
+                                />
+                                <Label htmlFor={`free-${area.id}`} className={`flex-1 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                                  <div>
+                                    <div className="font-medium">{area.name}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                      Circulation: {area.circulation.toLocaleString()}
+                                    </div>
                                   </div>
-                                </div>
-                              </Label>
-                            </div>
-                          ))}
+                                </Label>
+                              </div>
+                            );
+                          })}
                       </div>
                     </div>
                   )}
