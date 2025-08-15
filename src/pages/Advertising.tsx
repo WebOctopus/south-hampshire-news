@@ -366,6 +366,9 @@ const effectiveSelectedAreas = useMemo(() => {
           const { error: quotesError } = await supabase.from('quotes').insert(payloadForDb);
           if (quotesError) throw quotesError;
           
+          // Mark this as a new user from the calculator for password setup
+          localStorage.setItem('newUserFromCalculator', 'true');
+          
           toast({ 
             title: "Account Created & Quote Saved!", 
             description: "Your account has been created and quote saved. Check your email to verify your account." 

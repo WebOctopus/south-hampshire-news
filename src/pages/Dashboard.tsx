@@ -19,6 +19,7 @@ import { Edit, Calendar, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import EditQuoteForm from '@/components/EditQuoteForm';
+import PasswordSetupDialog from '@/components/PasswordSetupDialog';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -34,6 +35,7 @@ const Dashboard = () => {
   const [editingQuote, setEditingQuote] = useState<any | null>(null);
   const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('create');
+  const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
@@ -162,6 +164,16 @@ const Dashboard = () => {
         localStorage.removeItem('pendingQuote');
         await loadQuotes();
         setActiveTab('quotes');
+        
+        // Check if this is a new user from the calculator
+        const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
+        if (isNewUserFromCalculator === 'true') {
+          localStorage.removeItem('newUserFromCalculator');
+          // Small delay to let the quote save toast show first
+          setTimeout(() => {
+            setShowPasswordSetup(true);
+          }, 1500);
+        }
       } catch (e: any) {
         console.error('Pending quote save failed', e);
       }
@@ -1141,6 +1153,12 @@ const Dashboard = () => {
         </div>
       </main>
       <Footer />
+      
+      {/* Password Setup Dialog */}
+      <PasswordSetupDialog 
+        open={showPasswordSetup} 
+        onClose={() => setShowPasswordSetup(false)} 
+      />
     </div>
   );
 };
