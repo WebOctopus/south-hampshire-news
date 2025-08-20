@@ -60,6 +60,8 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedIssues, setSelectedIssues] = useState<SelectedIssues>({});
+  const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
+  const [contactSectionReached, setContactSectionReached] = useState(false);
 
   // Use the pricing data hook
   const {
@@ -195,6 +197,30 @@ const effectiveSelectedAreas = useMemo(() => {
       }
     }
   }, []);
+
+  // Monitor when user reaches Contact Information section for Fixed Term confirmation
+  useEffect(() => {
+    const contactSection = document.querySelector('[data-contact-section]');
+    if (!contactSection) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !contactSectionReached) {
+            setContactSectionReached(true);
+            // Show confirmation dialog for Fixed Term users
+            if (pricingModel === 'fixed' && !showFixedTermConfirmation) {
+              setShowFixedTermConfirmation(true);
+            }
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(contactSection);
+    return () => observer.disconnect();
+  }, [pricingModel, contactSectionReached, showFixedTermConfirmation]);
 
   const handleGetQuote = async () => {
     // Validation
@@ -406,6 +432,25 @@ const effectiveSelectedAreas = useMemo(() => {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Handle Fixed Term confirmation dialog actions
+  const handleFixedTermContinue = () => {
+    setShowFixedTermConfirmation(false);
+    toast({ 
+      title: "Fixed Term Confirmed", 
+      description: "You can continue with your Fixed Term booking." 
+    });
+  };
+
+  const handleSwitchToSubscription = () => {
+    setShowFixedTermConfirmation(false);
+    setPricingModel('subscription');
+    setSelectedDuration("");
+    toast({ 
+      title: "Switched to Subscription", 
+      description: "You're now using our subscription pricing model." 
+    });
   };
 
   if (isError) {
@@ -1357,7 +1402,7 @@ const effectiveSelectedAreas = useMemo(() => {
               )}
 
               {/* Contact Information */}
-              <div className="space-y-4">
+              <div className="space-y-4" data-contact-section>
                 <h3 className="text-lg font-semibold">Contact Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -1436,6 +1481,61 @@ const effectiveSelectedAreas = useMemo(() => {
           </Card>
         </div>
       </section>
+
+      {/* Fixed Term Confirmation Dialog */}
+      <Dialog open={showFixedTermConfirmation} onOpenChange={setShowFixedTermConfirmation}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              Are you sure you want to book Fixed Term?
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              If you booked this selection on our 3+ Repeat Package you would pay{" "}
+              <span className="font-bold text-community-green">
+                £{pricingBreakdown?.finalTotal ? Math.round(pricingBreakdown.finalTotal * 0.85) : 144} + vat (£{pricingBreakdown?.finalTotal ? Math.round(pricingBreakdown.finalTotal * 0.85 * 1.2) : 172.80})
+              </span>{" "}
+              per month for minimum of six months INCLUDING
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 my-6">
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-community-green mt-0.5 flex-shrink-0" />
+                <span>2 x EXTRA AREAS—FREE FOR 3 ISSUES—double the number of homes you reach!</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-community-green mt-0.5 flex-shrink-0" />
+                <span>FREE EDITORIAL</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-community-green mt-0.5 flex-shrink-0" />
+                <span>FREE PREMIUM POSITION UPGRADE</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-community-green mt-0.5 flex-shrink-0" />
+                <span>FREE ADVERT DESIGN</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="flex gap-4 justify-center">
+            <Button 
+              onClick={handleFixedTermContinue}
+              className="bg-community-green hover:bg-community-green/90 text-white px-8 py-2"
+            >
+              YES, CONTINUE
+            </Button>
+            <Button 
+              onClick={handleSwitchToSubscription}
+              variant="outline"
+              className="border-2 border-community-green text-community-green hover:bg-community-green hover:text-white px-6 py-2"
+            >
+              NO, SWITCH TO SUBSCRIPTION, PLEASE
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Services Section */}
       <section className="py-16 bg-gray-50">
