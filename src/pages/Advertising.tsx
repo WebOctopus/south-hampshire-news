@@ -1142,13 +1142,13 @@ const effectiveSelectedAreas = useMemo(() => {
                    </p>
                    
                    <div className="overflow-x-auto">
-                     <div className="min-w-full">
+                     <div className="min-w-max">
                        {(() => {
                          const today = new Date();
                          const currentMonth = today.getMonth();
                          const currentYear = today.getFullYear();
                          
-                         // Generate next 12 months
+                         // Generate exactly 12 months starting from current month
                          const availableMonths = Array.from({ length: 12 }, (_, i) => {
                            const monthDate = new Date(currentYear, currentMonth + i, 1);
                            const monthString = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
@@ -1160,15 +1160,15 @@ const effectiveSelectedAreas = useMemo(() => {
                          const selectedAreasList = areas.filter(area => effectiveSelectedAreas.includes(area.id));
 
                          return (
-                           <div className="border rounded-lg overflow-hidden">
+                           <div className="border rounded-lg overflow-hidden bg-white">
                              {/* Header Row */}
-                             <div className="bg-muted/50 p-3 border-b">
-                               <div className="grid gap-2" style={{ gridTemplateColumns: `200px repeat(${availableMonths.length}, 60px)` }}>
-                                 <div className="font-medium text-sm">
-                                   {availableMonths[0]?.year}/{availableMonths[availableMonths.length - 1]?.year}
+                             <div className="bg-muted/50 border-b">
+                               <div className="grid gap-1 p-2" style={{ gridTemplateColumns: `180px repeat(12, minmax(50px, 1fr))` }}>
+                                 <div className="font-medium text-sm p-2">
+                                   Location ({availableMonths[0]?.year}/{availableMonths[availableMonths.length - 1]?.year})
                                  </div>
                                  {availableMonths.map((month) => (
-                                   <div key={month.value} className="text-center">
+                                   <div key={month.value} className="text-center p-1">
                                      <div className="text-xs font-medium">{month.label}</div>
                                      <div className="text-xs text-muted-foreground">{month.year}</div>
                                    </div>
@@ -1178,19 +1178,19 @@ const effectiveSelectedAreas = useMemo(() => {
                              
                              {/* Area Rows */}
                              {selectedAreasList.map((area, index) => (
-                               <div key={area.id} className={cn("p-3", index % 2 === 0 ? "bg-background" : "bg-muted/20")}>
-                                 <div className="grid gap-2 items-center" style={{ gridTemplateColumns: `200px repeat(${availableMonths.length}, 60px)` }}>
-                                   <div>
+                               <div key={area.id} className={cn("border-b last:border-b-0", index % 2 === 0 ? "bg-background" : "bg-muted/10")}>
+                                 <div className="grid gap-1 p-2 items-center" style={{ gridTemplateColumns: `180px repeat(12, minmax(50px, 1fr))` }}>
+                                   <div className="p-2">
                                      <div className="font-medium text-sm">{area.name}</div>
                                      <div className="text-xs text-muted-foreground">
-                                       Circulation: {area.circulation.toLocaleString()}
+                                       {area.circulation.toLocaleString()} circulation
                                      </div>
                                    </div>
                                    {availableMonths.map((month) => {
                                      const isSelected = selectedIssues[area.id]?.includes(month.value) || false;
                                      
                                      return (
-                                       <div key={month.value} className="flex justify-center">
+                                       <div key={month.value} className="flex justify-center p-1">
                                          <Checkbox
                                            checked={isSelected}
                                            onCheckedChange={(checked) => {
@@ -1206,7 +1206,7 @@ const effectiveSelectedAreas = useMemo(() => {
                                                };
                                              });
                                            }}
-                                           className="h-4 w-4"
+                                           className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                                          />
                                        </div>
                                      );
@@ -1214,6 +1214,12 @@ const effectiveSelectedAreas = useMemo(() => {
                                  </div>
                                </div>
                              ))}
+                             
+                             {/* Summary Row */}
+                             <div className="bg-muted/30 p-3 text-xs text-muted-foreground">
+                               Total months available: {availableMonths.length} | 
+                               Selected issues: {Object.values(selectedIssues).reduce((total, areaSelections) => total + areaSelections.length, 0)}
+                             </div>
                            </div>
                          );
                        })()}
