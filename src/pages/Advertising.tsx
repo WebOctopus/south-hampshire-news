@@ -1444,7 +1444,17 @@ const effectiveSelectedAreas = useMemo(() => {
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {leafletArea.schedule.map((scheduleItem, index) => {
                                   const today = new Date();
-                                  const copyDeadlineDate = new Date(`${scheduleItem.copyDeadline} ${today.getFullYear()}`);
+                                  
+                                  // Parse delivery year from the schedule month (e.g., "February 2026")
+                                  const deliveryYear = parseInt(scheduleItem.month.split(' ')[1]) || today.getFullYear();
+                                  
+                                  // For cross-year scenarios (Jan deadline for Feb+ delivery), use previous year for deadline
+                                  const deadlineMonth = scheduleItem.copyDeadline.split(' ')[1].toLowerCase();
+                                  const deliveryMonth = scheduleItem.month.split(' ')[0].toLowerCase();
+                                  const isJanDeadlineForLaterDelivery = deadlineMonth === 'jan' && deliveryMonth !== 'january';
+                                  const deadlineYear = isJanDeadlineForLaterDelivery ? deliveryYear - 1 : deliveryYear;
+                                  
+                                  const copyDeadlineDate = new Date(`${scheduleItem.copyDeadline} ${deadlineYear}`);
                                   const isExpired = copyDeadlineDate < today;
                                   const monthKey = `${leafletArea.id}-${scheduleItem.month}`;
                                   const isSelected = selectedIssues[leafletArea.id]?.includes(monthKey) || false;
