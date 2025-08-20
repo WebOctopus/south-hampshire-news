@@ -34,6 +34,10 @@ interface FormData {
   password: string;
 }
 
+interface SelectedIssues {
+  [areaId: string]: string[]; // Array of month strings like "2024-01", "2024-02"
+}
+
 const CalculatorTest = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -51,9 +55,11 @@ const CalculatorTest = () => {
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
 const [selectedDuration, setSelectedDuration] = useState<string>("");
-const [upsellOpen, setUpsellOpen] = useState(false);
-const [upsellDismissed, setUpsellDismissed] = useState(false);
-const [saving, setSaving] = useState(false);
+  const [upsellOpen, setUpsellOpen] = useState(false);
+  const [upsellDismissed, setUpsellDismissed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [selectedIssues, setSelectedIssues] = useState<SelectedIssues>({});
 
   // Use the pricing data hook
   const {
@@ -189,8 +195,6 @@ const effectiveSelectedAreas = useMemo(() => {
       }
     }
   }, []);
-
-  const [submitting, setSubmitting] = useState(false);
 
   const handleGetQuote = async () => {
     // Validation
@@ -1116,16 +1120,105 @@ const effectiveSelectedAreas = useMemo(() => {
                     <SelectTrigger>
                       <SelectValue placeholder="Choose campaign duration" />
                     </SelectTrigger>
-                    <SelectContent className="z-50">
-                      {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
-                        <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
-                          {duration.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
+                     <SelectContent className="z-50">
+                       {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
+                         <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
+                           {duration.name}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                 )}
+               </div>
+
+               {/* Issue Selection */}
+               {effectiveSelectedAreas.length > 0 && selectedAdSize && selectedDuration && (
+                 <div className="space-y-4">
+                   <div className="flex items-center gap-2">
+                     <h3 className="text-lg font-semibold">SELECT WHICH ISSUES YOU WANT TO BOOK</h3>
+                   </div>
+                   <p className="text-sm text-muted-foreground">
+                     Choose specific months for each area where you'd like to advertise. This gives you control over when your ads appear.
+                   </p>
+                   
+                   <div className="space-y-6">
+                     {areas
+                       .filter(area => effectiveSelectedAreas.includes(area.id))
+                       .map((area) => {
+                         const today = new Date();
+                         const currentMonth = today.getMonth();
+                         const currentYear = today.getFullYear();
+                         
+                         // Generate next 12 months
+                         const availableMonths = Array.from({ length: 12 }, (_, i) => {
+                           const monthDate = new Date(currentYear, currentMonth + i, 1);
+                           const monthString = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+                           const displayString = monthDate.toLocaleDateString('en-GB', { 
+                             month: 'long', 
+                             year: 'numeric' 
+                           });
+                           return { value: monthString, label: displayString };
+                         });
+
+                         return (
+                           <div key={area.id} className="p-4 border rounded-lg bg-card">
+                             <h4 className="font-medium mb-3 text-base">
+                               {area.name} 
+                               <span className="text-sm text-muted-foreground ml-2">
+                                 (Circulation: {area.circulation.toLocaleString()})
+                               </span>
+                             </h4>
+                             
+                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                               {availableMonths.map((month) => {
+                                 const isSelected = selectedIssues[area.id]?.includes(month.value) || false;
+                                 
+                                 return (
+                                   <div 
+                                     key={month.value}
+                                     className={cn(
+                                       "flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-sm",
+                                       isSelected 
+                                         ? "border-primary bg-primary/5" 
+                                         : "border-border bg-background hover:border-muted-foreground/30"
+                                     )}
+                                     onClick={() => {
+                                       setSelectedIssues(prev => {
+                                         const currentSelections = prev[area.id] || [];
+                                         const newSelections = isSelected
+                                           ? currentSelections.filter(m => m !== month.value)
+                                           : [...currentSelections, month.value];
+                                         
+                                         return {
+                                           ...prev,
+                                           [area.id]: newSelections
+                                         };
+                                       });
+                                     }}
+                                   >
+                                     <Checkbox
+                                       checked={isSelected}
+                                       className="pointer-events-none"
+                                     />
+                                     <Label className="text-sm cursor-pointer flex-1">
+                                       {month.label}
+                                     </Label>
+                                   </div>
+                                 );
+                               })}
+                             </div>
+                             
+                             {selectedIssues[area.id]?.length > 0 && (
+                               <div className="mt-3 p-2 bg-muted/50 rounded text-xs text-muted-foreground">
+                                 Selected: {selectedIssues[area.id].length} issue{selectedIssues[area.id].length !== 1 ? 's' : ''}
+                               </div>
+                             )}
+                           </div>
+                         );
+                       })}
+                   </div>
+                 </div>
+               )}
 
               {/* Pricing Summary */}
               {pricingBreakdown && (
