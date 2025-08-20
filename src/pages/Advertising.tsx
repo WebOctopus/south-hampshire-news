@@ -208,9 +208,8 @@ const effectiveSelectedAreas = useMemo(() => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !contactSectionReached) {
             setContactSectionReached(true);
-            // Show confirmation dialog for Fixed Term users only when all required fields are filled
-            const hasRequiredFields = selectedAdSize && selectedDuration && effectiveSelectedAreas.length > 0;
-            if (pricingModel === 'fixed' && !showFixedTermConfirmation && hasRequiredFields) {
+            // Show confirmation dialog for Fixed Term users only when pricing is calculated
+            if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
               setShowFixedTermConfirmation(true);
             }
           }
@@ -221,7 +220,7 @@ const effectiveSelectedAreas = useMemo(() => {
 
     observer.observe(contactSection);
     return () => observer.disconnect();
-  }, [pricingModel, contactSectionReached, showFixedTermConfirmation, selectedAdSize, selectedDuration, effectiveSelectedAreas]);
+  }, [pricingModel, contactSectionReached, showFixedTermConfirmation, pricingBreakdown]);
 
   const handleGetQuote = async () => {
     // Validation
