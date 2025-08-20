@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -365,7 +366,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                       className="mt-1"
                     />
                   </div>
-                  <div>
+                  <div className="md:col-span-2">
                     <Label htmlFor="password">Create Password *</Label>
                     <Input
                       id="password"
@@ -375,6 +376,9 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                       className="mt-1"
                       placeholder="At least 6 characters"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      This password will be used to access your dashboard and saved quotes.
+                    </p>
                   </div>
                 </div>
               </CardContent>
