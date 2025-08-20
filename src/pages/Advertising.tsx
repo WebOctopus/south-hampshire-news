@@ -31,6 +31,7 @@ interface FormData {
   email: string;
   phone: string;
   company: string;
+  password: string;
 }
 
 const CalculatorTest = () => {
@@ -41,6 +42,7 @@ const CalculatorTest = () => {
     email: "",
     phone: "",
     company: "",
+    password: "",
   });
   const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof'>('fixed');
   const [prevPricingModel, setPrevPricingModel] = useState<string>('fixed');
@@ -192,10 +194,19 @@ const effectiveSelectedAreas = useMemo(() => {
 
   const handleGetQuote = async () => {
     // Validation
-    if (!formData.name || !formData.email) {
+    if (!formData.name || !formData.email || !formData.password) {
       toast({
         title: "Missing Information",
-        description: "Please fill in your name and email.",
+        description: "Please fill in your name, email, and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
       return;
@@ -290,8 +301,13 @@ const effectiveSelectedAreas = useMemo(() => {
       toast({ title: "Missing Selection", description: "Complete your selections first.", variant: "destructive" });
       return;
     }
-    if (!formData.name || !formData.email || !formData.phone) {
-      toast({ title: "Missing Information", description: "Please fill in your contact details.", variant: "destructive" });
+    if (!formData.name || !formData.email || !formData.phone || !formData.password) {
+      toast({ title: "Missing Information", description: "Please fill in your contact details and password.", variant: "destructive" });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({ title: "Password Too Short", description: "Password must be at least 6 characters long.", variant: "destructive" });
       return;
     }
     if (effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration) {
@@ -347,7 +363,7 @@ const effectiveSelectedAreas = useMemo(() => {
         // Create account automatically and log them in
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
-          password: Math.random().toString(36).substring(2, 15), // Generate random password
+          password: formData.password, // Use user-provided password
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
             data: { 
@@ -1320,6 +1336,19 @@ const effectiveSelectedAreas = useMemo(() => {
                       onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
                       placeholder="Enter your company name"
                     />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="password">Create Password *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="At least 6 characters"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This password will be used to access your dashboard and saved quotes.
+                    </p>
                   </div>
                 </div>
               </div>
