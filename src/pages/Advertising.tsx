@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
+import { leafletAreas, leafletSizes, leafletVolumeDiscounts } from "@/data/leafletingPricing";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -48,7 +49,7 @@ const CalculatorTest = () => {
     company: "",
     password: "",
   });
-  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof'>('fixed');
+  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof' | 'leafleting'>('fixed');
   const [prevPricingModel, setPrevPricingModel] = useState<string>('fixed');
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
@@ -877,7 +878,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   <h3 className="text-lg font-semibold">Select Payment Structure</h3>
                   <RadioGroup 
                     value={pricingModel} 
-                    onValueChange={(value: 'fixed' | 'subscription' | 'bogof') => setPricingModel(value)}
+                    onValueChange={(value: 'fixed' | 'subscription' | 'bogof' | 'leafleting') => setPricingModel(value)}
                     className="space-y-4"
                   >
                     {/* Fixed Price Option */}
@@ -960,12 +961,56 @@ const effectiveSelectedAreas = useMemo(() => {
                         </div>
                       )}
                     </div>
+
+                    {/* Leafleting Service Option */}
+                    <div 
+                      className={cn(
+                        "relative rounded-lg border-2 p-6 cursor-pointer transition-all duration-200 hover:shadow-md",
+                        pricingModel === 'leafleting' 
+                          ? "border-primary bg-primary/5 shadow-sm" 
+                          : "border-border bg-card hover:border-muted-foreground/30"
+                      )}
+                      onClick={() => setPricingModel('leafleting')}
+                    >
+                      <div className="flex items-start space-x-4">
+                        <RadioGroupItem value="leafleting" id="leafleting" className="mt-1" />
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-3">
+                            <Label htmlFor="leafleting" className="text-base font-medium cursor-pointer">
+                              Leafleting Service
+                            </Label>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-primary transition-colors" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <p>Direct leaflet delivery to homes in selected areas. Design, print, and deliver your leaflets with our comprehensive service reaching up to 116,000 homes.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            Complete leaflet delivery service including design, print, and distribution. Up to 116,000 homes across 12 areas.
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                            <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
+                            Design, Print & Delivery
+                          </div>
+                        </div>
+                      </div>
+                      {pricingModel === 'leafleting' && (
+                        <div className="absolute top-3 right-3">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                            Selected
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </RadioGroup>
                 </div>
               </TooltipProvider>
 
-              {/* Distribution Areas */}
-              {pricingModel !== 'bogof' && (
+              {/* Distribution Areas for Fixed/Subscription */}
+              {(pricingModel === 'fixed' || pricingModel === 'subscription') && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Select Distribution Areas</h3>
                   {isLoading ? (
@@ -1136,9 +1181,67 @@ const effectiveSelectedAreas = useMemo(() => {
                 </>
               )}
 
-              {/* Ad Size Selection */}
-<div className="space-y-4" onMouseEnter={maybeOpenUpsell}>
-                <h3 className="text-lg font-semibold">Select Advertisement Size</h3>
+              {/* Leafleting Areas Selection */}
+              {pricingModel === 'leafleting' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Select Areas for Leaflet Delivery</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Save 10% on multi-area bookings and multiple months. Choose from our 12 leaflet delivery areas.
+                  </p>
+                  <div className="grid grid-cols-1 gap-4">
+                    {leafletAreas.map((area) => (
+                      <div 
+                        key={area.id} 
+                        className="flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
+                        style={{
+                          borderColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                          backgroundColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary) / 0.05)' : 'transparent'
+                        }}
+                        onClick={() => handleAreaChange(area.id, !selectedAreas.includes(area.id))}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <Checkbox
+                            id={area.id}
+                            checked={selectedAreas.includes(area.id)}
+                            onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                            className="pointer-events-none"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium">{area.areaNumber}. {area.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {area.postcodes}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium">Bi-monthly</div>
+                          <div className="text-sm text-muted-foreground">Circulation</div>
+                          <div className="font-bold">{area.bimonthlyCirculation.toLocaleString()}</div>
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="font-medium">£ + vat</div>
+                          <div className="font-bold text-primary">£{area.priceWithVat}</div>
+                        </div>
+                        <div className="ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="pointer-events-none"
+                            disabled={!selectedAreas.includes(area.id)}
+                          >
+                            Book
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ad Size Selection for Magazine/BOGOF */}
+              {pricingModel !== 'leafleting' && (
+                <div className="space-y-4" onMouseEnter={maybeOpenUpsell}>
+                  <h3 className="text-lg font-semibold">Select Advertisement Size</h3>
                 {isLoading ? (
                   <div className="flex items-center justify-center p-4">
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -1175,7 +1278,41 @@ const effectiveSelectedAreas = useMemo(() => {
                     </SelectContent>
                   </Select>
                 )}
-              </div>
+                </div>
+              )}
+
+              {/* Leaflet Size Selection */}
+              {pricingModel === 'leafleting' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Leaflet Size & Specification</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {leafletSizes.map((size) => (
+                      <div
+                        key={size.id}
+                        className={cn(
+                          "relative rounded-lg border-2 p-4 cursor-pointer transition-all duration-200 hover:shadow-md",
+                          selectedAdSize === size.id
+                            ? "border-primary bg-primary/5 shadow-sm"
+                            : "border-border bg-card hover:border-muted-foreground/30"
+                        )}
+                        onClick={() => setSelectedAdSize(size.id)}
+                      >
+                        <div className="space-y-2">
+                          <div className="font-medium">{size.label}</div>
+                          {size.description && (
+                            <div className="text-sm text-muted-foreground">{size.description}</div>
+                          )}
+                        </div>
+                        {selectedAdSize === size.id && (
+                          <div className="absolute top-2 right-2">
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Duration Selection */}
               <div className="space-y-4">
@@ -1314,10 +1451,11 @@ const effectiveSelectedAreas = useMemo(() => {
                     {/* Booking Type */}
                     <div className="space-y-1">
                       <span className="font-medium">Booking Type:</span>
-                      <span className="ml-2">
+                     <span className="ml-2">
                         {pricingModel === 'fixed' && 'Fixed Term'}
                         {pricingModel === 'bogof' && 'BOGOF - Buy One Get One Free'}
                         {pricingModel === 'subscription' && 'Subscription'}
+                        {pricingModel === 'leafleting' && 'Leafleting Service'}
                       </span>
                     </div>
 
