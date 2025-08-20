@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
+import { calculateLeafletingPrice } from "@/lib/leafletingCalculator";
 import { leafletAreas, leafletSizes, leafletVolumeDiscounts } from "@/data/leafletingPricing";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
@@ -122,6 +123,37 @@ const effectiveSelectedAreas = useMemo(() => {
   }, [pricingModel, selectedAreas, bogofPaidAreas]);
 
   const pricingBreakdown = useMemo(() => {
+    // Handle leafleting service pricing
+    if (pricingModel === 'leafleting') {
+      if (!selectedAdSize || effectiveSelectedAreas.length === 0) {
+        console.log('Leafleting pricing conditions not met:', {
+          selectedAdSize: !!selectedAdSize,
+          effectiveSelectedAreas: effectiveSelectedAreas.length
+        });
+        return null;
+      }
+
+      // For leafleting, we don't need duration but we'll use 1 as default multiplier
+      const durationMultiplier = selectedDuration ? 
+        (durations.find(d => d.id === selectedDuration)?.name === "6 Month Campaign" ? 6 : 1) : 1;
+      
+      const result = calculateLeafletingPrice(
+        effectiveSelectedAreas,
+        leafletAreas,
+        durationMultiplier
+      );
+      
+      console.log('Leafleting pricing breakdown calculated:', {
+        result: !!result,
+        effectiveSelectedAreas: effectiveSelectedAreas.length,
+        selectedAdSize,
+        pricingModel
+      });
+      
+      return result;
+    }
+
+    // Handle regular advertising pricing
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
       console.log('Pricing breakdown conditions not met:', {
         selectedAdSize: !!selectedAdSize,
@@ -154,7 +186,7 @@ const effectiveSelectedAreas = useMemo(() => {
     });
     
     return result;
-  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
+  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas]);
 
   
   React.useEffect(() => {
@@ -293,7 +325,7 @@ const effectiveSelectedAreas = useMemo(() => {
       return;
     }
 
-    if (!selectedDuration) {
+    if (!selectedDuration && pricingModel !== 'leafleting') {
       toast({
         title: "No Duration Selected",
         description: "Please select a campaign duration.",
@@ -1188,50 +1220,34 @@ const effectiveSelectedAreas = useMemo(() => {
                   <p className="text-sm text-muted-foreground">
                     Save 10% on multi-area bookings and multiple months. Choose from our 12 leaflet delivery areas.
                   </p>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {leafletAreas.map((area) => (
                       <div 
                         key={area.id} 
-                        className="flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
+                        className="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
                         style={{
                           borderColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                           backgroundColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary) / 0.05)' : 'transparent'
                         }}
                         onClick={() => handleAreaChange(area.id, !selectedAreas.includes(area.id))}
                       >
-                        <div className="flex items-center space-x-3">
-                          <Checkbox
-                            id={area.id}
-                            checked={selectedAreas.includes(area.id)}
-                            onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
-                            className="pointer-events-none"
-                          />
-                          <div className="flex-1">
+                        <Checkbox
+                          id={area.id}
+                          checked={selectedAreas.includes(area.id)}
+                          onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                          className="pointer-events-none"
+                        />
+                        <Label htmlFor={area.id} className="flex-1 cursor-pointer">
+                          <div>
                             <div className="font-medium">{area.areaNumber}. {area.name}</div>
                             <div className="text-sm text-muted-foreground">
                               {area.postcodes}
                             </div>
+                            <div className="text-sm text-muted-foreground">
+                              Bi-monthly Circulation: {area.bimonthlyCirculation.toLocaleString()}
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium">Bi-monthly</div>
-                          <div className="text-sm text-muted-foreground">Circulation</div>
-                          <div className="font-bold">{area.bimonthlyCirculation.toLocaleString()}</div>
-                        </div>
-                        <div className="text-right ml-4">
-                          <div className="font-medium">£ + vat</div>
-                          <div className="font-bold text-primary">£{area.priceWithVat}</div>
-                        </div>
-                        <div className="ml-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="pointer-events-none"
-                            disabled={!selectedAreas.includes(area.id)}
-                          >
-                            Book
-                          </Button>
-                        </div>
+                        </Label>
                       </div>
                     ))}
                   </div>
@@ -1314,36 +1330,38 @@ const effectiveSelectedAreas = useMemo(() => {
                 </div>
               )}
 
-              {/* Duration Selection */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
-                {isLoading ? (
-                  <div className="flex items-center justify-center p-4">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading durations...
-                  </div>
-                ) : (
-                  <Select 
-                    value={selectedDuration} 
-                    onValueChange={(value) => {
-                      console.log('Duration selected:', value, 'for pricing model:', pricingModel);
-                      setSelectedDuration(value);
-                    }}
-                    key={`duration-select-${pricingModel}`}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose campaign duration" />
-                    </SelectTrigger>
-                     <SelectContent className="z-50">
-                       {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
-                         <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
-                           {duration.name}
-                         </SelectItem>
-                       ))}
-                     </SelectContent>
-                   </Select>
-                 )}
-               </div>
+              {/* Duration Selection - Not required for leafleting */}
+              {pricingModel !== 'leafleting' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center p-4">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Loading durations...
+                    </div>
+                  ) : (
+                    <Select 
+                      value={selectedDuration} 
+                      onValueChange={(value) => {
+                        console.log('Duration selected:', value, 'for pricing model:', pricingModel);
+                        setSelectedDuration(value);
+                      }}
+                      key={`duration-select-${pricingModel}`}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose campaign duration" />
+                      </SelectTrigger>
+                       <SelectContent className="z-50">
+                         {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
+                           <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
+                             {duration.name}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   )}
+                 </div>
+               )}
 
                {/* Issue Selection */}
                {effectiveSelectedAreas.length > 0 && selectedAdSize && selectedDuration && (
@@ -1493,48 +1511,93 @@ const effectiveSelectedAreas = useMemo(() => {
                       <span className="font-bold">{pricingBreakdown.totalCirculation.toLocaleString()} homes</span>
                     </div>
 
-                    {/* Advert Size */}
-                    <div>
-                      <span className="font-medium">Advert Size = </span>
-                      <span>{adSizes.find(s => s.id === selectedAdSize)?.name || "Selected size"}</span>
-                    </div>
+                     {/* Advert Size */}
+                     {pricingModel !== 'leafleting' && (
+                       <div>
+                         <span className="font-medium">Advert Size = </span>
+                         <span>{adSizes.find(s => s.id === selectedAdSize)?.name || "Selected size"}</span>
+                       </div>
+                     )}
 
-                    {/* Pre-payment Required */}
-                    <div className="pt-3 border-t">
-                      {(() => {
-                        const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-                        const selectedDurationData = relevantDurations.find(d => d.id === selectedDuration);
-                        const durationDiscountPercent = selectedDurationData?.discount_percentage || 0;
-                        const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
-                        const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
-                        const vatAmount = monthlyFinal * 0.2;
-                        const totalWithVat = monthlyFinal + vatAmount;
-                        const areasCount = effectiveSelectedAreas.length;
-                        
-                        return (
-                          <div className="space-y-2">
-                            <div>
-                              <span className="font-medium">Pre-payment Required = </span>
-                              <span className="font-bold text-lg">
-                                {formatPrice(monthlyFinal)} + vat ({formatPrice(totalWithVat)}) per insertion in {areasCount} area{areasCount === 1 ? '' : 's'} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
-                              </span>
-                            </div>
-                            
-                            {/* Show discounts if applicable */}
-                            {pricingBreakdown.volumeDiscountPercent > 0 && (
-                              <div className="text-sm text-green-600">
-                                • Volume Discount Applied: {pricingBreakdown.volumeDiscountPercent}% off
-                              </div>
-                            )}
-                            {durationDiscountPercent > 0 && (
-                              <div className="text-sm text-green-600">
-                                • Campaign Discount Applied: {durationDiscountPercent}% off
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
+                     {/* Leaflet Size */}
+                     {pricingModel === 'leafleting' && (
+                       <div>
+                         <span className="font-medium">Leaflet Size = </span>
+                         <span>{leafletSizes.find(s => s.id === selectedAdSize)?.label || "Selected size"}</span>
+                       </div>
+                     )}
+
+                     {/* Pre-payment Required - Different for leafleting */}
+                     <div className="pt-3 border-t">
+                       {pricingModel === 'leafleting' ? (
+                         // Leafleting pricing display
+                         <div className="space-y-2">
+                           <div>
+                             <span className="font-medium">Subtotal = </span>
+                             <span className="font-bold">£{pricingBreakdown.subtotal.toFixed(2)}</span>
+                           </div>
+                           
+                           {pricingBreakdown.volumeDiscountPercent > 0 && (
+                             <div>
+                               <span className="font-medium">Volume Discount ({pricingBreakdown.volumeDiscountPercent}%) = </span>
+                               <span className="font-bold text-green-600">-£{pricingBreakdown.volumeDiscount.toFixed(2)}</span>
+                             </div>
+                           )}
+                           
+                           <div>
+                             <span className="font-medium">Total Cost = </span>
+                             <span className="font-bold text-lg text-primary">
+                               £{pricingBreakdown.finalTotal.toFixed(2)} inc VAT
+                             </span>
+                           </div>
+                           
+                           <div className="text-sm text-muted-foreground">
+                             Bi-monthly delivery to {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                           </div>
+                           
+                           {pricingBreakdown.volumeDiscountPercent > 0 && (
+                             <div className="text-sm text-green-600">
+                               • Multi-area discount applied: {pricingBreakdown.volumeDiscountPercent}% off
+                             </div>
+                           )}
+                         </div>
+                       ) : (
+                         // Regular advertising pricing display
+                         (() => {
+                           const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+                           const selectedDurationData = relevantDurations.find(d => d.id === selectedDuration);
+                           const durationDiscountPercent = selectedDurationData?.discount_percentage || 0;
+                           const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
+                           const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+                           const vatAmount = monthlyFinal * 0.2;
+                           const totalWithVat = monthlyFinal + vatAmount;
+                           const areasCount = effectiveSelectedAreas.length;
+                           
+                           return (
+                             <div className="space-y-2">
+                               <div>
+                                 <span className="font-medium">Pre-payment Required = </span>
+                                 <span className="font-bold text-lg">
+                                   {formatPrice(monthlyFinal)} + vat ({formatPrice(totalWithVat)}) per insertion in {areasCount} area{areasCount === 1 ? '' : 's'} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                                 </span>
+                               </div>
+                               
+                               {/* Show discounts if applicable */}
+                               {pricingBreakdown.volumeDiscountPercent > 0 && (
+                                 <div className="text-sm text-green-600">
+                                   • Volume Discount Applied: {pricingBreakdown.volumeDiscountPercent}% off
+                                 </div>
+                               )}
+                               {durationDiscountPercent > 0 && (
+                                 <div className="text-sm text-green-600">
+                                   • Campaign Discount Applied: {durationDiscountPercent}% off
+                                 </div>
+                               )}
+                             </div>
+                           );
+                         })()
+                       )}
+                     </div>
 
                     {/* BOGOF Special Message */}
                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
