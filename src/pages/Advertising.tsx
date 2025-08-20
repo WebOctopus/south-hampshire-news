@@ -125,17 +125,18 @@ const effectiveSelectedAreas = useMemo(() => {
   const pricingBreakdown = useMemo(() => {
     // Handle leafleting service pricing
     if (pricingModel === 'leafleting') {
-      if (!selectedAdSize || effectiveSelectedAreas.length === 0) {
+      if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
         console.log('Leafleting pricing conditions not met:', {
           selectedAdSize: !!selectedAdSize,
+          selectedDuration: !!selectedDuration,
           effectiveSelectedAreas: effectiveSelectedAreas.length
         });
         return null;
       }
 
-      // For leafleting, we don't need duration but we'll use 1 as default multiplier
-      const durationMultiplier = selectedDuration ? 
-        (durations.find(d => d.id === selectedDuration)?.name === "6 Month Campaign" ? 6 : 1) : 1;
+      // Get duration multiplier from the selected duration
+      const selectedDurationData = durations.find(d => d.id === selectedDuration);
+      const durationMultiplier = selectedDurationData?.duration_value || 1;
       
       const result = calculateLeafletingPrice(
         effectiveSelectedAreas,
@@ -147,6 +148,8 @@ const effectiveSelectedAreas = useMemo(() => {
         result: !!result,
         effectiveSelectedAreas: effectiveSelectedAreas.length,
         selectedAdSize,
+        selectedDuration,
+        durationMultiplier,
         pricingModel
       });
       
@@ -325,7 +328,7 @@ const effectiveSelectedAreas = useMemo(() => {
       return;
     }
 
-    if (!selectedDuration && pricingModel !== 'leafleting') {
+    if (!selectedDuration) {
       toast({
         title: "No Duration Selected",
         description: "Please select a campaign duration.",
@@ -1330,38 +1333,48 @@ const effectiveSelectedAreas = useMemo(() => {
                 </div>
               )}
 
-              {/* Duration Selection - Not required for leafleting */}
-              {pricingModel !== 'leafleting' && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
-                  {isLoading ? (
-                    <div className="flex items-center justify-center p-4">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Loading durations...
-                    </div>
-                  ) : (
-                    <Select 
-                      value={selectedDuration} 
-                      onValueChange={(value) => {
-                        console.log('Duration selected:', value, 'for pricing model:', pricingModel);
-                        setSelectedDuration(value);
-                      }}
-                      key={`duration-select-${pricingModel}`}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose campaign duration" />
-                      </SelectTrigger>
-                       <SelectContent className="z-50">
-                         {(pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
-                           <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
-                             {duration.name}
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                   )}
-                 </div>
-               )}
+              {/* Duration Selection - Required for all payment types */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
+                {isLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading durations...
+                  </div>
+                ) : (
+                  <Select 
+                    value={selectedDuration} 
+                    onValueChange={(value) => {
+                      console.log('Duration selected:', value, 'for pricing model:', pricingModel);
+                      setSelectedDuration(value);
+                    }}
+                    key={`duration-select-${pricingModel}`}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose campaign duration" />
+                    </SelectTrigger>
+                     <SelectContent className="z-50">
+                       {(() => {
+                         if (pricingModel === 'leafleting') {
+                           // For leafleting, show fixed term durations (1, 2, 3 issues)
+                           return durations.map((duration) => (
+                             <SelectItem key={`leafleting-${duration.id}`} value={duration.id}>
+                               {duration.name}
+                             </SelectItem>
+                           ));
+                         } else {
+                           // For other models, use appropriate durations
+                           return (pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
+                             <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
+                               {duration.name}
+                             </SelectItem>
+                           ));
+                         }
+                       })()}
+                     </SelectContent>
+                   </Select>
+                 )}
+               </div>
 
                {/* Issue Selection */}
                {effectiveSelectedAreas.length > 0 && selectedAdSize && selectedDuration && (
@@ -1552,7 +1565,12 @@ const effectiveSelectedAreas = useMemo(() => {
                            </div>
                            
                            <div className="text-sm text-muted-foreground">
-                             Bi-monthly delivery to {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                             {(() => {
+                               const selectedDurationData = durations.find(d => d.id === selectedDuration);
+                               const durationName = selectedDurationData?.name || "1 issue";
+                               const issueText = durationName.toLowerCase().includes('issue') ? durationName.toLowerCase() : `${pricingBreakdown.durationMultiplier} issue${pricingBreakdown.durationMultiplier > 1 ? 's' : ''}`;
+                               return `${issueText} • Bi-monthly delivery to ${pricingBreakdown.totalCirculation.toLocaleString()} homes`;
+                             })()}
                            </div>
                            
                            {pricingBreakdown.volumeDiscountPercent > 0 && (
