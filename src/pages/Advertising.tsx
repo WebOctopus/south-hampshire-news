@@ -1454,7 +1454,20 @@ const effectiveSelectedAreas = useMemo(() => {
                                   const isJanDeadlineForLaterDelivery = deadlineMonth === 'jan' && deliveryMonth !== 'january';
                                   const deadlineYear = isJanDeadlineForLaterDelivery ? deliveryYear - 1 : deliveryYear;
                                   
+                                  // Debug logging
+                                  console.log(`DEBUG: ${leafletArea.name} - ${scheduleItem.month}`);
+                                  console.log(`  Copy Deadline: ${scheduleItem.copyDeadline}`);
+                                  console.log(`  Delivery Year: ${deliveryYear}`);
+                                  console.log(`  Deadline Month: ${deadlineMonth}`);
+                                  console.log(`  Delivery Month: ${deliveryMonth}`);
+                                  console.log(`  Is Jan Deadline for Later: ${isJanDeadlineForLaterDelivery}`);
+                                  console.log(`  Deadline Year: ${deadlineYear}`);
+                                  
                                   const copyDeadlineDate = new Date(`${scheduleItem.copyDeadline} ${deadlineYear}`);
+                                  console.log(`  Copy Deadline Date: ${copyDeadlineDate}`);
+                                  console.log(`  Today: ${today}`);
+                                  console.log(`  Is Expired: ${copyDeadlineDate < today}`);
+                                  
                                   const isExpired = copyDeadlineDate < today;
                                   const monthKey = `${leafletArea.id}-${scheduleItem.month}`;
                                   const isSelected = selectedIssues[leafletArea.id]?.includes(monthKey) || false;
