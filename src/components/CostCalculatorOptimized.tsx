@@ -13,6 +13,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CostCalculatorProps {
   children: React.ReactNode;
@@ -139,7 +140,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
     }
   }, [selectedPricingModel, subscriptionDurations]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.fullName || !formData.emailAddress || !formData.phoneNumber) {
       toast({
         variant: "destructive",
@@ -167,10 +168,97 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
       return;
     }
 
-    toast({
-      title: "Quote Request Submitted",
-      description: "We'll get back to you with a detailed quote within 24 hours.",
-    });
+    if (!formData.duration) {
+      toast({
+        variant: "destructive",
+        title: "No Duration Selected",
+        description: "Please select a campaign duration.",
+      });
+      return;
+    }
+
+    // Save quote and handle authentication
+    try {
+      const selectedAreas = effectiveSelectedAreas.map(id => id);
+      const selectedAdSize = adSizes?.find(size => size.id === formData.adSize);
+      const selectedDuration = [...(durations || []), ...(subscriptionDurations || [])].find(d => d.id === formData.duration);
+      
+      if (!selectedAdSize || !selectedDuration) {
+        throw new Error('Invalid ad size or duration selection');
+      }
+
+      const basePayload = {
+        contact_name: formData.fullName,
+        email: formData.emailAddress,
+        phone: formData.phoneNumber,
+        company: formData.companyName || null,
+        title: `${selectedAdSize.name} - ${selectedDuration.name}`,
+        pricing_model: selectedPricingModel,
+        ad_size_id: formData.adSize,
+        duration_id: formData.duration,
+        selected_area_ids: selectedAreas,
+        bogof_paid_area_ids: selectedPricingModel === 'bogof' ? bogofPaidAreas : [],
+        bogof_free_area_ids: selectedPricingModel === 'bogof' ? bogofFreeAreas : [],
+        ...pricingBreakdown,
+        pricing_breakdown: {
+          selectedAreas,
+          bogofPaidAreas,
+          bogofFreeAreas
+        }
+      };
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const payloadForDb = { ...basePayload, user_id: session.user.id };
+        const { error } = await supabase.from('quotes').insert(payloadForDb);
+        if (error) throw error;
+        toast({ title: "Saved", description: "Quote saved to your dashboard." });
+        window.location.href = '/dashboard';
+      } else {
+        // Create account automatically and log them in
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: formData.emailAddress,
+          password: Math.random().toString(36).substring(2, 15), // Generate random password
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: { 
+              display_name: formData.fullName, 
+              phone: formData.phoneNumber, 
+              company: formData.companyName 
+            }
+          }
+        });
+
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // Save the quote with the new user ID
+          const payloadForDb = { ...basePayload, user_id: authData.user.id };
+          const { error: quotesError } = await supabase.from('quotes').insert(payloadForDb);
+          if (quotesError) throw quotesError;
+          
+          // Mark this as a new user from the calculator for password setup
+          localStorage.setItem('newUserFromCalculator', 'true');
+          
+          toast({ 
+            title: "Account Created & Quote Saved!", 
+            description: "Your account has been created and quote saved. Redirecting to your dashboard..." 
+          });
+
+          // Redirect after a short delay to let the toast show
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 2000);
+        }
+      }
+    } catch (error: any) {
+      console.error('Quote submission error:', error);
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: error.message || "Failed to save quote. Please try again.",
+      });
+    }
   };
 
   // Error state
