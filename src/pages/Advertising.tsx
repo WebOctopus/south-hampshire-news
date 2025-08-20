@@ -1221,36 +1221,75 @@ const effectiveSelectedAreas = useMemo(() => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Select Areas for Leaflet Delivery</h3>
                   <p className="text-sm text-muted-foreground">
-                    Save 10% on multi-area bookings and multiple months. Choose from our 12 leaflet delivery areas.
+                    Save 10% on multi-area bookings and multiple months. Choose from our 14 leaflet delivery areas. Each area shows available delivery dates and deadlines.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {leafletAreas.map((area) => (
                       <div 
                         key={area.id} 
-                        className="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
-                        style={{
-                          borderColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary))' : 'hsl(var(--border))',
-                          backgroundColor: selectedAreas.includes(area.id) ? 'hsl(var(--primary) / 0.05)' : 'transparent'
-                        }}
+                        className={cn(
+                          "rounded-lg border-2 transition-all duration-200 cursor-pointer hover:shadow-md",
+                          selectedAreas.includes(area.id) 
+                            ? "border-primary bg-primary/5 shadow-sm" 
+                            : "border-border bg-card hover:border-primary/30"
+                        )}
                         onClick={() => handleAreaChange(area.id, !selectedAreas.includes(area.id))}
                       >
-                        <Checkbox
-                          id={area.id}
-                          checked={selectedAreas.includes(area.id)}
-                          onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
-                          className="pointer-events-none"
-                        />
-                        <Label htmlFor={area.id} className="flex-1 cursor-pointer">
-                          <div>
-                            <div className="font-medium">{area.areaNumber}. {area.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {area.postcodes}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              Bi-monthly Circulation: {area.bimonthlyCirculation.toLocaleString()}
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-start space-x-3">
+                            <Checkbox
+                              id={area.id}
+                              checked={selectedAreas.includes(area.id)}
+                              onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
+                              className="pointer-events-none mt-1"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-base">
+                                Area {area.areaNumber}: {area.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {area.postcodes}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Bi-monthly Circulation: {area.bimonthlyCirculation.toLocaleString()}
+                              </div>
                             </div>
                           </div>
-                        </Label>
+                          
+                          {selectedAreas.includes(area.id) && (
+                            <div className="border-t pt-3 mt-3">
+                              <div className="text-sm font-medium text-primary mb-2">Available Delivery Dates:</div>
+                              <div className="space-y-2">
+                                {area.schedule.map((schedule, index) => (
+                                  <div key={index} className="bg-muted/50 rounded p-3 text-xs">
+                                    <div className="font-medium text-primary">{schedule.month}</div>
+                                    <div className="mt-1 space-y-1">
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Copy Deadline:</span>
+                                        <span className="font-medium">{schedule.copyDeadline}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Print Deadline:</span>
+                                        <span className="font-medium">{schedule.printDeadline}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Delivery:</span>
+                                        <span className="font-medium">{schedule.delivery}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Circulation:</span>
+                                        <span className="font-medium">{schedule.circulation.toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-2 text-xs text-muted-foreground">
+                                💡 Artwork must be submitted by copy deadline date
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
