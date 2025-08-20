@@ -25,6 +25,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
     emailAddress: '',
     phoneNumber: '',
     companyName: '',
+    password: '',
     selectedAreas: [] as string[],
     adSize: '',
     duration: ''
@@ -141,11 +142,20 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
   }, [selectedPricingModel, subscriptionDurations]);
 
   const handleSubmit = async () => {
-    if (!formData.fullName || !formData.emailAddress || !formData.phoneNumber) {
+    if (!formData.fullName || !formData.emailAddress || !formData.phoneNumber || !formData.password) {
       toast({
         variant: "destructive",
         title: "Missing Information",
-        description: "Please fill in all required contact fields.",
+        description: "Please fill in all required contact fields including password.",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
       });
       return;
     }
@@ -218,7 +228,7 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
         // Create account automatically and log them in
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.emailAddress,
-          password: Math.random().toString(36).substring(2, 15), // Generate random password
+          password: formData.password,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
             data: { 
@@ -353,6 +363,17 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                       value={formData.companyName}
                       onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
                       className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Create Password *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      className="mt-1"
+                      placeholder="At least 6 characters"
                     />
                   </div>
                 </div>
@@ -706,6 +727,8 @@ const CostCalculatorOptimized = ({ children }: CostCalculatorProps) => {
                   !formData.fullName || 
                   !formData.emailAddress || 
                   !formData.phoneNumber || 
+                  !formData.password ||
+                  formData.password.length < 6 ||
                   effectiveSelectedAreas.length === 0 || 
                   !formData.adSize ||
                   (!formData.duration && selectedPricingModel !== 'bogof') ||
