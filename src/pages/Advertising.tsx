@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import React, { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1415,102 +1416,110 @@ const effectiveSelectedAreas = useMemo(() => {
                  )}
                </div>
 
-               {/* Issue Selection */}
-               {effectiveSelectedAreas.length > 0 && selectedAdSize && selectedDuration && (
-                 <div className="space-y-4">
-                   <div className="flex items-center gap-2">
-                     <h3 className="text-lg font-semibold">SELECT WHICH ISSUES YOU WANT TO BOOK</h3>
-                   </div>
-                   <p className="text-sm text-muted-foreground">
-                     Choose specific months for each area where you'd like to advertise.
-                   </p>
-                   
-                   <div className="overflow-x-auto">
-                     <div className="min-w-max">
-                       {(() => {
-                         const today = new Date();
-                         const currentMonth = today.getMonth();
-                         const currentYear = today.getFullYear();
-                         
-                         // Generate exactly 12 months starting from current month
-                         const availableMonths = Array.from({ length: 12 }, (_, i) => {
-                           const monthDate = new Date(currentYear, currentMonth + i, 1);
-                           const monthString = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
-                           const shortMonth = monthDate.toLocaleDateString('en-GB', { month: 'short' });
-                           const year = monthDate.getFullYear();
-                           return { value: monthString, label: shortMonth, year };
-                         });
-
-                         const selectedAreasList = areas.filter(area => effectiveSelectedAreas.includes(area.id));
-
-                         return (
-                           <div className="border rounded-lg overflow-hidden bg-white">
-                             {/* Header Row */}
-                             <div className="bg-muted/50 border-b">
-                               <div className="grid gap-1 p-2" style={{ gridTemplateColumns: `180px repeat(12, minmax(50px, 1fr))` }}>
-                                 <div className="font-medium text-sm p-2">
-                                   Location ({availableMonths[0]?.year}/{availableMonths[availableMonths.length - 1]?.year})
-                                 </div>
-                                 {availableMonths.map((month) => (
-                                   <div key={month.value} className="text-center p-1">
-                                     <div className="text-xs font-medium">{month.label}</div>
-                                     <div className="text-xs text-muted-foreground">{month.year}</div>
-                                   </div>
-                                 ))}
-                               </div>
-                             </div>
-                             
-                             {/* Area Rows */}
-                             {selectedAreasList.map((area, index) => (
-                               <div key={area.id} className={cn("border-b last:border-b-0", index % 2 === 0 ? "bg-background" : "bg-muted/10")}>
-                                 <div className="grid gap-1 p-2 items-center" style={{ gridTemplateColumns: `180px repeat(12, minmax(50px, 1fr))` }}>
-                                   <div className="p-2">
-                                     <div className="font-medium text-sm">{area.name}</div>
-                                     <div className="text-xs text-muted-foreground">
-                                       {area.circulation.toLocaleString()} circulation
-                                     </div>
-                                   </div>
-                                   {availableMonths.map((month) => {
-                                     const isSelected = selectedIssues[area.id]?.includes(month.value) || false;
-                                     
-                                     return (
-                                       <div key={month.value} className="flex justify-center p-1">
-                                         <Checkbox
-                                           checked={isSelected}
-                                           onCheckedChange={(checked) => {
-                                             setSelectedIssues(prev => {
-                                               const currentSelections = prev[area.id] || [];
-                                               const newSelections = checked
-                                                 ? [...currentSelections, month.value]
-                                                 : currentSelections.filter(m => m !== month.value);
-                                               
-                                               return {
-                                                 ...prev,
-                                                 [area.id]: newSelections
-                                               };
-                                             });
-                                           }}
-                                           className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                                         />
-                                       </div>
-                                     );
-                                   })}
-                                 </div>
-                               </div>
-                             ))}
-                             
-                             {/* Summary Row */}
-                             <div className="bg-muted/30 p-3 text-xs text-muted-foreground">
-                               Total months available: {availableMonths.length} | 
-                               Selected issues: {Object.values(selectedIssues).reduce((total, areaSelections) => total + areaSelections.length, 0)}
-                             </div>
-                           </div>
-                         );
-                       })()}
-                     </div>
-                   </div>
-                 </div>
-               )}
+                {/* Issue Selection */}
+                {effectiveSelectedAreas.length > 0 && selectedAdSize && selectedDuration && pricingModel === 'leafleting' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">SELECT WHICH ISSUES YOU WANT TO BOOK</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Choose specific delivery dates for each area. Copy deadlines and circulation details are shown below.
+                    </p>
+                    
+                    <div className="space-y-6">
+                      {leafletAreas
+                        .filter(leafletArea => effectiveSelectedAreas.includes(leafletArea.id))
+                        .map((leafletArea) => (
+                          <Card key={leafletArea.id} className="overflow-hidden">
+                            <CardHeader className="pb-4">
+                              <CardTitle className="flex items-center justify-between">
+                                <span>{leafletArea.name}</span>
+                                <Badge variant="secondary">{leafletArea.postcodes}</Badge>
+                              </CardTitle>
+                              <p className="text-sm text-muted-foreground">
+                                Circulation: {leafletArea.bimonthlyCirculation.toLocaleString()} • £{leafletArea.priceWithVat} + VAT per delivery
+                              </p>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {leafletArea.schedule.map((scheduleItem, index) => {
+                                  const today = new Date();
+                                  const copyDeadlineDate = new Date(`${scheduleItem.copyDeadline} ${today.getFullYear()}`);
+                                  const isExpired = copyDeadlineDate < today;
+                                  const monthKey = `${leafletArea.id}-${scheduleItem.month}`;
+                                  const isSelected = selectedIssues[leafletArea.id]?.includes(monthKey) || false;
+                                  
+                                  return (
+                                    <div
+                                      key={index}
+                                      className={cn(
+                                        "border rounded-lg p-4 space-y-3 transition-all",
+                                        isExpired 
+                                          ? "bg-muted/50 border-muted text-muted-foreground cursor-not-allowed" 
+                                          : "hover:border-primary/50 cursor-pointer",
+                                        isSelected && !isExpired && "border-primary bg-primary/5"
+                                      )}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Checkbox
+                                          checked={isSelected}
+                                          disabled={isExpired}
+                                          onCheckedChange={(checked) => {
+                                            setSelectedIssues(prev => {
+                                              const currentSelections = prev[leafletArea.id] || [];
+                                              const newSelections = checked
+                                                ? [...currentSelections, monthKey]
+                                                : currentSelections.filter(m => m !== monthKey);
+                                              
+                                              return {
+                                                ...prev,
+                                                [leafletArea.id]: newSelections
+                                              };
+                                            });
+                                          }}
+                                          className="h-4 w-4"
+                                        />
+                                        <div className="flex-1">
+                                          <div className="font-medium text-sm flex items-center gap-2">
+                                            {scheduleItem.month}
+                                            {isExpired && <Badge variant="destructive" className="text-xs">Expired</Badge>}
+                                          </div>
+                                          <div className="text-xs text-muted-foreground">
+                                            Delivery: {scheduleItem.delivery}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="space-y-1 text-xs">
+                                        <div className="flex justify-between">
+                                          <span>Copy Deadline:</span>
+                                          <span className={cn("font-medium", isExpired && "line-through text-muted-foreground")}>
+                                            {scheduleItem.copyDeadline}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>Print Deadline:</span>
+                                          <span className={cn("font-medium", isExpired && "line-through text-muted-foreground")}>
+                                            {scheduleItem.printDeadline}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>Circulation:</span>
+                                          <span className="font-medium">
+                                            {scheduleItem.circulation.toLocaleString()}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
               {/* Summary & Cost to Book */}
               {pricingBreakdown && (
