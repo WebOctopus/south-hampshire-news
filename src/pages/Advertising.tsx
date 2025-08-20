@@ -122,12 +122,17 @@ const effectiveSelectedAreas = useMemo(() => {
 
   const pricingBreakdown = useMemo(() => {
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
+      console.log('Pricing breakdown conditions not met:', {
+        selectedAdSize: !!selectedAdSize,
+        selectedDuration: !!selectedDuration,
+        effectiveSelectedAreas: effectiveSelectedAreas.length
+      });
       return null;
     }
 
     const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
     
-    return calculateAdvertisingPrice(
+    const result = calculateAdvertisingPrice(
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
@@ -138,6 +143,16 @@ const effectiveSelectedAreas = useMemo(() => {
       subscriptionDurations,
       volumeDiscounts
     );
+    
+    console.log('Pricing breakdown calculated:', {
+      result: !!result,
+      effectiveSelectedAreas: effectiveSelectedAreas.length,
+      selectedAdSize,
+      selectedDuration,
+      pricingModel
+    });
+    
+    return result;
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
   
@@ -206,11 +221,28 @@ const effectiveSelectedAreas = useMemo(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
+          console.log('Intersection observer triggered:', {
+            isIntersecting: entry.isIntersecting,
+            contactSectionReached,
+            pricingModel,
+            showFixedTermConfirmation,
+            hasPricingBreakdown: !!pricingBreakdown
+          });
+          
           if (entry.isIntersecting && !contactSectionReached) {
             setContactSectionReached(true);
+            console.log('Contact section reached, checking popup conditions...');
+            
             // Show confirmation dialog for Fixed Term users only when pricing is calculated
             if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
+              console.log('Showing Fixed Term confirmation popup');
               setShowFixedTermConfirmation(true);
+            } else {
+              console.log('Popup not shown - conditions not met:', {
+                isFixed: pricingModel === 'fixed',
+                notAlreadyShown: !showFixedTermConfirmation,
+                hasPricing: !!pricingBreakdown
+              });
             }
           }
         });
