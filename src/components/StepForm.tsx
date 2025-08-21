@@ -1,0 +1,140 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface StepFormProps {
+  children: React.ReactNode[];
+  onComplete?: () => void;
+}
+
+interface StepFormContextValue {
+  currentStep: number;
+  totalSteps: number;
+  nextStep: () => void;
+  prevStep: () => void;
+  goToStep: (step: number) => void;
+}
+
+const StepFormContext = React.createContext<StepFormContextValue | undefined>(undefined);
+
+export const useStepForm = () => {
+  const context = React.useContext(StepFormContext);
+  if (!context) {
+    throw new Error('useStepForm must be used within a StepForm');
+  }
+  return context;
+};
+
+export const StepForm: React.FC<StepFormProps> = ({ children, onComplete }) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const totalSteps = React.Children.count(children);
+
+  const nextStep = () => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else if (onComplete) {
+      onComplete();
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const goToStep = (step: number) => {
+    if (step >= 0 && step < totalSteps) {
+      setCurrentStep(step);
+    }
+  };
+
+  const contextValue = {
+    currentStep,
+    totalSteps,
+    nextStep,
+    prevStep,
+    goToStep,
+  };
+
+  return (
+    <StepFormContext.Provider value={contextValue}>
+      <div className="w-full max-w-6xl mx-auto">
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            {Array.from({ length: totalSteps }, (_, index) => (
+              <React.Fragment key={index}>
+                <div
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200",
+                    index <= currentStep
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "bg-muted text-muted-foreground border-2 border-muted"
+                  )}
+                >
+                  {index + 1}
+                </div>
+                {index < totalSteps - 1 && (
+                  <div
+                    className={cn(
+                      "w-16 h-0.5 transition-colors duration-200",
+                      index < currentStep ? "bg-primary" : "bg-muted"
+                    )}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <div className="relative">
+          {React.Children.map(children, (child, index) => (
+            <div
+              key={index}
+              className={cn(
+                "transition-all duration-300 ease-in-out",
+                index === currentStep
+                  ? "opacity-100 translate-x-0 relative"
+                  : "opacity-0 absolute inset-0 translate-x-4 pointer-events-none"
+              )}
+            >
+              {child}
+            </div>
+          ))}
+        </div>
+
+        {/* Navigation - Only show on steps after the first */}
+        {currentStep > 0 && (
+          <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous Step
+            </Button>
+            
+            <div className="text-sm text-muted-foreground">
+              Step {currentStep + 1} of {totalSteps}
+            </div>
+            
+            <Button
+              onClick={nextStep}
+              className="flex items-center gap-2"
+            >
+              {currentStep === totalSteps - 1 ? 'Complete' : 'Next Step'}
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </StepFormContext.Provider>
+  );
+};
+
+export default StepForm;
