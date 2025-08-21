@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useStepForm } from './StepForm';
 
 interface PricingOption {
-  id: 'fixed' | 'subscription' | 'leafleting';
+  id: 'fixed' | 'bogof' | 'subscription' | 'leafleting';
   title: string;
   subtitle: string;
   description: string;
@@ -24,7 +24,7 @@ interface PricingOption {
 }
 
 interface PricingOptionsStepProps {
-  onSelectOption: (option: 'fixed' | 'subscription' | 'leafleting') => void;
+  onSelectOption: (option: 'fixed' | 'bogof' | 'subscription' | 'leafleting') => void;
 }
 
 const pricingOptions: PricingOption[] = [
@@ -35,8 +35,7 @@ const pricingOptions: PricingOption[] = [
     description: 'Perfect for businesses wanting flexibility with limited discounts and ad sizes.',
     icon: Target,
     features: [
-      { label: 'Number of Inserts', value: '1, 2 or 3', highlight: true },
-      { label: 'Double Up for Free', value: 'Buy One Get One Free for 3 issues!* Nominate your "paid for" area/s and then select which area/s you want free for 6 months (3 issues)', highlight: true },
+      { label: 'Number of Inserts', value: '1, 2 or 3' },
       { label: 'Ad Hoc Option', value: true },
       { label: 'Consecutive Run', value: true },
       { label: 'Discount Available', value: 'Only on multi-area bookings' },
@@ -52,17 +51,40 @@ const pricingOptions: PricingOption[] = [
     cta: 'Book Now',
   },
   {
-    id: 'subscription',
-    title: '3+ Repeat Package',
-    subtitle: 'Subscription with monthly payment plan',
-    description: 'Best value with better rates and additional benefits for ongoing campaigns.',
-    badge: 'Most Popular',
+    id: 'bogof',
+    title: 'BOGOF Subscription',
+    subtitle: 'Buy One Get One Free for 6 months',
+    description: 'Double your advertising reach at no extra cost! Pay for areas, get equal number free.',
+    badge: 'Special Offer',
     badgeVariant: 'default',
     icon: Star,
     popular: true,
     features: [
-      { label: 'Minimum Duration', value: '3 issues + ongoing', highlight: true },
-      { label: 'Double Up for Free', value: true, highlight: true },
+      { label: 'Duration', value: '6 months (3 issues)', highlight: true },
+      { label: 'Double Up for Free', value: 'Equal number of free areas matched to paid', highlight: true },
+      { label: 'Ad Hoc Option', value: false },
+      { label: 'Consecutive Run', value: true },
+      { label: 'Discount Available', value: 'Effectively 50% off total cost', highlight: true },
+      { label: 'Advert Sizes', value: 'Available with all advert sizes', highlight: true },
+      { label: 'Free Ad Design', value: true, highlight: true },
+      { label: 'Free Editorial', value: 'After 4th issue', highlight: true },
+      { label: 'Premium Position Upgrades', value: true },
+      { label: 'Discount on Leaflet Bookings', value: true },
+      { label: 'Pre-payment Required', value: false },
+      { label: 'Monthly Payment Plan', value: true, highlight: true },
+      { label: 'Cancellation Notice', value: '30 days' },
+    ],
+    cta: 'Book Now',
+  },
+  {
+    id: 'subscription',
+    title: '3+ Repeat Package',
+    subtitle: 'Subscription with monthly payment plan',
+    description: 'Best value with better rates and additional benefits for ongoing campaigns.',
+    icon: Star,
+    features: [
+      { label: 'Minimum Duration', value: '3 issues + ongoing' },
+      { label: 'Double Up for Free', value: false },
       { label: 'Ad Hoc Option', value: false },
       { label: 'Consecutive Run', value: true },
       { label: 'Discount Available', value: 'All bookings from 15% - 38%', highlight: true },
@@ -142,7 +164,7 @@ const FeatureRow: React.FC<{ feature: PricingOption['features'][0] }> = ({ featu
 export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelectOption }) => {
   const { nextStep } = useStepForm();
 
-  const handleSelectOption = (option: 'fixed' | 'subscription' | 'leafleting') => {
+  const handleSelectOption = (option: 'fixed' | 'bogof' | 'subscription' | 'leafleting') => {
     onSelectOption(option);
     nextStep();
   };

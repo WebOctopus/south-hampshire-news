@@ -30,7 +30,7 @@ interface FormData {
 }
 
 interface CalculatorStepFormProps {
-  pricingModel: 'fixed' | 'subscription' | 'leafleting';
+  pricingModel: 'fixed' | 'bogof' | 'subscription' | 'leafleting';
 }
 
 export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingModel }) => {
@@ -92,7 +92,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   }, []);
 
   const effectiveSelectedAreas = useMemo(() => {
-    return pricingModel === 'subscription' ? bogofPaidAreas : selectedAreas;
+    return pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   }, [pricingModel, selectedAreas, bogofPaidAreas]);
 
   const pricingBreakdown = useMemo(() => {
@@ -126,13 +126,13 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       return null;
     }
 
-    const relevantDurations = (pricingModel === 'subscription') ? subscriptionDurations : durations;
+    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
     
     console.log('About to call calculateAdvertisingPrice with:', {
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
-      isSubscription: pricingModel === 'subscription',
+      isSubscription: pricingModel === 'subscription' || pricingModel === 'bogof',
       areasData: areas?.map(a => ({ id: a.id, name: a.name })),
       adSizesData: adSizes?.map(a => ({ id: a.id, name: a.name })),
       durationsData: relevantDurations?.map(d => ({ id: d.id, name: d.name })),
@@ -144,7 +144,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
-      pricingModel === 'subscription',
+      pricingModel === 'subscription' || pricingModel === 'bogof',
       areas,
       adSizes,
       relevantDurations,
@@ -170,20 +170,44 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
   // Auto-set duration when pricing model or durations change
   useEffect(() => {
-    const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-      (pricingModel === 'subscription') ? subscriptionDurations : durations;
-      
-    if (relevantDurations && relevantDurations.length > 0) {
+    if (pricingModel === 'leafleting' && leafletDurations && leafletDurations.length > 0) {
       if (!selectedDuration) {
-        const defaultDuration = relevantDurations.find(d => (d as any).is_default) || relevantDurations[0];
+        const defaultDuration = leafletDurations.find(d => (d as any).is_default) || leafletDurations[0];
         if (defaultDuration) {
           setSelectedDuration(defaultDuration.id);
         }
-      } else {
-        const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
-        if (!isValidSelection) {
-          setSelectedDuration("");
+      }
+    } else if (pricingModel === 'bogof' && subscriptionDurations && subscriptionDurations.length > 0) {
+      // Auto-set BOGOF to 6 months
+      const sixMonthDuration = subscriptionDurations.find(d => d.duration_value === 6);
+      if (sixMonthDuration) {
+        setSelectedDuration(sixMonthDuration.id);
+      }
+    } else if (pricingModel === 'subscription' && subscriptionDurations && subscriptionDurations.length > 0) {
+      if (!selectedDuration) {
+        const defaultDuration = subscriptionDurations[0];
+        if (defaultDuration) {
+          setSelectedDuration(defaultDuration.id);
         }
+      }
+    } else if (pricingModel === 'fixed') {
+      // Clear duration for fixed - let user choose
+      if (selectedDuration) {
+        const isValidForFixed = durations?.some(d => d.id === selectedDuration);
+        if (!isValidForFixed) {
+          setSelectedDuration('');
+        }
+      }
+    }
+    
+    // Validate current selection is still valid
+    const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
+      (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      
+    if (selectedDuration && relevantDurations && relevantDurations.length > 0) {
+      const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
+      if (!isValidSelection) {
+        setSelectedDuration("");
       }
     }
   }, [pricingModel, durations, subscriptionDurations, leafletDurations]);
@@ -305,8 +329,8 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
         ad_size_id: selectedAdSize,
         duration_id: selectedDuration,
         selected_area_ids: effectiveSelectedAreas,
-        bogof_paid_area_ids: pricingModel === 'subscription' ? bogofPaidAreas : [],
-        bogof_free_area_ids: pricingModel === 'subscription' ? bogofFreeAreas : [],
+        bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
+        bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
         subtotal: pricingBreakdown?.subtotal || 0,
         final_total: pricingBreakdown?.finalTotal || 0,
@@ -353,7 +377,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     prevStep(); // Go back to pricing options step
     toast({ 
       title: "Switched to Pricing Options", 
-      description: "Please select the 3+ Repeat Package to get the BOGOF deal." 
+      description: "Please select the BOGOF Subscription to get the special deal." 
     });
   };
 
@@ -383,7 +407,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold">Configure Your Campaign</h2>
         <p className="text-muted-foreground">
-          Complete your {pricingModel === 'fixed' ? 'Fixed Term' : pricingModel === 'subscription' ? '3+ Repeat Package' : 'Leafleting Service'} setup
+          Complete your {pricingModel === 'fixed' ? 'Fixed Term' : 
+                        pricingModel === 'bogof' ? 'BOGOF Subscription' : 
+                        pricingModel === 'subscription' ? '3+ Repeat Package' : 
+                        'Leafleting Service'} setup
         </p>
       </div>
 
@@ -445,8 +472,8 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             </div>
           )}
 
-          {/* BOGOF Areas Selection for Subscription */}
-          {pricingModel === 'subscription' && (
+          {/* BOGOF Areas Selection */}
+          {pricingModel === 'bogof' && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Select Your Paid Areas (Buy One Get One Free!)</h3>
               <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 mb-4">
@@ -681,8 +708,8 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
             
             {(() => {
-              const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-                (pricingModel === 'subscription') ? subscriptionDurations : durations;
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
+        (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
               const isLoadingDurations = pricingModel === 'leafleting' ? leafletDurationsLoading : isLoading;
               const durationsError = pricingModel === 'leafleting' ? leafletDurationsError : null;
 
@@ -848,14 +875,14 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
               Are you sure you want to book Fixed Term?
             </DialogTitle>
             <DialogDescription className="text-center">
-              If you booked this selection on our 3+ Repeat Package you would pay{" "}
+              If you booked this selection on our BOGOF Subscription you would pay{" "}
               <span className="font-bold text-primary">
                 {pricingBreakdown?.finalTotal 
-                  ? `£${Math.round(pricingBreakdown.finalTotal * 0.85)} + vat (£${Math.round(pricingBreakdown.finalTotal * 0.85 * 1.2)})` 
-                  : "significantly less with bulk discount + vat"
+                  ? `£${Math.round(pricingBreakdown.finalTotal * 0.5)} + vat (£${Math.round(pricingBreakdown.finalTotal * 0.5 * 1.2)})` 
+                  : "effectively half price + vat"
                 }
               </span>{" "}
-              per month for minimum of six months INCLUDING
+              per month for six months plus get DOUBLE the areas INCLUDING
             </DialogDescription>
           </DialogHeader>
           
@@ -863,7 +890,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>2 x EXTRA AREAS—FREE FOR 3 ISSUES—double the number of homes you reach!</span>
+                <span>EQUAL NUMBER OF FREE AREAS—FOR 6 MONTHS—double the number of homes you reach!</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
@@ -892,7 +919,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
               variant="outline"
               className="px-6 py-2"
             >
-              NO, GO BACK TO SELECT SUBSCRIPTION
+              NO, GO BACK TO SELECT BOGOF
             </Button>
           </div>
         </DialogContent>
