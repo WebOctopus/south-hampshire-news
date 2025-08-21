@@ -1419,12 +1419,21 @@ const effectiveSelectedAreas = useMemo(() => {
                 {/* Issue Selection */}
                 {effectiveSelectedAreas.length > 0 && selectedAdSize && selectedDuration && pricingModel === 'leafleting' && (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold">SELECT WHICH ISSUES YOU WANT TO BOOK</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Choose specific delivery dates for each area. Copy deadlines and circulation details are shown below.
-                    </p>
+                     <div className="flex items-center gap-2">
+                       <h3 className="text-lg font-semibold">SELECT WHICH ISSUES YOU WANT TO BOOK</h3>
+                     </div>
+                     <p className="text-sm text-muted-foreground">
+                       Choose specific delivery dates for each area. Copy deadlines and circulation details are shown below.
+                       {(() => {
+                         const selectedDurationData = durations.find(d => d.id === selectedDuration);
+                         const maxIssues = selectedDurationData?.duration_value || 1;
+                         return (
+                           <span className="block mt-1 font-medium text-primary">
+                             You can select up to {maxIssues} issue{maxIssues > 1 ? 's' : ''} per area based on your selected campaign duration.
+                           </span>
+                         );
+                       })()}
+                     </p>
                     
                     <div className="space-y-6">
                       {leafletAreas
@@ -1484,22 +1493,36 @@ const effectiveSelectedAreas = useMemo(() => {
                                       )}
                                     >
                                       <div className="flex items-center gap-2">
-                                        <Checkbox
-                                          checked={isSelected}
-                                          disabled={isExpired}
-                                          onCheckedChange={(checked) => {
-                                            setSelectedIssues(prev => {
-                                              const currentSelections = prev[leafletArea.id] || [];
-                                              const newSelections = checked
-                                                ? [...currentSelections, monthKey]
-                                                : currentSelections.filter(m => m !== monthKey);
-                                              
-                                              return {
-                                                ...prev,
-                                                [leafletArea.id]: newSelections
-                                              };
-                                            });
-                                          }}
+                                         <Checkbox
+                                           checked={isSelected}
+                                           disabled={isExpired}
+                                           onCheckedChange={(checked) => {
+                                             setSelectedIssues(prev => {
+                                               const currentSelections = prev[leafletArea.id] || [];
+                                               
+                                               // Get the maximum number of issues allowed based on selected duration
+                                               const selectedDurationData = durations.find(d => d.id === selectedDuration);
+                                               const maxIssues = selectedDurationData?.duration_value || 1;
+                                               
+                                               if (checked) {
+                                                 // If trying to add and already at max, don't allow more selections
+                                                 if (currentSelections.length >= maxIssues) {
+                                                   return prev; // Don't change anything
+                                                 }
+                                                 // Add the new selection
+                                                 return {
+                                                   ...prev,
+                                                   [leafletArea.id]: [...currentSelections, monthKey]
+                                                 };
+                                               } else {
+                                                 // Remove the selection
+                                                 return {
+                                                   ...prev,
+                                                   [leafletArea.id]: currentSelections.filter(m => m !== monthKey)
+                                                 };
+                                               }
+                                             });
+                                           }}
                                           className="h-4 w-4"
                                         />
                                         <div className="flex-1">
