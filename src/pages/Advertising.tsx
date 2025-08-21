@@ -1592,33 +1592,45 @@ const effectiveSelectedAreas = useMemo(() => {
                       </span>
                     </div>
 
-                    {/* Where - Selected Areas */}
-                    <div className="space-y-2">
-                      <span className="font-medium">Where:</span>
-                      <div className="space-y-1">
-                        {areas
-                          .filter(area => effectiveSelectedAreas.includes(area.id))
-                          .map((area, index) => (
-                            <div key={area.id} className="ml-2">
-                              Area {index + 1} {area.name}
-                            </div>
-                          ))}
-                        
-                        {/* Show free areas for BOGOF */}
-                        {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                          <>
-                            <div className="ml-2 text-green-700 font-medium mt-3">Plus FREE Areas:</div>
-                            {areas
-                              .filter(area => bogofFreeAreas.includes(area.id))
-                              .map((area, index) => (
-                                <div key={area.id} className="ml-2 text-green-700">
-                                  Free Area {index + 1} {area.name}
-                                </div>
-                              ))}
-                          </>
-                        )}
-                      </div>
-                    </div>
+                     {/* Where - Selected Areas */}
+                     <div className="space-y-2">
+                       <span className="font-medium">Where:</span>
+                       <div className="space-y-1">
+                         {pricingModel === 'leafleting' ? (
+                           // Show leafleting areas
+                           leafletAreas
+                             .filter(area => effectiveSelectedAreas.includes(area.id))
+                             .map((area, index) => (
+                               <div key={area.id} className="ml-2">
+                                 Area {area.area_number}: {area.name}
+                               </div>
+                             ))
+                         ) : (
+                           // Show regular advertising areas
+                           areas
+                             .filter(area => effectiveSelectedAreas.includes(area.id))
+                             .map((area, index) => (
+                               <div key={area.id} className="ml-2">
+                                 Area {index + 1} {area.name}
+                               </div>
+                             ))
+                         )}
+                         
+                         {/* Show free areas for BOGOF */}
+                         {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                           <>
+                             <div className="ml-2 text-green-700 font-medium mt-3">Plus FREE Areas:</div>
+                             {areas
+                               .filter(area => bogofFreeAreas.includes(area.id))
+                               .map((area, index) => (
+                                 <div key={area.id} className="ml-2 text-green-700">
+                                   Free Area {index + 1} {area.name}
+                                 </div>
+                               ))}
+                           </>
+                         )}
+                       </div>
+                     </div>
 
                     {/* Total Circulation */}
                     <div>
