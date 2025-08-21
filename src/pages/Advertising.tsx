@@ -1096,7 +1096,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     </Alert>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {areas.map((area) => (
+                      {areas?.map((area) => (
                         <div 
                           key={area.id} 
                           className="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
@@ -1142,7 +1142,7 @@ const effectiveSelectedAreas = useMemo(() => {
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {areas.map((area) => (
+                        {areas?.map((area) => (
                           <div 
                             key={area.id} 
                             className="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 hover:border-primary/30"
@@ -1195,8 +1195,8 @@ const effectiveSelectedAreas = useMemo(() => {
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {areas
-                          .filter(area => !bogofPaidAreas.includes(area.id))
-                          .map((area) => {
+                          ?.filter(area => !bogofPaidAreas.includes(area.id))
+                          ?.map((area) => {
                             const isDisabled = bogofFreeAreas.length >= bogofPaidAreas.length && !bogofFreeAreas.includes(area.id);
                             return (
                               <div 
@@ -1258,7 +1258,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     Save 10% on multi-area bookings and multiple months. Choose from our 14 leaflet delivery areas. Each area shows available delivery dates and deadlines.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {leafletAreas.map((area) => (
+                    {leafletAreas?.map((area) => (
                       <div 
                         key={area.id} 
                         className={cn(
@@ -1293,8 +1293,8 @@ const effectiveSelectedAreas = useMemo(() => {
                           {selectedAreas.includes(area.id) && (
                             <div className="border-t pt-3 mt-3">
                               <div className="text-sm font-medium text-primary mb-2">Available Delivery Dates:</div>
-                              <div className="space-y-2">
-                                {area.schedule.map((schedule, index) => (
+                               <div className="space-y-2">
+                                 {area.schedule?.map((schedule, index) => (
                                   <div key={index} className="bg-muted/50 rounded p-3 text-xs">
                                     <div className="font-medium text-primary">{schedule.month}</div>
                                     <div className="mt-1 space-y-1">
@@ -1378,7 +1378,7 @@ const effectiveSelectedAreas = useMemo(() => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Leaflet Size & Specification</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {leafletSizes.map((size) => (
+                    {leafletSizes?.map((size) => (
                       <div
                         key={size.id}
                         className={cn(
@@ -1476,10 +1476,10 @@ const effectiveSelectedAreas = useMemo(() => {
                        })()}
                      </p>
                     
-                    <div className="space-y-6">
-                      {leafletAreas
-                        .filter(leafletArea => effectiveSelectedAreas.includes(leafletArea.id))
-                        .map((leafletArea) => (
+                     <div className="space-y-6">
+                       {leafletAreas
+                         ?.filter(leafletArea => effectiveSelectedAreas.includes(leafletArea.id))
+                         ?.map((leafletArea) => (
                           <Card key={leafletArea.id} className="overflow-hidden">
                             <CardHeader className="pb-4">
                               <CardTitle className="flex items-center justify-between">
@@ -1491,8 +1491,8 @@ const effectiveSelectedAreas = useMemo(() => {
                               </p>
                             </CardHeader>
                             <CardContent className="pt-0">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {leafletArea.schedule.map((scheduleItem, index) => {
+                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                 {leafletArea.schedule?.map((scheduleItem, index) => {
                                   const today = new Date();
                                   
                                   // Parse delivery year from the schedule month (e.g., "February 2026")
@@ -1634,18 +1634,18 @@ const effectiveSelectedAreas = useMemo(() => {
                        <div className="space-y-1">
                          {pricingModel === 'leafleting' ? (
                            // Show leafleting areas
-                           leafletAreas
-                             .filter(area => effectiveSelectedAreas.includes(area.id))
-                             .map((area, index) => (
+                              leafletAreas
+                              ?.filter(area => effectiveSelectedAreas.includes(area.id))
+                              ?.map((area, index) => (
                                <div key={area.id} className="ml-2">
                                  Area {area.area_number}: {area.name}
                                </div>
                              ))
                          ) : (
                            // Show regular advertising areas
-                           areas
-                             .filter(area => effectiveSelectedAreas.includes(area.id))
-                             .map((area, index) => (
+                            areas
+                              ?.filter(area => effectiveSelectedAreas.includes(area.id))
+                              ?.map((area, index) => (
                                <div key={area.id} className="ml-2">
                                  Area {index + 1} {area.name}
                                </div>
@@ -1656,9 +1656,9 @@ const effectiveSelectedAreas = useMemo(() => {
                          {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
                            <>
                              <div className="ml-2 text-green-700 font-medium mt-3">Plus FREE Areas:</div>
-                             {areas
-                               .filter(area => bogofFreeAreas.includes(area.id))
-                               .map((area, index) => (
+                              {areas
+                                ?.filter(area => bogofFreeAreas.includes(area.id))
+                                ?.map((area, index) => (
                                  <div key={area.id} className="ml-2 text-green-700">
                                    Free Area {index + 1} {area.name}
                                  </div>
