@@ -249,12 +249,59 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
           </div>
 
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-4">Schedule Management</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Schedule Management</h3>
+              <Button 
+                type="button"
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  const newSchedule = [...formData.schedule, {
+                    month: '',
+                    copyDeadline: '',
+                    printDeadline: '',
+                    delivery: '',
+                    circulation: formData.bimonthly_circulation || 0
+                  }];
+                  setFormData({...formData, schedule: newSchedule});
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Month
+              </Button>
+            </div>
             <div className="space-y-4">
               {formData.schedule.map((item, index) => (
                 <Card key={index}>
-                  <CardHeader>
-                    <CardTitle className="text-base">{item.month}</CardTitle>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <Label htmlFor={`month-${index}`} className="text-sm font-medium">Month/Year</Label>
+                        <Input
+                          id={`month-${index}`}
+                          value={item.month}
+                          onChange={(e) => {
+                            const newSchedule = [...formData.schedule];
+                            newSchedule[index].month = e.target.value;
+                            setFormData({...formData, schedule: newSchedule});
+                          }}
+                          placeholder="September 2025"
+                          className="mt-1"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newSchedule = formData.schedule.filter((_, i) => i !== index);
+                          setFormData({...formData, schedule: newSchedule});
+                        }}
+                        className="ml-2 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-4 gap-4">
