@@ -1451,8 +1451,9 @@ const effectiveSelectedAreas = useMemo(() => {
                                   // For cross-year scenarios (Jan deadline for Feb+ delivery), use previous year for deadline
                                   const deadlineMonth = scheduleItem.copyDeadline.split(' ')[1].toLowerCase();
                                   const deliveryMonth = scheduleItem.month.split(' ')[0].toLowerCase();
-                                  const isJanDeadlineForLaterDelivery = deadlineMonth === 'jan' && deliveryMonth !== 'january';
-                                  const deadlineYear = isJanDeadlineForLaterDelivery ? deliveryYear - 1 : deliveryYear;
+                                   // For deadline year determination, January deadlines should use the delivery year
+                                   // since January 2026 deadline for February 2026 delivery makes sense
+                                   const deadlineYear = deliveryYear;
                                   
                                   // Debug logging
                                   console.log(`DEBUG: ${leafletArea.name} - ${scheduleItem.month}`);
@@ -1460,8 +1461,7 @@ const effectiveSelectedAreas = useMemo(() => {
                                   console.log(`  Delivery Year: ${deliveryYear}`);
                                   console.log(`  Deadline Month: ${deadlineMonth}`);
                                   console.log(`  Delivery Month: ${deliveryMonth}`);
-                                  console.log(`  Is Jan Deadline for Later: ${isJanDeadlineForLaterDelivery}`);
-                                  console.log(`  Deadline Year: ${deadlineYear}`);
+                                   console.log(`  Deadline Year: ${deadlineYear}`);
                                   
                                   const copyDeadlineDate = new Date(`${scheduleItem.copyDeadline} ${deadlineYear}`);
                                   console.log(`  Copy Deadline Date: ${copyDeadlineDate}`);
