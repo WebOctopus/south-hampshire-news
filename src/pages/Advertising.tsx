@@ -212,30 +212,25 @@ const effectiveSelectedAreas = useMemo(() => {
 
     try {
       const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-                                (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-      
+        (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+        
       console.log('Relevant durations for', pricingModel, ':', relevantDurations);
       
-      // Only clear duration when pricing model actually changes (not on initial load or data updates)
-      if (pricingModel !== prevPricingModel && prevPricingModel !== null) {
-        console.log('Pricing model changed from', prevPricingModel, 'to', pricingModel, '- clearing duration');
-        setSelectedDuration("");
-        setPrevPricingModel(pricingModel);
-        return;
-      }
-      
-      // Auto-select if only one duration option and no duration currently selected
-      if (relevantDurations?.length === 1 && !selectedDuration) {
-        console.log('Auto-selecting single duration:', relevantDurations[0]);
-        setSelectedDuration(relevantDurations[0].id);
-      }
-      
-      // Validate current selection is still valid for the current model
-      if (selectedDuration && relevantDurations?.length > 0) {
-        const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
-        if (!isValidSelection) {
-          console.log('Current duration selection invalid for', pricingModel, '- clearing');
-          setSelectedDuration("");
+      if (relevantDurations && relevantDurations.length > 0) {
+        // If no duration selected or it was cleared, set the first/default one
+        if (!selectedDuration) {
+          const defaultDuration = relevantDurations.find(d => (d as any).is_default) || relevantDurations[0];
+          if (defaultDuration) {
+            console.log('Setting default duration:', defaultDuration.id);
+            setSelectedDuration(defaultDuration.id);
+          }
+        } else {
+          // Check if current selection is valid for this pricing model
+          const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
+          if (!isValidSelection) {
+            console.log('Current duration selection invalid for', pricingModel, '- clearing');
+            setSelectedDuration("");
+          }
         }
       }
       
@@ -244,7 +239,32 @@ const effectiveSelectedAreas = useMemo(() => {
     } catch (error) {
       console.error('Error in duration useEffect:', error);
     }
-  }, [pricingModel, durations, subscriptionDurations]);
+  }, [pricingModel, durations, subscriptionDurations, leafletDurations]);
+
+  // Clear excess selected issues when duration changes for leafleting
+  React.useEffect(() => {
+    if (pricingModel === 'leafleting' && selectedDuration && leafletDurations) {
+      const selectedDurationData = leafletDurations.find(d => d.id === selectedDuration);
+      const maxIssues = (selectedDurationData as any)?.issues || 1;
+      
+      setSelectedIssues(prev => {
+        const updated = { ...prev };
+        let hasChanges = false;
+        
+        // For each area, limit selections to maxIssues
+        Object.keys(updated).forEach(areaId => {
+          const currentSelections = updated[areaId] || [];
+          if (currentSelections.length > maxIssues) {
+            // Keep only the first maxIssues selections
+            updated[areaId] = currentSelections.slice(0, maxIssues);
+            hasChanges = true;
+          }
+        });
+        
+        return hasChanges ? updated : prev;
+      });
+    }
+  }, [selectedDuration, pricingModel, leafletDurations]);
 
   // Handle scrolling to hash on page load (must be before any conditional returns)
   useEffect(() => {
