@@ -116,7 +116,19 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
     const relevantDurations = (pricingModel === 'subscription') ? subscriptionDurations : durations;
     
-    return calculateAdvertisingPrice(
+    console.log('About to call calculateAdvertisingPrice with:', {
+      effectiveSelectedAreas,
+      selectedAdSize,
+      selectedDuration,
+      isSubscription: pricingModel === 'subscription',
+      areasData: areas?.map(a => ({ id: a.id, name: a.name })),
+      adSizesData: adSizes?.map(a => ({ id: a.id, name: a.name })),
+      durationsData: relevantDurations?.map(d => ({ id: d.id, name: d.name })),
+      subscriptionDurationsData: subscriptionDurations?.map(d => ({ id: d.id, name: d.name })),
+      volumeDiscountsData: volumeDiscounts?.length
+    });
+    
+    const result = calculateAdvertisingPrice(
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
@@ -127,6 +139,21 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       subscriptionDurations,
       volumeDiscounts
     );
+    
+    console.log('calculateAdvertisingPrice result:', {
+      result: !!result,
+      resultData: result ? {
+        subtotal: result.subtotal,
+        finalTotal: result.finalTotal,
+        totalCirculation: result.totalCirculation
+      } : null,
+      effectiveSelectedAreas: effectiveSelectedAreas.length,
+      selectedAdSize,
+      selectedDuration,
+      pricingModel
+    });
+    
+    return result;
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations]);
 
   // Auto-set duration when pricing model or durations change
