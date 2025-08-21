@@ -27,6 +27,19 @@ export interface LeafletSize {
   sort_order: number;
 }
 
+export interface LeafletCampaignDuration {
+  id: string;
+  name: string;
+  issues: number;
+  months: number;
+  description?: string;
+  is_default: boolean;
+  is_active: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export const useLeafletAreas = () => {
   return useQuery({
     queryKey: ['leaflet-areas'],
@@ -224,6 +237,107 @@ export const useDeleteLeafletSize = () => {
     onError: (error) => {
       console.error('Error deleting size:', error);
       toast({ title: "Error deleting size", variant: "destructive" });
+    },
+  });
+};
+
+// Campaign Duration Hooks
+export const useLeafletCampaignDurations = () => {
+  return useQuery({
+    queryKey: ['leaflet-campaign-durations'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leaflet_campaign_durations')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      
+      if (error) throw error;
+      return data as LeafletCampaignDuration[];
+    },
+  });
+};
+
+export const useCreateLeafletCampaignDuration = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (duration: Omit<LeafletCampaignDuration, 'id' | 'created_at' | 'updated_at'>) => {
+      const { data, error } = await supabase
+        .from('leaflet_campaign_durations')
+        .insert([duration])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaflet-campaign-durations'] });
+      toast({ title: "Campaign duration created successfully" });
+    },
+    onError: (error) => {
+      console.error('Error creating campaign duration:', error);
+      toast({ title: "Error creating campaign duration", variant: "destructive" });
+    },
+  });
+};
+
+export const useUpdateLeafletCampaignDuration = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (duration: LeafletCampaignDuration) => {
+      const { data, error } = await supabase
+        .from('leaflet_campaign_durations')
+        .update({
+          name: duration.name,
+          issues: duration.issues,
+          months: duration.months,
+          description: duration.description,
+          is_default: duration.is_default,
+          sort_order: duration.sort_order,
+        })
+        .eq('id', duration.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaflet-campaign-durations'] });
+      toast({ title: "Campaign duration updated successfully" });
+    },
+    onError: (error) => {
+      console.error('Error updating campaign duration:', error);
+      toast({ title: "Error updating campaign duration", variant: "destructive" });
+    },
+  });
+};
+
+export const useDeleteLeafletCampaignDuration = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('leaflet_campaign_durations')
+        .update({ is_active: false })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaflet-campaign-durations'] });
+      toast({ title: "Campaign duration deleted successfully", variant: "destructive" });
+    },
+    onError: (error) => {
+      console.error('Error deleting campaign duration:', error);
+      toast({ title: "Error deleting campaign duration", variant: "destructive" });
     },
   });
 };

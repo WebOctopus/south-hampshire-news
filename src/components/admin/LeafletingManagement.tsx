@@ -46,8 +46,13 @@ import {
   useCreateLeafletSize,
   useUpdateLeafletSize,
   useDeleteLeafletSize,
+  useLeafletCampaignDurations,
+  useCreateLeafletCampaignDuration,
+  useUpdateLeafletCampaignDuration,
+  useDeleteLeafletCampaignDuration,
   type LeafletArea,
-  type LeafletSize
+  type LeafletSize,
+  type LeafletCampaignDuration
 } from '@/hooks/useLeafletData';
 import { useToast } from '@/components/ui/use-toast';
 import { seedLeafletData } from '@/utils/seedLeafletData';
@@ -60,14 +65,17 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   const [activeTab, setActiveTab] = useState('areas');
   const [editingArea, setEditingArea] = useState<LeafletArea | null>(null);
   const [editingSize, setEditingSize] = useState<LeafletSize | null>(null);
+  const [editingDuration, setEditingDuration] = useState<LeafletCampaignDuration | null>(null);
   const [isAreaDialogOpen, setIsAreaDialogOpen] = useState(false);
   const [isSizeDialogOpen, setIsSizeDialogOpen] = useState(false);
+  const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false);
   
   const { toast } = useToast();
   
   // Supabase hooks
   const { data: areas = [], isLoading: areasLoading } = useLeafletAreas();
   const { data: sizes = [], isLoading: sizesLoading } = useLeafletSizes();
+  const { data: durations = [], isLoading: durationsLoading } = useLeafletCampaignDurations();
   
   const createAreaMutation = useCreateLeafletArea();
   const updateAreaMutation = useUpdateLeafletArea();
@@ -75,6 +83,9 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   const createSizeMutation = useCreateLeafletSize();
   const updateSizeMutation = useUpdateLeafletSize();
   const deleteSizeMutation = useDeleteLeafletSize();
+  const createDurationMutation = useCreateLeafletCampaignDuration();
+  const updateDurationMutation = useUpdateLeafletCampaignDuration();
+  const deleteDurationMutation = useDeleteLeafletCampaignDuration();
 
   const handleSaveArea = (formData: any) => {
     const areaData = {
@@ -122,6 +133,32 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
 
   const handleDeleteSize = (sizeId: string) => {
     deleteSizeMutation.mutate(sizeId);
+    onStatsUpdate?.();
+  };
+
+  const handleSaveDuration = (formData: any) => {
+    const durationData = {
+      name: formData.name,
+      issues: formData.issues,
+      months: formData.months,
+      description: formData.description,
+      is_default: formData.is_default,
+      is_active: true,
+      sort_order: formData.sort_order || 0,
+    };
+
+    if (editingDuration) {
+      updateDurationMutation.mutate({ ...durationData, id: editingDuration.id });
+    } else {
+      createDurationMutation.mutate(durationData);
+    }
+    setIsDurationDialogOpen(false);
+    setEditingDuration(null);
+    onStatsUpdate?.();
+  };
+
+  const handleDeleteDuration = (durationId: string) => {
+    deleteDurationMutation.mutate(durationId);
     onStatsUpdate?.();
   };
 
@@ -339,6 +376,105 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
     );
   };
 
+  const DurationDialog = () => {
+    const [formData, setFormData] = useState({
+      name: editingDuration?.name || '',
+      issues: editingDuration?.issues || 1,
+      months: editingDuration?.months || 2,
+      description: editingDuration?.description || '',
+      is_default: editingDuration?.is_default || false,
+      sort_order: editingDuration?.sort_order || 0
+    });
+
+    return (
+      <Dialog open={isDurationDialogOpen} onOpenChange={setIsDurationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingDuration ? 'Edit Campaign Duration' : 'Add New Campaign Duration'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Duration Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Standard Campaign"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="issues">Number of Issues</Label>
+                <Input
+                  id="issues"
+                  type="number"
+                  min="1"
+                  value={formData.issues}
+                  onChange={(e) => setFormData({...formData, issues: parseInt(e.target.value)})}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="months">Duration (Months)</Label>
+                <Input
+                  id="months"
+                  type="number"
+                  min="1"
+                  value={formData.months}
+                  onChange={(e) => setFormData({...formData, months: parseInt(e.target.value)})}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Brief description of this campaign duration"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="is_default"
+                checked={formData.is_default}
+                onChange={(e) => setFormData({...formData, is_default: e.target.checked})}
+              />
+              <Label htmlFor="is_default">Set as default campaign duration</Label>
+            </div>
+
+            <div>
+              <Label htmlFor="sort_order">Sort Order</Label>
+              <Input
+                id="sort_order"
+                type="number"
+                min="0"
+                value={formData.sort_order}
+                onChange={(e) => setFormData({...formData, sort_order: parseInt(e.target.value)})}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="outline" onClick={() => setIsDurationDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => handleSaveDuration(formData)}>
+              Save Duration
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -500,53 +636,77 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
                 <CardTitle>Campaign Duration Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-semibold">1 Issue = 2 months</h4>
-                      <p className="text-sm text-gray-600">Single issue campaign</p>
-                    </div>
-                    <Badge variant="secondary">Active</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-semibold">3 Issues = 6 months</h4>
-                      <p className="text-sm text-gray-600">Standard campaign</p>
-                    </div>
-                    <Badge variant="secondary">Active</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Volume Discounts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-semibold">2+ Areas</h4>
-                      <p className="text-sm text-gray-600">10% discount for multi-area bookings</p>
-                    </div>
-                    <Badge variant="secondary">10% Off</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                <Button 
+                  onClick={() => {
+                    setEditingDuration(null);
+                    setIsDurationDialogOpen(true);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Duration
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Issues</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Default</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {durations.map((duration) => (
+                    <TableRow key={duration.id}>
+                      <TableCell className="font-medium">{duration.name}</TableCell>
+                      <TableCell>{duration.issues} issue{duration.issues > 1 ? 's' : ''}</TableCell>
+                      <TableCell>{duration.months} month{duration.months > 1 ? 's' : ''}</TableCell>
+                      <TableCell>{duration.description}</TableCell>
+                      <TableCell>
+                        {duration.is_default && <Badge variant="secondary">Default</Badge>}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingDuration(duration);
+                              setIsDurationDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteDuration(duration.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
       <AreaDialog />
       <SizeDialog />
+      <DurationDialog />
     </div>
   );
 };
