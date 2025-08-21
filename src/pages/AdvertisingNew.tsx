@@ -12,18 +12,28 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Loader2, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import CostCalculatorOptimized from "@/components/CostCalculatorOptimized";
 import LeafletingCalculator from "@/components/LeafletingCalculator";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FormData {
   name: string;
   email: string;
   phone: string;
   company: string;
+  password: string;
+}
+
+interface SelectedIssues {
+  [areaId: string]: string[]; // Array of month strings like "2024-01", "2024-02"
 }
 
 const AdvertisingNew = () => {
@@ -33,14 +43,22 @@ const AdvertisingNew = () => {
     email: "",
     phone: "",
     company: "",
+    password: "",
   });
-  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof'>('fixed');
+  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof' | 'leafleting'>('fixed');
   const [prevPricingModel, setPrevPricingModel] = useState<string>('fixed');
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
+  const [upsellOpen, setUpsellOpen] = useState(false);
+  const [upsellDismissed, setUpsellDismissed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [selectedIssues, setSelectedIssues] = useState<SelectedIssues>({});
+  const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
+  const [contactSectionReached, setContactSectionReached] = useState(false);
 
   // Use the pricing data hook
   const {
@@ -61,11 +79,49 @@ const AdvertisingNew = () => {
     );
   }, []);
 
+  const maybeOpenUpsell = useCallback(() => {
+    if (pricingModel === 'fixed' && selectedAreas.length > 2 && !upsellDismissed) {
+      setUpsellOpen(true);
+    }
+  }, [pricingModel, selectedAreas.length, upsellDismissed]);
+
+  const handleUpsellNo = useCallback(() => {
+    setUpsellOpen(false);
+    setUpsellDismissed(true);
+  }, []);
+
+  const handleUpsellYes = useCallback(() => {
+    setUpsellOpen(false);
+    setUpsellDismissed(true);
+    setPricingModel('bogof');
+    setBogofPaidAreas(Array.from(new Set([...selectedAreas])));
+    if (selectedAreas.length >= 3) {
+      toast({ title: "Switched to BOGOF", description: "Great choice! Now pick your free areas." });
+    } else {
+      toast({ title: "Almost there", description: "Choose 1 more paid area to unlock your free areas." });
+    }
+  }, [selectedAreas, toast]);
+
   const effectiveSelectedAreas = useMemo(() => {
     return pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   }, [pricingModel, selectedAreas, bogofPaidAreas]);
 
   const pricingBreakdown = useMemo(() => {
+    // Handle leafleting service pricing
+    if (pricingModel === 'leafleting') {
+      if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
+        return null;
+      }
+
+      // Get duration multiplier from the selected duration
+      const selectedDurationData = durations.find(d => d.id === selectedDuration);
+      const durationMultiplier = selectedDurationData?.duration_value || 1;
+      
+      // For leafleting, we use a simplified calculation here
+      return null; // Will be handled by LeafletingCalculator component
+    }
+
+    // Handle regular advertising pricing
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
       return null;
     }
@@ -85,11 +141,12 @@ const AdvertisingNew = () => {
     );
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas]);
 
-  useEffect(() => {
+  
+  React.useEffect(() => {
     try {
       const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
       
-      // Only clear duration when pricing model actually changes
+      // Only clear duration when pricing model actually changes (not on initial load or data updates)
       if (pricingModel !== prevPricingModel && prevPricingModel !== null) {
         setSelectedDuration("");
         setPrevPricingModel(pricingModel);
@@ -109,18 +166,66 @@ const AdvertisingNew = () => {
         }
       }
       
+      // Update previous model reference
       setPrevPricingModel(pricingModel);
     } catch (error) {
       console.error('Error in duration useEffect:', error);
     }
   }, [pricingModel, durations, subscriptionDurations]);
 
-  const handleSubmit = () => {
+  // Handle scrolling to hash on page load (must be before any conditional returns)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.getElementById(hash.substring(1));
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
+  // Monitor when user reaches Contact Information section for Fixed Term confirmation
+  useEffect(() => {
+    const contactSection = document.querySelector('[data-contact-section]');
+    if (!contactSection) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !contactSectionReached) {
+            setContactSectionReached(true);
+            
+            // Show confirmation dialog for Fixed Term users only when pricing is calculated
+            if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
+              setShowFixedTermConfirmation(true);
+            }
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(contactSection);
+    return () => observer.disconnect();
+  }, [pricingModel, contactSectionReached, showFixedTermConfirmation, pricingBreakdown]);
+
+  const handleGetQuote = async () => {
     // Validation
-    if (!formData.name || !formData.email || !formData.phone) {
+    if (!formData.name || !formData.email || !formData.password) {
       toast({
         title: "Missing Information",
-        description: "Please fill in your contact details.",
+        description: "Please fill in your name, email, and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
       return;
@@ -146,19 +251,115 @@ const AdvertisingNew = () => {
 
     if (!selectedDuration) {
       toast({
-        title: "No Duration Selected", 
+        title: "No Duration Selected",
         description: "Please select a campaign duration.",
         variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Quote Request Sent!",
-      description: "We'll contact you within 24 hours with your personalized quote.",
+    setSubmitting(true);
+    try {
+      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const durationData = relevantDurations.find(d => d.id === selectedDuration);
+      const durationDiscountPercent = durationData?.discount_percentage || 0;
+      const subtotalAfterVolume = pricingBreakdown?.subtotal ? pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0) : 0;
+      const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+
+      // Get current user for request association
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const payload = {
+        contact_name: formData.name,
+        email: formData.email,
+        phone: formData.phone || '',
+        company: formData.company || '',
+        title: 'Quote Request',
+        pricing_model: pricingModel,
+        ad_size_id: selectedAdSize,
+        duration_id: selectedDuration,
+        selected_area_ids: effectiveSelectedAreas,
+        bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
+        bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
+        monthly_price: monthlyFinal,
+        subtotal: pricingBreakdown?.subtotal || 0,
+        final_total: pricingBreakdown?.finalTotal || 0,
+        duration_multiplier: pricingBreakdown?.durationMultiplier || 1,
+        total_circulation: pricingBreakdown?.totalCirculation || 0,
+        volume_discount_percent: pricingBreakdown?.volumeDiscountPercent || 0,
+        duration_discount_percent: durationDiscountPercent,
+        pricing_breakdown: JSON.parse(JSON.stringify(pricingBreakdown || {})) as any,
+        selections: {
+          pricingModel,
+          selectedAdSize,
+          selectedDuration,
+          selectedAreas,
+          bogofPaidAreas,
+          bogofFreeAreas
+        } as any,
+        user_id: user?.id || null  // Associate with user if authenticated
+      };
+
+      const { error } = await supabase.from('quote_requests').insert(payload);
+      if (error) throw error;
+      
+      toast({
+        title: "Quote Request Sent!",
+        description: "Our sales team will contact you within 24 hours to discuss your advertising needs.",
+      });
+    } catch (err: any) {
+      console.error('Submit quote error:', err);
+      toast({ title: "Error", description: err.message || 'Failed to submit quote request.', variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle Fixed Term confirmation dialog actions
+  const handleFixedTermContinue = () => {
+    setShowFixedTermConfirmation(false);
+    toast({ 
+      title: "Fixed Term Confirmed", 
+      description: "You can continue with your Fixed Term booking." 
     });
   };
 
+  const handleSwitchToSubscription = () => {
+    setShowFixedTermConfirmation(false);
+    setPricingModel('subscription');
+    setSelectedDuration("");
+    toast({ 
+      title: "Switched to Subscription", 
+      description: "You're now using our subscription pricing model." 
+    });
+  };
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-destructive flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                Failed to Load Data
+              </CardTitle>
+              <CardDescription>
+                {error?.message || "Unable to load pricing data"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={refetch} variant="outline">
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Stats and data from the original Advertising page
   const stats = [{
     number: "250+",
     label: "Current Advertisers",
@@ -210,768 +411,521 @@ const AdvertisingNew = () => {
     area: "AREA 4",
     title: "HEDGE END & SURROUNDS",
     postcodes: "SO30",
-    description: "ABC1 homes in east of Southampton: Hedge End, West End & Botley",
-    circulation: "13,000",
+    description: "ABC1 homes in this popular residential area between Southampton and Portsmouth including Hedge End, Botley and Boorley Green.",
+    circulation: "9,400",
     leaflets: "YES"
   }, {
     area: "AREA 5",
-    title: "LOCKS HEATH & SURROUNDS",
-    postcodes: "SO31",
-    description: "ABC1 homes in south east of Southampton, west of Fareham: Locks Heath, Warsash, Swanwick, Bursledon, Hamble, Netley",
-    circulation: "13,000",
+    title: "LOCKS HEATH & TITCHFIELD",
+    postcodes: "SO31 PO15",
+    description: "ABC1 homes in this affluent area of Fareham including Locks Heath, Titchfield, Warsash and Park Gate.",
+    circulation: "12,000",
     leaflets: "YES"
   }, {
     area: "AREA 6",
-    title: "FAREHAM & SURROUNDS",
-    postcodes: "PO13 PO14 PO15",
-    description: "ABC1 homes in Fareham westside, Titchfield, Stubbington, Lee on Solent, Hill Head",
-    circulation: "14,000",
+    title: "FAREHAM & VILLAGES",
+    postcodes: "PO12 PO13 PO14 PO16",
+    description: "ABC1 homes in Fareham town plus the villages of Wickham, Knowle, Soberton and surrounding areas.",
+    circulation: "12,100",
     leaflets: "YES"
   }, {
-    area: "AREA 7",
-    title: "WICKHAM & BISHOP'S WALTHAM",
-    postcodes: "SO32 PO17",
-    description: "Meon Valley is an affluent rural area with two market towns; Wickham & Bishop's Waltham so it's delivered by Royal Mail. Every property in these postcodes recieves Discover.",
-    circulation: "14,000",
-    leaflets: "NO, SORRY"
-  }, {
     area: "AREA 8",
-    title: "WINCHESTER & VILLAGES",
+    title: "WINCHESTER",
     postcodes: "SO21 SO22 SO23",
-    description: "Distribution is mixed with part Royal Mail (the affluent rural ring around Winchester) and part by Discover distribution in Winchester's ABC1 suburbs. Rural ring includes Otterbourne, Colden Common, Hursley, Crawley, South Wonston, Littleton, Sparsholt.",
-    circulation: "13,500",
+    description: "ABC1 homes in Winchester city and suburbs including Kings Worthy, Headbourne Worthy, Littleton and Sparsholt.",
+    circulation: "8,000",
     leaflets: "YES"
   }, {
     area: "AREA 9",
-    title: "ROMSEY & TEST VALLEY",
-    postcodes: "SO51 SO20",
-    description: "Test Valley includes the market towns of Romsey and Stockbridge including rural villages such as The Wellows, Braishfield, Ampfield, Kings Somborne. Every property in the rural postcodes receive Discover while 4,000 homes in Romsey are distributed by Discover.",
-    circulation: "15,000",
-    leaflets: "YES BUT ROMSEY ONLY"
+    title: "ROMSEY & NORTH BADDESLEY",
+    postcodes: "SO51 SO52",
+    description: "ABC1 homes in Romsey town and surrounding villages plus North Baddesley residential areas.",
+    circulation: "8,600",
+    leaflets: "YES"
   }, {
     area: "AREA 10",
-    title: "WATERSIDE & TOTTON",
+    title: "TOTTON",
     postcodes: "SO40 SO45",
-    description: "Locally referred to as Southampton's Waterside Discover is delivered to ABC1 homes in Totton, Marchwood, Hythe, Dibden, Dibden Purlieu, Holbury and Blackfield.",
-    circulation: "14,000",
+    description: "ABC1 homes in Totton and surrounding New Forest areas including Ashurst, Lyndhurst and Cadnam.",
+    circulation: "11,000",
     leaflets: "YES"
   }, {
     area: "AREA 11",
-    title: "NEW FOREST TO LYMINGTON",
-    postcodes: "SO41 SO42 SO43 BH24 4",
-    description: "The only magazine to reach so many homes in The New Forest directly delivered to by Royal Mail. Every property in these postcodes receive a copy.",
-    circulation: "13,500",
-    leaflets: "NO, SORRY"
+    title: "NEW FOREST & WATERSIDE",
+    postcodes: "SO40",
+    description: "ABC1 homes in the New Forest including Hythe, Dibden, Marchwood and Fawley industrial areas.",
+    circulation: "7,000",
+    leaflets: "YES"
+  }, {
+    area: "AREA 12",
+    title: "SHOLING & ITCHEN",
+    postcodes: "SO19",
+    description: "ABC1 homes in the eastern areas of Southampton including Sholing, Itchen, Woolston and Peartree.",
+    circulation: "7,000",
+    leaflets: "YES"
+  }, {
+    area: "AREA 13",
+    title: "SOUTHAMPTON EAST",
+    postcodes: "SO31",
+    description: "ABC1 homes in eastern Southampton including Bitterne, West End and surrounding residential areas.",
+    circulation: "9,200",
+    leaflets: "YES"
   }];
-
-  const magazineCovers = [{
-    src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
-    alt: "Discover Magazine - Winchester & Surrounds Edition",
-    title: "WINCHESTER & SURROUNDS"
-  }, {
-    src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png",
-    alt: "Discover Magazine - Itchen Valley Edition",
-    title: "ITCHEN VALLEY"
-  }, {
-    src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png",
-    alt: "Discover Magazine - Meon Valley & Whiteley Edition",
-    title: "MEON VALLEY & WHITELEY"
-  }, {
-    src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png",
-    alt: "Discover Magazine - New Forest & Waterside Edition",
-    title: "NEW FOREST & WATERSIDE"
-  }, {
-    src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png",
-    alt: "Discover Magazine - Southampton West & Totton Edition",
-    title: "SOUTHAMPTON WEST & TOTTON"
-  }, {
-    src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png",
-    alt: "Discover Magazine - Test Valley & Romsey Edition",
-    title: "TEST VALLEY & ROMSEY"
-  }, {
-    src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png",
-    alt: "Discover Magazine - Winchester & Alresford Edition",
-    title: "WINCHESTER & ALRESFORD"
-  }, {
-    src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png",
-    alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition",
-    title: "CHANDLER'S FORD & EASTLEIGH"
-  }];
-
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-destructive flex items-center gap-2">
-                <AlertCircle className="h-5 w-5" />
-                Failed to Load Data
-              </CardTitle>
-              <CardDescription>
-                {error?.message || "Unable to load pricing data"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={refetch} variant="outline">
-                Try Again
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Banner */}
-      <section className="relative bg-gradient-to-r from-community-navy to-community-green text-white py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{
-          backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
-        }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-community-navy/80 to-community-green/80" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-heading font-bold mb-6">
-            YOUR BUSINESS NEEDS TO BE SEEN
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-            We can't promise to find you a mate, but we will match you up with new customers!
-          </p>
-          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-lg p-3 inline-block mb-8">
-            <span className="text-green-400 font-bold text-lg">✓ NEW WORKING CALCULATOR</span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <CostCalculatorOptimized>
-              <Button size="lg" className="bg-community-green hover:bg-community-green/90 text-white">
-                Calculate Advertising Costs
-              </Button>
-            </CostCalculatorOptimized>
-            <LeafletingCalculator>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-community-navy">
-                Calculate Leafleting Costs
-              </Button>
-            </LeafletingCalculator>
-          </div>
-        </div>
-      </section>
-
-      {/* Calculator Section */}
-      <section id="calculator" className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Get Your Instant Quote
-            </h2>
-            <p className="text-xl text-gray-600">
-              Calculate your advertising costs with our interactive pricing calculator
-            </p>
-          </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Advertising Cost Calculator</CardTitle>
-              <CardDescription>
-                Fill in your details and select your preferences to get an instant quote
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Contact Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email Address *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="Enter your phone number"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="company">Company Name</Label>
-                    <Input
-                      id="company"
-                      value={formData.company}
-                      onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                      placeholder="Enter your company name"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Structure */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Select Payment Structure</h3>
-                <RadioGroup 
-                  value={pricingModel} 
-                  onValueChange={(value: 'fixed' | 'subscription' | 'bogof') => setPricingModel(value)}
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="fixed" id="fixed" />
-                    <Label htmlFor="fixed">Fixed No Contract Price</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="bogof" id="bogof" />
-                    <Label htmlFor="bogof">BOGOF - Buy One Get One Free</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Distribution Areas */}
-              {pricingModel !== 'bogof' && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Select Distribution Areas</h3>
-                  {isLoading ? (
-                    <div className="flex items-center justify-center p-8">
-                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                      Loading distribution areas...
-                    </div>
-                  ) : areas.length === 0 ? (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        No distribution areas available. Please check the admin configuration.
-                      </AlertDescription>
-                    </Alert>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {areas.map((area) => (
-                        <div key={area.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={area.id}
-                            checked={selectedAreas.includes(area.id)}
-                            onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
-                          />
-                          <Label htmlFor={area.id} className="flex-1">
-                            <div>
-                              <div className="font-medium">{area.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                Circulation: {area.circulation.toLocaleString()}
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* BOGOF Areas Selection */}
-              {pricingModel === 'bogof' && (
-                <>
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Select Your "Paid For" Areas</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Choose at least 1 area that you'll pay monthly subscription for. We'll match this with an equal number of free areas.
-                    </p>
-                    {isLoading ? (
-                      <div className="flex items-center justify-center p-8">
-                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                        Loading areas...
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {areas.map((area) => (
-                          <div key={area.id} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`paid-${area.id}`}
-                              checked={bogofPaidAreas.includes(area.id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setBogofPaidAreas(prev => [...prev, area.id]);
-                                } else {
-                                  setBogofPaidAreas(prev => prev.filter(id => id !== area.id));
-                                  setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
-                                }
-                              }}
-                            />
-                            <Label htmlFor={`paid-${area.id}`} className="flex-1">
-                              <div>
-                                <div className="font-medium">{area.name}</div>
-                                <div className="text-sm text-muted-foreground">
-                                  Circulation: {area.circulation.toLocaleString()}
-                                </div>
-                              </div>
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {bogofPaidAreas.length >= 1 && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Select Your "Free" Areas</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Choose up to {bogofPaidAreas.length} areas that you'll get for FREE for the first 6 months.
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {areas
-                          .filter(area => !bogofPaidAreas.includes(area.id))
-                          .map((area) => (
-                            <div key={area.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`free-${area.id}`}
-                                checked={bogofFreeAreas.includes(area.id)}
-                                disabled={bogofFreeAreas.length >= bogofPaidAreas.length && !bogofFreeAreas.includes(area.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setBogofFreeAreas(prev => [...prev, area.id]);
-                                  } else {
-                                    setBogofFreeAreas(prev => prev.filter(id => id !== area.id));
-                                  }
-                                }}
-                              />
-                              <Label htmlFor={`free-${area.id}`} className="flex-1">
-                                <div>
-                                  <div className="font-medium">{area.name}</div>
-                                  <div className="text-sm text-muted-foreground">
-                                    Circulation: {area.circulation.toLocaleString()}
-                                  </div>
-                                </div>
-                              </Label>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Ad Size Selection */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Select Advertisement Size</h3>
-                {isLoading ? (
-                  <div className="flex items-center justify-center p-4">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading ad sizes...
-                  </div>
-                ) : (
-                  <Select value={selectedAdSize} onValueChange={setSelectedAdSize}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose an advertisement size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {adSizes
-                        .filter(size => {
-                          const modelToCheck = pricingModel === 'bogof' ? 'subscription' : pricingModel;
-                          return size.available_for.includes(modelToCheck);
-                        })
-                        .map((size) => (
-                          <SelectItem key={size.id} value={size.id}>
-                            {size.name} ({size.dimensions})
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              {/* Duration Selection */}
-              {pricingModel !== 'bogof' && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Select Campaign Duration</h3>
-                  {isLoading ? (
-                    <div className="flex items-center justify-center p-4">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Loading durations...
-                    </div>
-                  ) : (
-                    <Select value={selectedDuration} onValueChange={setSelectedDuration}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose campaign duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(pricingModel === 'subscription' ? subscriptionDurations : durations).map((duration) => (
-                          <SelectItem key={duration.id} value={duration.id}>
-                            {duration.name}
-                            {duration.discount_percentage > 0 && (
-                              <span className="text-green-600 ml-2">
-                                ({duration.discount_percentage}% discount)
-                              </span>
-                            )}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-              )}
-
-              {/* Fixed 6-month for BOGOF */}
-              {pricingModel === 'bogof' && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Campaign Duration</h3>
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                      <span className="font-medium text-green-800">
-                        6 Months Fixed (Required for BOGOF)
-                      </span>
-                    </div>
-                    <p className="text-sm text-green-700 mt-1">
-                      BOGOF campaigns run for a fixed 6-month period to give you maximum value.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Pricing Summary */}
-              {pricingBreakdown && (
-                <>
-                  <Separator />
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Pricing Summary</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                      <div className="flex justify-between">
-                        <span>Selected Areas:</span>
-                        <span className="font-medium">{effectiveSelectedAreas.length}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total Circulation:</span>
-                        <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
-                      </div>
-                      {/* Show paid/free areas breakdown for subscription pricing */}
-                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                        <div className="flex justify-between">
-                          <span>Paid Areas:</span>
-                          <span className="font-medium">{effectiveSelectedAreas.length}</span>
-                        </div>
-                      )}
-                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                        <div className="flex justify-between">
-                          <span>Free Areas:</span>
-                          <span className="font-medium">{bogofFreeAreas.length}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span>Monthly Subtotal:</span>
-                        <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
-                      </div>
-                      {pricingBreakdown.volumeDiscount > 0 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                          <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
-                        </div>
-                      )}
-                      {pricingBreakdown.durationMultiplier < 1 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Duration Discount:</span>
-                          <span className="font-medium">-{formatPrice(pricingBreakdown.subtotal * (1 - pricingBreakdown.durationMultiplier))}</span>
-                        </div>
-                      )}
-                      <Separator />
-                      <div className="flex justify-between text-lg font-bold">
-                        <span>Total Price:</span>
-                        <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>Cost per 1,000 (CPM):</span>
-                        <span>{formatPrice(pricingBreakdown.finalTotal / pricingBreakdown.totalCirculation * 1000)}</span>
-                      </div>
-                      
-                     </div>
-
-                    {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                      <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                        <h4 className="font-semibold text-green-800 mb-2">BOGOF Bonus!</h4>
-                        <p className="text-green-700 text-sm">
-                          You'll get {bogofFreeAreas.length} additional areas FREE for the first 6 months, 
-                          reaching an extra {areas.filter(a => bogofFreeAreas.includes(a.id)).reduce((sum, area) => sum + area.circulation, 0).toLocaleString()} homes!
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Submit Button */}
-              <Button 
-                onClick={handleSubmit}
-                className="w-full"
-                size="lg"
-                disabled={
-                  !formData.name || 
-                  !formData.email || 
-                  !formData.phone || 
-                  effectiveSelectedAreas.length === 0 || 
-                  !selectedAdSize || 
-                  (!selectedDuration && pricingModel !== 'bogof')
-                }
-              >
-                Request Your Quote
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
+      {/* Hero Section */}
+      <section className="py-16 bg-gradient-to-br from-primary/5 to-primary/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-heading font-bold text-primary mb-6">
+              South Hampshire Advertising
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              Reach up to 158,000 homes across Southampton, Winchester, Eastleigh, and Fareham with our proven local advertising solutions.
+            </p>
+            
+            {/* Quick Calculator Access */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <CostCalculatorOptimized>
+                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  <Target className="mr-2 h-5 w-5" />
+                  Get Advertising Quote
+                </Button>
+              </CostCalculatorOptimized>
+              
+              <LeafletingCalculator>
+                <Button size="lg" variant="outline">
+                  <Truck className="mr-2 h-5 w-5" />
+                  Leafleting Service Quote
+                </Button>
+              </LeafletingCalculator>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
-                <div key={index} className="text-center">
-                  <div className="flex justify-center mb-4">
-                    <IconComponent className="h-12 w-12 text-community-green" />
-                  </div>
-                  <div className="text-4xl font-heading font-bold text-community-navy mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-gray-600 font-medium text-sm">{stat.label}</div>
-                </div>
+                <Card key={index} className="text-center p-4">
+                  <CardContent className="p-0">
+                    <IconComponent className="h-8 w-8 mx-auto mb-3 text-primary" />
+                    <div className="text-2xl font-bold text-primary mb-1">{stat.number}</div>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
         </div>
       </section>
 
+      {/* Pricing Summary */}
+      {pricingBreakdown && (
+        <section className="py-8 bg-primary/5">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center">Your Advertising Quote Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-primary">{effectiveSelectedAreas.length}</div>
+                    <div className="text-sm text-muted-foreground">Areas Selected</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-primary">{pricingBreakdown.totalCirculation.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Total Circulation</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-primary">{formatPrice((pricingBreakdown.finalTotal / pricingBreakdown.totalCirculation) * 1000)}</div>
+                    <div className="text-sm text-muted-foreground">Cost Per 1000 (CPM)</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-600">{formatPrice(pricingBreakdown.finalTotal)}</div>
+                    <div className="text-sm text-muted-foreground">Total Price</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
+
       {/* Magazine Covers Carousel */}
-      <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,255,255,0.03)_50%,transparent_75%,transparent_100%)] bg-[length:30px_30px] animate-pulse" />
-        <div className="absolute top-0 left-0 w-96 h-96 bg-community-green/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-community-navy/20 rounded-full blur-3xl" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-full px-6 py-2 mb-6">
-              <div className="w-2 h-2 bg-community-green rounded-full animate-pulse" />
-              <span className="text-white font-medium">LIVE PUBLICATIONS</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-4">
-              Discover Magazine Editions
+            <h2 className="text-4xl font-heading font-bold text-primary mb-4">
+              Latest Magazine Editions
             </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Explore our stunning collection of local editions covering all areas of South Hampshire
+            <p className="text-xl text-muted-foreground">
+              See our recent publications and successful advertiser features
             </p>
           </div>
 
-          <div className="relative max-w-5xl mx-auto">
-            <Carousel opts={{
-              align: "center",
-              loop: true
-            }} className="w-full">
-              <CarouselContent className="-ml-6">
-                {magazineCovers.map((cover, index) => (
-                  <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
-                    <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
-                      <CardContent className="p-6">
-                        <div className="relative overflow-hidden rounded-lg">
-                          <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                            <h3 className="text-white font-bold text-sm mb-2">{cover.title}</h3>
-                            <div className="flex items-center gap-2">
-                              <div className="w-1 h-1 bg-community-green rounded-full" />
-                              <span className="text-community-green text-xs font-medium">CURRENT EDITION</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <Carousel className="w-full max-w-5xl mx-auto">
+            <CarouselContent>
+              {[
+                { src: "/lovable-uploads/9f1d05c6-6723-48d2-9b24-3aee6cb957bd.png", alt: "Discover Magazine Cover" },
+                { src: "/lovable-uploads/99da34dd-ee6c-44a1-b95c-6edbc8085cd4.png", alt: "Local Business Features" },
+                { src: "/lovable-uploads/9ba0441a-d421-4a65-8738-115023b9fc55.png", alt: "Community Stories" }
+              ].map((image, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-1">
+                    <Card>
+                      <CardContent className="flex aspect-[3/4] items-center justify-center p-0">
+                        <img 
+                          src={image.src} 
+                          alt={image.alt}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                       </CardContent>
                     </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              
-              <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
-              <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
-            </Carousel>
-          </div>
-
-          <div className="text-center mt-12">
-            <div className="inline-flex flex-col sm:flex-row gap-4">
-              <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
-                EXPLORE ALL EDITIONS
-              </Button>
-              <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
-                VIEW DISTRIBUTION MAP
-              </Button>
-            </div>
-          </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </div>
       </section>
 
       {/* Special Offer Section */}
-      <section className="py-16 bg-gradient-to-r from-community-green to-green-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-primary/5">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SpecialOfferForm>
+            <Button>Special Offers Available</Button>
+          </SpecialOfferForm>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="inline-block bg-white text-community-green px-6 py-2 rounded-full font-bold text-lg mb-6">
-              🎉 LIMITED TIME OFFER
-            </div>
-            <h2 className="text-5xl md:text-6xl font-heading font-bold mb-6">
-              £999 ALL AREAS PACKAGE
+            <h2 className="text-4xl font-heading font-bold text-primary mb-4">
+              ADVERTISING ENQUIRY FORM
             </h2>
-            <p className="text-2xl md:text-3xl mb-4 font-bold">
-              Reach 158,000 Homes Across All 12 Areas
-            </p>
-            <p className="text-xl mb-8 opacity-90">
-              Save over £500 with our exclusive package deal - Perfect for businesses ready to make a big impact!
+            <p className="text-xl text-muted-foreground">
+              South Hampshire Advertising Services: reach up to 158,000 homes in SO & PO Postcodes
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">158,000</div>
-                <div className="text-lg">Total Homes Reached</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Display Advertising</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/3457943e-ae98-43c0-b6cb-556d1d936472.png" 
+                  alt="Display Advertising - Professional business advertisement layouts" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-48 object-cover"
+                />
+                <p className="text-muted-foreground">Professional advertising space in our established local magazines</p>
               </CardContent>
             </Card>
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">12</div>
-                <div className="text-lg">Distribution Areas</div>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Leaflet Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/34ecfbb2-fff7-4b7e-a22f-14509fe08bf3.png" 
+                  alt="Leaflet Distribution - Direct mail and flyer delivery service" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-48 object-cover"
+                />
+                <p className="text-muted-foreground">Door-to-door leaflet delivery across targeted residential areas</p>
               </CardContent>
             </Card>
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">6</div>
-                <div className="text-lg">Magazine Editions</div>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Digital Services</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/3bf54723-bde1-45e5-ba7d-fa1c6a9a1a1a.png" 
+                  alt="Digital Services - Online marketing and web solutions" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-48 object-cover"
+                />
+                <p className="text-muted-foreground">Complete digital marketing solutions to complement your print advertising</p>
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
 
-          <div className="text-center">
-            <SpecialOfferForm>
-              <Button size="lg" className="bg-white text-community-green hover:bg-gray-100 text-xl px-12 py-6 font-bold">
-                CLAIM THIS OFFER - £999
-              </Button>
-            </SpecialOfferForm>
-            <p className="mt-4 text-lg opacity-90">
-              Includes professional design support & account management
-            </p>
+      {/* Marketing Services */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-heading font-bold text-primary mb-4">
+              Marketing Services: Traditional & Digital
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Eye-Catching Design</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/9019f654-8637-4147-80ed-9ea16f9b7361.png" 
+                  alt="Eye-Catching Design - Colorful artistic eye makeup" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
+                <p className="text-muted-foreground">Ask about free artwork services for series bookings and anything else you need!</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Logos & Branding</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/057f04d1-71d6-4a38-8318-51bcd9dff466.png" 
+                  alt="Logos & Branding - ARTBOX Digital Design logo" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
+                <p className="text-muted-foreground">Whether a new design or a refresh and update we offer low cost portfolios</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">QR Codes & Geo Numbers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/50abedfe-ca8b-4655-9286-1c33ae15e786.png" 
+                  alt="QR Codes & Geo Numbers - QR code example" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
+                <p className="text-muted-foreground">Quantify your advertising responses with trackable QR codes and local phone numbers</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Lead Generation Specialists</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/06688917-138a-40f5-b46d-527ed07e7f8b.png" 
+                  alt="Lead Generation Specialists - Wise owl representing expertise" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
+                <p className="text-muted-foreground">We can talk about more than print advertising to market your business</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Marketing Support</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/0856841b-a768-43dd-b06b-edc0c2255265.png" 
+                  alt="Marketing Support - Media Buddy logo" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
+                <p className="text-muted-foreground">Every Discover advertisers deserves - and gets - their own Media Buddy.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-primary">Social Media Promotion</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/1950c3ad-577b-4c76-9ca1-aad2fc4bdb7a.png" 
+                  alt="Social Media Promotion - Friendly dog representing social engagement" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
+                <p className="text-muted-foreground">We can "twitter-woo" for you, too! (doesn't sound as good with X)</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Distribution Areas Table */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50" id="areas">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Distribution Areas & Coverage
+            <h2 className="text-4xl font-heading font-bold text-primary mb-4">
+              Essential Facts & Figures
             </h2>
-            <p className="text-xl text-gray-600">
-              Detailed breakdown of our 12 distribution areas across South Hampshire
+            <p className="text-xl text-muted-foreground">
+              Detailed coverage information for all distribution areas
             </p>
           </div>
-
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-bold">Area</TableHead>
-                  <TableHead className="font-bold">Location</TableHead>
-                  <TableHead className="font-bold">Postcodes</TableHead>
-                  <TableHead className="font-bold">Description</TableHead>
-                  <TableHead className="font-bold">Circulation</TableHead>
-                  <TableHead className="font-bold">Leaflets</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {localAreas.map((area, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{area.area}</TableCell>
-                    <TableCell className="font-medium">{area.title}</TableCell>
-                    <TableCell>{area.postcodes}</TableCell>
-                    <TableCell className="text-sm">{area.description}</TableCell>
-                    <TableCell className="font-medium">{area.circulation}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        area.leaflets === "YES" 
-                          ? "bg-green-100 text-green-800" 
-                          : area.leaflets === "YES BUT ROMSEY ONLY"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}>
-                        {area.leaflets}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          
+          <div className="max-w-6xl mx-auto">
+            <Accordion type="single" collapsible className="space-y-4">
+              {localAreas.map((area, index) => (
+                <AccordionItem key={area.area} value={`item-${index}`} className="bg-white rounded-lg border shadow-sm">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <div className="bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center font-bold mr-4 text-xs">
+                          {area.area}
+                        </div>
+                        <div className="text-left">
+                          <div className="font-heading font-bold text-lg">{area.title}</div>
+                          <div className="text-sm text-muted-foreground">{area.postcodes}</div>
+                          <div className="text-sm text-primary font-bold">Circulation: {area.circulation}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-heading font-bold text-primary mb-2">Coverage Details</h4>
+                          <p className="text-muted-foreground">{area.description}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-heading font-bold text-primary mb-2">Leaflet Distribution</h4>
+                          <p className={`font-bold ${area.leaflets === 'YES' ? 'text-green-600' : 'text-red-500'}`}>
+                            {area.leaflets}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <CostCalculatorOptimized>
+                          <Button className="w-full">
+                            REQUEST A QUOTE
+                          </Button>
+                        </CostCalculatorOptimized>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section className="py-16 bg-gray-50">
+      {/* Process Section */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Ready to Advertise?
+            <h2 className="text-4xl font-heading font-bold text-primary mb-4">
+              WANT TO GET STARTED?
             </h2>
-            <p className="text-xl text-gray-600">
-              Get in touch with our advertising team to discuss your requirements
+            <p className="text-xl text-muted-foreground">
+              From Quote to Artwork - We'll Help you All the Way!
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="text-center">
               <CardHeader>
-                <Phone className="h-12 w-12 text-community-green mx-auto mb-4" />
-                <CardTitle className="text-community-navy">Call Us</CardTitle>
+                <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl mx-auto mb-4">
+                  1
+                </div>
+                <CardTitle className="text-primary">Identifying What's Right for You</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold text-community-navy mb-2">023 8027 2922</p>
-                <p className="text-gray-600">Monday - Friday, 9am - 5pm</p>
+                <p className="text-muted-foreground">
+                  If you are new to advertising or need a fresh pair of eyes to improve what you are getting from your current advertising, our sales team are focused on what's right for your business; starting with the size of advert, the style, the design to which areas to choose.
+                </p>
+                <p className="text-muted-foreground mt-4 font-bold">
+                  If Discover isn't right for you, we'll tell you – honest!
+                </p>
               </CardContent>
             </Card>
 
             <Card className="text-center">
               <CardHeader>
-                <Mail className="h-12 w-12 text-community-green mx-auto mb-4" />
-                <CardTitle className="text-community-navy">Email Us</CardTitle>
+                <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl mx-auto mb-4">
+                  2
+                </div>
+                <CardTitle className="text-primary">Self Select quotations - You choose</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-lg font-bold text-community-navy mb-2">advertising@discover-southampton.co.uk</p>
-                <p className="text-gray-600">We'll respond within 24 hours</p>
+                <p className="text-muted-foreground">
+                  You'll receive an instant verbal quotation followed by 3 priced options. PLUS a link to our unique self service online cost calculator so you can play with the combination of advert size, areas and type of booking.
+                </p>
+                <p className="text-muted-foreground mt-4 font-bold">
+                  We believe in the power of informed choice with no hidden costs or surprises!
+                </p>
+                <p className="text-primary font-bold mt-2">Payment plans available</p>
               </CardContent>
             </Card>
 
             <Card className="text-center">
               <CardHeader>
-                <Clock className="h-12 w-12 text-community-green mx-auto mb-4" />
-                <CardTitle className="text-community-navy">Book Consultation</CardTitle>
+                <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl mx-auto mb-4">
+                  3
+                </div>
+                <CardTitle className="text-primary">Free In-house Design - At your service</CardTitle>
               </CardHeader>
               <CardContent>
-                <Button className="bg-community-green hover:bg-community-green/90 text-white px-6 py-2">
-                  Schedule Meeting
-                </Button>
-                <p className="text-gray-600 mt-2">Free advertising consultation</p>
+                <p className="text-muted-foreground">
+                  Many of customers rely on us to create eye catching adverts for them from scratch or adapting what they have. Our editorial department is on hand to write a complimentary article if you book a series.
+                </p>
+                <p className="text-muted-foreground mt-4 font-bold">
+                  You'll be allocated an account manager to look after you throughout your journey with us.
+                </p>
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-primary text-primary-foreground">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h2 className="text-4xl font-heading font-bold mb-6">
+              Sales Lead Generation with Direct Marketing
+            </h2>
+            <div className="space-y-4 text-lg">
+              <p><strong>Sales Leads.</strong></p>
+              <p><strong>Web Traffic.</strong></p>
+              <p><strong>Brand Awareness.</strong></p>
+            </div>
+            <p className="text-xl mt-6">
+              Helping businesses launch, grow and succeed since 2005. South Hampshire's most respected local magazine publisher.
+            </p>
+          </div>
+          
+          <div className="mb-8">
+            <h3 className="text-2xl font-heading font-bold mb-4">
+              Talk to the Local Magazine Experts
+            </h3>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white">
+              <Phone className="mr-2 h-5 w-5" />
+              023 80 266388
+            </Button>
+            <CostCalculatorOptimized>
+              <Button size="lg" variant="outline" className="border-white hover:bg-white hover:text-primary text-white">
+                Advertising Enquiry Form
+              </Button>
+            </CostCalculatorOptimized>
+          </div>
+          
+          <p className="mt-6 text-lg">
+            Go On ... Love your Business ... Help it Grow & Prosper Today!
+          </p>
         </div>
       </section>
     </div>

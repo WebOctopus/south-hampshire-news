@@ -1,6 +1,20 @@
 // Leafleting service pricing calculation
 
-import { LeafletArea, leafletVolumeDiscounts } from '@/data/leafletingPricing';
+export interface LeafletArea {
+  id: string;
+  areaNumber: number;
+  name: string;
+  postcodes: string;
+  bimonthlyCirculation: number;
+  priceWithVat: number;
+  schedule?: any[];
+}
+
+export interface VolumeDiscount {
+  minAreas: number;
+  maxAreas?: number;
+  discountPercentage: number;
+}
 
 export interface LeafletingPricingBreakdown {
   subtotal: number;
@@ -23,7 +37,8 @@ export interface LeafletingPricingBreakdown {
 export function calculateLeafletingPrice(
   selectedAreaIds: string[],
   leafletAreas: LeafletArea[] = [],
-  durationMultiplier: number = 1
+  durationMultiplier: number = 1,
+  volumeDiscounts: VolumeDiscount[] = []
 ): LeafletingPricingBreakdown | null {
   if (selectedAreaIds.length === 0 || leafletAreas.length === 0) {
     return null;
@@ -40,7 +55,7 @@ export function calculateLeafletingPrice(
   const subtotal = selectedAreas.reduce((total, area) => total + area.priceWithVat, 0);
   
   // Calculate volume discount based on number of areas
-  const volumeDiscountPercent = getLeafletVolumeDiscount(selectedAreas.length);
+  const volumeDiscountPercent = getLeafletVolumeDiscount(selectedAreas.length, volumeDiscounts);
   const volumeDiscount = subtotal * (volumeDiscountPercent / 100);
   
   // Calculate total circulation
@@ -71,9 +86,9 @@ export function calculateLeafletingPrice(
 /**
  * Get volume discount percentage based on number of selected areas
  */
-function getLeafletVolumeDiscount(areasCount: number): number {
-  const applicableDiscount = leafletVolumeDiscounts.find(
-    discount => areasCount >= discount.minAreas && areasCount <= discount.maxAreas
+function getLeafletVolumeDiscount(areasCount: number, volumeDiscounts: VolumeDiscount[] = []): number {
+  const applicableDiscount = volumeDiscounts.find(
+    discount => areasCount >= discount.minAreas && (discount.maxAreas === undefined || areasCount <= discount.maxAreas)
   );
   
   return applicableDiscount?.discountPercentage || 0;
