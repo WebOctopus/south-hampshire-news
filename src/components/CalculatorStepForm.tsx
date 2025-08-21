@@ -144,8 +144,17 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
         entries.forEach((entry) => {
           if (entry.isIntersecting && !contactSectionReached) {
             setContactSectionReached(true);
-            if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
+            console.log('Contact section reached, checking popup conditions...');
+            
+            // Show confirmation dialog for Fixed Term users when they reach contact section
+            if (pricingModel === 'fixed' && !showFixedTermConfirmation) {
+              console.log('Showing Fixed Term confirmation popup');
               setShowFixedTermConfirmation(true);
+            } else {
+              console.log('Popup not shown - conditions not met:', {
+                isFixed: pricingModel === 'fixed',
+                notAlreadyShown: !showFixedTermConfirmation
+              });
             }
           }
         });
@@ -710,7 +719,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             <DialogDescription className="text-center">
               If you booked this selection on our 3+ Repeat Package you would pay{" "}
               <span className="font-bold text-primary">
-                £{pricingBreakdown?.finalTotal ? Math.round(pricingBreakdown.finalTotal * 0.85) : 144} + vat (£{pricingBreakdown?.finalTotal ? Math.round(pricingBreakdown.finalTotal * 0.85 * 1.2) : 172.80})
+                {pricingBreakdown?.finalTotal 
+                  ? `£${Math.round(pricingBreakdown.finalTotal * 0.85)} + vat (£${Math.round(pricingBreakdown.finalTotal * 0.85 * 1.2)})` 
+                  : "significantly less with bulk discount + vat"
+                }
               </span>{" "}
               per month for minimum of six months INCLUDING
             </DialogDescription>
