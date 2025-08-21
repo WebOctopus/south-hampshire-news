@@ -184,9 +184,22 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
+          console.log('Intersection observer triggered:', {
+            isIntersecting: entry.isIntersecting,
+            contactSectionReached,
+            pricingModel,
+            showFixedTermConfirmation,
+            hasPricingBreakdown: !!pricingBreakdown
+          });
+
           if (entry.isIntersecting && !contactSectionReached) {
             setContactSectionReached(true);
-            console.log('Contact section reached, checking popup conditions...');
+            console.log('Contact section reached, checking popup conditions...', {
+              pricingModel,
+              showFixedTermConfirmation,
+              pricingBreakdown: !!pricingBreakdown ? 'EXISTS' : 'NULL',
+              pricingBreakdownValue: pricingBreakdown
+            });
             
             // Show confirmation dialog for Fixed Term users only when pricing is calculated
             if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
