@@ -801,6 +801,67 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             })()}
           </div>
 
+          {/* Schedule Management */}
+          {effectiveSelectedAreas.length > 0 && pricingModel !== 'leafleting' && (
+            <div className="bg-background border rounded-lg p-6 space-y-4">
+              <h3 className="text-lg font-semibold">Publication Schedule</h3>
+              <p className="text-sm text-muted-foreground">
+                Schedule information for your selected areas:
+              </p>
+              
+              <div className="space-y-4">
+                {effectiveSelectedAreas.map((areaId) => {
+                  const area = areas.find(a => a.id === areaId);
+                  if (!area) return null;
+                  
+                  return (
+                    <Card key={areaId} className="p-4">
+                      <div className="space-y-3">
+                        <h4 className="font-medium">{area.name}</h4>
+                        
+                        {/* Monthly Schedule */}
+                        {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {area.schedule.slice(0, 6).map((monthData: any, index: number) => (
+                              <div key={index} className="bg-muted/50 rounded-md p-3 space-y-2">
+                                <div className="font-medium text-sm">{monthData.month}</div>
+                                <div className="space-y-1 text-xs">
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Copy Deadline:</span>
+                                    <span>{monthData.copyDeadline || 'TBA'}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Print Deadline:</span>
+                                    <span>{monthData.printDeadline || 'TBA'}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Delivery:</span>
+                                    <span>{monthData.deliveryDate || 'TBA'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md">
+                            <div className="flex items-center gap-2">
+                              <AlertCircle className="h-4 w-4" />
+                              Schedule information not available for this area. Please contact our team for details.
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+              
+              <div className="text-xs text-muted-foreground">
+                * Schedule may vary by area and is subject to change. Final schedules will be confirmed upon booking.
+              </div>
+            </div>
+          )}
+
           {/* Pricing Summary */}
           {pricingBreakdown && (
             <div className="bg-muted/50 border rounded-lg p-6 space-y-4">
