@@ -94,8 +94,23 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       return calculateLeafletingPrice(effectiveSelectedAreas, leafletAreas || [], durationMultiplier);
     }
 
+    console.log('Pricing breakdown calculation - inputs:', {
+      effectiveSelectedAreas: effectiveSelectedAreas.length,
+      selectedAdSize,
+      selectedDuration,
+      pricingModel,
+      areasCount: areas?.length,
+      adSizesCount: adSizes?.length,
+      durationsCount: durations?.length
+    });
+
     // Handle regular advertising pricing
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
+      console.log('Pricing breakdown conditions not met:', {
+        selectedAdSize: !!selectedAdSize,
+        selectedDuration: !!selectedDuration,
+        effectiveSelectedAreas: effectiveSelectedAreas.length
+      });
       return null;
     }
 
@@ -146,14 +161,18 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             setContactSectionReached(true);
             console.log('Contact section reached, checking popup conditions...');
             
-            // Show confirmation dialog for Fixed Term users when they reach contact section
-            if (pricingModel === 'fixed' && !showFixedTermConfirmation) {
+            // Show confirmation dialog for Fixed Term users only when pricing is calculated
+            if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
               console.log('Showing Fixed Term confirmation popup');
               setShowFixedTermConfirmation(true);
             } else {
               console.log('Popup not shown - conditions not met:', {
                 isFixed: pricingModel === 'fixed',
-                notAlreadyShown: !showFixedTermConfirmation
+                notAlreadyShown: !showFixedTermConfirmation,
+                hasPricing: !!pricingBreakdown,
+                selectedAreas: effectiveSelectedAreas.length,
+                selectedAdSize: !!selectedAdSize,
+                selectedDuration: !!selectedDuration
               });
             }
           }
