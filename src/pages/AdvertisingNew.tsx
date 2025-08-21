@@ -15,6 +15,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
+import CostCalculatorOptimized from "@/components/CostCalculatorOptimized";
+import LeafletingCalculator from "@/components/LeafletingCalculator";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
 
 interface FormData {
@@ -340,8 +342,20 @@ const AdvertisingNew = () => {
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             We can't promise to find you a mate, but we will match you up with new customers!
           </p>
-          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-lg p-3 inline-block">
+          <div className="bg-white/10 backdrop-blur border border-white/20 rounded-lg p-3 inline-block mb-8">
             <span className="text-green-400 font-bold text-lg">✓ NEW WORKING CALCULATOR</span>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <CostCalculatorOptimized>
+              <Button size="lg" className="bg-community-green hover:bg-community-green/90 text-white">
+                Calculate Advertising Costs
+              </Button>
+            </CostCalculatorOptimized>
+            <LeafletingCalculator>
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-community-navy">
+                Calculate Leafleting Costs
+              </Button>
+            </LeafletingCalculator>
           </div>
         </div>
       </section>
