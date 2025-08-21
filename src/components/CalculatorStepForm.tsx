@@ -35,7 +35,7 @@ interface CalculatorStepFormProps {
 
 export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingModel }) => {
   const { toast } = useToast();
-  const { nextStep } = useStepForm();
+  const { nextStep, prevStep } = useStepForm();
   
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -269,10 +269,11 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
   const handleSwitchToSubscription = () => {
     setShowFixedTermConfirmation(false);
-    // Note: We can't change pricing model in this step since it was selected in the previous step
+    const { prevStep } = useStepForm();
+    prevStep(); // Go back to pricing options step
     toast({ 
-      title: "Please Go Back", 
-      description: "Use the previous step to select the 3+ Repeat Package." 
+      title: "Switched to Pricing Options", 
+      description: "Please select the 3+ Repeat Package to get the BOGOF deal." 
     });
   };
 
