@@ -211,7 +211,8 @@ const effectiveSelectedAreas = useMemo(() => {
     });
 
     try {
-      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
+                                (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
       
       console.log('Relevant durations for', pricingModel, ':', relevantDurations);
       
@@ -348,9 +349,11 @@ const effectiveSelectedAreas = useMemo(() => {
 
     setSubmitting(true);
     try {
-      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-      const durationData = relevantDurations.find(d => d.id === selectedDuration);
-      const durationDiscountPercent = durationData?.discount_percentage || 0;
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : 
+                                (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const durationData = relevantDurations?.find(d => d.id === selectedDuration);
+      // Leafleting doesn't have duration discounts, only regular advertising does
+      const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
       const subtotalAfterVolume = pricingBreakdown?.subtotal ? pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0) : 0;
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
 
@@ -424,9 +427,11 @@ const effectiveSelectedAreas = useMemo(() => {
 
     setSaving(true);
     try {
-      const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-      const durationData = relevantDurations.find(d => d.id === selectedDuration);
-      const durationDiscountPercent = durationData?.discount_percentage || 0;
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : 
+                                (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const durationData = relevantDurations?.find(d => d.id === selectedDuration);
+      // Leafleting doesn't have duration discounts, only regular advertising does
+      const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
       const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
 
@@ -1401,23 +1406,28 @@ const effectiveSelectedAreas = useMemo(() => {
                     <SelectTrigger>
                       <SelectValue placeholder="Choose campaign duration" />
                     </SelectTrigger>
-                     <SelectContent className="z-50">
-                       {(() => {
-                         if (pricingModel === 'leafleting') {
-                           // For leafleting, show fixed term durations (1, 2, 3 issues)
-                           return durations.map((duration) => (
-                             <SelectItem key={`leafleting-${duration.id}`} value={duration.id}>
-                               {duration.name}
-                             </SelectItem>
-                           ));
-                         } else {
-                           // For other models, use appropriate durations
-                           return (pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
-                             <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
-                               {duration.name}
-                             </SelectItem>
-                           ));
-                         }
+                      <SelectContent className="z-50">
+                        {(() => {
+                          if (pricingModel === 'leafleting') {
+                            // For leafleting, show leaflet campaign durations
+                            return leafletDurations?.map((duration) => (
+                              <SelectItem key={`leafleting-${duration.id}`} value={duration.id}>
+                                {duration.name}
+                                {duration.description && (
+                                  <span className="text-sm text-muted-foreground ml-2">
+                                    ({duration.description})
+                                  </span>
+                                )}
+                              </SelectItem>
+                            )) || [];
+                          } else {
+                            // For other models, use appropriate durations
+                            return (pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations).map((duration) => (
+                              <SelectItem key={`${pricingModel}-${duration.id}`} value={duration.id}>
+                                {duration.name}
+                              </SelectItem>
+                            ));
+                          }
                        })()}
                      </SelectContent>
                    </Select>
@@ -1432,9 +1442,12 @@ const effectiveSelectedAreas = useMemo(() => {
                      </div>
                      <p className="text-sm text-muted-foreground">
                        Choose specific delivery dates for each area. Copy deadlines and circulation details are shown below.
-                       {(() => {
-                         const selectedDurationData = durations.find(d => d.id === selectedDuration);
-                         const maxIssues = selectedDurationData?.duration_value || 1;
+                        {(() => {
+                          const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : durations;
+                          const selectedDurationData = relevantDurations?.find(d => d.id === selectedDuration);
+                          const maxIssues = pricingModel === 'leafleting' ? 
+                            (selectedDurationData as any)?.issues || 1 : 
+                            (selectedDurationData as any)?.duration_value || 1;
                          return (
                            <span className="block mt-1 font-medium text-primary">
                              You can select up to {maxIssues} issue{maxIssues > 1 ? 's' : ''} per area based on your selected campaign duration.
@@ -1508,9 +1521,12 @@ const effectiveSelectedAreas = useMemo(() => {
                                              setSelectedIssues(prev => {
                                                const currentSelections = prev[leafletArea.id] || [];
                                                
-                                               // Get the maximum number of issues allowed based on selected duration
-                                               const selectedDurationData = durations.find(d => d.id === selectedDuration);
-                                               const maxIssues = selectedDurationData?.duration_value || 1;
+                                                // Get the maximum number of issues allowed based on selected duration
+                                                const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : durations;
+                                                const selectedDurationData = relevantDurations?.find(d => d.id === selectedDuration);
+                                                const maxIssues = pricingModel === 'leafleting' ? 
+                                                  (selectedDurationData as any)?.issues || 1 : 
+                                                  (selectedDurationData as any)?.duration_value || 1;
                                                
                                                if (checked) {
                                                  // If trying to add and already at max, don't allow more selections
@@ -1679,9 +1695,10 @@ const effectiveSelectedAreas = useMemo(() => {
                            </div>
                            
                            <div className="text-sm text-muted-foreground">
-                             {(() => {
-                               const selectedDurationData = durations.find(d => d.id === selectedDuration);
-                               const durationName = selectedDurationData?.name || "1 issue";
+                              {(() => {
+                                const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : durations;
+                                const selectedDurationData = relevantDurations?.find(d => d.id === selectedDuration);
+                                const durationName = selectedDurationData?.name || "1 issue";
                                const issueText = durationName.toLowerCase().includes('issue') ? durationName.toLowerCase() : `${pricingBreakdown.durationMultiplier} issue${pricingBreakdown.durationMultiplier > 1 ? 's' : ''}`;
                                return `${issueText} • Bi-monthly delivery to ${pricingBreakdown.totalCirculation.toLocaleString()} homes`;
                              })()}
@@ -1694,11 +1711,11 @@ const effectiveSelectedAreas = useMemo(() => {
                            )}
                          </div>
                        ) : (
-                         // Regular advertising pricing display
-                         (() => {
-                           const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-                           const selectedDurationData = relevantDurations.find(d => d.id === selectedDuration);
-                           const durationDiscountPercent = selectedDurationData?.discount_percentage || 0;
+                          // Regular advertising pricing display
+                          (() => {
+                            const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+                            const selectedDurationData = relevantDurations?.find(d => d.id === selectedDuration);
+                            const durationDiscountPercent = selectedDurationData?.discount_percentage || 0;
                            const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
                            const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
                            const vatAmount = monthlyFinal * 0.2;
