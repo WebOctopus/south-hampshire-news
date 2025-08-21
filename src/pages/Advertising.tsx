@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
 import { calculateLeafletingPrice } from "@/lib/leafletingCalculator";
-import { leafletAreas, leafletSizes, leafletVolumeDiscounts } from "@/data/leafletingPricing";
+import { useLeafletAreas, useLeafletSizes, useLeafletCampaignDurations } from "@/hooks/useLeafletData";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -79,12 +79,20 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
     refetch
   } = usePricingData();
 
+  // Use leafleting data hooks
+  const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
+  const { data: leafletSizes, isLoading: leafletSizesLoading, error: leafletSizesError } = useLeafletSizes();
+  const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
+
   // Debug logging
   console.log('Calculator Test - Data state:', {
     areas: areas?.length,
     adSizes: adSizes?.length,
     durations: durations?.length,
     subscriptionDurations: subscriptionDurations?.length,
+    leafletAreas: leafletAreas?.length,
+    leafletSizes: leafletSizes?.length,
+    leafletDurations: leafletDurations?.length,
     isLoading,
     isError,
     error: error?.message
@@ -135,13 +143,13 @@ const effectiveSelectedAreas = useMemo(() => {
         return null;
       }
 
-      // Get duration multiplier from the selected duration
-      const selectedDurationData = durations.find(d => d.id === selectedDuration);
-      const durationMultiplier = selectedDurationData?.duration_value || 1;
+      // Get duration multiplier from the selected leaflet duration
+      const selectedLeafletDurationData = leafletDurations?.find(d => d.id === selectedDuration);
+      const durationMultiplier = selectedLeafletDurationData?.months || 1;
       
       const result = calculateLeafletingPrice(
         effectiveSelectedAreas,
-        leafletAreas,
+        leafletAreas || [],
         durationMultiplier
       );
       
@@ -190,7 +198,7 @@ const effectiveSelectedAreas = useMemo(() => {
     });
     
     return result;
-  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas]);
+  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations]);
 
   
   React.useEffect(() => {
@@ -1246,13 +1254,13 @@ const effectiveSelectedAreas = useMemo(() => {
                             />
                             <div className="flex-1">
                               <div className="font-medium text-base">
-                                Area {area.areaNumber}: {area.name}
+                                Area {area.area_number}: {area.name}
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {area.postcodes}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                Bi-monthly Circulation: {area.bimonthlyCirculation.toLocaleString()}
+                                Bi-monthly Circulation: {area.bimonthly_circulation.toLocaleString()}
                               </div>
                             </div>
                           </div>
@@ -1446,7 +1454,7 @@ const effectiveSelectedAreas = useMemo(() => {
                                 <Badge variant="secondary">{leafletArea.postcodes}</Badge>
                               </CardTitle>
                               <p className="text-sm text-muted-foreground">
-                                Circulation: {leafletArea.bimonthlyCirculation.toLocaleString()} • £{leafletArea.priceWithVat} + VAT per delivery
+                                Circulation: {leafletArea.bimonthly_circulation.toLocaleString()} • £{leafletArea.price_with_vat} + VAT per delivery
                               </p>
                             </CardHeader>
                             <CardContent className="pt-0">

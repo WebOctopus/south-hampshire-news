@@ -53,20 +53,9 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
   const pricingBreakdown = useMemo(() => {
     if (!areas.length) return null;
     
-    // Convert Supabase data to expected format for the calculator
-    const leafletAreas = areas.map(area => ({
-      id: area.id,
-      areaNumber: area.area_number,
-      name: area.name,
-      postcodes: area.postcodes,
-      priceWithVat: Number(area.price_with_vat),
-      bimonthlyCirculation: area.bimonthly_circulation,
-      schedule: area.schedule || []
-    }));
-    
     return calculateLeafletingPrice(
       formData.selectedAreas,
-      leafletAreas,
+      areas,
       parseInt(formData.duration)
     );
   }, [formData.selectedAreas, formData.duration, areas]);

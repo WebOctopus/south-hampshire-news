@@ -55,7 +55,7 @@ import {
   type LeafletCampaignDuration
 } from '@/hooks/useLeafletData';
 import { useToast } from '@/components/ui/use-toast';
-import { seedLeafletData } from '@/utils/seedLeafletData';
+
 
 interface LeafletingManagementProps {
   onStatsUpdate?: () => void;
@@ -160,17 +160,6 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   const handleDeleteDuration = (durationId: string) => {
     deleteDurationMutation.mutate(durationId);
     onStatsUpdate?.();
-  };
-
-  const handleSeedData = async () => {
-    const success = await seedLeafletData();
-    if (success) {
-      toast({ title: "Sample data added successfully!" });
-      // Refetch data
-      window.location.reload();
-    } else {
-      toast({ title: "Error adding sample data", variant: "destructive" });
-    }
   };
 
   const AreaDialog = () => {
@@ -525,19 +514,14 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-heading font-bold text-community-navy">
-            Leafleting Service Management
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Manage distribution areas, sizes, pricing and schedules
-          </p>
-        </div>
-        {areas.length === 0 && (
-          <Button onClick={handleSeedData} variant="outline">
-            Add Sample Data
-          </Button>
-        )}
+      <div>
+        <h2 className="text-2xl font-heading font-bold text-community-navy">
+          Leafleting Service Management
+        </h2>
+        <p className="text-gray-600 mt-1">
+          Manage distribution areas, sizes, pricing and schedules
+        </p>
+      </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

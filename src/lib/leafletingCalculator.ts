@@ -1,6 +1,6 @@
 // Leafleting service pricing calculation
 
-import { LeafletArea, leafletVolumeDiscounts } from '@/data/leafletingPricing';
+import { LeafletArea } from '@/hooks/useLeafletData';
 
 export interface LeafletingPricingBreakdown {
   subtotal: number;
@@ -37,14 +37,14 @@ export function calculateLeafletingPrice(
   }
 
   // Calculate base subtotal
-  const subtotal = selectedAreas.reduce((total, area) => total + area.priceWithVat, 0);
+  const subtotal = selectedAreas.reduce((total, area) => total + area.price_with_vat, 0);
   
-  // Calculate volume discount based on number of areas
-  const volumeDiscountPercent = getLeafletVolumeDiscount(selectedAreas.length);
+  // Calculate volume discount based on number of areas (10% for 2+ areas)
+  const volumeDiscountPercent = selectedAreas.length >= 2 ? 10 : 0;
   const volumeDiscount = subtotal * (volumeDiscountPercent / 100);
   
   // Calculate total circulation
-  const totalCirculation = selectedAreas.reduce((total, area) => total + area.bimonthlyCirculation, 0);
+  const totalCirculation = selectedAreas.reduce((total, area) => total + area.bimonthly_circulation, 0);
   
   // Calculate final total with duration multiplier
   const finalTotal = (subtotal - volumeDiscount) * durationMultiplier;
@@ -53,8 +53,8 @@ export function calculateLeafletingPrice(
   const areaBreakdown = selectedAreas.map(area => ({
     areaId: area.id,
     areaName: area.name,
-    basePrice: area.priceWithVat,
-    circulation: area.bimonthlyCirculation
+    basePrice: area.price_with_vat,
+    circulation: area.bimonthly_circulation
   }));
 
   return {
@@ -68,16 +68,6 @@ export function calculateLeafletingPrice(
   };
 }
 
-/**
- * Get volume discount percentage based on number of selected areas
- */
-function getLeafletVolumeDiscount(areasCount: number): number {
-  const applicableDiscount = leafletVolumeDiscounts.find(
-    discount => areasCount >= discount.minAreas && areasCount <= discount.maxAreas
-  );
-  
-  return applicableDiscount?.discountPercentage || 0;
-}
 
 /**
  * Format price for display
