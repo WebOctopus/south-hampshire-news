@@ -24,6 +24,7 @@ import IssuePricingManagement from '@/components/admin/IssuePricingManagement';
 import { SpecialDealsManagement } from '@/components/admin/SpecialDealsManagement';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Clock, TrendingUp, Receipt, Tag } from 'lucide-react';
+import LeafletingManagement from '@/components/admin/LeafletingManagement';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -646,6 +647,13 @@ const AdminDashboard = () => {
         return (
           <div className="space-y-6">
             <SubscriptionSettingsManagement onStatsUpdate={() => {}} />
+          </div>
+        );
+
+      case 'calculator-leaflets':
+        return (
+          <div className="space-y-6">
+            <LeafletingManagement onStatsUpdate={() => {}} />
           </div>
         );
 

@@ -18,7 +18,8 @@ import {
   Monitor,
   Receipt,
   Tag,
-  Home
+  Home,
+  FileImage
 } from "lucide-react"
 
 import {
@@ -80,6 +81,11 @@ const menuItems = [
         title: "Subscription Settings",
         icon: Settings,
         section: "calculator-subscriptions"
+      },
+      {
+        title: "Leaflets",
+        icon: FileImage,
+        section: "calculator-leaflets"
       },
       {
         title: "Preview Calculator",
