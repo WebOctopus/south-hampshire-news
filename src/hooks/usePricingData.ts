@@ -12,6 +12,12 @@ export interface DbArea {
   full_page_multiplier: number;
   is_active: boolean;
   sort_order: number;
+  schedule?: Array<{
+    month: string;
+    copyDeadline: string;
+    printDeadline: string;
+    deliveryDate: string;
+  }>;
 }
 
 export interface DbAdSize {
@@ -64,7 +70,19 @@ export function useAreas() {
         }
         
         console.log('[usePricingData] Areas fetched successfully:', data?.length || 0);
-        return (data || []) as DbArea[];
+        
+        // Process the data to properly type the schedule field
+        const processedData = (data || []).map(area => ({
+          ...area,
+          schedule: Array.isArray(area.schedule) ? area.schedule as Array<{
+            month: string;
+            copyDeadline: string;
+            printDeadline: string;
+            deliveryDate: string;
+          }> : []
+        })) as DbArea[];
+        
+        return processedData;
       } catch (error) {
         console.error('[usePricingData] Network error fetching areas:', error);
         throw error;

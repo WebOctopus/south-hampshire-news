@@ -459,9 +459,25 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                               {(area as any).description || 'Area description'}
                             </p>
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Postcodes: {(area as any).postcodes || 'N/A'}</span>
-                              <span className="font-medium">£{(area as any).price_per_thousand || 0}</span>
+                              <span>Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A'}</span>
                             </div>
+                            {/* Schedule Information */}
+                            {area.schedule && area.schedule.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <div className="text-xs font-medium text-gray-700 mb-1">Publication Schedule:</div>
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <span className="font-medium">Copy:</span> {area.schedule[0]?.copyDeadline || 'N/A'}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Print:</span> {area.schedule[0]?.printDeadline || 'N/A'}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Delivery:</span> {area.schedule[0]?.deliveryDate || 'N/A'}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -519,9 +535,25 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                               {(area as any).description || 'Area description'}
                             </p>
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Postcodes: {(area as any).postcodes || 'N/A'}</span>
-                              <span className="font-medium">£{(area as any).price_per_thousand || 0}</span>
+                              <span>Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A'}</span>
                             </div>
+                            {/* Schedule Information */}
+                            {area.schedule && area.schedule.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <div className="text-xs font-medium text-gray-700 mb-1">Publication Schedule:</div>
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <span className="font-medium">Copy:</span> {area.schedule[0]?.copyDeadline || 'N/A'}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Print:</span> {area.schedule[0]?.printDeadline || 'N/A'}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Delivery:</span> {area.schedule[0]?.deliveryDate || 'N/A'}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -555,6 +587,17 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                             <div className="text-xs text-muted-foreground mt-1">
                               {area.circulation?.toLocaleString()} homes
                             </div>
+                            {/* Schedule Information for Free Areas */}
+                            {area.schedule && area.schedule.length > 0 && (
+                              <div className="text-xs text-gray-600 mt-2">
+                                <div className="font-medium mb-1">Publication Schedule:</div>
+                                <div className="grid grid-cols-3 gap-1">
+                                  <div>Copy: {area.schedule[0]?.copyDeadline}</div>
+                                  <div>Print: {area.schedule[0]?.printDeadline}</div>
+                                  <div>Delivery: {area.schedule[0]?.deliveryDate}</div>
+                                </div>
+                              </div>
+                            )}
                           </Label>
                         </div>
                       ))}

@@ -28,6 +28,12 @@ interface LocationData {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  schedule?: Array<{
+    month: string;
+    copyDeadline: string;
+    printDeadline: string;
+    deliveryDate: string;
+  }>;
 }
 
 interface LocationsManagementProps {
@@ -53,7 +59,21 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
     half_page_multiplier: 1.0,
     full_page_multiplier: 1.0,
     is_active: true,
-    sort_order: 0
+    sort_order: 0,
+    schedule: [
+      { month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
+    ]
   });
   const { toast } = useToast();
 
@@ -114,7 +134,18 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
         throw error;
       }
 
-      setLocations(data || []);
+      // Process the data to properly type the schedule field
+      const processedLocations = (data || []).map(location => ({
+        ...location,
+        schedule: Array.isArray(location.schedule) ? location.schedule as Array<{
+          month: string;
+          copyDeadline: string;
+          printDeadline: string;
+          deliveryDate: string;
+        }> : []
+      })) as LocationData[];
+
+      setLocations(processedLocations);
       onStatsUpdate();
     } catch (error) {
       console.error('Error loading locations:', error);
@@ -138,7 +169,21 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
       half_page_multiplier: 1.0,
       full_page_multiplier: 1.0,
       is_active: true,
-      sort_order: locations.length + 1
+      sort_order: locations.length + 1,
+      schedule: [
+        { month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
+      ]
     });
     setEditingLocation(null);
   };
@@ -155,7 +200,21 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
         half_page_multiplier: location.half_page_multiplier,
         full_page_multiplier: location.full_page_multiplier,
         is_active: location.is_active,
-        sort_order: location.sort_order
+        sort_order: location.sort_order,
+        schedule: location.schedule || [
+          { month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
+        ]
       });
     } else {
       resetForm();
@@ -173,7 +232,8 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
         quarter_page_multiplier: Number(formData.quarter_page_multiplier),
         half_page_multiplier: Number(formData.half_page_multiplier),
         full_page_multiplier: Number(formData.full_page_multiplier),
-        sort_order: Number(formData.sort_order)
+        sort_order: Number(formData.sort_order),
+        schedule: formData.schedule
       };
 
       let error;
@@ -358,7 +418,7 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                 Add Location
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingLocation ? 'Edit Location' : 'Add New Location'}
@@ -463,6 +523,57 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                   />
                   <Label htmlFor="is_active">Active</Label>
+                </div>
+
+                {/* Schedule Management Section */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Monthly Schedule</Label>
+                  <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+                    {formData.schedule.map((scheduleItem, index) => (
+                      <div key={scheduleItem.month} className="grid grid-cols-4 gap-2 items-center">
+                        <div className="text-sm font-medium">{scheduleItem.month}</div>
+                        <div>
+                          <Label className="text-xs">Copy Deadline</Label>
+                          <Input
+                            value={scheduleItem.copyDeadline}
+                            onChange={(e) => {
+                              const newSchedule = [...formData.schedule];
+                              newSchedule[index] = { ...scheduleItem, copyDeadline: e.target.value };
+                              setFormData(prev => ({ ...prev, schedule: newSchedule }));
+                            }}
+                            placeholder="15th"
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Print Deadline</Label>
+                          <Input
+                            value={scheduleItem.printDeadline}
+                            onChange={(e) => {
+                              const newSchedule = [...formData.schedule];
+                              newSchedule[index] = { ...scheduleItem, printDeadline: e.target.value };
+                              setFormData(prev => ({ ...prev, schedule: newSchedule }));
+                            }}
+                            placeholder="20th"
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Delivery Date</Label>
+                          <Input
+                            value={scheduleItem.deliveryDate}
+                            onChange={(e) => {
+                              const newSchedule = [...formData.schedule];
+                              newSchedule[index] = { ...scheduleItem, deliveryDate: e.target.value };
+                              setFormData(prev => ({ ...prev, schedule: newSchedule }));
+                            }}
+                            placeholder="25th"
+                            className="text-sm"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex gap-2 pt-4">

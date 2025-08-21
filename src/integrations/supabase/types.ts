@@ -578,6 +578,7 @@ export type Database = {
           name: string
           postcodes: string[]
           quarter_page_multiplier: number
+          schedule: Json
           sort_order: number | null
           updated_at: string
         }
@@ -592,6 +593,7 @@ export type Database = {
           name: string
           postcodes?: string[]
           quarter_page_multiplier?: number
+          schedule?: Json
           sort_order?: number | null
           updated_at?: string
         }
@@ -606,6 +608,7 @@ export type Database = {
           name?: string
           postcodes?: string[]
           quarter_page_multiplier?: number
+          schedule?: Json
           sort_order?: number | null
           updated_at?: string
         }
