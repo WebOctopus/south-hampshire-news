@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, RefreshCw, ExternalLink } from 'lucide-react';
-import CostCalculatorOptimized from '@/components/CostCalculatorOptimized';
 import DataConnectionTest from './DataConnectionTest';
 
 const CalculatorPreview = () => {
@@ -84,11 +83,13 @@ const CalculatorPreview = () => {
         <CardContent>
           <div className="bg-gray-50 p-6 rounded-lg">
             <div className="max-w-md mx-auto">
-              <CostCalculatorOptimized>
-                <Button size="lg" className="w-full bg-community-green hover:bg-community-green/90">
-                  Test Cost Calculator
-                </Button>
-              </CostCalculatorOptimized>
+              <Button 
+                size="lg" 
+                className="w-full bg-community-green hover:bg-community-green/90"
+                onClick={() => window.open('/advertising#calculator', '_blank')}
+              >
+                Open Live Calculator
+              </Button>
             </div>
           </div>
           
@@ -98,7 +99,7 @@ const CalculatorPreview = () => {
               <div className="space-y-2">
                 <p><strong>1. Basic Testing:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Click "Test Cost Calculator" above</li>
+                  <li>Click "Open Live Calculator" above</li>
                   <li>Fill in contact information</li>
                   <li>Select pricing model (Fixed or BOGOF)</li>
                   <li>Choose distribution areas</li>
