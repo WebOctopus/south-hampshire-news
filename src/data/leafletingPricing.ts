@@ -113,7 +113,7 @@ export const leafletAreas: LeafletArea[] = [
     priceWithVat: 360,
     schedule: [
       { month: 'September 2025', copyDeadline: '13 Aug', printDeadline: '15 Aug', delivery: '5 Sept', circulation: 70600 },
-      { month: 'November 2025', copyDeadline: '12 Feb', printDeadline: '17 Oct', delivery: '5 Nov', circulation: 70600 },
+      { month: 'November 2025', copyDeadline: '14 Oct', printDeadline: '17 Oct', delivery: '5 Nov', circulation: 70600 },
       { month: 'March 2026', copyDeadline: '12 Feb', printDeadline: '16 Feb', delivery: '2 Mar', circulation: 70600 }
     ]
   },
