@@ -1,5 +1,5 @@
-// This file is no longer needed since we've moved to Supabase-managed leaflet data
-// The old hardcoded data has been removed and replaced with database management
+import { supabase } from '@/integrations/supabase/client';
+import { leafletAreas, leafletSizes } from '@/data/leafletingPricing';
 
 export const seedLeafletData = async () => {
   try {

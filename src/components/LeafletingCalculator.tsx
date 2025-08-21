@@ -64,17 +64,10 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
       schedule: area.schedule || []
     }));
     
-    // Create volume discounts from the expected structure
-    const volumeDiscounts = [
-      { minAreas: 1, maxAreas: 1, discountPercentage: 0 },
-      { minAreas: 2, discountPercentage: 10 }
-    ];
-    
     return calculateLeafletingPrice(
       formData.selectedAreas,
       leafletAreas,
-      parseInt(formData.duration),
-      volumeDiscounts
+      parseInt(formData.duration)
     );
   }, [formData.selectedAreas, formData.duration, areas]);
 

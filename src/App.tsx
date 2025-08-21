@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import BusinessDirectory from "./pages/BusinessDirectory";
 import WhatsOn from "./pages/WhatsOn";
 import Competitions from "./pages/Competitions";
-
+import Advertising from "./pages/Advertising";
 import ApplyToDistribute from "./pages/ApplyToDistribute";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
@@ -34,7 +34,7 @@ const App = () => (
         
         <Route path="/whats-on" element={<WhatsOn />} />
         <Route path="/competitions" element={<Competitions />} />
-        <Route path="/advertising" element={<AdvertisingNew />} />
+        <Route path="/advertising" element={<Advertising />} />
         <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/business-directory" element={<BusinessDirectory />} />
@@ -49,6 +49,7 @@ const App = () => (
             <AddEvent />
           </ProtectedRoute>
         } />
+        <Route path="/advertising-new" element={<AdvertisingNew />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
