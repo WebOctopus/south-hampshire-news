@@ -37,8 +37,20 @@ import {
   Calendar, 
   Clock 
 } from 'lucide-react';
+import {
+  useLeafletAreas,
+  useLeafletSizes,
+  useCreateLeafletArea,
+  useUpdateLeafletArea,
+  useDeleteLeafletArea,
+  useCreateLeafletSize,
+  useUpdateLeafletSize,
+  useDeleteLeafletSize,
+  type LeafletArea,
+  type LeafletSize
+} from '@/hooks/useLeafletData';
 import { useToast } from '@/components/ui/use-toast';
-import { leafletAreas, leafletSizes, LeafletArea, LeafletSize } from '@/data/leafletingPricing';
+import { seedLeafletData } from '@/utils/seedLeafletData';
 
 interface LeafletingManagementProps {
   onStatsUpdate?: () => void;
@@ -52,31 +64,51 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   const [isSizeDialogOpen, setIsSizeDialogOpen] = useState(false);
   
   const { toast } = useToast();
+  
+  // Supabase hooks
+  const { data: areas = [], isLoading: areasLoading } = useLeafletAreas();
+  const { data: sizes = [], isLoading: sizesLoading } = useLeafletSizes();
+  
+  const createAreaMutation = useCreateLeafletArea();
+  const updateAreaMutation = useUpdateLeafletArea();
+  const deleteAreaMutation = useDeleteLeafletArea();
+  const createSizeMutation = useCreateLeafletSize();
+  const updateSizeMutation = useUpdateLeafletSize();
+  const deleteSizeMutation = useDeleteLeafletSize();
 
-  // Mock data - in real implementation, this would come from Supabase
-  const [areas, setAreas] = useState<LeafletArea[]>(leafletAreas);
-  const [sizes, setSizes] = useState<LeafletSize[]>(leafletSizes);
+  const handleSaveArea = (formData: any) => {
+    const areaData = {
+      area_number: formData.area_number,
+      name: formData.name,
+      postcodes: formData.postcodes,
+      bimonthly_circulation: formData.bimonthly_circulation,
+      price_with_vat: formData.price_with_vat,
+      schedule: formData.schedule,
+      is_active: true,
+    };
 
-  const handleSaveArea = (area: LeafletArea) => {
     if (editingArea) {
-      setAreas(areas.map(a => a.id === area.id ? area : a));
-      toast({ title: "Area updated successfully" });
+      updateAreaMutation.mutate({ ...areaData, id: editingArea.id });
     } else {
-      setAreas([...areas, { ...area, id: `leaflet-area-${Date.now()}` }]);
-      toast({ title: "Area created successfully" });
+      createAreaMutation.mutate(areaData);
     }
     setIsAreaDialogOpen(false);
     setEditingArea(null);
     onStatsUpdate?.();
   };
 
-  const handleSaveSize = (size: LeafletSize) => {
+  const handleSaveSize = (formData: any) => {
+    const sizeData = {
+      label: formData.label,
+      description: formData.description,
+      is_active: true,
+      sort_order: 0,
+    };
+
     if (editingSize) {
-      setSizes(sizes.map(s => s.id === size.id ? size : s));
-      toast({ title: "Size updated successfully" });
+      updateSizeMutation.mutate({ ...sizeData, id: editingSize.id });
     } else {
-      setSizes([...sizes, { ...size, id: `size-${Date.now()}` }]);
-      toast({ title: "Size created successfully" });
+      createSizeMutation.mutate(sizeData);
     }
     setIsSizeDialogOpen(false);
     setEditingSize(null);
@@ -84,24 +116,33 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   };
 
   const handleDeleteArea = (areaId: string) => {
-    setAreas(areas.filter(a => a.id !== areaId));
-    toast({ title: "Area deleted successfully", variant: "destructive" });
+    deleteAreaMutation.mutate(areaId);
     onStatsUpdate?.();
   };
 
   const handleDeleteSize = (sizeId: string) => {
-    setSizes(sizes.filter(s => s.id !== sizeId));
-    toast({ title: "Size deleted successfully", variant: "destructive" });
+    deleteSizeMutation.mutate(sizeId);
     onStatsUpdate?.();
+  };
+
+  const handleSeedData = async () => {
+    const success = await seedLeafletData();
+    if (success) {
+      toast({ title: "Sample data added successfully!" });
+      // Refetch data
+      window.location.reload();
+    } else {
+      toast({ title: "Error adding sample data", variant: "destructive" });
+    }
   };
 
   const AreaDialog = () => {
     const [formData, setFormData] = useState({
-      areaNumber: editingArea?.areaNumber || 0,
+      area_number: editingArea?.area_number || 0,
       name: editingArea?.name || '',
       postcodes: editingArea?.postcodes || '',
-      bimonthlyCirculation: editingArea?.bimonthlyCirculation || 0,
-      priceWithVat: editingArea?.priceWithVat || 0,
+      bimonthly_circulation: editingArea?.bimonthly_circulation || 0,
+      price_with_vat: editingArea?.price_with_vat || 0,
       schedule: editingArea?.schedule || [
         { month: 'September 2025', copyDeadline: '', printDeadline: '', delivery: '', circulation: 70600 },
         { month: 'November 2025', copyDeadline: '', printDeadline: '', delivery: '', circulation: 70600 },
@@ -124,8 +165,8 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
               <Input
                 id="areaNumber"
                 type="number"
-                value={formData.areaNumber}
-                onChange={(e) => setFormData({...formData, areaNumber: parseInt(e.target.value)})}
+                value={formData.area_number}
+                onChange={(e) => setFormData({...formData, area_number: parseInt(e.target.value)})}
               />
             </div>
             
@@ -153,8 +194,8 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
               <Input
                 id="circulation"
                 type="number"
-                value={formData.bimonthlyCirculation}
-                onChange={(e) => setFormData({...formData, bimonthlyCirculation: parseInt(e.target.value)})}
+                value={formData.bimonthly_circulation}
+                onChange={(e) => setFormData({...formData, bimonthly_circulation: parseInt(e.target.value)})}
               />
             </div>
             
@@ -164,8 +205,8 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                 id="price"
                 type="number"
                 step="0.01"
-                value={formData.priceWithVat}
-                onChange={(e) => setFormData({...formData, priceWithVat: parseFloat(e.target.value)})}
+                value={formData.price_with_vat}
+                onChange={(e) => setFormData({...formData, price_with_vat: parseFloat(e.target.value)})}
               />
             </div>
           </div>
@@ -239,7 +280,7 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
             <Button variant="outline" onClick={() => setIsAreaDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => handleSaveArea(formData as LeafletArea)}>
+            <Button onClick={() => handleSaveArea(formData)}>
               Save Area
             </Button>
           </div>
@@ -289,7 +330,7 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
             <Button variant="outline" onClick={() => setIsSizeDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => handleSaveSize(formData as LeafletSize)}>
+            <Button onClick={() => handleSaveSize(formData)}>
               Save Size
             </Button>
           </div>
@@ -309,6 +350,11 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
             Manage distribution areas, sizes, pricing and schedules
           </p>
         </div>
+        {areas.length === 0 && (
+          <Button onClick={handleSeedData} variant="outline">
+            Add Sample Data
+          </Button>
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -359,11 +405,11 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                 <TableBody>
                   {areas.map((area) => (
                     <TableRow key={area.id}>
-                      <TableCell>{area.areaNumber}</TableCell>
+                      <TableCell>{area.area_number}</TableCell>
                       <TableCell className="font-medium">{area.name}</TableCell>
                       <TableCell>{area.postcodes}</TableCell>
-                      <TableCell>{area.bimonthlyCirculation.toLocaleString()}</TableCell>
-                      <TableCell>£{area.priceWithVat}</TableCell>
+                      <TableCell>{area.bimonthly_circulation.toLocaleString()}</TableCell>
+                      <TableCell>£{area.price_with_vat}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
