@@ -10,6 +10,7 @@ interface StepFormProps {
   stepLabels?: {
     nextButtonLabels?: string[];
     prevButtonLabel?: string;
+    onLastStepNext?: (formData: any) => Promise<void>;
   };
 }
 
@@ -22,6 +23,7 @@ interface StepFormContextValue {
   stepLabels?: {
     nextButtonLabels?: string[];
     prevButtonLabel?: string;
+    onLastStepNext?: (formData: any) => Promise<void>;
   };
 }
 
@@ -39,9 +41,28 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = React.Children.count(children);
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(prev => prev + 1);
+    } else if (currentStep === totalSteps - 1 && stepLabels?.onLastStepNext) {
+      // On the last step, call the custom handler if provided
+      const contactFormElement = document.querySelector('form') as HTMLFormElement;
+      if (contactFormElement) {
+        const formData = new FormData(contactFormElement);
+        const formValues = {
+          name: formData.get('name') as string || '',
+          email: formData.get('email') as string || '',
+          phone: formData.get('phone') as string || '',
+          company: formData.get('company') as string || '',
+          password: formData.get('password') as string || '',
+        };
+        try {
+          await stepLabels.onLastStepNext(formValues);
+          setCurrentStep(prev => prev + 1); // Move to completion step only on success
+        } catch (error) {
+          // Error is already handled in the parent component
+        }
+      }
     } else if (onComplete) {
       onComplete();
     }
@@ -136,10 +157,8 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
               onClick={nextStep}
               className="flex items-center gap-2"
             >
-              {currentStep === totalSteps - 1 
-                ? 'Complete' 
-                : stepLabels?.nextButtonLabels?.[currentStep] || 'Next Step'
-              }
+              {stepLabels?.nextButtonLabels?.[currentStep] || 
+               (currentStep === totalSteps - 1 ? 'Complete' : 'Next Step')}
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
