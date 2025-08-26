@@ -256,22 +256,44 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                 </CardHeader>
                 <CardContent>
                   <Select value={formData.leafletSize} onValueChange={(value) => setFormData({...formData, leafletSize: value})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select leaflet size" />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose leaflet size" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {sizes.map((size) => (
-                        <SelectItem key={size.id} value={size.id}>
-                          <div>
-                            <div className="font-medium">{size.label}</div>
-                            {size.description && (
-                              <div className="text-sm text-muted-foreground">{size.description}</div>
-                            )}
-                          </div>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {sizes.length > 0 ? (
+                        sizes.map((size) => (
+                          <SelectItem 
+                            key={size.id} 
+                            value={size.id}
+                            className="cursor-pointer hover:bg-accent"
+                          >
+                            <div className="w-full">
+                              <div className="font-medium">{size.label}</div>
+                              {size.description && (
+                                <div className="text-sm text-muted-foreground">{size.description}</div>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-options" disabled>
+                          No leaflet sizes available
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
+                  {sizesLoading && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                      Loading sizes...
+                    </p>
+                  )}
+                  {sizesError && (
+                    <p className="text-sm text-destructive mt-2">
+                      <AlertCircle className="h-4 w-4 inline mr-2" />
+                      Error loading leaflet sizes
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
