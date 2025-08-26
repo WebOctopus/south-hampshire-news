@@ -61,20 +61,7 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
     full_page_multiplier: 1.0,
     is_active: true,
     sort_order: 0,
-    schedule: [
-      { year: 2025, month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { year: 2025, month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
-    ]
+    schedule: []
   });
   const { toast } = useToast();
 
@@ -222,20 +209,7 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
       full_page_multiplier: 1.0,
       is_active: true,
       sort_order: locations.length + 1,
-      schedule: [
-        { year: 2025, month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { year: 2025, month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
-      ]
+      schedule: []
     });
     setEditingLocation(null);
   };
@@ -253,20 +227,7 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
         full_page_multiplier: location.full_page_multiplier,
         is_active: location.is_active,
         sort_order: location.sort_order,
-        schedule: location.schedule || [
-          { year: 2025, month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { year: 2025, month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
-        ]
+        schedule: location.schedule || []
       });
     } else {
       resetForm();
