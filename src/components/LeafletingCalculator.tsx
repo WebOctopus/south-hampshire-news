@@ -318,6 +318,53 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                   </RadioGroup>
                 </CardContent>
               </Card>
+
+              {/* Publication Schedule */}
+              {formData.selectedAreas.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Publication Schedule
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {areas
+                        .filter(area => formData.selectedAreas.includes(area.id))
+                        .map((area) => (
+                          <div key={area.id} className="p-3 border rounded-lg">
+                            <div className="font-medium mb-2">Area {area.area_number}: {area.name}</div>
+                            {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 ? (
+                              <div className="space-y-2 text-sm">
+                                {area.schedule.map((schedule: any, index: number) => (
+                                  <div key={index} className="grid grid-cols-3 gap-4 p-2 bg-muted rounded">
+                                    <div>
+                                      <span className="font-medium">Copy Deadline:</span>
+                                      <div className="text-muted-foreground">{schedule.copyDeadline || 'TBA'}</div>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Print Deadline:</span>
+                                      <div className="text-muted-foreground">{schedule.printDeadline || 'TBA'}</div>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Delivery Date:</span>
+                                      <div className="text-muted-foreground">{schedule.deliveryDate || 'TBA'}</div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground">
+                                Schedule information not available for this area
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Right Column: Quote Summary */}
