@@ -52,8 +52,8 @@ const pricingOptions: PricingOption[] = [
   },
   {
     id: 'bogof',
-    title: 'BOGOF Subscription',
-    subtitle: 'Buy One Get One Free for 6 months',
+    title: '3+ Repeat Package',
+    subtitle: 'Subscription with monthly payment plan with better rates and additional benefits',
     description: 'Double your advertising reach at no extra cost! Pay for areas, get equal number free.',
     badge: 'Special Offer',
     badgeVariant: 'default',
