@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -40,6 +40,17 @@ export const useStepForm = () => {
 export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLabels }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = React.Children.count(children);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top of form when step changes
+  useEffect(() => {
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  }, [currentStep]);
 
   const nextStep = async () => {
     if (currentStep < totalSteps - 1) {
@@ -91,7 +102,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
 
   return (
     <StepFormContext.Provider value={contextValue}>
-      <div className="w-full max-w-6xl mx-auto">
+      <div ref={formRef} className="w-full max-w-6xl mx-auto">
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
