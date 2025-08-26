@@ -15,6 +15,20 @@ import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
 import { useLeafletAreas, useLeafletSizes, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { useStepForm } from './StepForm';
 
+// Helper function to format month display
+const formatMonthDisplay = (monthString: string) => {
+  // Parse "2025-09" format
+  const [year, month] = monthString.split('-');
+  const monthNumber = parseInt(month, 10);
+  
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  
+  return `${monthNames[monthNumber - 1]} ${year}`;
+};
+
 interface CalculatorStepFormProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
   onDataChange?: (data: any) => void;
@@ -686,7 +700,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                                   setSelectedMonths(prev => [...prev, monthData.month]);
                                 }
                               }}>
-                                <div className="font-medium text-sm">{monthData.month}</div>
+                                <div className="font-medium text-sm">{formatMonthDisplay(monthData.month)}</div>
                                 <div className="space-y-1 text-xs">
                                   <div className="flex justify-between">
                                     <span className="text-muted-foreground">Copy Deadline:</span>
