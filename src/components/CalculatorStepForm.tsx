@@ -525,9 +525,9 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                     {leafletSizes.map((size) => (
                       <SelectItem key={size.id} value={size.id}>
                         <div className="flex justify-between items-center w-full">
-                          <span>{(size as any).name || 'Unknown'}</span>
+                          <span>{size.label}</span>
                           <span className="ml-4 text-muted-foreground">
-                            {(size as any).dimensions || 'N/A'}
+                            {size.description || 'N/A'}
                           </span>
                         </div>
                       </SelectItem>
