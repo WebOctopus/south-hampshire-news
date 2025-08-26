@@ -495,46 +495,144 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
               )}
 
               {/* Publication Schedule for Leafleting */}
-              {selectedAreas.length > 0 && (
+              {selectedAreas.length > 0 && selectedDuration && (
                 <div className="mt-6 space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Calendar className="h-5 w-5" />
                     Publication Schedule
                   </h3>
-                  <div className="space-y-3">
-                    {leafletAreas
-                      .filter(area => selectedAreas.includes(area.id))
-                      .map((area) => (
-                        <Card key={area.id}>
-                          <CardContent className="p-4">
-                            <div className="font-medium mb-2">Area {area.area_number}: {area.name}</div>
-                            {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 ? (
-                              <div className="space-y-2 text-sm">
-                                {area.schedule.map((schedule: any, index: number) => (
-                                  <div key={index} className="grid grid-cols-3 gap-4 p-2 bg-muted rounded">
-                                    <div>
-                                      <span className="font-medium">Copy Deadline:</span>
-                                      <div className="text-muted-foreground">{schedule.copyDeadline || 'TBA'}</div>
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Print Deadline:</span>
-                                      <div className="text-muted-foreground">{schedule.printDeadline || 'TBA'}</div>
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Delivery Date:</span>
-                                      <div className="text-muted-foreground">{schedule.deliveryDate || 'TBA'}</div>
+                  <p className="text-sm text-muted-foreground">
+                    Select the months you want your leafleting to run for each selected area:
+                  </p>
+
+                  {(() => {
+                    // Get leaflet campaign duration info  
+                    const durationData = leafletDurations?.find(d => d.id === selectedDuration);
+                    const maxSelectableMonths = durationData?.months || 1;
+                    
+                    return (
+                      <div className="space-y-6">
+                        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                          <p className="text-sm font-medium text-primary">
+                            📅 You can select up to {maxSelectableMonths} month{maxSelectableMonths > 1 ? 's' : ''} for each area based on your selected campaign duration
+                          </p>
+                        </div>
+                        
+                        {leafletAreas
+                          ?.filter(area => selectedAreas.includes(area.id))
+                          .map((area) => {
+                            const availableMonths = area.schedule || [];
+                            const areaSelectedMonths = selectedMonths[area.id] || [];
+                            
+                            if (availableMonths.length === 0) {
+                              return (
+                                <div key={area.id} className="border rounded-lg p-4">
+                                  <h4 className="font-medium text-lg mb-2">Area {area.area_number}: {area.name}</h4>
+                                  <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md">
+                                    <div className="flex items-center gap-2">
+                                      <AlertCircle className="h-4 w-4" />
+                                      Schedule information not available for this area. Please contact our team for details.
                                     </div>
                                   </div>
-                                ))}
+                                </div>
+                              );
+                            }
+                            
+                            return (
+                              <div key={area.id} className="border rounded-lg p-4">
+                                <h4 className="font-medium text-lg mb-4 flex items-center justify-between">
+                                  <div>Area {area.area_number}: {area.name}</div>
+                                  <Badge variant="outline" className="text-xs">
+                                    {areaSelectedMonths.length}/{maxSelectableMonths} selected
+                                  </Badge>
+                                </h4>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {availableMonths.map((monthData: any, index: number) => {
+                                    const isSelected = areaSelectedMonths.includes(monthData.month);
+                                    const isDisabled = !isSelected && areaSelectedMonths.length >= maxSelectableMonths;
+                                    
+                                    return (
+                                      <div key={index} className={`
+                                        border rounded-lg p-4 cursor-pointer transition-all
+                                        ${isSelected ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50'}
+                                        ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                                      `}>
+                                        <div className="flex items-start space-x-3">
+                                          <Checkbox
+                                            id={`leaflet-month-${area.id}-${index}`}
+                                            checked={isSelected}
+                                            disabled={isDisabled}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedMonths(prev => {
+                                                const currentAreaMonths = prev[area.id] || [];
+                                                if (checked) {
+                                                  if (currentAreaMonths.length < maxSelectableMonths) {
+                                                    return {
+                                                      ...prev,
+                                                      [area.id]: [...currentAreaMonths, monthData.month]
+                                                    };
+                                                  }
+                                                } else {
+                                                  return {
+                                                    ...prev,
+                                                    [area.id]: currentAreaMonths.filter(m => m !== monthData.month)
+                                                  };
+                                                }
+                                                return prev;
+                                              });
+                                            }}
+                                            className="mt-1"
+                                          />
+                                          <div className="flex-1 space-y-2" onClick={() => {
+                                            if (isDisabled) return;
+                                            setSelectedMonths(prev => {
+                                              const currentAreaMonths = prev[area.id] || [];
+                                              const isCurrentlySelected = currentAreaMonths.includes(monthData.month);
+                                              if (isCurrentlySelected) {
+                                                return {
+                                                  ...prev,
+                                                  [area.id]: currentAreaMonths.filter(m => m !== monthData.month)
+                                                };
+                                              } else if (currentAreaMonths.length < maxSelectableMonths) {
+                                                return {
+                                                  ...prev,
+                                                  [area.id]: [...currentAreaMonths, monthData.month]
+                                                };
+                                              }
+                                              return prev;
+                                            });
+                                          }}>
+                                            <div className="font-medium text-sm">{formatMonthDisplay(monthData.month)}</div>
+                                            <div className="space-y-1 text-xs">
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Copy Deadline:</span>
+                                                <span>{monthData.copyDeadline || 'TBA'}</span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Print Deadline:</span>
+                                                <span>{monthData.printDeadline || 'TBA'}</span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Delivery:</span>
+                                                <span>{monthData.deliveryDate || 'TBA'}</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                               </div>
-                            ) : (
-                              <div className="text-sm text-muted-foreground">
-                                Schedule information not available for this area
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
+                            );
+                          })}
+                      </div>
+                    );
+                  })()}
+                  
+                  <div className="text-xs text-muted-foreground">
+                    * Schedule may vary by area and is subject to change. Final schedules will be confirmed upon booking.
                   </div>
                 </div>
               )}
