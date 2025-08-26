@@ -54,7 +54,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
   const effectiveSelectedAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
 
-  const handleGetQuote = async () => {
+  const handleSaveQuote = async () => {
     // Validation
     if (!formData.name || !formData.email || !formData.password) {
       toast({
@@ -103,6 +103,36 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
     setSubmitting(true);
     try {
+      // First, try to sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            display_name: formData.name,
+            phone: formData.phone || '',
+            company: formData.company || ''
+          }
+        }
+      });
+
+      if (authError && authError.message !== 'User already registered') {
+        throw authError;
+      }
+
+      // If user already exists, sign them in
+      if (authError?.message === 'User already registered') {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (signInError) {
+          throw new Error('User already exists with this email. Please use a different email or sign in with your existing password.');
+        }
+      }
+
       const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : 
                                 pricingModel === 'bogof' ? subscriptionDurations : durations;
       const durationData = relevantDurations?.find(d => d.id === selectedDuration);
@@ -110,14 +140,21 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       const subtotalAfterVolume = pricingBreakdown?.subtotal ? pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0) : 0;
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
 
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get the user ID (either from sign up or sign in)
+      const userId = authData?.user?.id || (await supabase.auth.getUser()).data.user?.id;
 
-      const payload = {
+      if (!userId) {
+        throw new Error('Failed to create or authenticate user');
+      }
+
+      // Save to quotes table (user's saved quotes)
+      const quotePayload = {
+        user_id: userId,
         contact_name: formData.name,
         email: formData.email,
         phone: formData.phone || '',
         company: formData.company || '',
-        title: 'Quote Request',
+        title: `${pricingModel === 'fixed' ? 'Fixed Term' : pricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Quote`,
         pricing_model: pricingModel,
         ad_size_id: selectedAdSize,
         duration_id: selectedDuration,
@@ -139,22 +176,34 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
           selectedAreas,
           bogofPaidAreas,
           bogofFreeAreas
-        } as any,
-        user_id: user?.id || null
+        } as any
       };
 
-      const { error } = await supabase.from('quote_requests').insert(payload);
-      if (error) throw error;
+      const { error: quoteError } = await supabase.from('quotes').insert(quotePayload);
+      if (quoteError) throw quoteError;
+
+      // Also save to quote_requests table for admin tracking
+      const requestPayload = {
+        ...quotePayload,
+        user_id: userId
+      };
+      
+      const { error: requestError } = await supabase.from('quote_requests').insert(requestPayload);
+      if (requestError) throw requestError;
       
       toast({
-        title: "Quote Request Sent!",
-        description: "Our sales team will contact you within 24 hours to discuss your advertising needs.",
+        title: "Quote Saved Successfully!",
+        description: "Your quote has been saved to your dashboard. You can access it anytime!",
       });
       
       nextStep(); // Move to completion step
     } catch (err: any) {
-      console.error('Submit quote error:', err);
-      toast({ title: "Error", description: err.message || 'Failed to submit quote request.', variant: "destructive" });
+      console.error('Save quote error:', err);
+      toast({ 
+        title: "Error", 
+        description: err.message || 'Failed to save quote. Please try again.', 
+        variant: "destructive" 
+      });
     } finally {
       setSubmitting(false);
     }
@@ -230,11 +279,11 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
           {/* Submit Button */}
           <div className="flex justify-end">
             <Button 
-              onClick={handleGetQuote}
+              onClick={handleSaveQuote}
               className="px-8"
-              disabled={submitting || !formData.name || !formData.email || effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
+              disabled={submitting || !formData.name || !formData.email || !formData.password || effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
             >
-              {submitting ? "Sending..." : "Get My Quote"}
+              {submitting ? "Saving..." : "Save My Quote"}
             </Button>
           </div>
         </CardContent>

@@ -7,6 +7,10 @@ import { cn } from '@/lib/utils';
 interface StepFormProps {
   children: React.ReactNode[];
   onComplete?: () => void;
+  stepLabels?: {
+    nextButtonLabels?: string[];
+    prevButtonLabel?: string;
+  };
 }
 
 interface StepFormContextValue {
@@ -15,6 +19,10 @@ interface StepFormContextValue {
   nextStep: () => void;
   prevStep: () => void;
   goToStep: (step: number) => void;
+  stepLabels?: {
+    nextButtonLabels?: string[];
+    prevButtonLabel?: string;
+  };
 }
 
 const StepFormContext = React.createContext<StepFormContextValue | undefined>(undefined);
@@ -27,7 +35,7 @@ export const useStepForm = () => {
   return context;
 };
 
-export const StepForm: React.FC<StepFormProps> = ({ children, onComplete }) => {
+export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLabels }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = React.Children.count(children);
 
@@ -57,6 +65,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete }) => {
     nextStep,
     prevStep,
     goToStep,
+    stepLabels,
   };
 
   return (
@@ -116,7 +125,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete }) => {
               className="flex items-center gap-2"
             >
               <ChevronLeft className="w-4 h-4" />
-              Previous Step
+              {stepLabels?.prevButtonLabel || 'Previous Step'}
             </Button>
             
             <div className="text-sm text-muted-foreground">
@@ -127,7 +136,10 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete }) => {
               onClick={nextStep}
               className="flex items-center gap-2"
             >
-              {currentStep === totalSteps - 1 ? 'Complete' : 'Next Step'}
+              {currentStep === totalSteps - 1 
+                ? 'Complete' 
+                : stepLabels?.nextButtonLabels?.[currentStep] || 'Next Step'
+              }
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>

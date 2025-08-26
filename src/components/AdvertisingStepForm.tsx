@@ -25,8 +25,17 @@ export const AdvertisingStepForm: React.FC = () => {
     setCampaignData(data);
   };
 
+  const stepLabels = {
+    nextButtonLabels: [
+      'Continue to Campaign Setup',
+      'Continue to Contact Information',
+      'Save My Quote'
+    ],
+    prevButtonLabel: 'Previous Step'
+  };
+
   return (
-    <StepForm>
+    <StepForm stepLabels={stepLabels}>
       <PricingOptionsStep onSelectOption={handleSelectOption} />
       
       <CalculatorStepForm 
