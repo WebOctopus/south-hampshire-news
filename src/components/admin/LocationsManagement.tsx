@@ -15,6 +15,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { areas } from '@/data/advertisingPricing';
 
+// Helper function to format month display
+const formatMonthDisplay = (month: string, year: number) => {
+  // Handle different month formats
+  let monthNumber: number;
+  
+  if (month.includes('-')) {
+    // Extract month from "2025-09" format
+    const parts = month.split('-');
+    monthNumber = parseInt(parts[1], 10);
+  } else {
+    // Handle direct month number like "09" or "9"
+    monthNumber = parseInt(month, 10);
+  }
+  
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  
+  return `${monthNames[monthNumber - 1]} ${year}`;
+};
+
 interface LocationData {
   id: string;
   name: string;
@@ -549,8 +571,8 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                   
                   <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
                     {formData.schedule.map((scheduleItem, index) => (
-                      <div key={`${scheduleItem.year}-${scheduleItem.month}`} className="grid grid-cols-5 gap-2 items-center">
-                        <div className="text-sm font-medium">{scheduleItem.month} {scheduleItem.year}</div>
+                       <div key={`${scheduleItem.year}-${scheduleItem.month}`} className="grid grid-cols-5 gap-2 items-center">
+                         <div className="text-sm font-medium">{formatMonthDisplay(scheduleItem.month, scheduleItem.year)}</div>
                         <div>
                           <Label className="text-xs">Copy Deadline</Label>
                           <Input
@@ -591,13 +613,13 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                           />
                         </div>
                         <div className="flex justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeScheduleItem(scheduleItem.year, scheduleItem.month)}
-                            className="h-8 w-8 p-0"
-                            title={`Remove ${scheduleItem.month} ${scheduleItem.year}`}
-                          >
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => removeScheduleItem(scheduleItem.year, scheduleItem.month)}
+                             className="h-8 w-8 p-0"
+                             title={`Remove ${formatMonthDisplay(scheduleItem.month, scheduleItem.year)}`}
+                           >
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
