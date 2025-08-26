@@ -29,6 +29,7 @@ interface LocationData {
   created_at: string;
   updated_at: string;
   schedule?: Array<{
+    year: number;
     month: string;
     copyDeadline: string;
     printDeadline: string;
@@ -61,18 +62,18 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
     is_active: true,
     sort_order: 0,
     schedule: [
-      { month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-      { month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
+      { year: 2025, month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+      { year: 2025, month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
     ]
   });
   const { toast } = useToast();
@@ -82,28 +83,49 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+  
+  const availableYears = [2024, 2025, 2026];
 
-  const addMonth = (monthName: string) => {
+  const addScheduleItem = (year: number, monthName: string) => {
     const newScheduleItem = {
+      year,
       month: monthName,
       copyDeadline: '15th',
       printDeadline: '20th',
       deliveryDate: '25th'
     };
     const newSchedule = [...formData.schedule, newScheduleItem].sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
       return allMonths.indexOf(a.month) - allMonths.indexOf(b.month);
     });
     setFormData(prev => ({ ...prev, schedule: newSchedule }));
   };
 
-  const removeMonth = (monthName: string) => {
-    const newSchedule = formData.schedule.filter(item => item.month !== monthName);
+  const removeScheduleItem = (year: number, monthName: string) => {
+    const newSchedule = formData.schedule.filter(item => 
+      !(item.year === year && item.month === monthName)
+    );
     setFormData(prev => ({ ...prev, schedule: newSchedule }));
   };
 
-  const getAvailableMonths = () => {
-    const usedMonths = formData.schedule.map(item => item.month);
-    return allMonths.filter(month => !usedMonths.includes(month));
+  const getAvailableYearMonths = () => {
+    const usedCombinations = formData.schedule.map(item => `${item.year}-${item.month}`);
+    const availableOptions: Array<{ year: number; month: string; label: string }> = [];
+    
+    availableYears.forEach(year => {
+      allMonths.forEach(month => {
+        const combination = `${year}-${month}`;
+        if (!usedCombinations.includes(combination)) {
+          availableOptions.push({
+            year,
+            month,
+            label: `${month} ${year}`
+          });
+        }
+      });
+    });
+    
+    return availableOptions;
   };
 
   useEffect(() => {
@@ -167,6 +189,7 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
       const processedLocations = (data || []).map(location => ({
         ...location,
         schedule: Array.isArray(location.schedule) ? location.schedule as Array<{
+          year: number;
           month: string;
           copyDeadline: string;
           printDeadline: string;
@@ -200,18 +223,18 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
       is_active: true,
       sort_order: locations.length + 1,
       schedule: [
-        { month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-        { month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
+        { year: 2025, month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+        { year: 2025, month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
       ]
     });
     setEditingLocation(null);
@@ -231,18 +254,18 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
         is_active: location.is_active,
         sort_order: location.sort_order,
         schedule: location.schedule || [
-          { month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
-          { month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
+          { year: 2025, month: 'January', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'February', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'March', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'April', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'May', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'June', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'July', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'August', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'September', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'October', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'November', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' },
+          { year: 2025, month: 'December', copyDeadline: '15th', printDeadline: '20th', deliveryDate: '25th' }
         ]
       });
     } else {
@@ -565,8 +588,8 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                   
                   <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
                     {formData.schedule.map((scheduleItem, index) => (
-                      <div key={scheduleItem.month} className="grid grid-cols-5 gap-2 items-center">
-                        <div className="text-sm font-medium">{scheduleItem.month}</div>
+                      <div key={`${scheduleItem.year}-${scheduleItem.month}`} className="grid grid-cols-5 gap-2 items-center">
+                        <div className="text-sm font-medium">{scheduleItem.month} {scheduleItem.year}</div>
                         <div>
                           <Label className="text-xs">Copy Deadline</Label>
                           <Input
@@ -610,9 +633,9 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => removeMonth(scheduleItem.month)}
+                            onClick={() => removeScheduleItem(scheduleItem.year, scheduleItem.month)}
                             className="h-8 w-8 p-0"
-                            title={`Remove ${scheduleItem.month}`}
+                            title={`Remove ${scheduleItem.month} ${scheduleItem.year}`}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -622,36 +645,39 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                     
                     {formData.schedule.length === 0 && (
                       <div className="text-center py-4 text-gray-500 text-sm">
-                        No months configured. Add months below.
+                        No dates configured. Add year-month combinations below.
                       </div>
                     )}
                   </div>
                   
-                  {/* Add Month Section */}
-                  {getAvailableMonths().length > 0 && (
+                  {/* Add Schedule Item Section */}
+                  {getAvailableYearMonths().length > 0 && (
                     <div className="flex gap-2 items-center">
-                      <Select onValueChange={(value) => addMonth(value)}>
+                      <Select onValueChange={(value) => {
+                        const [year, month] = value.split('-');
+                        addScheduleItem(parseInt(year), month);
+                      }}>
                         <SelectTrigger className="w-48">
                           <Plus className="h-4 w-4 mr-2" />
-                          <SelectValue placeholder="Add Month" />
+                          <SelectValue placeholder="Add Date" />
                         </SelectTrigger>
                         <SelectContent>
-                          {getAvailableMonths().map((month) => (
-                            <SelectItem key={month} value={month}>
-                              {month}
+                          {getAvailableYearMonths().map((option) => (
+                            <SelectItem key={`${option.year}-${option.month}`} value={`${option.year}-${option.month}`}>
+                              {option.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       <span className="text-xs text-gray-500">
-                        {getAvailableMonths().length} months available
+                        {getAvailableYearMonths().length} dates available
                       </span>
                     </div>
                   )}
                   
-                  {getAvailableMonths().length === 0 && (
+                  {getAvailableYearMonths().length === 0 && (
                     <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                      All months have been added to the schedule.
+                      All available year-month combinations have been added to the schedule.
                     </div>
                   )}
                 </div>
