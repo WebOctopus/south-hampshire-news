@@ -21,6 +21,7 @@ export const AdvertisingStepForm: React.FC = () => {
     bogofFreeAreas: [] as string[],
     selectedAdSize: '',
     selectedDuration: '',
+    selectedMonths: [] as string[],
     pricingBreakdown: null as any
   });
   const [submitting, setSubmitting] = useState(false);
@@ -157,7 +158,8 @@ export const AdvertisingStepForm: React.FC = () => {
           selectedDuration: campaignData.selectedDuration,
           selectedAreas: campaignData.selectedAreas,
           bogofPaidAreas: campaignData.bogofPaidAreas,
-          bogofFreeAreas: campaignData.bogofFreeAreas
+          bogofFreeAreas: campaignData.bogofFreeAreas,
+          selectedMonths: campaignData.selectedMonths
         } as any
       };
 
@@ -217,6 +219,7 @@ export const AdvertisingStepForm: React.FC = () => {
         bogofFreeAreas={campaignData.bogofFreeAreas}
         selectedAdSize={campaignData.selectedAdSize}
         selectedDuration={campaignData.selectedDuration}
+        selectedMonths={campaignData.selectedMonths}
         pricingBreakdown={campaignData.pricingBreakdown}
         onSaveQuote={handleSaveQuote}
       />
