@@ -710,16 +710,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             </div>
           )}
 
-          {/* Next Step Button */}
-          <div className="flex justify-end">
-            <Button 
-              onClick={nextStep}
-              className="px-8"
-              disabled={effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
-            >
-              Continue to Contact Information
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>
