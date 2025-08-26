@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Plus, Edit, Trash2, Search, Filter, ArrowUpDown, CheckCircle, XCircle, Users } from 'lucide-react';
+import { MapPin, Plus, Edit, Trash2, Search, Filter, ArrowUpDown, CheckCircle, XCircle, Users, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { areas } from '@/data/advertisingPricing';
@@ -76,6 +76,35 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
     ]
   });
   const { toast } = useToast();
+
+  // Helper functions for schedule management
+  const allMonths = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const addMonth = (monthName: string) => {
+    const newScheduleItem = {
+      month: monthName,
+      copyDeadline: '15th',
+      printDeadline: '20th',
+      deliveryDate: '25th'
+    };
+    const newSchedule = [...formData.schedule, newScheduleItem].sort((a, b) => {
+      return allMonths.indexOf(a.month) - allMonths.indexOf(b.month);
+    });
+    setFormData(prev => ({ ...prev, schedule: newSchedule }));
+  };
+
+  const removeMonth = (monthName: string) => {
+    const newSchedule = formData.schedule.filter(item => item.month !== monthName);
+    setFormData(prev => ({ ...prev, schedule: newSchedule }));
+  };
+
+  const getAvailableMonths = () => {
+    const usedMonths = formData.schedule.map(item => item.month);
+    return allMonths.filter(month => !usedMonths.includes(month));
+  };
 
   useEffect(() => {
     loadLocations();
@@ -527,10 +556,16 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
 
                 {/* Schedule Management Section */}
                 <div className="space-y-3">
-                  <Label className="text-base font-medium">Monthly Schedule</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-medium">Monthly Schedule</Label>
+                    <Badge variant="outline" className="text-xs">
+                      {formData.schedule.length} months configured
+                    </Badge>
+                  </div>
+                  
                   <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
                     {formData.schedule.map((scheduleItem, index) => (
-                      <div key={scheduleItem.month} className="grid grid-cols-4 gap-2 items-center">
+                      <div key={scheduleItem.month} className="grid grid-cols-5 gap-2 items-center">
                         <div className="text-sm font-medium">{scheduleItem.month}</div>
                         <div>
                           <Label className="text-xs">Copy Deadline</Label>
@@ -571,9 +606,54 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                             className="text-sm"
                           />
                         </div>
+                        <div className="flex justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeMonth(scheduleItem.month)}
+                            className="h-8 w-8 p-0"
+                            title={`Remove ${scheduleItem.month}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
+                    
+                    {formData.schedule.length === 0 && (
+                      <div className="text-center py-4 text-gray-500 text-sm">
+                        No months configured. Add months below.
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Add Month Section */}
+                  {getAvailableMonths().length > 0 && (
+                    <div className="flex gap-2 items-center">
+                      <Select onValueChange={(value) => addMonth(value)}>
+                        <SelectTrigger className="w-48">
+                          <Plus className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Add Month" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getAvailableMonths().map((month) => (
+                            <SelectItem key={month} value={month}>
+                              {month}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span className="text-xs text-gray-500">
+                        {getAvailableMonths().length} months available
+                      </span>
+                    </div>
+                  )}
+                  
+                  {getAvailableMonths().length === 0 && (
+                    <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                      All months have been added to the schedule.
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2 pt-4">
