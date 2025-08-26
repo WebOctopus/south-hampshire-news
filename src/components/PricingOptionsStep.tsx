@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useStepForm } from './StepForm';
 
 interface PricingOption {
-  id: 'fixed' | 'bogof' | 'subscription' | 'leafleting';
+  id: 'fixed' | 'bogof' | 'leafleting';
   title: string;
   subtitle: string;
   description: string;
@@ -24,7 +24,7 @@ interface PricingOption {
 }
 
 interface PricingOptionsStepProps {
-  onSelectOption: (option: 'fixed' | 'bogof' | 'subscription' | 'leafleting') => void;
+  onSelectOption: (option: 'fixed' | 'bogof' | 'leafleting') => void;
 }
 
 const pricingOptions: PricingOption[] = [
@@ -70,29 +70,6 @@ const pricingOptions: PricingOption[] = [
       { label: 'Free Editorial', value: 'After 4th issue', highlight: true },
       { label: 'Premium Position Upgrades', value: true },
       { label: 'Discount on Leaflet Bookings', value: true },
-      { label: 'Pre-payment Required', value: false },
-      { label: 'Monthly Payment Plan', value: true, highlight: true },
-      { label: 'Cancellation Notice', value: '30 days' },
-    ],
-    cta: 'Book Now',
-  },
-  {
-    id: 'subscription',
-    title: '3+ Repeat Package',
-    subtitle: 'Subscription with monthly payment plan',
-    description: 'Best value with better rates and additional benefits for ongoing campaigns.',
-    icon: Star,
-    features: [
-      { label: 'Minimum Duration', value: '3 issues + ongoing' },
-      { label: 'Double Up for Free', value: false },
-      { label: 'Ad Hoc Option', value: false },
-      { label: 'Consecutive Run', value: true },
-      { label: 'Discount Available', value: 'All bookings from 15% - 38%', highlight: true },
-      { label: 'Advert Sizes', value: 'Available with all advert sizes', highlight: true },
-      { label: 'Free Ad Design', value: true, highlight: true },
-      { label: 'Free Editorial', value: true, highlight: true },
-      { label: 'Premium Position Upgrades', value: true, highlight: true },
-      { label: 'Discount on Leaflet Bookings', value: true, highlight: true },
       { label: 'Pre-payment Required', value: false },
       { label: 'Monthly Payment Plan', value: true, highlight: true },
       { label: 'Cancellation Notice', value: '30 days' },
@@ -164,7 +141,7 @@ const FeatureRow: React.FC<{ feature: PricingOption['features'][0] }> = ({ featu
 export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelectOption }) => {
   const { nextStep } = useStepForm();
 
-  const handleSelectOption = (option: 'fixed' | 'bogof' | 'subscription' | 'leafleting') => {
+  const handleSelectOption = (option: 'fixed' | 'bogof' | 'leafleting') => {
     onSelectOption(option);
     nextStep();
   };

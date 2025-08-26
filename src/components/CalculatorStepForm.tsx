@@ -30,7 +30,7 @@ interface FormData {
 }
 
 interface CalculatorStepFormProps {
-  pricingModel: 'fixed' | 'bogof' | 'subscription' | 'leafleting';
+  pricingModel: 'fixed' | 'bogof' | 'leafleting';
 }
 
 export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingModel }) => {
@@ -126,13 +126,13 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       return null;
     }
 
-    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+    const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
     
     console.log('About to call calculateAdvertisingPrice with:', {
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
-      isSubscription: pricingModel === 'subscription' || pricingModel === 'bogof',
+      isSubscription: pricingModel === 'bogof',
       areasData: areas?.map(a => ({ id: a.id, name: a.name })),
       adSizesData: adSizes?.map(a => ({ id: a.id, name: a.name })),
       durationsData: relevantDurations?.map(d => ({ id: d.id, name: d.name })),
@@ -144,7 +144,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       effectiveSelectedAreas,
       selectedAdSize,
       selectedDuration,
-      pricingModel === 'subscription' || pricingModel === 'bogof',
+      pricingModel === 'bogof',
       areas,
       adSizes,
       relevantDurations,
@@ -183,13 +183,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       if (sixMonthDuration) {
         setSelectedDuration(sixMonthDuration.id);
       }
-    } else if (pricingModel === 'subscription' && subscriptionDurations && subscriptionDurations.length > 0) {
-      if (!selectedDuration) {
-        const defaultDuration = subscriptionDurations[0];
-        if (defaultDuration) {
-          setSelectedDuration(defaultDuration.id);
-        }
-      }
     } else if (pricingModel === 'fixed') {
       // Clear duration for fixed - let user choose
       if (selectedDuration) {
@@ -202,7 +195,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     
     // Validate current selection is still valid
     const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-      (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      pricingModel === 'bogof' ? subscriptionDurations : durations;
       
     if (selectedDuration && relevantDurations && relevantDurations.length > 0) {
       const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
@@ -311,7 +304,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     setSubmitting(true);
     try {
       const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : 
-                                (pricingModel === 'subscription') ? subscriptionDurations : durations;
+                                pricingModel === 'bogof' ? subscriptionDurations : durations;
       const durationData = relevantDurations?.find(d => d.id === selectedDuration);
       const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
       const subtotalAfterVolume = pricingBreakdown?.subtotal ? pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0) : 0;
@@ -409,7 +402,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
         <p className="text-muted-foreground">
           Complete your {pricingModel === 'fixed' ? 'Fixed Term' : 
                         pricingModel === 'bogof' ? 'BOGOF Subscription' : 
-                        pricingModel === 'subscription' ? '3+ Repeat Package' : 
                         'Leafleting Service'} setup
         </p>
       </div>
@@ -752,7 +744,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             
             {(() => {
       const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-        (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+        pricingModel === 'bogof' ? subscriptionDurations : durations;
               const isLoadingDurations = pricingModel === 'leafleting' ? leafletDurationsLoading : isLoading;
               const durationsError = pricingModel === 'leafleting' ? leafletDurationsError : null;
 

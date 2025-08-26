@@ -5,9 +5,9 @@ import PricingOptionsStep from '@/components/PricingOptionsStep';
 import CalculatorStepForm from '@/components/CalculatorStepForm';
 
 export const AdvertisingStepForm: React.FC = () => {
-  const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'subscription' | 'leafleting'>('fixed');
+  const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
 
-  const handleSelectOption = (option: 'fixed' | 'bogof' | 'subscription' | 'leafleting') => {
+  const handleSelectOption = (option: 'fixed' | 'bogof' | 'leafleting') => {
     console.log('Selected pricing option:', option);
     setSelectedPricingModel(option);
   };
