@@ -14,6 +14,7 @@ import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator'
 import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
 import { useLeafletAreas, useLeafletSizes, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { useStepForm } from './StepForm';
+import { ScheduleCarousel } from './ScheduleCarousel';
 
 interface CalculatorStepFormProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -28,6 +29,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
+  const [selectedStartMonth, setSelectedStartMonth] = useState<{[areaId: string]: string}>({});
 
   // Use the pricing data hook
   const {
@@ -187,9 +189,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       bogofFreeAreas,
       selectedAdSize,
       selectedDuration,
+      selectedStartMonth,
       pricingBreakdown
     });
-  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, pricingBreakdown, onDataChange]);
+  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedStartMonth, pricingBreakdown, onDataChange]);
 
   if (isError) {
     return (
@@ -270,21 +273,15 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
                               <span>Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A'}</span>
                             </div>
-                            {/* Schedule Information */}
+                            {/* Schedule Information with Carousel */}
                             {area.schedule && area.schedule.length > 0 && (
                               <div className="mt-2 pt-2 border-t border-gray-100">
-                                <div className="text-xs font-medium text-gray-700 mb-1">Publication Schedule:</div>
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                  <div>
-                                    <span className="font-medium">Copy:</span> {area.schedule[0]?.copyDeadline || 'N/A'}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Print:</span> {area.schedule[0]?.printDeadline || 'N/A'}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Delivery:</span> {area.schedule[0]?.deliveryDate || 'N/A'}
-                                  </div>
-                                </div>
+                                <ScheduleCarousel
+                                  areaName={area.name}
+                                  schedule={area.schedule}
+                                  selectedMonth={selectedStartMonth[area.id]}
+                                  onMonthSelect={(month) => setSelectedStartMonth(prev => ({...prev, [area.id]: month}))}
+                                />
                               </div>
                             )}
                           </div>
@@ -346,21 +343,15 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
                               <span>Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A'}</span>
                             </div>
-                            {/* Schedule Information */}
+                            {/* Schedule Information with Carousel */}
                             {area.schedule && area.schedule.length > 0 && (
                               <div className="mt-2 pt-2 border-t border-gray-100">
-                                <div className="text-xs font-medium text-gray-700 mb-1">Publication Schedule:</div>
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                  <div>
-                                    <span className="font-medium">Copy:</span> {area.schedule[0]?.copyDeadline || 'N/A'}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Print:</span> {area.schedule[0]?.printDeadline || 'N/A'}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Delivery:</span> {area.schedule[0]?.deliveryDate || 'N/A'}
-                                  </div>
-                                </div>
+                                <ScheduleCarousel
+                                  areaName={area.name}
+                                  schedule={area.schedule}
+                                  selectedMonth={selectedStartMonth[area.id]}
+                                  onMonthSelect={(month) => setSelectedStartMonth(prev => ({...prev, [area.id]: month}))}
+                                />
                               </div>
                             )}
                           </div>
@@ -396,15 +387,15 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                             <div className="text-xs text-muted-foreground mt-1">
                               {area.circulation?.toLocaleString()} homes
                             </div>
-                            {/* Schedule Information for Free Areas */}
+                            {/* Schedule Information for Free Areas with Carousel */}
                             {area.schedule && area.schedule.length > 0 && (
-                              <div className="text-xs text-gray-600 mt-2">
-                                <div className="font-medium mb-1">Publication Schedule:</div>
-                                <div className="grid grid-cols-3 gap-1">
-                                  <div>Copy: {area.schedule[0]?.copyDeadline}</div>
-                                  <div>Print: {area.schedule[0]?.printDeadline}</div>
-                                  <div>Delivery: {area.schedule[0]?.deliveryDate}</div>
-                                </div>
+                              <div className="mt-2">
+                                <ScheduleCarousel
+                                  areaName={area.name}
+                                  schedule={area.schedule}
+                                  selectedMonth={selectedStartMonth[area.id]}
+                                  onMonthSelect={(month) => setSelectedStartMonth(prev => ({...prev, [area.id]: month}))}
+                                />
                               </div>
                             )}
                           </Label>
@@ -613,54 +604,25 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
           {/* Schedule Management */}
           {effectiveSelectedAreas.length > 0 && pricingModel !== 'leafleting' && (
             <div className="bg-background border rounded-lg p-6 space-y-4">
-              <h3 className="text-lg font-semibold">Publication Schedule</h3>
+              <h3 className="text-lg font-semibold">Select Campaign Start Month</h3>
               <p className="text-sm text-muted-foreground">
-                Schedule information for your selected areas:
+                Choose when you want your campaign to start for each selected area:
               </p>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {effectiveSelectedAreas.map((areaId) => {
                   const area = areas.find(a => a.id === areaId);
                   if (!area) return null;
                   
                   return (
-                    <Card key={areaId} className="p-4">
-                      <div className="space-y-3">
-                        <h4 className="font-medium">{area.name}</h4>
-                        
-                        {/* Monthly Schedule */}
-                        {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {area.schedule.slice(0, 6).map((monthData: any, index: number) => (
-                              <div key={index} className="bg-muted/50 rounded-md p-3 space-y-2">
-                                <div className="font-medium text-sm">{monthData.month}</div>
-                                <div className="space-y-1 text-xs">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Copy Deadline:</span>
-                                    <span>{monthData.copyDeadline || 'TBA'}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Print Deadline:</span>
-                                    <span>{monthData.printDeadline || 'TBA'}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Delivery:</span>
-                                    <span>{monthData.deliveryDate || 'TBA'}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md">
-                            <div className="flex items-center gap-2">
-                              <AlertCircle className="h-4 w-4" />
-                              Schedule information not available for this area. Please contact our team for details.
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
+                    <div key={areaId} className="border rounded-lg p-4">
+                      <ScheduleCarousel
+                        areaName={area.name}
+                        schedule={area.schedule || []}
+                        selectedMonth={selectedStartMonth[area.id]}
+                        onMonthSelect={(month) => setSelectedStartMonth(prev => ({...prev, [area.id]: month}))}
+                      />
+                    </div>
                   );
                 })}
               </div>
