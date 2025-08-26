@@ -28,6 +28,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
 
   // Use the pricing data hook
   const {
@@ -187,9 +188,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       bogofFreeAreas,
       selectedAdSize,
       selectedDuration,
+      selectedMonths,
       pricingBreakdown
     });
-  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, pricingBreakdown, onDataChange]);
+  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedMonths, pricingBreakdown, onDataChange]);
 
   if (isError) {
     return (
@@ -611,28 +613,79 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
           </div>
 
           {/* Schedule Management */}
-          {effectiveSelectedAreas.length > 0 && pricingModel !== 'leafleting' && (
+          {effectiveSelectedAreas.length > 0 && pricingModel !== 'leafleting' && selectedDuration && (
             <div className="bg-background border rounded-lg p-6 space-y-4">
               <h3 className="text-lg font-semibold">Publication Schedule</h3>
               <p className="text-sm text-muted-foreground">
-                Schedule information for your selected areas:
+                Select the months you want your advertising to run:
               </p>
               
-              <div className="space-y-4">
-                {effectiveSelectedAreas.map((areaId) => {
-                  const area = areas.find(a => a.id === areaId);
-                  if (!area) return null;
-                  
+              {(() => {
+                // Get available months from the first selected area
+                const firstArea = areas.find(a => a.id === effectiveSelectedAreas[0]);
+                const availableMonths = firstArea?.schedule || [];
+                
+                // Get campaign duration info
+                const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
+                const durationData = relevantDurations?.find(d => d.id === selectedDuration);
+                const maxSelectableMonths = durationData?.duration_value || 1;
+                
+                if (availableMonths.length === 0) {
                   return (
-                    <Card key={areaId} className="p-4">
-                      <div className="space-y-3">
-                        <h4 className="font-medium">{area.name}</h4>
+                    <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        Schedule information not available. Please contact our team for details.
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                      <p className="text-sm font-medium text-primary">
+                        📅 You can select up to {maxSelectableMonths} month{maxSelectableMonths > 1 ? 's' : ''} based on your selected campaign duration
+                        {selectedMonths.length > 0 && ` (${selectedMonths.length}/${maxSelectableMonths} selected)`}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {availableMonths.map((monthData: any, index: number) => {
+                        const isSelected = selectedMonths.includes(monthData.month);
+                        const isDisabled = !isSelected && selectedMonths.length >= maxSelectableMonths;
                         
-                        {/* Monthly Schedule */}
-                        {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {area.schedule.slice(0, 6).map((monthData: any, index: number) => (
-                              <div key={index} className="bg-muted/50 rounded-md p-3 space-y-2">
+                        return (
+                          <div key={index} className={`
+                            border rounded-lg p-4 cursor-pointer transition-all
+                            ${isSelected ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50'}
+                            ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                          `}>
+                            <div className="flex items-start space-x-3">
+                              <Checkbox
+                                id={`month-${index}`}
+                                checked={isSelected}
+                                disabled={isDisabled}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    if (selectedMonths.length < maxSelectableMonths) {
+                                      setSelectedMonths(prev => [...prev, monthData.month]);
+                                    }
+                                  } else {
+                                    setSelectedMonths(prev => prev.filter(m => m !== monthData.month));
+                                  }
+                                }}
+                                className="mt-1"
+                              />
+                              <div className="flex-1 space-y-2" onClick={() => {
+                                if (isDisabled) return;
+                                const isCurrentlySelected = selectedMonths.includes(monthData.month);
+                                if (isCurrentlySelected) {
+                                  setSelectedMonths(prev => prev.filter(m => m !== monthData.month));
+                                } else if (selectedMonths.length < maxSelectableMonths) {
+                                  setSelectedMonths(prev => [...prev, monthData.month]);
+                                }
+                              }}>
                                 <div className="font-medium text-sm">{monthData.month}</div>
                                 <div className="space-y-1 text-xs">
                                   <div className="flex justify-between">
@@ -649,21 +702,20 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                                   </div>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md">
-                            <div className="flex items-center gap-2">
-                              <AlertCircle className="h-4 w-4" />
-                              Schedule information not available for this area. Please contact our team for details.
                             </div>
                           </div>
-                        )}
+                        );
+                      })}
+                    </div>
+
+                    {effectiveSelectedAreas.length > 1 && (
+                      <div className="text-xs text-muted-foreground">
+                        <strong>Note:</strong> Showing schedule for {firstArea?.name}. All selected areas follow the same publication schedule.
                       </div>
-                    </Card>
-                  );
-                })}
-              </div>
+                    )}
+                  </div>
+                );
+              })()}
               
               <div className="text-xs text-muted-foreground">
                 * Schedule may vary by area and is subject to change. Final schedules will be confirmed upon booking.
