@@ -42,7 +42,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
-  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [selectedMonths, setSelectedMonths] = useState<Record<string, string[]>>({});
 
   // Use the pricing data hook
   const {
@@ -626,107 +626,136 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             })()}
           </div>
 
-          {/* Schedule Management */}
+          {/* Schedule Management - Per Area */}
           {effectiveSelectedAreas.length > 0 && pricingModel !== 'leafleting' && selectedDuration && (
-            <div className="bg-background border rounded-lg p-6 space-y-4">
+            <div className="bg-background border rounded-lg p-6 space-y-6">
               <h3 className="text-lg font-semibold">Publication Schedule</h3>
               <p className="text-sm text-muted-foreground">
-                Select the months you want your advertising to run:
+                Select the months you want your advertising to run for each selected area:
               </p>
               
               {(() => {
-                // Get available months from the first selected area
-                const firstArea = areas.find(a => a.id === effectiveSelectedAreas[0]);
-                const availableMonths = firstArea?.schedule || [];
-                
                 // Get campaign duration info
                 const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
                 const durationData = relevantDurations?.find(d => d.id === selectedDuration);
                 const maxSelectableMonths = durationData?.duration_value || 1;
                 
-                if (availableMonths.length === 0) {
-                  return (
-                    <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4" />
-                        Schedule information not available. Please contact our team for details.
-                      </div>
-                    </div>
-                  );
-                }
-
                 return (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                       <p className="text-sm font-medium text-primary">
-                        📅 You can select up to {maxSelectableMonths} month{maxSelectableMonths > 1 ? 's' : ''} based on your selected campaign duration
-                        {selectedMonths.length > 0 && ` (${selectedMonths.length}/${maxSelectableMonths} selected)`}
+                        📅 You can select up to {maxSelectableMonths} month{maxSelectableMonths > 1 ? 's' : ''} for each area based on your selected campaign duration
                       </p>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {availableMonths.map((monthData: any, index: number) => {
-                        const isSelected = selectedMonths.includes(monthData.month);
-                        const isDisabled = !isSelected && selectedMonths.length >= maxSelectableMonths;
-                        
+                    {effectiveSelectedAreas.map((areaId) => {
+                      const area = areas.find(a => a.id === areaId);
+                      const availableMonths = area?.schedule || [];
+                      const areaSelectedMonths = selectedMonths[areaId] || [];
+                      
+                      if (!area || availableMonths.length === 0) {
                         return (
-                          <div key={index} className={`
-                            border rounded-lg p-4 cursor-pointer transition-all
-                            ${isSelected ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50'}
-                            ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                          `}>
-                            <div className="flex items-start space-x-3">
-                              <Checkbox
-                                id={`month-${index}`}
-                                checked={isSelected}
-                                disabled={isDisabled}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    if (selectedMonths.length < maxSelectableMonths) {
-                                      setSelectedMonths(prev => [...prev, monthData.month]);
-                                    }
-                                  } else {
-                                    setSelectedMonths(prev => prev.filter(m => m !== monthData.month));
-                                  }
-                                }}
-                                className="mt-1"
-                              />
-                              <div className="flex-1 space-y-2" onClick={() => {
-                                if (isDisabled) return;
-                                const isCurrentlySelected = selectedMonths.includes(monthData.month);
-                                if (isCurrentlySelected) {
-                                  setSelectedMonths(prev => prev.filter(m => m !== monthData.month));
-                                } else if (selectedMonths.length < maxSelectableMonths) {
-                                  setSelectedMonths(prev => [...prev, monthData.month]);
-                                }
-                              }}>
-                                <div className="font-medium text-sm">{formatMonthDisplay(monthData.month)}</div>
-                                <div className="space-y-1 text-xs">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Copy Deadline:</span>
-                                    <span>{monthData.copyDeadline || 'TBA'}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Print Deadline:</span>
-                                    <span>{monthData.printDeadline || 'TBA'}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Delivery:</span>
-                                    <span>{monthData.deliveryDate || 'TBA'}</span>
-                                  </div>
-                                </div>
+                          <div key={areaId} className="border rounded-lg p-4">
+                            <h4 className="font-medium text-lg mb-2">{area?.name || 'Unknown Area'}</h4>
+                            <div className="text-sm text-muted-foreground p-4 bg-muted/30 rounded-md">
+                              <div className="flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" />
+                                Schedule information not available for this area. Please contact our team for details.
                               </div>
                             </div>
                           </div>
                         );
-                      })}
-                    </div>
-
-                    {effectiveSelectedAreas.length > 1 && (
-                      <div className="text-xs text-muted-foreground">
-                        <strong>Note:</strong> Showing schedule for {firstArea?.name}. All selected areas follow the same publication schedule.
-                      </div>
-                    )}
+                      }
+                      
+                      return (
+                        <div key={areaId} className="border rounded-lg p-4">
+                          <h4 className="font-medium text-lg mb-4 flex items-center justify-between">
+                            {area.name}
+                            <Badge variant="outline" className="text-xs">
+                              {areaSelectedMonths.length}/{maxSelectableMonths} selected
+                            </Badge>
+                          </h4>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {availableMonths.map((monthData: any, index: number) => {
+                              const isSelected = areaSelectedMonths.includes(monthData.month);
+                              const isDisabled = !isSelected && areaSelectedMonths.length >= maxSelectableMonths;
+                              
+                              return (
+                                <div key={index} className={`
+                                  border rounded-lg p-4 cursor-pointer transition-all
+                                  ${isSelected ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/50'}
+                                  ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                                `}>
+                                  <div className="flex items-start space-x-3">
+                                    <Checkbox
+                                      id={`month-${areaId}-${index}`}
+                                      checked={isSelected}
+                                      disabled={isDisabled}
+                                      onCheckedChange={(checked) => {
+                                        setSelectedMonths(prev => {
+                                          const currentAreaMonths = prev[areaId] || [];
+                                          if (checked) {
+                                            if (currentAreaMonths.length < maxSelectableMonths) {
+                                              return {
+                                                ...prev,
+                                                [areaId]: [...currentAreaMonths, monthData.month]
+                                              };
+                                            }
+                                          } else {
+                                            return {
+                                              ...prev,
+                                              [areaId]: currentAreaMonths.filter(m => m !== monthData.month)
+                                            };
+                                          }
+                                          return prev;
+                                        });
+                                      }}
+                                      className="mt-1"
+                                    />
+                                    <div className="flex-1 space-y-2" onClick={() => {
+                                      if (isDisabled) return;
+                                      setSelectedMonths(prev => {
+                                        const currentAreaMonths = prev[areaId] || [];
+                                        const isCurrentlySelected = currentAreaMonths.includes(monthData.month);
+                                        if (isCurrentlySelected) {
+                                          return {
+                                            ...prev,
+                                            [areaId]: currentAreaMonths.filter(m => m !== monthData.month)
+                                          };
+                                        } else if (currentAreaMonths.length < maxSelectableMonths) {
+                                          return {
+                                            ...prev,
+                                            [areaId]: [...currentAreaMonths, monthData.month]
+                                          };
+                                        }
+                                        return prev;
+                                      });
+                                    }}>
+                                      <div className="font-medium text-sm">{formatMonthDisplay(monthData.month)}</div>
+                                      <div className="space-y-1 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Copy Deadline:</span>
+                                          <span>{monthData.copyDeadline || 'TBA'}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Print Deadline:</span>
+                                          <span>{monthData.printDeadline || 'TBA'}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Delivery:</span>
+                                          <span>{monthData.deliveryDate || 'TBA'}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })()}

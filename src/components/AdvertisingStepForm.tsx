@@ -21,7 +21,7 @@ export const AdvertisingStepForm: React.FC = () => {
     bogofFreeAreas: [] as string[],
     selectedAdSize: '',
     selectedDuration: '',
-    selectedMonths: [] as string[],
+    selectedMonths: {} as Record<string, string[]>,
     pricingBreakdown: null as any
   });
   const [submitting, setSubmitting] = useState(false);
