@@ -132,7 +132,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
         </div>
 
         {/* Step Content */}
-        <div className="relative min-h-[700px]">
+        <div className="relative">
           {React.Children.map(children, (child, index) => (
             <div
               key={index}
