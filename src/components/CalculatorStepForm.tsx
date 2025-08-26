@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
@@ -491,6 +491,51 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              )}
+
+              {/* Publication Schedule for Leafleting */}
+              {selectedAreas.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Publication Schedule
+                  </h3>
+                  <div className="space-y-3">
+                    {leafletAreas
+                      .filter(area => selectedAreas.includes(area.id))
+                      .map((area) => (
+                        <Card key={area.id}>
+                          <CardContent className="p-4">
+                            <div className="font-medium mb-2">Area {area.area_number}: {area.name}</div>
+                            {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 ? (
+                              <div className="space-y-2 text-sm">
+                                {area.schedule.map((schedule: any, index: number) => (
+                                  <div key={index} className="grid grid-cols-3 gap-4 p-2 bg-muted rounded">
+                                    <div>
+                                      <span className="font-medium">Copy Deadline:</span>
+                                      <div className="text-muted-foreground">{schedule.copyDeadline || 'TBA'}</div>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Print Deadline:</span>
+                                      <div className="text-muted-foreground">{schedule.printDeadline || 'TBA'}</div>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Delivery Date:</span>
+                                      <div className="text-muted-foreground">{schedule.deliveryDate || 'TBA'}</div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground">
+                                Schedule information not available for this area
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
                 </div>
               )}
             </div>
