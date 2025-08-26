@@ -627,7 +627,9 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
           </div>
 
           {/* Schedule Management - Per Area */}
-          {effectiveSelectedAreas.length > 0 && pricingModel !== 'leafleting' && selectedDuration && (
+          {((pricingModel === 'bogof' && (bogofPaidAreas.length > 0 || bogofFreeAreas.length > 0)) || 
+            (pricingModel !== 'bogof' && effectiveSelectedAreas.length > 0)) && 
+           pricingModel !== 'leafleting' && selectedDuration && (
             <div className="bg-background border rounded-lg p-6 space-y-6">
               <h3 className="text-lg font-semibold">Publication Schedule</h3>
               <p className="text-sm text-muted-foreground">
@@ -640,6 +642,14 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                 const durationData = relevantDurations?.find(d => d.id === selectedDuration);
                 const maxSelectableMonths = durationData?.duration_value || 1;
                 
+                // For BOGOF, we need to show both paid and free areas
+                const areasToShow = pricingModel === 'bogof' 
+                  ? [
+                      ...bogofPaidAreas.map(id => ({ id, type: 'paid' as const })),
+                      ...bogofFreeAreas.map(id => ({ id, type: 'free' as const }))
+                    ]
+                  : effectiveSelectedAreas.map(id => ({ id, type: 'regular' as const }));
+                
                 return (
                   <div className="space-y-6">
                     <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
@@ -648,7 +658,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                       </p>
                     </div>
                     
-                    {effectiveSelectedAreas.map((areaId) => {
+                    {areasToShow.map(({ id: areaId, type }) => {
                       const area = areas.find(a => a.id === areaId);
                       const availableMonths = area?.schedule || [];
                       const areaSelectedMonths = selectedMonths[areaId] || [];
@@ -670,7 +680,14 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                       return (
                         <div key={areaId} className="border rounded-lg p-4">
                           <h4 className="font-medium text-lg mb-4 flex items-center justify-between">
-                            {area.name}
+                            <div className="flex items-center gap-2">
+                              {area.name}
+                              {type === 'free' && (
+                                <Badge variant="secondary" className="text-xs text-green-700 bg-green-100">
+                                  FREE AREA
+                                </Badge>
+                              )}
+                            </div>
                             <Badge variant="outline" className="text-xs">
                               {areaSelectedMonths.length}/{maxSelectableMonths} selected
                             </Badge>
