@@ -2,58 +2,32 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, AlertCircle, CheckCircle2, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
 import { useLeafletAreas, useLeafletSizes, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
 import { useStepForm } from './StepForm';
-
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  password: string;
-}
 
 interface CalculatorStepFormProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
+  onDataChange?: (data: any) => void;
 }
 
-export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingModel }) => {
-  const { toast } = useToast();
-  const { nextStep, prevStep } = useStepForm();
-  
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    password: "",
-  });
+export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingModel, onDataChange }) => {
+  const { nextStep } = useStepForm();
   
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
-  const [submitting, setSubmitting] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
-  const [contactSectionReached, setContactSectionReached] = useState(false);
 
   // Use the pricing data hook
   const {
@@ -205,174 +179,17 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     }
   }, [pricingModel, durations, subscriptionDurations, leafletDurations]);
 
-  // Monitor contact section for Fixed Term confirmation
+  // Pass data to parent component
   useEffect(() => {
-    const contactSection = document.querySelector('[data-contact-section]');
-    if (!contactSection) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          console.log('Intersection observer triggered:', {
-            isIntersecting: entry.isIntersecting,
-            contactSectionReached,
-            pricingModel,
-            showFixedTermConfirmation,
-            hasPricingBreakdown: !!pricingBreakdown
-          });
-
-          if (entry.isIntersecting && !contactSectionReached) {
-            setContactSectionReached(true);
-            console.log('Contact section reached, checking popup conditions...', {
-              pricingModel,
-              showFixedTermConfirmation,
-              pricingBreakdown: !!pricingBreakdown ? 'EXISTS' : 'NULL',
-              pricingBreakdownValue: pricingBreakdown
-            });
-            
-            // Show confirmation dialog for Fixed Term users only when pricing is calculated
-            if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
-              console.log('Showing Fixed Term confirmation popup');
-              setShowFixedTermConfirmation(true);
-            } else {
-              console.log('Popup not shown - conditions not met:', {
-                isFixed: pricingModel === 'fixed',
-                notAlreadyShown: !showFixedTermConfirmation,
-                hasPricing: !!pricingBreakdown,
-                selectedAreas: effectiveSelectedAreas.length,
-                selectedAdSize: !!selectedAdSize,
-                selectedDuration: !!selectedDuration
-              });
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(contactSection);
-    return () => observer.disconnect();
-  }, [pricingModel, contactSectionReached, showFixedTermConfirmation, pricingBreakdown]);
-
-  const handleGetQuote = async () => {
-    // Validation
-    if (!formData.name || !formData.email || !formData.password) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in your name, email, and password.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast({
-        title: "Password Too Short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (effectiveSelectedAreas.length === 0) {
-      toast({
-        title: "No Areas Selected",
-        description: "Please select at least one distribution area.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedAdSize) {
-      toast({
-        title: "No Ad Size Selected",
-        description: "Please select an advertisement size.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedDuration) {
-      toast({
-        title: "No Duration Selected",
-        description: "Please select a campaign duration.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : 
-                                pricingModel === 'bogof' ? subscriptionDurations : durations;
-      const durationData = relevantDurations?.find(d => d.id === selectedDuration);
-      const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
-      const subtotalAfterVolume = pricingBreakdown?.subtotal ? pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0) : 0;
-      const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
-
-      const { data: { user } } = await supabase.auth.getUser();
-
-      const payload = {
-        contact_name: formData.name,
-        email: formData.email,
-        phone: formData.phone || '',
-        company: formData.company || '',
-        title: 'Quote Request',
-        pricing_model: pricingModel,
-        ad_size_id: selectedAdSize,
-        duration_id: selectedDuration,
-        selected_area_ids: effectiveSelectedAreas,
-        bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
-        bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
-        monthly_price: monthlyFinal,
-        subtotal: pricingBreakdown?.subtotal || 0,
-        final_total: pricingBreakdown?.finalTotal || 0,
-        duration_multiplier: pricingBreakdown?.durationMultiplier || 1,
-        total_circulation: pricingBreakdown?.totalCirculation || 0,
-        volume_discount_percent: pricingBreakdown?.volumeDiscountPercent || 0,
-        duration_discount_percent: durationDiscountPercent,
-        pricing_breakdown: JSON.parse(JSON.stringify(pricingBreakdown || {})) as any,
-        selections: {
-          pricingModel,
-          selectedAdSize,
-          selectedDuration,
-          selectedAreas,
-          bogofPaidAreas,
-          bogofFreeAreas
-        } as any,
-        user_id: user?.id || null
-      };
-
-      const { error } = await supabase.from('quote_requests').insert(payload);
-      if (error) throw error;
-      
-      toast({
-        title: "Quote Request Sent!",
-        description: "Our sales team will contact you within 24 hours to discuss your advertising needs.",
-      });
-      
-      nextStep(); // Move to completion step
-    } catch (err: any) {
-      console.error('Submit quote error:', err);
-      toast({ title: "Error", description: err.message || 'Failed to submit quote request.', variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleFixedTermContinue = () => {
-    setShowFixedTermConfirmation(false);
-  };
-
-  const handleSwitchToSubscription = () => {
-    setShowFixedTermConfirmation(false);
-    const { prevStep } = useStepForm();
-    prevStep(); // Go back to pricing options step
-    toast({ 
-      title: "Switched to Pricing Options", 
-      description: "Please select the BOGOF Subscription to get the special deal." 
+    onDataChange?.({
+      selectedAreas,
+      bogofPaidAreas,
+      bogofFreeAreas,
+      selectedAdSize,
+      selectedDuration,
+      pricingBreakdown
     });
-  };
+  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, pricingBreakdown, onDataChange]);
 
   if (isError) {
     return (
@@ -893,133 +710,18 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             </div>
           )}
 
-          {/* Contact Information */}
-          <div className="space-y-4" data-contact-section>
-            <h3 className="text-lg font-semibold">Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Full Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="Enter your email"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone Number *</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              <div>
-                <Label htmlFor="company">Company Name</Label>
-                <Input
-                  id="company"
-                  value={formData.company}
-                  onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                  placeholder="Enter your company name"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <Label htmlFor="password">Create Password *</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="At least 6 characters"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  This password will be used to access your dashboard and saved quotes.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Button */}
+          {/* Next Step Button */}
           <div className="flex justify-end">
             <Button 
-              onClick={handleGetQuote}
+              onClick={nextStep}
               className="px-8"
-              disabled={submitting || !formData.name || !formData.email || effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
+              disabled={effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration}
             >
-              {submitting ? "Sending..." : "Get My Quote"}
+              Continue to Contact Information
             </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* Fixed Term Confirmation Dialog */}
-      <Dialog open={showFixedTermConfirmation} onOpenChange={setShowFixedTermConfirmation}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
-              Are you sure you want to book Fixed Term?
-            </DialogTitle>
-            <DialogDescription className="text-center">
-              If you booked this selection on our BOGOF Subscription you would pay{" "}
-              <span className="font-bold text-primary">
-                {pricingBreakdown?.finalTotal 
-                  ? `£${Math.round(pricingBreakdown.finalTotal * 0.5)} + vat (£${Math.round(pricingBreakdown.finalTotal * 0.5 * 1.2)})` 
-                  : "effectively half price + vat"
-                }
-              </span>{" "}
-              per month for six months plus get DOUBLE the areas INCLUDING
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 my-6">
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>EQUAL NUMBER OF FREE AREAS—FOR 6 MONTHS—double the number of homes you reach!</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>FREE EDITORIAL</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>FREE PREMIUM POSITION UPGRADE</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>FREE ADVERT DESIGN</span>
-              </li>
-            </ul>
-          </div>
-          
-          <div className="flex gap-4 justify-center">
-            <Button 
-              onClick={handleFixedTermContinue}
-              className="px-8 py-2"
-            >
-              YES, CONTINUE
-            </Button>
-            <Button 
-              onClick={handleSwitchToSubscription}
-              variant="outline"
-              className="px-6 py-2"
-            >
-              NO, GO BACK TO SELECT BOGOF
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
