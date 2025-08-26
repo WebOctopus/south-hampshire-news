@@ -11,7 +11,6 @@ interface ContactInformationStepProps {
   bogofFreeAreas: string[];
   selectedAdSize: string;
   selectedDuration: string;
-  selectedMonths: string[];
   pricingBreakdown: any;
   onSaveQuote: (formData: FormData) => Promise<void>;
 }

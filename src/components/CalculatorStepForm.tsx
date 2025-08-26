@@ -28,7 +28,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
-  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
 
   // Use the pricing data hook
   const {
@@ -180,28 +179,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     }
   }, [pricingModel, durations, subscriptionDurations, leafletDurations]);
 
-  // Clear excess selected months when duration changes
-  useEffect(() => {
-    if (selectedDuration) {
-      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-        pricingModel === 'bogof' ? subscriptionDurations : durations;
-      
-      const durationData = relevantDurations?.find(d => d.id === selectedDuration);
-      let maxMonths = 1;
-      
-      if (pricingModel === 'leafleting') {
-        maxMonths = (durationData as any)?.issues || 1;
-      } else if (durationData && 'duration_value' in durationData) {
-        maxMonths = (durationData as any).duration_value || 1;
-      }
-      
-      // Limit selected months to the maximum allowed
-      if (selectedMonths.length > maxMonths) {
-        setSelectedMonths(prev => prev.slice(0, maxMonths));
-      }
-    }
-  }, [selectedDuration, pricingModel, durations, subscriptionDurations, leafletDurations, selectedMonths.length]);
-
   // Pass data to parent component
   useEffect(() => {
     onDataChange?.({
@@ -210,10 +187,9 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       bogofFreeAreas,
       selectedAdSize,
       selectedDuration,
-      selectedMonths,
       pricingBreakdown
     });
-  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedMonths, pricingBreakdown, onDataChange]);
+  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, pricingBreakdown, onDataChange]);
 
   if (isError) {
     return (
@@ -619,12 +595,12 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                       <SelectItem key={duration.id} value={duration.id}>
                         <div className="flex justify-between items-center w-full">
                           <span>{duration.name}</span>
-                           <span className="ml-4 text-muted-foreground">
-                             {pricingModel === 'leafleting' 
-                               ? `${(duration as any).issues || 1} issue${((duration as any).issues || 1) > 1 ? 's' : ''}`
-                               : 'duration_value' in duration ? `${(duration as any).duration_value} issue${(duration as any).duration_value > 1 ? 's' : ''}` : duration.name
-                             }
-                           </span>
+                          <span className="ml-4 text-muted-foreground">
+                            {pricingModel === 'leafleting' 
+                              ? `${(duration as any).months || 1} month${((duration as any).months || 1) > 1 ? 's' : ''}`
+                              : duration.description
+                            }
+                          </span>
                         </div>
                       </SelectItem>
                     ))}
@@ -633,143 +609,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
               );
             })()}
           </div>
-
-          {/* Month Selection */}
-          {selectedDuration && effectiveSelectedAreas.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Publication Months</h3>
-              <p className="text-sm text-muted-foreground">
-                {(() => {
-                  const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-                    pricingModel === 'bogof' ? subscriptionDurations : durations;
-                  const durationData = relevantDurations?.find(d => d.id === selectedDuration);
-                  
-                  let maxMonths = 1;
-                  if (pricingModel === 'leafleting') {
-                    maxMonths = (durationData as any)?.issues || 1;
-                  } else if (durationData && 'duration_value' in durationData) {
-                    maxMonths = (durationData as any).duration_value || 1;
-                  }
-                  
-                  return `Select ${maxMonths} month${maxMonths > 1 ? 's' : ''} for your campaign based on your ${maxMonths} issue${maxMonths > 1 ? 's' : ''} duration.`;
-                })()}
-              </p>
-              
-              {(() => {
-                const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-                  pricingModel === 'bogof' ? subscriptionDurations : durations;
-                const durationData = relevantDurations?.find(d => d.id === selectedDuration);
-                
-                 let maxMonths = 1;
-                 if (pricingModel === 'leafleting') {
-                   maxMonths = (durationData as any)?.issues || 1;
-                 } else if (durationData && 'duration_value' in durationData) {
-                   maxMonths = (durationData as any).duration_value || 1;
-                 }
-
-                // Get available months from the first selected area's schedule
-                const firstAreaId = effectiveSelectedAreas[0];
-                const firstArea = areas.find(a => a.id === firstAreaId);
-                const availableMonths = firstArea?.schedule || [];
-
-                if (availableMonths.length === 0) {
-                  return (
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        No publication schedule available. Please contact our team for available months.
-                      </AlertDescription>
-                    </Alert>
-                  );
-                }
-
-                const handleMonthChange = (monthId: string, checked: boolean) => {
-                  setSelectedMonths(prev => {
-                    if (checked && prev.length < maxMonths) {
-                      return [...prev, monthId];
-                    } else if (!checked) {
-                      return prev.filter(id => id !== monthId);
-                    }
-                    return prev;
-                  });
-                };
-
-                return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {availableMonths.map((monthData: any, index: number) => {
-                      const monthId = `${monthData.month}-${index}`;
-                      const isSelected = selectedMonths.includes(monthId);
-                      const isDisabled = !isSelected && selectedMonths.length >= maxMonths;
-                      
-                      return (
-                        <Card 
-                          key={monthId} 
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? 'ring-2 ring-primary border-primary' : 
-                            isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'
-                          }`}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start space-x-3">
-                              <Checkbox
-                                id={monthId}
-                                checked={isSelected}
-                                disabled={isDisabled}
-                                onCheckedChange={(checked) => handleMonthChange(monthId, checked as boolean)}
-                                className="mt-1"
-                              />
-                              <div className="flex-1 space-y-2" onClick={() => !isDisabled && handleMonthChange(monthId, !isSelected)}>
-                                <Label 
-                                  htmlFor={monthId} 
-                                  className={`font-medium cursor-pointer ${isDisabled ? 'cursor-not-allowed' : ''}`}
-                                >
-                                  {monthData.month}
-                                </Label>
-                                <div className="space-y-1 text-xs">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Copy Deadline:</span>
-                                    <span className="font-medium">{monthData.copyDeadline || 'TBA'}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Print Deadline:</span>
-                                    <span className="font-medium">{monthData.printDeadline || 'TBA'}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Delivery:</span>
-                                    <span className="font-medium">{monthData.deliveryDate || 'TBA'}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-              
-              {selectedMonths.length > 0 && (
-                <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-lg">
-                  <h4 className="font-medium text-primary mb-2">Selected Months ({selectedMonths.length})</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMonths.map((monthId) => {
-                      const monthIndex = parseInt(monthId.split('-')[1]);
-                      const firstAreaId = effectiveSelectedAreas[0];
-                      const firstArea = areas.find(a => a.id === firstAreaId);
-                      const monthData = firstArea?.schedule?.[monthIndex];
-                      
-                      return (
-                        <Badge key={monthId} variant="secondary" className="bg-primary/20 text-primary">
-                          {monthData?.month || 'Unknown Month'}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Schedule Management */}
           {effectiveSelectedAreas.length > 0 && pricingModel !== 'leafleting' && (
