@@ -307,11 +307,31 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       if (initialData.bogofPaidAreas) setBogofPaidAreas(initialData.bogofPaidAreas);
       if (initialData.bogofFreeAreas) setBogofFreeAreas(initialData.bogofFreeAreas);
       if (initialData.selectedAdSize) setSelectedAdSize(initialData.selectedAdSize);
-      if (initialData.selectedDuration) setSelectedDuration(initialData.selectedDuration);
+      
+      // Handle duration syncing with pricing model compatibility
+      if (initialData.selectedDuration) {
+        const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
+          pricingModel === 'bogof' ? subscriptionDurations : durations;
+          
+        if (relevantDurations && relevantDurations.length > 0) {
+          // Check if the initial duration is valid for current pricing model
+          const isValidDuration = relevantDurations.some(d => d.id === initialData.selectedDuration);
+          if (isValidDuration) {
+            setSelectedDuration(initialData.selectedDuration);
+          } else {
+            // For BOGOF, try to select the first available subscription duration
+            if (pricingModel === 'bogof' && subscriptionDurations && subscriptionDurations.length > 0) {
+              setSelectedDuration(subscriptionDurations[0].id);
+            }
+          }
+        }
+      }
+      
       if (initialData.selectedMonths) setSelectedMonths(initialData.selectedMonths);
+      
       initialDataSynced.current = true;
     }
-  }, [initialData, pricingModel]);
+  }, [initialData, pricingModel, durations, subscriptionDurations, leafletDurations]);
 
   // Pass data to parent component
   useEffect(() => {
