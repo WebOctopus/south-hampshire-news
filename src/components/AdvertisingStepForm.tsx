@@ -8,8 +8,15 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletCampaignDurations } from '@/hooks/useLeafletData';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-export const AdvertisingStepForm: React.FC = () => {
+interface AdvertisingStepFormProps {
+  children?: React.ReactNode;
+  asDialog?: boolean;
+}
+
+export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ children, asDialog = false }) => {
   const { toast } = useToast();
   const { durations, subscriptionDurations } = usePricingData();
   const { data: leafletDurations } = useLeafletCampaignDurations();
@@ -204,35 +211,81 @@ export const AdvertisingStepForm: React.FC = () => {
   };
 
   return (
-    <StepForm stepLabels={stepLabels}>
-      <PricingOptionsStep onSelectOption={handleSelectOption} />
-      
-      <CalculatorStepForm 
-        pricingModel={selectedPricingModel} 
-        onDataChange={handleCampaignDataChange}
-      />
-      
-      <ContactInformationStep
-        pricingModel={selectedPricingModel}
-        selectedAreas={campaignData.selectedAreas}
-        bogofPaidAreas={campaignData.bogofPaidAreas}
-        bogofFreeAreas={campaignData.bogofFreeAreas}
-        selectedAdSize={campaignData.selectedAdSize}
-        selectedDuration={campaignData.selectedDuration}
-        pricingBreakdown={campaignData.pricingBreakdown}
-        onSaveQuote={handleSaveQuote}
-      />
-      
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle2 className="w-8 h-8 text-green-600" />
-        </div>
-        <h3 className="text-2xl font-bold text-green-600">Quote Submitted!</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Thank you for your quote request. Our sales team will contact you within 24 hours to discuss your advertising needs.
-        </p>
-      </div>
-    </StepForm>
+    <ErrorBoundary>
+      {asDialog && children ? (
+        <Dialog>
+          <DialogTrigger asChild>
+            {children}
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">
+                Advertising Cost Calculator
+              </DialogTitle>
+            </DialogHeader>
+            <StepForm stepLabels={stepLabels}>
+              <PricingOptionsStep onSelectOption={handleSelectOption} />
+              
+              <CalculatorStepForm 
+                pricingModel={selectedPricingModel} 
+                onDataChange={handleCampaignDataChange}
+              />
+              
+              <ContactInformationStep
+                pricingModel={selectedPricingModel}
+                selectedAreas={campaignData.selectedAreas}
+                bogofPaidAreas={campaignData.bogofPaidAreas}
+                bogofFreeAreas={campaignData.bogofFreeAreas}
+                selectedAdSize={campaignData.selectedAdSize}
+                selectedDuration={campaignData.selectedDuration}
+                pricingBreakdown={campaignData.pricingBreakdown}
+                onSaveQuote={handleSaveQuote}
+              />
+              
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-green-600">Quote Submitted!</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Thank you for your quote request. Our sales team will contact you within 24 hours to discuss your advertising needs.
+                </p>
+              </div>
+            </StepForm>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <StepForm stepLabels={stepLabels}>
+          <PricingOptionsStep onSelectOption={handleSelectOption} />
+          
+          <CalculatorStepForm 
+            pricingModel={selectedPricingModel} 
+            onDataChange={handleCampaignDataChange}
+          />
+          
+          <ContactInformationStep
+            pricingModel={selectedPricingModel}
+            selectedAreas={campaignData.selectedAreas}
+            bogofPaidAreas={campaignData.bogofPaidAreas}
+            bogofFreeAreas={campaignData.bogofFreeAreas}
+            selectedAdSize={campaignData.selectedAdSize}
+            selectedDuration={campaignData.selectedDuration}
+            pricingBreakdown={campaignData.pricingBreakdown}
+            onSaveQuote={handleSaveQuote}
+          />
+          
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-green-600">Quote Submitted!</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Thank you for your quote request. Our sales team will contact you within 24 hours to discuss your advertising needs.
+            </p>
+          </div>
+        </StepForm>
+      )}
+    </ErrorBoundary>
   );
 };
 

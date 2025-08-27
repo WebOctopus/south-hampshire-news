@@ -8,12 +8,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, AlertCircle, Calendar } from 'lucide-react';
+import { Loader2, AlertCircle, Calendar, RefreshCw } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
 import { useLeafletAreas, useLeafletSizes, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { useStepForm } from './StepForm';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
@@ -86,6 +87,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<string>("");
   const [selectedMonths, setSelectedMonths] = useState<Record<string, string[]>>({});
+  const [prevPricingModel, setPrevPricingModel] = useState<string>(pricingModel);
 
   // Use the pricing data hook
   const {
@@ -200,42 +202,94 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     return result;
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations]);
 
-  // Auto-set duration when pricing model or durations change
+  // Enhanced auto-duration selection with better state tracking
   useEffect(() => {
-    if (pricingModel === 'leafleting' && leafletDurations && leafletDurations.length > 0) {
-      if (!selectedDuration) {
-        const defaultDuration = leafletDurations.find(d => (d as any).is_default) || leafletDurations[0];
-        if (defaultDuration) {
+    console.log('Duration useEffect triggered:', {
+      pricingModel,
+      prevPricingModel,
+      durationsLength: durations?.length,
+      subscriptionDurationsLength: subscriptionDurations?.length,
+      leafletDurationsLength: leafletDurations?.length,
+      currentSelectedDuration: selectedDuration
+    });
+
+    try {
+      // Handle leafleting service
+      if (pricingModel === 'leafleting' && leafletDurations && leafletDurations.length > 0) {
+        // Only clear duration when pricing model actually changes
+        if (pricingModel !== prevPricingModel && prevPricingModel !== pricingModel) {
+          setSelectedDuration("");
+          setPrevPricingModel(pricingModel);
+          return;
+        }
+        
+        // Auto-select if only one duration option and no duration currently selected
+        if (leafletDurations.length === 1 && !selectedDuration) {
+          const defaultDuration = leafletDurations[0];
           setSelectedDuration(defaultDuration.id);
+        } else if (!selectedDuration) {
+          const defaultDuration = leafletDurations.find(d => (d as any).is_default) || leafletDurations[0];
+          if (defaultDuration) {
+            setSelectedDuration(defaultDuration.id);
+          }
+        }
+      } 
+      // Handle BOGOF subscription
+      else if (pricingModel === 'bogof' && subscriptionDurations && subscriptionDurations.length > 0) {
+        // Only clear duration when pricing model actually changes
+        if (pricingModel !== prevPricingModel && prevPricingModel !== null) {
+          setSelectedDuration("");
+          setPrevPricingModel(pricingModel);
+          return;
+        }
+        
+        // Auto-set BOGOF to 6 months
+        const sixMonthDuration = subscriptionDurations.find(d => d.duration_value === 6);
+        if (sixMonthDuration) {
+          setSelectedDuration(sixMonthDuration.id);
+        }
+      } 
+      // Handle fixed pricing
+      else if (pricingModel === 'fixed') {
+        // Only clear duration when pricing model actually changes
+        if (pricingModel !== prevPricingModel && prevPricingModel !== null) {
+          setSelectedDuration("");
+          setPrevPricingModel(pricingModel);
+          return;
+        }
+        
+        // Auto-select if only one duration option and no duration currently selected
+        if (durations?.length === 1 && !selectedDuration) {
+          setSelectedDuration(durations[0].id);
+        }
+        
+        // Validate current selection is still valid for fixed
+        if (selectedDuration) {
+          const isValidForFixed = durations?.some(d => d.id === selectedDuration);
+          if (!isValidForFixed) {
+            setSelectedDuration('');
+          }
         }
       }
-    } else if (pricingModel === 'bogof' && subscriptionDurations && subscriptionDurations.length > 0) {
-      // Auto-set BOGOF to 6 months
-      const sixMonthDuration = subscriptionDurations.find(d => d.duration_value === 6);
-      if (sixMonthDuration) {
-        setSelectedDuration(sixMonthDuration.id);
-      }
-    } else if (pricingModel === 'fixed') {
-      // Clear duration for fixed - let user choose
-      if (selectedDuration) {
-        const isValidForFixed = durations?.some(d => d.id === selectedDuration);
-        if (!isValidForFixed) {
-          setSelectedDuration('');
-        }
-      }
-    }
-    
-    // Validate current selection is still valid
-    const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-      pricingModel === 'bogof' ? subscriptionDurations : durations;
       
-    if (selectedDuration && relevantDurations && relevantDurations.length > 0) {
-      const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
-      if (!isValidSelection) {
-        setSelectedDuration("");
+      // Validate current selection is still valid for the current model
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
+        pricingModel === 'bogof' ? subscriptionDurations : durations;
+        
+      if (selectedDuration && relevantDurations && relevantDurations.length > 0) {
+        const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
+        if (!isValidSelection) {
+          console.log('Current duration selection invalid for', pricingModel, '- clearing');
+          setSelectedDuration("");
+        }
       }
+      
+      // Update previous model reference
+      setPrevPricingModel(pricingModel);
+    } catch (error) {
+      console.error('Error in duration useEffect:', error);
     }
-  }, [pricingModel, durations, subscriptionDurations, leafletDurations]);
+  }, [pricingModel, durations, subscriptionDurations, leafletDurations, selectedDuration, prevPricingModel]);
 
   // Pass data to parent component
   useEffect(() => {
@@ -250,21 +304,31 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     });
   }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedMonths, pricingBreakdown, onDataChange]);
 
+  // Enhanced error state with retry functionality
   if (isError) {
     return (
       <Card className="max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
-            Failed to Load Data
+            Loading Error
           </CardTitle>
           <CardDescription>
-            {error?.message || "Unable to load pricing data"}
+            Unable to load pricing data. Please try again.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button onClick={refetch} variant="outline">
-            Try Again
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Unable to load pricing data. Please try again.
+          </p>
+          {error && (
+            <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
+              {error.message}
+            </div>
+          )}
+          <Button onClick={() => refetch()} variant="outline" className="w-full">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
           </Button>
         </CardContent>
       </Card>
@@ -272,15 +336,16 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Configure Your Campaign</h2>
-        <p className="text-muted-foreground">
-          Complete your {pricingModel === 'fixed' ? 'Fixed Term' : 
-                        pricingModel === 'bogof' ? 'BOGOF Subscription' : 
-                        'Leafleting Service'} setup
-        </p>
-      </div>
+    <ErrorBoundary>
+      <div className="space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold">Configure Your Campaign</h2>
+          <p className="text-muted-foreground">
+            Complete your {pricingModel === 'fixed' ? 'Fixed Term' : 
+                          pricingModel === 'bogof' ? 'BOGOF Subscription' : 
+                          'Leafleting Service'} setup
+          </p>
+        </div>
 
       <Card>
         <CardContent className="space-y-6 p-6">
@@ -296,12 +361,14 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                   Loading distribution areas...
                 </div>
               ) : areas.length === 0 ? (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    No distribution areas available. Please check the admin configuration.
-                  </AlertDescription>
-                </Alert>
+                <div className="text-center py-8 text-muted-foreground">
+                  <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                  <p>No distribution areas available</p>
+                  <Button onClick={() => refetch()} variant="outline" size="sm" className="mt-2">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Retry
+                  </Button>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {areas.map((area) => (
@@ -372,12 +439,14 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                   Loading distribution areas...
                 </div>
               ) : areas.length === 0 ? (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    No distribution areas available. Please check the admin configuration.
-                  </AlertDescription>
-                </Alert>
+                <div className="text-center py-8 text-muted-foreground">
+                  <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                  <p>No distribution areas available</p>
+                  <Button onClick={() => refetch()} variant="outline" size="sm" className="mt-2">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Retry
+                  </Button>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {areas.map((area) => (
@@ -1062,6 +1131,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
         </CardContent>
       </Card>
     </div>
+    </ErrorBoundary>
   );
 };
 
