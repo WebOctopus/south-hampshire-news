@@ -564,9 +564,10 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
             {pricingBreakdown && (
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                    {pricingModel === 'fixed' ? 'SUMMARY & COST TO BOOK' : 'Pricing Summary'}
-                  </h3>
+                   <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
+                     {pricingModel === 'fixed' ? 'SUMMARY & COST TO BOOK' : 'Pricing Summary'}
+                   </h3>
+                   {/* Force refresh - updated format for Fixed Term */}
                   
                   {pricingModel === 'fixed' ? (
                     // Fixed Term specific format
