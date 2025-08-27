@@ -302,7 +302,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
   // Sync with initial data when provided
   useEffect(() => {
-    if (initialData && (!initialDataSynced.current || (pricingModel === 'bogof' && initialData.bogofPaidAreas && initialData.bogofPaidAreas.length > 0))) {
+    if (initialData && !initialDataSynced.current) {
       if (initialData.selectedAreas) setSelectedAreas(initialData.selectedAreas);
       if (initialData.bogofPaidAreas) setBogofPaidAreas(initialData.bogofPaidAreas);
       if (initialData.bogofFreeAreas) setBogofFreeAreas(initialData.bogofFreeAreas);
