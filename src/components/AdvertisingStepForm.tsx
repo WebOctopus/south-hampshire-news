@@ -46,11 +46,21 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleFixedTermContinue = () => {
+    // Switch to BOGOF and transfer selections
+    setSelectedPricingModel('bogof');
+    setCampaignData(prev => ({
+      ...prev,
+      bogofPaidAreas: prev.selectedAreas, // Transfer current selections as paid areas
+      bogofFreeAreas: [] // Reset free areas so user can select them
+    }));
+    
     setShowFixedTermConfirmation(false);
-    if (pendingNextStep) {
-      pendingNextStep();
-      setPendingNextStep(null);
-    }
+    setPendingNextStep(null);
+    
+    toast({
+      title: "Switched to 3+ Repeat Package!",
+      description: "Your selections have been transferred. Now select your FREE areas!",
+    });
   };
 
   const handleSwitchToSubscription = () => {
