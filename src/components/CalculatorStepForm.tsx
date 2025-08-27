@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,6 +96,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   const [selectedDuration, setSelectedDuration] = useState<string>("");
   const [selectedMonths, setSelectedMonths] = useState<Record<string, string[]>>({});
   const [prevPricingModel, setPrevPricingModel] = useState<string>(pricingModel);
+  const initialDataSynced = useRef(false);
 
   // Use the pricing data hook
   const {
@@ -299,15 +300,16 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     }
   }, [pricingModel, durations, subscriptionDurations, leafletDurations, selectedDuration, prevPricingModel]);
 
-  // Sync with initial data when provided
+  // Sync with initial data when provided (only once)
   useEffect(() => {
-    if (initialData) {
+    if (initialData && !initialDataSynced.current) {
       if (initialData.selectedAreas) setSelectedAreas(initialData.selectedAreas);
       if (initialData.bogofPaidAreas) setBogofPaidAreas(initialData.bogofPaidAreas);
       if (initialData.bogofFreeAreas) setBogofFreeAreas(initialData.bogofFreeAreas);
       if (initialData.selectedAdSize) setSelectedAdSize(initialData.selectedAdSize);
       if (initialData.selectedDuration) setSelectedDuration(initialData.selectedDuration);
       if (initialData.selectedMonths) setSelectedMonths(initialData.selectedMonths);
+      initialDataSynced.current = true;
     }
   }, [initialData]);
 
