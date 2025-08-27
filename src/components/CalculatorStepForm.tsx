@@ -1102,7 +1102,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
           {pricingBreakdown && (
             <div className="bg-muted/50 border rounded-lg p-6 space-y-4">
               <h3 className="text-lg font-semibold">
-                {pricingModel === 'fixed' ? 'SUMMARY & COST TO BOOK' : 'Pricing Summary'}
+                {(pricingModel === 'fixed' || pricingModel === 'bogof') ? 'SUMMARY & COST TO BOOK' : 'Pricing Summary'}
               </h3>
               
               {pricingModel === 'fixed' ? (
@@ -1130,6 +1130,47 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                     <div className="mt-3 pt-3 border-t">
                       <span className="font-medium">Pre-payment Required = </span>
                       {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)}) per insertion in {selectedAreas.length} area{selectedAreas.length > 1 ? 's' : ''} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                    </div>
+                  </div>
+                </div>
+              ) : pricingModel === 'bogof' ? (
+                // 3+ Repeat Package specific format
+                <div className="space-y-3">
+                  <div className="text-sm">
+                    <div className="mb-2"><span className="font-medium">Booking Type:</span> 3+ Repeat Package</div>
+                    <div className="mb-2"><span className="font-medium">Where:</span></div>
+                    {bogofPaidAreas.map((areaId, index) => {
+                      const area = areas?.find(a => a.id === areaId);
+                      return area ? (
+                        <div key={areaId} className="ml-2">
+                          Area {index + 1} {area.name}
+                        </div>
+                      ) : null;
+                    })}
+                    {bogofFreeAreas.length > 0 && (
+                      <>
+                        <div className="mb-1 mt-3 text-green-600 font-medium">FREE Areas:</div>
+                        {bogofFreeAreas.map((areaId, index) => {
+                          const area = areas?.find(a => a.id === areaId);
+                          return area ? (
+                            <div key={areaId} className="ml-2 text-green-600">
+                              Free Area {index + 1} {area.name}
+                            </div>
+                          ) : null;
+                        })}
+                      </>
+                    )}
+                    <div className="mt-2">
+                      <span className="font-medium">Total Circulation per selection of area/s = </span>
+                      {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                    </div>
+                    <div className="mt-2">
+                      <span className="font-medium">Advert Size = </span>
+                      {adSizes?.find(size => size.id === selectedAdSize)?.name || 'Selected size'}
+                    </div>
+                    <div className="mt-3 pt-3 border-t">
+                      <span className="font-medium">Pre-payment Required = </span>
+                      {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)}) per insertion in {bogofPaidAreas.length + bogofFreeAreas.length} area{(bogofPaidAreas.length + bogofFreeAreas.length) > 1 ? 's' : ''} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
                     </div>
                   </div>
                 </div>
