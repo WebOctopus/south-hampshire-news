@@ -9,7 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface AdvertisingStepFormProps {
   children?: React.ReactNode;
@@ -32,6 +33,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     pricingBreakdown: null as any
   });
   const [submitting, setSubmitting] = useState(false);
+  const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
+  const [pendingNextStep, setPendingNextStep] = useState<(() => void) | null>(null);
 
   const handleSelectOption = (option: 'fixed' | 'bogof' | 'leafleting') => {
     console.log('Selected pricing option:', option);
@@ -40,6 +43,34 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
   const handleCampaignDataChange = (data: any) => {
     setCampaignData(data);
+  };
+
+  const handleFixedTermContinue = () => {
+    setShowFixedTermConfirmation(false);
+    if (pendingNextStep) {
+      pendingNextStep();
+      setPendingNextStep(null);
+    }
+  };
+
+  const handleSwitchToSubscription = () => {
+    setShowFixedTermConfirmation(false);
+    setSelectedPricingModel('bogof');
+    setPendingNextStep(null);
+    toast({
+      title: "Switched to 3+ Repeat Package",
+      description: "You've been switched to our subscription model with better value!",
+    });
+  };
+
+  const handleStepTransition = (currentStep: number, nextStep: () => void) => {
+    // Intercept transition from calculator (step 1) to contact (step 2) for Fixed Term
+    if (currentStep === 1 && selectedPricingModel === 'fixed' && campaignData.pricingBreakdown) {
+      setPendingNextStep(() => nextStep);
+      setShowFixedTermConfirmation(true);
+      return; // Don't proceed to next step yet
+    }
+    nextStep(); // Proceed normally for other cases
   };
 
   const handleSaveQuote = async (formData: any) => {
@@ -207,7 +238,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       submitting ? 'Saving...' : 'Save My Quote'
     ],
     prevButtonLabel: 'Previous Step',
-    onLastStepNext: handleSaveQuote
+    onLastStepNext: handleSaveQuote,
+    onStepTransition: handleStepTransition
   };
 
   return (
@@ -285,6 +317,62 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           </div>
         </StepForm>
       )}
+
+      {/* Fixed Term Confirmation Dialog */}
+      <Dialog open={showFixedTermConfirmation} onOpenChange={setShowFixedTermConfirmation}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              Are you sure you want to book Fixed Term?
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              If you booked this selection on our 3+ Repeat Package you would pay{" "}
+              <span className="font-bold text-green-600">
+                £{campaignData.pricingBreakdown?.finalTotal ? Math.round(campaignData.pricingBreakdown.finalTotal * 0.85) : 144} + vat (£{campaignData.pricingBreakdown?.finalTotal ? Math.round(campaignData.pricingBreakdown.finalTotal * 0.85 * 1.2) : 172.80})
+              </span>{" "}
+              per month for minimum of six months INCLUDING
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 my-6">
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span>2 x EXTRA AREAS—FREE FOR 3 ISSUES—double the number of homes you reach!</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span>FREE EDITORIAL</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span>FREE PREMIUM POSITION UPGRADE</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <span>FREE ADVERT DESIGN</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            <Button
+              variant="default"
+              onClick={handleFixedTermContinue}
+              className="bg-green-600 hover:bg-green-700 text-white px-8"
+            >
+              YES, CONTINUE
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSwitchToSubscription}
+              className="border-blue-500 text-blue-600 hover:bg-blue-50 px-6"
+            >
+              NO, SWITCH TO SUBSCRIPTION, PLEASE
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </ErrorBoundary>
   );
 };

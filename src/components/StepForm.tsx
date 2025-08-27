@@ -11,6 +11,7 @@ interface StepFormProps {
     nextButtonLabels?: string[];
     prevButtonLabel?: string;
     onLastStepNext?: (formData: any) => Promise<void>;
+    onStepTransition?: (currentStep: number, nextStep: () => void) => void;
   };
 }
 
@@ -24,6 +25,7 @@ interface StepFormContextValue {
     nextButtonLabels?: string[];
     prevButtonLabel?: string;
     onLastStepNext?: (formData: any) => Promise<void>;
+    onStepTransition?: (currentStep: number, nextStep: () => void) => void;
   };
 }
 
@@ -53,29 +55,37 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
   }, [currentStep]);
 
   const nextStep = async () => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else if (currentStep === totalSteps - 1 && stepLabels?.onLastStepNext) {
-      // On the last step, call the custom handler if provided
-      const contactFormElement = document.querySelector('form') as HTMLFormElement;
-      if (contactFormElement) {
-        const formData = new FormData(contactFormElement);
-        const formValues = {
-          name: formData.get('name') as string || '',
-          email: formData.get('email') as string || '',
-          phone: formData.get('phone') as string || '',
-          company: formData.get('company') as string || '',
-          password: formData.get('password') as string || '',
-        };
-        try {
-          await stepLabels.onLastStepNext(formValues);
-          setCurrentStep(prev => prev + 1); // Move to completion step only on success
-        } catch (error) {
-          // Error is already handled in the parent component
+    const standardNextStep = () => {
+      if (currentStep < totalSteps - 1) {
+        setCurrentStep(prev => prev + 1);
+      } else if (currentStep === totalSteps - 1 && stepLabels?.onLastStepNext) {
+        // On the last step, call the custom handler if provided
+        const contactFormElement = document.querySelector('form') as HTMLFormElement;
+        if (contactFormElement) {
+          const formData = new FormData(contactFormElement);
+          const formValues = {
+            name: formData.get('name') as string || '',
+            email: formData.get('email') as string || '',
+            phone: formData.get('phone') as string || '',
+            company: formData.get('company') as string || '',
+            password: formData.get('password') as string || '',
+          };
+          stepLabels.onLastStepNext(formValues).then(() => {
+            setCurrentStep(prev => prev + 1); // Move to completion step only on success
+          }).catch(() => {
+            // Error is already handled in the parent component
+          });
         }
+      } else if (onComplete) {
+        onComplete();
       }
-    } else if (onComplete) {
-      onComplete();
+    };
+
+    // Check if there's a custom step transition handler
+    if (stepLabels?.onStepTransition) {
+      stepLabels.onStepTransition(currentStep, standardNextStep);
+    } else {
+      standardNextStep();
     }
   };
 
