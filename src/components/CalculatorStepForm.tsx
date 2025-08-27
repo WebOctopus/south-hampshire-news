@@ -17,8 +17,44 @@ import { useStepForm } from './StepForm';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
-  // Parse "2025-09" format
-  const [year, month] = monthString.split('-');
+  console.log('[formatMonthDisplay] Input monthString:', monthString);
+  
+  if (!monthString) {
+    console.log('[formatMonthDisplay] Empty monthString provided');
+    return 'Invalid Date';
+  }
+  
+  // Handle different possible formats
+  let year: string, month: string;
+  
+  if (monthString.includes('-')) {
+    // Parse "2025-09" or "2025-9" format
+    [year, month] = monthString.split('-');
+  } else if (monthString.includes(' ')) {
+    // Parse "June 2026" format - convert to expected format
+    const parts = monthString.split(' ');
+    if (parts.length === 2) {
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const monthIndex = monthNames.findIndex(name => name.toLowerCase() === parts[0].toLowerCase());
+      if (monthIndex !== -1) {
+        month = String(monthIndex + 1).padStart(2, '0');
+        year = parts[1];
+      } else {
+        console.error('[formatMonthDisplay] Unrecognized month name:', parts[0]);
+        return monthString; // Return original if we can't parse
+      }
+    } else {
+      console.error('[formatMonthDisplay] Unexpected format with space:', monthString);
+      return monthString;
+    }
+  } else {
+    console.error('[formatMonthDisplay] Unrecognized format:', monthString);
+    return monthString; // Return original if we can't parse
+  }
+  
   const monthNumber = parseInt(month, 10);
   
   const monthNames = [
@@ -26,7 +62,14 @@ const formatMonthDisplay = (monthString: string) => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   
-  return `${monthNames[monthNumber - 1]} ${year}`;
+  if (monthNumber < 1 || monthNumber > 12 || !year) {
+    console.error('[formatMonthDisplay] Invalid month number or year:', { monthNumber, year, original: monthString });
+    return monthString; // Return original if invalid
+  }
+  
+  const result = `${monthNames[monthNumber - 1]} ${year}`;
+  console.log('[formatMonthDisplay] Formatted result:', result);
+  return result;
 };
 
 interface CalculatorStepFormProps {
