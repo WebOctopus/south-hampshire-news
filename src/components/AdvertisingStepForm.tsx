@@ -271,6 +271,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               <CalculatorStepForm 
                 pricingModel={selectedPricingModel} 
                 onDataChange={handleCampaignDataChange}
+                initialData={campaignData}
               />
               
               <ContactInformationStep
@@ -303,6 +304,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           <CalculatorStepForm 
             pricingModel={selectedPricingModel} 
             onDataChange={handleCampaignDataChange}
+            initialData={campaignData}
           />
           
           <ContactInformationStep

@@ -76,9 +76,17 @@ const formatMonthDisplay = (monthString: string) => {
 interface CalculatorStepFormProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
   onDataChange?: (data: any) => void;
+  initialData?: {
+    selectedAreas?: string[];
+    bogofPaidAreas?: string[];
+    bogofFreeAreas?: string[];
+    selectedAdSize?: string;
+    selectedDuration?: string;
+    selectedMonths?: Record<string, string[]>;
+  };
 }
 
-export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingModel, onDataChange }) => {
+export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingModel, onDataChange, initialData }) => {
   const { nextStep } = useStepForm();
   
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
@@ -290,6 +298,18 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       console.error('Error in duration useEffect:', error);
     }
   }, [pricingModel, durations, subscriptionDurations, leafletDurations, selectedDuration, prevPricingModel]);
+
+  // Sync with initial data when provided
+  useEffect(() => {
+    if (initialData) {
+      if (initialData.selectedAreas) setSelectedAreas(initialData.selectedAreas);
+      if (initialData.bogofPaidAreas) setBogofPaidAreas(initialData.bogofPaidAreas);
+      if (initialData.bogofFreeAreas) setBogofFreeAreas(initialData.bogofFreeAreas);
+      if (initialData.selectedAdSize) setSelectedAdSize(initialData.selectedAdSize);
+      if (initialData.selectedDuration) setSelectedDuration(initialData.selectedDuration);
+      if (initialData.selectedMonths) setSelectedMonths(initialData.selectedMonths);
+    }
+  }, [initialData]);
 
   // Pass data to parent component
   useEffect(() => {
