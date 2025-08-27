@@ -949,8 +949,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                 // Get campaign duration info
                 const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
                 const durationData = relevantDurations?.find(d => d.id === selectedDuration);
-                // For BOGOF (3+ Repeat Package), enforce minimum 3 selections
-                const maxSelectableMonths = pricingModel === 'bogof' ? Math.max(3, durationData?.duration_value || 3) : (durationData?.duration_value || 1);
+                // Calculate number of issues: 1 issue = 2 months
+                const maxSelectableMonths = pricingModel === 'bogof' 
+                  ? Math.floor((durationData?.duration_value || 6) / 2) // Convert months to issues (6 months = 3 issues)
+                  : (durationData?.duration_value || 1);
                 
                 // For BOGOF, we need to show both paid and free areas
                 const areasToShow = pricingModel === 'bogof' 
@@ -964,7 +966,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                   <div className="space-y-6">
                     <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                       <p className="text-sm font-medium text-primary">
-                        📅 You can select up to {maxSelectableMonths} month{maxSelectableMonths > 1 ? 's' : ''} for each area based on your selected campaign duration
+                        📅 You can select up to {maxSelectableMonths} {pricingModel === 'bogof' ? 'issue' : 'month'}{maxSelectableMonths > 1 ? (pricingModel === 'bogof' ? 's' : 's') : ''} for each area based on your selected campaign duration
                       </p>
                     </div>
                     
