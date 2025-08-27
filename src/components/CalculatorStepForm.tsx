@@ -567,6 +567,12 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                             const availableMonths = area.schedule || [];
                             const areaSelectedMonths = selectedMonths[area.id] || [];
                             
+                            // Add debugging for month data structure
+                            console.log(`[LeafletAreas] Area ${area.area_number} schedule:`, availableMonths);
+                            if (availableMonths.length > 0) {
+                              console.log(`[LeafletAreas] First month sample:`, availableMonths[0]);
+                            }
+                            
                             if (availableMonths.length === 0) {
                               return (
                                 <div key={area.id} className="border rounded-lg p-4">
@@ -645,8 +651,14 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                                               }
                                               return prev;
                                             });
-                                          }}>
-                                            <div className="font-medium text-sm">{formatMonthDisplay(monthData.month)}</div>
+                                           }}>
+                                             <div className="font-medium text-sm">
+                                               {(() => {
+                                                 console.log(`[MonthDisplay] Raw month data:`, monthData);
+                                                 console.log(`[MonthDisplay] monthData.month:`, monthData.month);
+                                                 return formatMonthDisplay(monthData.month);
+                                               })()}
+                                             </div>
                                             <div className="space-y-1 text-xs">
                                               <div className="flex justify-between">
                                                 <span className="text-muted-foreground">Copy Deadline:</span>
@@ -934,8 +946,14 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                                         }
                                         return prev;
                                       });
-                                    }}>
-                                      <div className="font-medium text-sm">{formatMonthDisplay(monthData.month)}</div>
+                                       }}>
+                                         <div className="font-medium text-sm">
+                                           {(() => {
+                                             console.log(`[MonthDisplay2] Raw month data:`, monthData);
+                                             console.log(`[MonthDisplay2] monthData.month:`, monthData.month);
+                                             return formatMonthDisplay(monthData.month);
+                                           })()}
+                                         </div>
                                       <div className="space-y-1 text-xs">
                                         <div className="flex justify-between">
                                           <span className="text-muted-foreground">Copy Deadline:</span>

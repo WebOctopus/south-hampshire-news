@@ -107,7 +107,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
             {Array.from({ length: totalSteps }, (_, index) => (
-              <React.Fragment key={index}>
+              <div key={index} className="flex items-center">
                 <div
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200",
@@ -126,7 +126,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
                     )}
                   />
                 )}
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>
