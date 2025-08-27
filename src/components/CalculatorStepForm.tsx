@@ -300,9 +300,9 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     }
   }, [pricingModel, durations, subscriptionDurations, leafletDurations, selectedDuration, prevPricingModel]);
 
-  // Sync with initial data when provided (only once)
+  // Sync with initial data when provided
   useEffect(() => {
-    if (initialData && !initialDataSynced.current) {
+    if (initialData && (!initialDataSynced.current || (pricingModel === 'bogof' && initialData.bogofPaidAreas && initialData.bogofPaidAreas.length > 0))) {
       if (initialData.selectedAreas) setSelectedAreas(initialData.selectedAreas);
       if (initialData.bogofPaidAreas) setBogofPaidAreas(initialData.bogofPaidAreas);
       if (initialData.bogofFreeAreas) setBogofFreeAreas(initialData.bogofFreeAreas);
@@ -311,7 +311,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       if (initialData.selectedMonths) setSelectedMonths(initialData.selectedMonths);
       initialDataSynced.current = true;
     }
-  }, [initialData]);
+  }, [initialData, pricingModel]);
 
   // Pass data to parent component
   useEffect(() => {
