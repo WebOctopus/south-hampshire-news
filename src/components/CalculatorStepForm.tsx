@@ -949,7 +949,8 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                 // Get campaign duration info
                 const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
                 const durationData = relevantDurations?.find(d => d.id === selectedDuration);
-                const maxSelectableMonths = durationData?.duration_value || 1;
+                // For BOGOF (3+ Repeat Package), enforce minimum 3 selections
+                const maxSelectableMonths = pricingModel === 'bogof' ? Math.max(3, durationData?.duration_value || 3) : (durationData?.duration_value || 1);
                 
                 // For BOGOF, we need to show both paid and free areas
                 const areasToShow = pricingModel === 'bogof' 
