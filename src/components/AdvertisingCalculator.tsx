@@ -560,94 +560,139 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
               </Card>
             )}
 
-            {/* Pricing Summary */}
+            {/* Pricing Summary - Updated for Fixed Term format */}
             {pricingBreakdown && (
               <Card>
                 <CardContent className="p-6">
                   <h3 className="text-lg font-heading font-bold text-community-navy mb-4">
-                    Pricing Summary
+                    {pricingModel === 'fixed' ? 'SUMMARY & COST TO BOOK' : 'Pricing Summary'}
                   </h3>
-                   <div className="space-y-4">
-                     {/* Basic summary info */}
-                     <div className="flex justify-between items-center">
-                       <span>Selected Areas:</span>
-                       <span className="font-medium">{effectiveSelectedAreas.length}</span>
-                     </div>
-                     
-                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                       <div className="flex justify-between items-center">
-                         <span>Free Areas:</span>
-                         <span className="font-medium">{bogofFreeAreas.length}</span>
-                       </div>
-                     )}
-                     
-                     <div className="flex justify-between items-center">
-                       <span>Monthly Subtotal:</span>
-                       <span className="font-bold">{formatPrice(pricingBreakdown.subtotal)}</span>
-                     </div>
-                     
-                     <div className="flex justify-between items-center">
-                       <span className="font-bold">Total Price:</span>
-                       <span className="font-bold text-community-green">{formatPrice(pricingBreakdown.finalTotal)}</span>
-                     </div>
-                     
-                     <div className="flex justify-between items-center">
-                       <span>Total Circulation:</span>
-                       <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
-                     </div>
+                  
+                  {pricingModel === 'fixed' ? (
+                    // Fixed Term specific format
+                    <div className="space-y-4">
+                      <div>
+                        <p className="font-medium">
+                          <span className="font-bold">Booking Type:</span> Fixed Term
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <p className="font-bold mb-2">Where:</p>
+                        <div className="ml-4 space-y-1">
+                          {effectiveSelectedAreas.map((areaId, index) => {
+                            const area = areas.find(a => a.id === areaId);
+                            return area ? (
+                              <p key={area.id} className="text-sm">
+                                Area {index + 1} {area.name}
+                              </p>
+                            ) : null;
+                          })}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium">
+                          <span className="font-bold">Total Circulation per selection of area/s =</span> {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium">
+                          <span className="font-bold">Advert Size =</span> {adSizes.find(size => size.id === formData.adSize)?.name || 'Selected size'}
+                        </p>
+                      </div>
+                      
+                      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <p className="font-bold text-community-green text-lg">
+                          Pre-payment Required = {formatPrice(pricingBreakdown.subtotal)} + vat ({formatPrice(pricingBreakdown.subtotal * 1.2)}) per insertion in {effectiveSelectedAreas.length} area{effectiveSelectedAreas.length > 1 ? 's' : ''} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    // Standard format for subscription/BOGOF
+                    <div className="space-y-4">
+                      {/* Basic summary info */}
+                      <div className="flex justify-between items-center">
+                        <span>Selected Areas:</span>
+                        <span className="font-medium">{effectiveSelectedAreas.length}</span>
+                      </div>
+                      
+                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span>Free Areas:</span>
+                          <span className="font-medium">{bogofFreeAreas.length}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center">
+                        <span>Monthly Subtotal:</span>
+                        <span className="font-bold">{formatPrice(pricingBreakdown.subtotal)}</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold">Total Price:</span>
+                        <span className="font-bold text-community-green">{formatPrice(pricingBreakdown.finalTotal)}</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span>Total Circulation:</span>
+                        <span className="font-medium">{pricingBreakdown.totalCirculation.toLocaleString()}</span>
+                      </div>
 
-                     {/* Areas You're Paying For section */}
-                     {effectiveSelectedAreas.length > 0 && (
-                       <div className="mt-6">
-                         <h4 className="font-bold text-community-navy mb-3">Areas You're Paying For:</h4>
-                         <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                           {effectiveSelectedAreas.map((areaId) => {
-                             const area = areas.find(a => a.id === areaId);
-                             return area ? (
-                               <div key={area.id} className="flex justify-between items-center">
-                                 <span className="text-sm">{area.name}</span>
-                                 <span className="text-sm font-medium">{area.circulation.toLocaleString()} circulation</span>
-                               </div>
-                             ) : null;
-                           })}
-                         </div>
-                       </div>
-                     )}
+                      {/* Areas You're Paying For section */}
+                      {effectiveSelectedAreas.length > 0 && (
+                        <div className="mt-6">
+                          <h4 className="font-bold text-community-navy mb-3">Areas You're Paying For:</h4>
+                          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                            {effectiveSelectedAreas.map((areaId) => {
+                              const area = areas.find(a => a.id === areaId);
+                              return area ? (
+                                <div key={area.id} className="flex justify-between items-center">
+                                  <span className="text-sm">{area.name}</span>
+                                  <span className="text-sm font-medium">{area.circulation.toLocaleString()} circulation</span>
+                                </div>
+                              ) : null;
+                            })}
+                          </div>
+                        </div>
+                      )}
 
-                     {/* Areas You Get FREE section */}
-                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                       <div className="mt-6">
-                         <h4 className="font-bold text-green-700 mb-3">Areas You Get FREE:</h4>
-                         <div className="bg-green-50 rounded-lg p-4 space-y-2">
-                           {bogofFreeAreas.map((areaId) => {
-                             const area = areas.find(a => a.id === areaId);
-                             return area ? (
-                               <div key={area.id} className="flex justify-between items-center">
-                                 <span className="text-sm">{area.name}</span>
-                                 <span className="text-sm font-medium">{area.circulation.toLocaleString()} circulation</span>
-                               </div>
-                             ) : null;
-                           })}
-                         </div>
-                       </div>
-                     )}
+                      {/* Areas You Get FREE section */}
+                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                        <div className="mt-6">
+                          <h4 className="font-bold text-green-700 mb-3">Areas You Get FREE:</h4>
+                          <div className="bg-green-50 rounded-lg p-4 space-y-2">
+                            {bogofFreeAreas.map((areaId) => {
+                              const area = areas.find(a => a.id === areaId);
+                              return area ? (
+                                <div key={area.id} className="flex justify-between items-center">
+                                  <span className="text-sm">{area.name}</span>
+                                  <span className="text-sm font-medium">{area.circulation.toLocaleString()} circulation</span>
+                                </div>
+                              ) : null;
+                            })}
+                          </div>
+                        </div>
+                      )}
 
-                     {/* BOGOF Special banner */}
-                     {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
-                       <div className="mt-4 p-4 bg-green-100 border border-green-200 rounded-lg">
-                         <p className="text-sm font-medium text-green-800 flex items-center gap-2">
-                           <span>🎉</span>
-                           BOGOF Special: You'll also get {bogofFreeAreas.length} free areas for 6 months at no extra cost!
-                         </p>
-                       </div>
-                     )}
+                      {/* BOGOF Special banner */}
+                      {pricingModel === 'bogof' && bogofFreeAreas.length > 0 && (
+                        <div className="mt-4 p-4 bg-green-100 border border-green-200 rounded-lg">
+                          <p className="text-sm font-medium text-green-800 flex items-center gap-2">
+                            <span>🎉</span>
+                            BOGOF Special: You'll also get {bogofFreeAreas.length} free areas for 6 months at no extra cost!
+                          </p>
+                        </div>
+                      )}
 
-                     {pricingModel === 'subscription' && (
-                       <p className="text-sm text-gray-600 mt-2">
-                         *Monthly subscription price
-                       </p>
-                     )}
-                  </div>
+                      {pricingModel === 'subscription' && (
+                        <p className="text-sm text-gray-600 mt-2">
+                          *Monthly subscription price
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
