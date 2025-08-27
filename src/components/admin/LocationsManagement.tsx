@@ -17,8 +17,20 @@ import { areas } from '@/data/advertisingPricing';
 
 // Helper function to format month display
 const formatMonthDisplay = (month: string, year: number) => {
-  // Since month is already stored as full name (e.g., "June"), just return it with the year
-  return `${month} ${year}`;
+  // Handle different month formats
+  if (month.includes('-')) {
+    // Extract month from "YYYY-MM" format
+    const parts = month.split('-');
+    const monthNumber = parseInt(parts[1], 10);
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return `${monthNames[monthNumber - 1]} ${year}`;
+  } else {
+    // Month is already stored as full name (e.g., "June")
+    return `${month} ${year}`;
+  }
 };
 
 interface LocationData {
