@@ -44,19 +44,45 @@ export const useLeafletAreas = () => {
   return useQuery({
     queryKey: ['leaflet-areas'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('leaflet_areas')
-        .select('*')
-        .eq('is_active', true)
-        .order('area_number');
+      console.log('[useLeafletData] Fetching leaflet areas... - START');
+      console.log('[useLeafletData] Supabase client available:', !!supabase);
       
-      if (error) throw error;
-      
-      return data?.map(item => ({
-        ...item,
-        schedule: item.schedule as LeafletArea['schedule']
-      })) as LeafletArea[];
+      try {
+        console.log('[useLeafletData] Executing leaflet areas query...');
+        const { data, error } = await supabase
+          .from('leaflet_areas')
+          .select('*')
+          .eq('is_active', true)
+          .order('area_number');
+        
+        console.log('[useLeafletData] Leaflet areas query completed - data:', !!data, 'error:', !!error);
+        
+        if (error) {
+          console.error('[useLeafletData] Leaflet areas fetch error:', error);
+          throw error;
+        }
+        
+        console.log('[useLeafletData] Leaflet areas fetched successfully:', data?.length || 0);
+        console.log('[useLeafletData] First leaflet area sample:', data?.[0]);
+        
+        const processedData = data?.map(item => ({
+          ...item,
+          schedule: item.schedule as LeafletArea['schedule']
+        })) as LeafletArea[];
+        
+        console.log('[useLeafletData] Processed leaflet areas length:', processedData?.length || 0);
+        return processedData || [];
+      } catch (error) {
+        console.error('[useLeafletData] Network error fetching leaflet areas:', error);
+        console.error('[useLeafletData] Error stack:', (error as Error)?.stack);
+        throw error;
+      }
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes for debugging
+    retry: (failureCount, error) => {
+      console.log(`[useLeafletData] Leaflet areas retry attempt ${failureCount + 1}:`, error);
+      return failureCount < 1; // Only retry once for debugging
+    }
   });
 };
 

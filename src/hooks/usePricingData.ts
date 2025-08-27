@@ -56,13 +56,27 @@ export function useAreas() {
   return useQuery({
     queryKey: ['pricing_areas'],
     queryFn: async () => {
-      console.log('[usePricingData] Fetching areas...');
+      console.log('[usePricingData] Fetching areas... - START');
+      console.log('[usePricingData] Supabase client available:', !!supabase);
+      
       try {
+        // Test basic connectivity first
+        console.log('[usePricingData] Testing Supabase connection...');
+        const testQuery = supabase.from('pricing_areas').select('count', { count: 'exact', head: true });
+        console.log('[usePricingData] Test query created:', !!testQuery);
+        
+        const testResult = await testQuery;
+        console.log('[usePricingData] Test query result:', testResult);
+        
+        // Now do the actual query
+        console.log('[usePricingData] Executing main areas query...');
         const { data, error } = await supabase
           .from('pricing_areas')
           .select('*')
           .eq('is_active', true)
           .order('sort_order');
+        
+        console.log('[usePricingData] Main query completed - data:', !!data, 'error:', !!error);
         
         if (error) {
           console.error('[usePricingData] Areas fetch error:', error);
@@ -70,6 +84,7 @@ export function useAreas() {
         }
         
         console.log('[usePricingData] Areas fetched successfully:', data?.length || 0);
+        console.log('[usePricingData] First area sample:', data?.[0]);
         
         // Process the data to properly type the schedule field
         const processedData = (data || []).map(area => ({
@@ -82,19 +97,21 @@ export function useAreas() {
           }> : []
         })) as DbArea[];
         
+        console.log('[usePricingData] Processed data length:', processedData.length);
         return processedData;
       } catch (error) {
         console.error('[usePricingData] Network error fetching areas:', error);
+        console.error('[usePricingData] Error stack:', (error as Error)?.stack);
         throw error;
       }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for debugging
+    gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
       console.log(`[usePricingData] Areas retry attempt ${failureCount + 1}:`, error);
-      return failureCount < 2; // Only retry twice
+      return failureCount < 1; // Only retry once for faster debugging
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+    retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 2000),
   });
 }
 
