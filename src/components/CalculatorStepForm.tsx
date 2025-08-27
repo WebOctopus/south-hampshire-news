@@ -990,39 +990,72 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
           {/* Pricing Summary */}
           {pricingBreakdown && (
             <div className="bg-muted/50 border rounded-lg p-6 space-y-4">
-              <h3 className="text-lg font-semibold">Pricing Summary</h3>
+              <h3 className="text-lg font-semibold">
+                {pricingModel === 'fixed' ? 'SUMMARY & COST TO BOOK' : 'Pricing Summary'}
+              </h3>
               
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>{formatPrice(pricingBreakdown.subtotal)}</span>
-                </div>
-                
-                {pricingBreakdown.volumeDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                    <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+              {pricingModel === 'fixed' ? (
+                // Fixed Term specific format
+                <div className="space-y-3">
+                  <div className="text-sm">
+                    <div className="mb-2"><span className="font-medium">Booking Type:</span> Fixed Term</div>
+                    <div className="mb-2"><span className="font-medium">Where:</span></div>
+                    {selectedAreas.map((areaId, index) => {
+                      const area = areas?.find(a => a.id === areaId);
+                      return area ? (
+                        <div key={areaId} className="ml-2">
+                          Area {index + 1} {area.name}
+                        </div>
+                      ) : null;
+                    })}
+                    <div className="mt-2">
+                      <span className="font-medium">Total Circulation per selection of area/s = </span>
+                      {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                    </div>
+                    <div className="mt-2">
+                      <span className="font-medium">Advert Size = </span>
+                      {adSizes?.find(size => size.id === selectedAdSize)?.name || 'Selected size'}
+                    </div>
+                    <div className="mt-3 pt-3 border-t">
+                      <span className="font-medium">Pre-payment Required = </span>
+                      {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)}) per insertion in {selectedAreas.length} area{selectedAreas.length > 1 ? 's' : ''} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                    </div>
                   </div>
-                )}
-                
-                {(pricingBreakdown as any).durationDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Duration Discount:</span>
-                    <span>-{formatPrice((pricingBreakdown as any).durationDiscount)}</span>
+                </div>
+              ) : (
+                // Standard format for other pricing models
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{formatPrice(pricingBreakdown.subtotal)}</span>
                   </div>
-                )}
-                
-                <Separator />
-                
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Total:</span>
-                  <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                  
+                  {pricingBreakdown.volumeDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                      <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                    </div>
+                  )}
+                  
+                  {(pricingBreakdown as any).durationDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Duration Discount:</span>
+                      <span>-{formatPrice((pricingBreakdown as any).durationDiscount)}</span>
+                    </div>
+                  )}
+                  
+                  <Separator />
+                  
+                  <div className="flex justify-between font-semibold text-lg">
+                    <span>Total:</span>
+                    <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                  </div>
+                  
+                  <div className="text-sm text-muted-foreground">
+                    Total Circulation: {pricingBreakdown.totalCirculation.toLocaleString()} homes
+                  </div>
                 </div>
-                
-                <div className="text-sm text-muted-foreground">
-                  Total Circulation: {pricingBreakdown.totalCirculation.toLocaleString()} homes
-                </div>
-              </div>
+              )}
             </div>
           )}
 
