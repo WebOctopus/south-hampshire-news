@@ -131,6 +131,13 @@ export type Database = {
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       businesses: {
@@ -1069,7 +1076,71 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      businesses_public: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          category_id: string | null
+          city: string | null
+          created_at: string | null
+          description: string | null
+          featured: boolean | null
+          featured_image_url: string | null
+          id: string | null
+          images: string[] | null
+          is_verified: boolean | null
+          logo_url: string | null
+          name: string | null
+          postcode: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          category_id?: string | null
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          featured_image_url?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          postcode?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          category_id?: string | null
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          featured_image_url?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          name?: string | null
+          postcode?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "businesses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       assign_admin_role: {
