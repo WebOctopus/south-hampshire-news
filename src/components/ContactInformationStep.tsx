@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 interface ContactInformationStepProps {
@@ -17,12 +16,13 @@ interface ContactInformationStepProps {
 }
 
 interface FormData {
-  businessType: 'company' | 'sole-trader';
-  name: string;
+  firstName: string;
+  lastName: string;
+  companyName: string;
+  companySector: string;
   email: string;
   phone: string;
-  company: string;
-  tradingName: string;
+  invoiceAddress: string;
   password: string;
 }
 
@@ -30,12 +30,13 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   onSaveQuote
 }) => {
   const [formData, setFormData] = useState<FormData>({
-    businessType: "company",
-    name: "",
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    companySector: "",
     email: "",
     phone: "",
-    company: "",
-    tradingName: "",
+    invoiceAddress: "",
     password: "",
   });
 
@@ -53,65 +54,47 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Your Details</h3>
             <form>
-              {/* Business Type Selection */}
-              <div className="space-y-3 mb-6">
-                <Label className="text-base font-medium">Business Type *</Label>
-                <RadioGroup
-                  value={formData.businessType}
-                  onValueChange={(value: 'company' | 'sole-trader') => 
-                    setFormData(prev => ({ ...prev, businessType: value }))
-                  }
-                  className="flex gap-6"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="company" id="company" />
-                    <Label htmlFor="company">Company</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="sole-trader" id="sole-trader" />
-                    <Label htmlFor="sole-trader">Sole Trader</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Conditional Name/Company Fields */}
-                {formData.businessType === 'sole-trader' ? (
-                  <div className="md:col-span-2">
-                    <Label htmlFor="tradingName">Full Name trading as Business Name *</Label>
-                    <Input
-                      id="tradingName"
-                      name="tradingName"
-                      value={formData.tradingName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tradingName: e.target.value }))}
-                      placeholder="e.g. John Smith trading as Smith's Services"
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <Label htmlFor="name">Full Name *</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Enter your full name"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="company">Company Name *</Label>
-                      <Input
-                        id="company"
-                        name="company"
-                        value={formData.company}
-                        onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                        placeholder="Enter your company name"
-                      />
-                    </div>
-                  </>
-                )}
-                
+                <div>
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="Enter your first name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Enter your last name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="companyName">Company Name *</Label>
+                  <Input
+                    id="companyName"
+                    name="companyName"
+                    value={formData.companyName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                    placeholder="Enter your company name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="companySector">Company Sector *</Label>
+                  <Input
+                    id="companySector"
+                    name="companySector"
+                    value={formData.companySector}
+                    onChange={(e) => setFormData(prev => ({ ...prev, companySector: e.target.value }))}
+                    placeholder="Enter your company sector"
+                  />
+                </div>
                 <div>
                   <Label htmlFor="email">Email Address *</Label>
                   <Input
@@ -131,6 +114,16 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                     placeholder="Enter your phone number"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="invoiceAddress">Invoice Address *</Label>
+                  <Input
+                    id="invoiceAddress"
+                    name="invoiceAddress"
+                    value={formData.invoiceAddress}
+                    onChange={(e) => setFormData(prev => ({ ...prev, invoiceAddress: e.target.value }))}
+                    placeholder="Enter your invoice address"
                   />
                 </div>
                 <div className="md:col-span-2">
