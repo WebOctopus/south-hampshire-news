@@ -119,7 +119,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
     volumeDiscounts,
     isLoading,
     isError,
-    error,
     refetch
   } = usePricingData();
 
@@ -366,11 +365,11 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
           <p className="text-sm text-muted-foreground">
             Unable to load pricing data. Please try again.
           </p>
-          {error && (
-            <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
-              {error.message}
-            </div>
-          )}
+        {isError && (
+          <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
+            Failed to load pricing data
+          </div>
+        )}
           <Button onClick={() => refetch()} variant="outline" className="w-full">
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry
@@ -811,36 +810,22 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             
             {pricingModel === 'leafleting' ? (
               // Leaflet sizes
-              leafletSizesLoading ? (
+              leafletAreasLoading ? (
                 <div className="flex items-center justify-center p-8">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  Loading leaflet sizes...
+                  Loading areas...
                 </div>
-              ) : leafletSizesError || !leafletSizes || leafletSizes.length === 0 ? (
+              ) : leafletAreasError || !leafletAreas || leafletAreas.length === 0 ? (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    {leafletSizesError ? `Failed to load leaflet sizes: ${leafletSizesError.message}` : 'No leaflet sizes available.'}
+                    {leafletAreasError ? `Failed to load leaflet areas: ${leafletAreasError.message}` : 'No leaflet areas available.'}
                   </AlertDescription>
                 </Alert>
               ) : (
-                <Select value={selectedAdSize} onValueChange={setSelectedAdSize}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose leaflet size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {leafletSizes.map((size) => (
-                      <SelectItem key={size.id} value={size.id}>
-                        <div className="flex justify-between items-center w-full">
-                          <span>{size.label}</span>
-                          <span className="ml-4 text-muted-foreground">
-                            {size.description || 'N/A'}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="text-center p-4 text-muted-foreground">
+                  Ad size selection not applicable for leafleting service
+                </div>
               )
             ) : (
               // Regular ad sizes

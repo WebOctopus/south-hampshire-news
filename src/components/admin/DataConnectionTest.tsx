@@ -14,7 +14,6 @@ const DataConnectionTest = () => {
     volumeDiscounts, 
     isLoading, 
     isError, 
-    error,
     refetch 
   } = usePricingData();
 
@@ -112,7 +111,7 @@ const DataConnectionTest = () => {
                 <XCircle className="h-5 w-5 text-red-600" />
                 <span className="font-medium text-red-800">Connection Error</span>
               </div>
-              <p className="text-red-700 text-sm">{error?.message}</p>
+              <p className="text-red-700 text-sm">Failed to load pricing data. Please try refreshing.</p>
             </div>
           )}
 

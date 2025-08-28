@@ -5,8 +5,11 @@ export interface LeafletArea {
   id: string;
   area_number: number;
   name: string;
+  postcodes: string;
   household_count: number;
+  bimonthly_circulation: number;
   price_per_thousand: number;
+  price_with_vat: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -22,8 +25,9 @@ export interface LeafletArea {
 export interface LeafletDuration {
   id: string;
   name: string;
+  description: string;
   months: number;
-  price_multiplier: number;
+  issues: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -69,7 +73,7 @@ export function useLeafletCampaignDurations() {
     queryFn: async () => {
       try {
         const { data, error } = await supabase
-          .from('leaflet_durations')
+          .from('leaflet_campaign_durations')
           .select('*')
           .eq('is_active', true)
           .order('months');
@@ -78,7 +82,7 @@ export function useLeafletCampaignDurations() {
           throw error;
         }
         
-        return (data || []) as LeafletDuration[];
+        return (data || []);
       } catch (error) {
         throw error;
       }

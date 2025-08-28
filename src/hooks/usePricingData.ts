@@ -16,6 +16,10 @@ export interface DbArea {
   copy_deadline_days: number;
   print_deadline_days: number;
   delivery_deadline_days: number;
+  base_price_multiplier: number;
+  quarter_page_multiplier: number;
+  half_page_multiplier: number;
+  full_page_multiplier: number;
   schedule?: Array<{ 
     month: string; 
     copyDeadline: string; 
@@ -72,7 +76,7 @@ export function useAreas() {
         const processedData = data?.map(item => ({
           ...item,
           schedule: item.schedule as DbArea['schedule']
-        })) as DbArea[];
+        }));
         
         return processedData || [];
       } catch (error) {
@@ -105,7 +109,7 @@ export function useAdSizes() {
         const processedData = data?.map(item => ({
           ...item,
           available_for: item.available_for as string[]
-        })) as DbAdSize[];
+        }));
         
         return processedData || [];
       } catch (error) {
@@ -135,7 +139,7 @@ export function useDurations() {
           throw new Error(`Failed to fetch durations: ${error.message}`);
         }
         
-        return (data || []) as DbDuration[];
+        return (data || []);
       } catch (error) {
         throw error;
       }
@@ -163,7 +167,7 @@ export function useVolumeDiscounts() {
           throw new Error(`Failed to fetch volume discounts: ${error.message}`);
         }
         
-        return (data || []) as DbVolumeDiscount[];
+        return (data || []);
       } catch (error) {
         throw error;
       }

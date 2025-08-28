@@ -47,7 +47,6 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
     volumeDiscounts,
     isLoading,
     isError,
-    error,
     refetch
   } = usePricingData();
 
@@ -190,9 +189,9 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
             <p className="text-sm text-muted-foreground">
               Unable to load pricing data. Please try again.
             </p>
-            {error && (
+            {isError && (
               <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
-                {error.message}
+                Failed to load data. Please try refreshing.
               </div>
             )}
             <Button onClick={() => refetch()} variant="outline" className="w-full">

@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
 import { calculateAdvertisingPrice, formatPrice } from "@/lib/pricingCalculator";
 import { calculateLeafletingPrice } from "@/lib/leafletingCalculator";
-import { useLeafletAreas, useLeafletSizes, useLeafletCampaignDurations } from "@/hooks/useLeafletData";
+import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import SpecialOfferForm from "@/components/SpecialOfferForm";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -76,13 +76,11 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
     volumeDiscounts,
     isLoading,
     isError,
-    error,
     refetch
   } = usePricingData();
 
   // Use leafleting data hooks
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
-  const { data: leafletSizes, isLoading: leafletSizesLoading, error: leafletSizesError } = useLeafletSizes();
   const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
 
   // Debug logging
@@ -92,11 +90,9 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
     durations: durations?.length,
     subscriptionDurations: subscriptionDurations?.length,
     leafletAreas: leafletAreas?.length,
-    leafletSizes: leafletSizes?.length,
     leafletDurations: leafletDurations?.length,
     isLoading,
-    isError,
-    error: error?.message
+    isError
   });
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
@@ -523,7 +519,7 @@ const effectiveSelectedAreas = useMemo(() => {
                 Failed to Load Data
               </CardTitle>
               <CardDescription>
-                {error?.message || "Unable to load pricing data"}
+                Unable to load pricing data
               </CardDescription>
             </CardHeader>
             <CardContent>

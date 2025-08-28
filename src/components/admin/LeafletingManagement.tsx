@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   Table, 
@@ -15,47 +11,18 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
   MapPin, 
   FileText, 
   Calendar, 
-  Clock 
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import {
   useLeafletAreas,
-  useLeafletSizes,
-  useCreateLeafletArea,
-  useUpdateLeafletArea,
-  useDeleteLeafletArea,
-  useCreateLeafletSize,
-  useUpdateLeafletSize,
-  useDeleteLeafletSize,
   useLeafletCampaignDurations,
-  useCreateLeafletCampaignDuration,
-  useUpdateLeafletCampaignDuration,
-  useDeleteLeafletCampaignDuration,
   type LeafletArea,
-  type LeafletSize,
-  type LeafletCampaignDuration
+  type LeafletDuration
 } from '@/hooks/useLeafletData';
-import { useToast } from '@/components/ui/use-toast';
-
 
 interface LeafletingManagementProps {
   onStatsUpdate?: () => void;
@@ -63,605 +30,96 @@ interface LeafletingManagementProps {
 
 const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpdate }) => {
   const [activeTab, setActiveTab] = useState('areas');
-  const [editingArea, setEditingArea] = useState<LeafletArea | null>(null);
-  const [editingSize, setEditingSize] = useState<LeafletSize | null>(null);
-  const [editingDuration, setEditingDuration] = useState<LeafletCampaignDuration | null>(null);
-  const [isAreaDialogOpen, setIsAreaDialogOpen] = useState(false);
-  const [isSizeDialogOpen, setIsSizeDialogOpen] = useState(false);
-  const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false);
-  
-  const { toast } = useToast();
   
   // Supabase hooks
-  const { data: areas = [], isLoading: areasLoading } = useLeafletAreas();
-  const { data: sizes = [], isLoading: sizesLoading } = useLeafletSizes();
-  const { data: durations = [], isLoading: durationsLoading } = useLeafletCampaignDurations();
-  
-  const createAreaMutation = useCreateLeafletArea();
-  const updateAreaMutation = useUpdateLeafletArea();
-  const deleteAreaMutation = useDeleteLeafletArea();
-  const createSizeMutation = useCreateLeafletSize();
-  const updateSizeMutation = useUpdateLeafletSize();
-  const deleteSizeMutation = useDeleteLeafletSize();
-  const createDurationMutation = useCreateLeafletCampaignDuration();
-  const updateDurationMutation = useUpdateLeafletCampaignDuration();
-  const deleteDurationMutation = useDeleteLeafletCampaignDuration();
+  const { data: areas = [], isLoading: areasLoading, isError: areasError } = useLeafletAreas();
+  const { data: durations = [], isLoading: durationsLoading, isError: durationsError } = useLeafletCampaignDurations();
 
-  const handleSaveArea = (formData: any) => {
-    const areaData = {
-      area_number: formData.area_number,
-      name: formData.name,
-      postcodes: formData.postcodes,
-      bimonthly_circulation: formData.bimonthly_circulation,
-      price_with_vat: formData.price_with_vat,
-      schedule: formData.schedule,
-      is_active: true,
-    };
+  const isLoading = areasLoading || durationsLoading;
+  const hasError = areasError || durationsError;
 
-    if (editingArea) {
-      updateAreaMutation.mutate({ ...areaData, id: editingArea.id });
-    } else {
-      createAreaMutation.mutate(areaData);
-    }
-    setIsAreaDialogOpen(false);
-    setEditingArea(null);
-    onStatsUpdate?.();
-  };
-
-  const handleSaveSize = (formData: any) => {
-    const sizeData = {
-      label: formData.label,
-      description: formData.description,
-      is_active: true,
-      sort_order: 0,
-    };
-
-    if (editingSize) {
-      updateSizeMutation.mutate({ ...sizeData, id: editingSize.id });
-    } else {
-      createSizeMutation.mutate(sizeData);
-    }
-    setIsSizeDialogOpen(false);
-    setEditingSize(null);
-    onStatsUpdate?.();
-  };
-
-  const handleDeleteArea = (areaId: string) => {
-    deleteAreaMutation.mutate(areaId);
-    onStatsUpdate?.();
-  };
-
-  const handleDeleteSize = (sizeId: string) => {
-    deleteSizeMutation.mutate(sizeId);
-    onStatsUpdate?.();
-  };
-
-  const handleSaveDuration = (formData: any) => {
-    const durationData = {
-      name: formData.name,
-      issues: formData.issues,
-      months: formData.months,
-      description: formData.description,
-      is_default: formData.is_default,
-      is_active: true,
-      sort_order: formData.sort_order || 0,
-    };
-
-    if (editingDuration) {
-      updateDurationMutation.mutate({ ...durationData, id: editingDuration.id });
-    } else {
-      createDurationMutation.mutate(durationData);
-    }
-    setIsDurationDialogOpen(false);
-    setEditingDuration(null);
-    onStatsUpdate?.();
-  };
-
-  const handleDeleteDuration = (durationId: string) => {
-    deleteDurationMutation.mutate(durationId);
-    onStatsUpdate?.();
-  };
-
-  const AreaDialog = () => {
-    const [formData, setFormData] = useState({
-      area_number: editingArea?.area_number || 0,
-      name: editingArea?.name || '',
-      postcodes: editingArea?.postcodes || '',
-      bimonthly_circulation: editingArea?.bimonthly_circulation || 0,
-      price_with_vat: editingArea?.price_with_vat || 0,
-      schedule: editingArea?.schedule || [
-        { month: 'September 2025', copyDeadline: '', printDeadline: '', delivery: '', circulation: 70600 },
-        { month: 'November 2025', copyDeadline: '', printDeadline: '', delivery: '', circulation: 70600 },
-        { month: 'January 2026', copyDeadline: '', printDeadline: '', delivery: '', circulation: 70600 }
-      ]
-    });
-
+  if (isLoading) {
     return (
-      <Dialog open={isAreaDialogOpen} onOpenChange={setIsAreaDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingArea ? 'Edit Distribution Area' : 'Add New Distribution Area'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="areaNumber">Area Number</Label>
-              <Input
-                id="areaNumber"
-                type="number"
-                value={formData.area_number}
-                onChange={(e) => setFormData({...formData, area_number: parseInt(e.target.value)})}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="name">Area Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="postcodes">Postcodes</Label>
-              <Input
-                id="postcodes"
-                value={formData.postcodes}
-                onChange={(e) => setFormData({...formData, postcodes: e.target.value})}
-                placeholder="SO15, SO16, SO17"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="circulation">Bi-monthly Circulation</Label>
-              <Input
-                id="circulation"
-                type="number"
-                value={formData.bimonthly_circulation}
-                onChange={(e) => setFormData({...formData, bimonthly_circulation: parseInt(e.target.value)})}
-              />
-            </div>
-            
-            <div className="col-span-2">
-              <Label htmlFor="price">Price (£ + VAT)</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                value={formData.price_with_vat}
-                onChange={(e) => setFormData({...formData, price_with_vat: parseFloat(e.target.value)})}
-              />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Schedule Management</h3>
-              <Button 
-                type="button"
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  const newSchedule = [...formData.schedule, {
-                    month: '',
-                    copyDeadline: '',
-                    printDeadline: '',
-                    delivery: '',
-                    circulation: formData.bimonthly_circulation || 0
-                  }];
-                  setFormData({...formData, schedule: newSchedule});
-                }}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Month
-              </Button>
-            </div>
-            <div className="space-y-4">
-              {formData.schedule.map((item, index) => (
-                <Card key={index}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <Label htmlFor={`month-${index}`} className="text-sm font-medium">Month/Year</Label>
-                        <Input
-                          id={`month-${index}`}
-                          value={item.month}
-                          onChange={(e) => {
-                            const newSchedule = [...formData.schedule];
-                            newSchedule[index].month = e.target.value;
-                            setFormData({...formData, schedule: newSchedule});
-                          }}
-                          placeholder="September 2025"
-                          className="mt-1"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const newSchedule = formData.schedule.filter((_, i) => i !== index);
-                          setFormData({...formData, schedule: newSchedule});
-                        }}
-                        className="ml-2 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <Label>Copy Deadline</Label>
-                        <Input
-                          value={item.copyDeadline}
-                          onChange={(e) => {
-                            const newSchedule = [...formData.schedule];
-                            newSchedule[index].copyDeadline = e.target.value;
-                            setFormData({...formData, schedule: newSchedule});
-                          }}
-                          placeholder="19 Sept"
-                        />
-                      </div>
-                      <div>
-                        <Label>Print Deadline</Label>
-                        <Input
-                          value={item.printDeadline}
-                          onChange={(e) => {
-                            const newSchedule = [...formData.schedule];
-                            newSchedule[index].printDeadline = e.target.value;
-                            setFormData({...formData, schedule: newSchedule});
-                          }}
-                          placeholder="19 Sept"
-                        />
-                      </div>
-                      <div>
-                        <Label>Delivery</Label>
-                        <Input
-                          value={item.delivery}
-                          onChange={(e) => {
-                            const newSchedule = [...formData.schedule];
-                            newSchedule[index].delivery = e.target.value;
-                            setFormData({...formData, schedule: newSchedule});
-                          }}
-                          placeholder="7 Oct"
-                        />
-                      </div>
-                      <div>
-                        <Label>Circulation</Label>
-                        <Input
-                          type="number"
-                          value={item.circulation}
-                          onChange={(e) => {
-                            const newSchedule = [...formData.schedule];
-                            newSchedule[index].circulation = parseInt(e.target.value);
-                            setFormData({...formData, schedule: newSchedule});
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={() => setIsAreaDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => handleSaveArea(formData)}>
-              Save Area
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        Loading leafleting data...
+      </div>
     );
-  };
+  }
 
-  const SizeDialog = () => {
-    const [formData, setFormData] = useState({
-      label: editingSize?.label || '',
-      description: editingSize?.description || ''
-    });
-
+  if (hasError) {
     return (
-      <Dialog open={isSizeDialogOpen} onOpenChange={setIsSizeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingSize ? 'Edit Leaflet Size' : 'Add New Leaflet Size'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="label">Size Label</Label>
-              <Input
-                id="label"
-                value={formData.label}
-                onChange={(e) => setFormData({...formData, label: e.target.value})}
-                placeholder="A5 single sided"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Standard A5 leaflet, single sided"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={() => setIsSizeDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => handleSaveSize(formData)}>
-              Save Size
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <div className="text-center py-8">
+        <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+        <p className="text-lg font-medium text-destructive mb-2">Error Loading Data</p>
+        <p className="text-sm text-muted-foreground">Failed to load leafleting management data.</p>
+      </div>
     );
-  };
-
-  const DurationDialog = () => {
-    const [formData, setFormData] = useState({
-      name: editingDuration?.name || '',
-      issues: editingDuration?.issues || 1,
-      months: editingDuration?.months || 2,
-      description: editingDuration?.description || '',
-      is_default: editingDuration?.is_default || false,
-      sort_order: editingDuration?.sort_order || 0
-    });
-
-    return (
-      <Dialog open={isDurationDialogOpen} onOpenChange={setIsDurationDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingDuration ? 'Edit Campaign Duration' : 'Add New Campaign Duration'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Duration Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Standard Campaign"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="issues">Number of Issues</Label>
-                <Input
-                  id="issues"
-                  type="number"
-                  min="1"
-                  value={formData.issues}
-                  onChange={(e) => setFormData({...formData, issues: parseInt(e.target.value)})}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="months">Duration (Months)</Label>
-                <Input
-                  id="months"
-                  type="number"
-                  min="1"
-                  value={formData.months}
-                  onChange={(e) => setFormData({...formData, months: parseInt(e.target.value)})}
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Brief description of this campaign duration"
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="is_default"
-                checked={formData.is_default}
-                onChange={(e) => setFormData({...formData, is_default: e.target.checked})}
-              />
-              <Label htmlFor="is_default">Set as default campaign duration</Label>
-            </div>
-
-            <div>
-              <Label htmlFor="sort_order">Sort Order</Label>
-              <Input
-                id="sort_order"
-                type="number"
-                min="0"
-                value={formData.sort_order}
-                onChange={(e) => setFormData({...formData, sort_order: parseInt(e.target.value)})}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={() => setIsDurationDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => handleSaveDuration(formData)}>
-              Save Duration
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  };
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-      <div>
-        <h2 className="text-2xl font-heading font-bold text-community-navy">
-          Leafleting Service Management
-        </h2>
-        <p className="text-gray-600 mt-1">
-          Manage distribution areas, sizes, pricing and schedules
-        </p>
-      </div>
+        <div>
+          <h2 className="text-2xl font-heading font-bold text-community-navy">
+            Leafleting Service Management
+          </h2>
+          <p className="text-gray-600 mt-1">
+            View distribution areas and campaign settings (Read-only)
+          </p>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="areas" className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            Distribution Areas
-          </TabsTrigger>
-          <TabsTrigger value="sizes" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Leaflet Sizes
+            Distribution Areas ({areas.length})
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Campaign Settings
+            Campaign Settings ({durations.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="areas" className="mt-6">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Distribution Areas</CardTitle>
-                <Button 
-                  onClick={() => {
-                    setEditingArea(null);
-                    setIsAreaDialogOpen(true);
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Area
-                </Button>
-              </div>
+              <CardTitle>Distribution Areas</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Area #</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Postcodes</TableHead>
-                    <TableHead>Circulation</TableHead>
-                    <TableHead>Price (£)</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {areas.map((area) => (
-                    <TableRow key={area.id}>
-                      <TableCell>{area.area_number}</TableCell>
-                      <TableCell className="font-medium">{area.name}</TableCell>
-                      <TableCell>{area.postcodes}</TableCell>
-                      <TableCell>{area.bimonthly_circulation.toLocaleString()}</TableCell>
-                      <TableCell>£{area.price_with_vat}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setEditingArea(area);
-                              setIsAreaDialogOpen(true);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteArea(area.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              {areas.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No distribution areas configured yet.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Area #</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Households</TableHead>
+                      <TableHead>Price per 1000</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sizes" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Leaflet Sizes</CardTitle>
-                <Button 
-                  onClick={() => {
-                    setEditingSize(null);
-                    setIsSizeDialogOpen(true);
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Size
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Size Label</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sizes.map((size) => (
-                    <TableRow key={size.id}>
-                      <TableCell className="font-medium">{size.label}</TableCell>
-                      <TableCell>{size.description}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setEditingSize(size);
-                              setIsSizeDialogOpen(true);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteSize(size.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {areas.map((area) => (
+                      <TableRow key={area.id}>
+                        <TableCell className="font-medium">{area.area_number}</TableCell>
+                        <TableCell>{area.name}</TableCell>
+                        <TableCell>{area.household_count?.toLocaleString() || 'N/A'}</TableCell>
+                        <TableCell>£{area.price_per_thousand}</TableCell>
+                        <TableCell>
+                          <Badge variant={area.is_active ? "default" : "secondary"}>
+                            {area.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -669,75 +127,55 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
         <TabsContent value="settings" className="mt-6">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Campaign Duration Settings</CardTitle>
-                <Button 
-                  onClick={() => {
-                    setEditingDuration(null);
-                    setIsDurationDialogOpen(true);
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Duration
-                </Button>
-              </div>
+              <CardTitle>Campaign Duration Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Issues</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Default</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {durations.map((duration) => (
-                    <TableRow key={duration.id}>
-                      <TableCell className="font-medium">{duration.name}</TableCell>
-                      <TableCell>{duration.issues} issue{duration.issues > 1 ? 's' : ''}</TableCell>
-                      <TableCell>{duration.months} month{duration.months > 1 ? 's' : ''}</TableCell>
-                      <TableCell>{duration.description}</TableCell>
-                      <TableCell>
-                        {duration.is_default && <Badge variant="secondary">Default</Badge>}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setEditingDuration(duration);
-                              setIsDurationDialogOpen(true);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteDuration(duration.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              {durations.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No campaign durations configured yet.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead>Price Multiplier</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {durations.map((duration) => (
+                      <TableRow key={duration.id}>
+                        <TableCell className="font-medium">{duration.name}</TableCell>
+                        <TableCell>{duration.months} month{duration.months > 1 ? 's' : ''}</TableCell>
+                        <TableCell>×1.0</TableCell>
+                        <TableCell>
+                          <Badge variant={duration.is_active ? "default" : "secondary"}>
+                            {duration.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      <AreaDialog />
-      <SizeDialog />
-      <DurationDialog />
+      <div className="mt-8 p-4 bg-muted rounded-lg">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <div>
+            <h4 className="font-medium text-sm">Read-Only Mode</h4>
+            <p className="text-sm text-muted-foreground mt-1">
+              This interface currently displays data in read-only mode. Full management capabilities will be available in a future update.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
