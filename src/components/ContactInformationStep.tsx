@@ -60,6 +60,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   });
 
   const handleSaveQuote = async () => {
+    console.log('ContactInformationStep: handleSaveQuote called with formData:', formData);
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       toast({
@@ -81,6 +82,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
     setSubmitting(true);
     try {
+      console.log('ContactInformationStep: Calling onSaveQuote with formData:', formData);
       await onSaveQuote(formData);
     } catch (error) {
       console.error('Error saving quote:', error);
