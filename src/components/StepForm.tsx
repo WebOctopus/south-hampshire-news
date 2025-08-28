@@ -62,7 +62,6 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
         // On the last step, call the custom handler if provided
         // Try to get form data from the global handler set by ContactInformationStep
         if ((window as any).handleContactFormSave) {
-          console.log('StepForm: Calling global handleContactFormSave');
           (window as any).handleContactFormSave().then(() => {
             setCurrentStep(prev => prev + 1); // Move to completion step only on success
           }).catch(() => {

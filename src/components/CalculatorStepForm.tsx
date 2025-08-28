@@ -240,14 +240,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
   // Enhanced auto-duration selection with better state tracking
   useEffect(() => {
-    console.log('Duration useEffect triggered:', {
-      pricingModel,
-      prevPricingModel,
-      durationsLength: durations?.length,
-      subscriptionDurationsLength: subscriptionDurations?.length,
-      leafletDurationsLength: leafletDurations?.length,
-      currentSelectedDuration: selectedDuration
-    });
 
     try {
       // Handle leafleting service

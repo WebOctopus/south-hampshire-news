@@ -251,16 +251,7 @@ export function usePricingData() {
   const error = areasQuery.error || adSizesQuery.error || 
                durationsQuery.error || volumeDiscountsQuery.error;
 
-  // Debug logging for loading states
-  console.log('[usePricingData] Loading states:', {
-    isLoading,
-    isInitialLoading,
-    hasAnyData,
-    areas: { loading: areasQuery.isLoading, data: areasQuery.data?.length },
-    adSizes: { loading: adSizesQuery.isLoading, data: adSizesQuery.data?.length },
-    durations: { loading: durationsQuery.isLoading, data: durationsQuery.data?.length },
-    volumeDiscounts: { loading: volumeDiscountsQuery.isLoading, data: volumeDiscountsQuery.data?.length }
-  });
+  // Loading states calculated above
 
   // Separate durations by type
   const fixedDurations = durationsQuery.data?.filter(d => d.duration_type === 'fixed') || [];

@@ -203,13 +203,6 @@ const effectiveSelectedAreas = useMemo(() => {
 
   
   React.useEffect(() => {
-    console.log('Duration useEffect triggered:', {
-      pricingModel,
-      prevPricingModel,
-      durationsLength: durations?.length,
-      subscriptionDurationsLength: subscriptionDurations?.length,
-      currentSelectedDuration: selectedDuration
-    });
 
     try {
       const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :

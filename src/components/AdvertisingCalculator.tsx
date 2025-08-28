@@ -83,13 +83,6 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
 
   // Manage duration selection with better state tracking
   React.useEffect(() => {
-    console.log('Duration useEffect triggered:', {
-      pricingModel,
-      prevPricingModel,
-      durationsLength: durations?.length,
-      subscriptionDurationsLength: subscriptionDurations?.length,
-      currentSelectedDuration: formData.duration
-    });
 
     try {
       const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
