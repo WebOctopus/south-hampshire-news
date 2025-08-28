@@ -4,19 +4,23 @@ import { supabase } from '@/integrations/supabase/client';
 export interface DbArea {
   id: string;
   name: string;
-  postcodes: string[];
+  postcodes: string;
   circulation: number;
-  base_price_multiplier: number;
-  quarter_page_multiplier: number;
-  half_page_multiplier: number;
-  full_page_multiplier: number;
-  is_active: boolean;
   sort_order: number;
-  schedule?: Array<{
-    month: string;
-    copyDeadline: string;
-    printDeadline: string;
-    deliveryDate: string;
+  is_active: boolean;
+  price_multiplier: number;
+  subscription_price_multiplier: number;
+  bogof_paid_multiplier: number;
+  bogof_free_multiplier: number;
+  leafleting_multiplier: number;
+  copy_deadline_days: number;
+  print_deadline_days: number;
+  delivery_deadline_days: number;
+  schedule?: Array<{ 
+    month: string; 
+    copyDeadline: string; 
+    printDeadline: string; 
+    deliveryDate: string; 
   }>;
 }
 
@@ -26,11 +30,10 @@ export interface DbAdSize {
   dimensions: string;
   base_price_per_area: number;
   base_price_per_month: number;
-  fixed_pricing_per_issue: Record<string, any>;
-  subscription_pricing_per_issue: Record<string, any>;
-  available_for: string[];
+  subscription_base_price_per_area: number;
+  subscription_base_price_per_month: number;
   is_active: boolean;
-  sort_order: number;
+  available_for: string[];
 }
 
 export interface DbDuration {
@@ -40,7 +43,6 @@ export interface DbDuration {
   duration_type: string;
   discount_percentage: number;
   is_active: boolean;
-  sort_order: number;
 }
 
 export interface DbVolumeDiscount {
@@ -51,150 +53,105 @@ export interface DbVolumeDiscount {
   is_active: boolean;
 }
 
-// Individual hooks for each data type with standardized cache config
+// Hook to fetch areas
 export function useAreas() {
   return useQuery({
     queryKey: ['pricing_areas'],
     queryFn: async () => {
-      console.log('[usePricingData] Fetching areas... - START');
-      console.log('[usePricingData] Supabase client available:', !!supabase);
-      
       try {
-        // Test basic connectivity first
-        console.log('[usePricingData] Testing Supabase connection...');
-        const testQuery = supabase.from('pricing_areas').select('count', { count: 'exact', head: true });
-        console.log('[usePricingData] Test query created:', !!testQuery);
-        
-        const testResult = await testQuery;
-        console.log('[usePricingData] Test query result:', testResult);
-        
-        // Now do the actual query
-        console.log('[usePricingData] Executing main areas query...');
         const { data, error } = await supabase
           .from('pricing_areas')
           .select('*')
           .eq('is_active', true)
           .order('sort_order');
         
-        console.log('[usePricingData] Main query completed - data:', !!data, 'error:', !!error);
-        
         if (error) {
-          console.error('[usePricingData] Areas fetch error:', error);
           throw new Error(`Failed to fetch pricing areas: ${error.message}`);
         }
         
-        console.log('[usePricingData] Areas fetched successfully:', data?.length || 0);
-        console.log('[usePricingData] First area sample:', data?.[0]);
-        
-        // Process the data to properly type the schedule field
-        const processedData = (data || []).map(area => ({
-          ...area,
-          schedule: Array.isArray(area.schedule) ? area.schedule as Array<{
-            month: string;
-            copyDeadline: string;
-            printDeadline: string;
-            deliveryDate: string;
-          }> : []
+        const processedData = data?.map(item => ({
+          ...item,
+          schedule: item.schedule as DbArea['schedule']
         })) as DbArea[];
         
-        console.log('[usePricingData] Processed data length:', processedData.length);
-        return processedData;
+        return processedData || [];
       } catch (error) {
-        console.error('[usePricingData] Network error fetching areas:', error);
-        console.error('[usePricingData] Error stack:', (error as Error)?.stack);
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - reduced for debugging
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Areas retry attempt ${failureCount + 1}:`, error);
-      return failureCount < 1; // Only retry once for faster debugging
-    },
-    retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 2000),
+      return failureCount < 3;
+    }
   });
 }
 
+// Hook to fetch ad sizes
 export function useAdSizes() {
   return useQuery({
     queryKey: ['ad_sizes'],
     queryFn: async () => {
-      console.log('[usePricingData] Fetching ad sizes...');
       try {
         const { data, error } = await supabase
           .from('ad_sizes')
           .select('*')
           .eq('is_active', true)
-          .order('sort_order');
+          .order('name');
         
         if (error) {
-          console.error('[usePricingData] Ad sizes fetch error:', error);
           throw new Error(`Failed to fetch ad sizes: ${error.message}`);
         }
         
-        const processedData = (data || []).map(item => ({
+        const processedData = data?.map(item => ({
           ...item,
-          available_for: Array.isArray(item.available_for) 
-            ? item.available_for 
-            : ['fixed', 'subscription']
+          available_for: item.available_for as string[]
         })) as DbAdSize[];
         
-        console.log('[usePricingData] Ad sizes fetched successfully:', processedData.length);
-        return processedData;
+        return processedData || [];
       } catch (error) {
-        console.error('[usePricingData] Network error fetching ad sizes:', error);
         throw error;
       }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Ad sizes retry attempt ${failureCount + 1}:`, error);
-      return failureCount < 2; // Only retry twice
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+      return failureCount < 3;
+    }
   });
 }
 
+// Hook to fetch durations
 export function useDurations() {
   return useQuery({
     queryKey: ['pricing_durations'],
     queryFn: async () => {
-      console.log('[usePricingData] Fetching durations...');
       try {
         const { data, error } = await supabase
           .from('pricing_durations')
           .select('*')
           .eq('is_active', true)
-          .order('sort_order');
+          .order('duration_value');
         
         if (error) {
-          console.error('[usePricingData] Durations fetch error:', error);
           throw new Error(`Failed to fetch durations: ${error.message}`);
         }
         
-        console.log('[usePricingData] Durations fetched successfully:', data?.length || 0);
         return (data || []) as DbDuration[];
       } catch (error) {
-        console.error('[usePricingData] Network error fetching durations:', error);
         throw error;
       }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Durations retry attempt ${failureCount + 1}:`, error);
-      return failureCount < 2; // Only retry twice
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+      return failureCount < 3;
+    }
   });
 }
 
+// Hook to fetch volume discounts
 export function useVolumeDiscounts() {
   return useQuery({
     queryKey: ['volume_discounts'],
     queryFn: async () => {
-      console.log('[usePricingData] Fetching volume discounts...');
       try {
         const { data, error } = await supabase
           .from('volume_discounts')
@@ -203,74 +160,50 @@ export function useVolumeDiscounts() {
           .order('min_areas');
         
         if (error) {
-          console.error('[usePricingData] Volume discounts fetch error:', error);
           throw new Error(`Failed to fetch volume discounts: ${error.message}`);
         }
         
-        console.log('[usePricingData] Volume discounts fetched successfully:', data?.length || 0);
         return (data || []) as DbVolumeDiscount[];
       } catch (error) {
-        console.error('[usePricingData] Network error fetching volume discounts:', error);
         throw error;
       }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
-      console.log(`[usePricingData] Volume discounts retry attempt ${failureCount + 1}:`, error);
-      return failureCount < 2; // Only retry twice
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+      return failureCount < 3;
+    }
   });
 }
 
-// Optimized combined hook with improved loading state logic
+// Combined hook for all pricing data
 export function usePricingData() {
-  const areasQuery = useAreas();
-  const adSizesQuery = useAdSizes();
-  const durationsQuery = useDurations();
-  const volumeDiscountsQuery = useVolumeDiscounts();
+  const { data: areas, isLoading: areasLoading, isError: areasError, refetch: refetchAreas } = useAreas();
+  const { data: adSizes, isLoading: adSizesLoading, isError: adSizesError, refetch: refetchAdSizes } = useAdSizes();
+  const { data: allDurations, isLoading: durationsLoading, isError: durationsError, refetch: refetchDurations } = useDurations();
+  const { data: volumeDiscounts, isLoading: volumeDiscountsLoading, isError: volumeDiscountsError, refetch: refetchVolumeDiscounts } = useVolumeDiscounts();
 
-  // Improved loading logic - only show loading if we have NO data and queries are loading
-  const hasAnyData = (areasQuery.data?.length || 0) > 0 || 
-                    (adSizesQuery.data?.length || 0) > 0 || 
-                    (durationsQuery.data?.length || 0) > 0 || 
-                    (volumeDiscountsQuery.data?.length || 0) > 0;
+  // Split durations into fixed and subscription
+  const durations = allDurations?.filter(d => d.duration_type === 'fixed') || [];
+  const subscriptionDurations = allDurations?.filter(d => d.duration_type === 'subscription') || [];
 
-  // Only show loading state if no cached data exists AND queries are actually loading
-  const isInitialLoading = (areasQuery.isLoading && !areasQuery.data) || 
-                          (adSizesQuery.isLoading && !adSizesQuery.data) || 
-                          (durationsQuery.isLoading && !durationsQuery.data) || 
-                          (volumeDiscountsQuery.isLoading && !volumeDiscountsQuery.data);
-  
-  const isLoading = !hasAnyData && isInitialLoading;
-  
-  const isError = areasQuery.isError || adSizesQuery.isError || 
-                 durationsQuery.isError || volumeDiscountsQuery.isError;
-  
-  const error = areasQuery.error || adSizesQuery.error || 
-               durationsQuery.error || volumeDiscountsQuery.error;
+  const isLoading = areasLoading || adSizesLoading || durationsLoading || volumeDiscountsLoading;
+  const isError = areasError || adSizesError || durationsError || volumeDiscountsError;
 
-  // Loading states calculated above
-
-  // Separate durations by type
-  const fixedDurations = durationsQuery.data?.filter(d => d.duration_type === 'fixed') || [];
-  const subscriptionDurations = durationsQuery.data?.filter(d => d.duration_type === 'subscription') || [];
+  const refetch = () => {
+    refetchAreas();
+    refetchAdSizes();
+    refetchDurations();
+    refetchVolumeDiscounts();
+  };
 
   return {
-    areas: areasQuery.data || [],
-    adSizes: adSizesQuery.data || [],
-    durations: fixedDurations,
+    areas,
+    adSizes,
+    durations,
     subscriptionDurations,
-    volumeDiscounts: volumeDiscountsQuery.data || [],
+    volumeDiscounts,
     isLoading,
     isError,
-    error,
-    refetch: () => {
-      areasQuery.refetch();
-      adSizesQuery.refetch();
-      durationsQuery.refetch();
-      volumeDiscountsQuery.refetch();
-    }
+    refetch,
   };
 }

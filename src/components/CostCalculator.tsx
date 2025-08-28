@@ -118,7 +118,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         setRetryCount(0);
       }
       
-      console.log(`🔄 ${isRetry ? 'Retrying' : 'Starting'} to load pricing data... (attempt ${retryCount + 1})`);
+      
       
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
@@ -163,7 +163,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         throw new Error(`Database errors: ${errors.map(e => e.message).join(', ')}`);
       }
 
-      console.log('✅ All queries successful, processing data...');
+      
 
       // Process the data
       const transformedAdSizes = (adSizesResult.data || []).map(item => ({
@@ -192,13 +192,6 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
       setIsLoading(false);
       setIsRetrying(false);
       
-      console.log('✅ Pricing data loaded successfully!', {
-        adSizes: transformedAdSizes.length,
-        areas: (areasResult.data || []).length,
-        fixedDurations: fixedDurations.length,
-        subscriptionDurations: subDurations.length,
-        volumeDiscounts: (volumeDiscountsResult.data || []).length
-      });
 
       if (isRetry) {
         toast({
@@ -493,7 +486,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                         id={`free-${area.id}`}
                         checked={bogofFreeAreas.includes(area.id)}
                         onCheckedChange={(checked) => {
-                          console.log('Free area change:', { checked, currentFreeCount: bogofFreeAreas.length, paidCount: bogofPaidAreas.length });
+                          
                           if (checked && bogofFreeAreas.length < bogofPaidAreas.length) {
                             setBogofFreeAreas(prev => [...prev, area.id]);
                           } else if (!checked) {

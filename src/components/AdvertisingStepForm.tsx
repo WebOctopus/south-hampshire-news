@@ -37,7 +37,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const [pendingNextStep, setPendingNextStep] = useState<(() => void) | null>(null);
 
   const handleSelectOption = (option: 'fixed' | 'bogof' | 'leafleting') => {
-    console.log('Selected pricing option:', option);
+    
     setSelectedPricingModel(option);
   };
 
@@ -84,7 +84,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleContactInfoSave = async (contactData: any) => {
-    console.log('handleContactInfoSave called with data:', contactData);
+    
     
     setSubmitting(true);
 

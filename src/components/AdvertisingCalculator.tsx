@@ -87,11 +87,11 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
     try {
       const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
       
-      console.log('Relevant durations for', pricingModel, ':', relevantDurations);
+      
       
       // Only clear duration when pricing model actually changes (not on initial load or data updates)
       if (pricingModel !== prevPricingModel && prevPricingModel !== null) {
-        console.log('Pricing model changed from', prevPricingModel, 'to', pricingModel, '- clearing duration');
+        
         setFormData(prev => ({ ...prev, duration: "" }));
         setPrevPricingModel(pricingModel);
         return;
@@ -99,7 +99,7 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
       
       // Auto-select if only one duration option and no duration currently selected
       if (relevantDurations?.length === 1 && !formData.duration) {
-        console.log('Auto-selecting single duration:', relevantDurations[0]);
+        
         setFormData(prev => ({ ...prev, duration: relevantDurations[0].id }));
       }
       
@@ -107,7 +107,7 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
       if (formData.duration && relevantDurations?.length > 0) {
         const isValidSelection = relevantDurations.some(d => d.id === formData.duration);
         if (!isValidSelection) {
-          console.log('Current duration selection invalid for', pricingModel, '- clearing');
+          
           setFormData(prev => ({ ...prev, duration: "" }));
         }
       }
@@ -532,7 +532,7 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
                     <Select 
                       value={formData.duration} 
                       onValueChange={(value) => {
-                        console.log('Duration selected:', value, 'for pricing model:', pricingModel);
+                        
                         setFormData(prev => ({ ...prev, duration: value }));
                       }}
                       key={`duration-select-${pricingModel}`}

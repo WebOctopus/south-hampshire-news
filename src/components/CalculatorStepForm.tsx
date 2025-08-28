@@ -12,7 +12,7 @@ import { Loader2, AlertCircle, Calendar, RefreshCw } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
-import { useLeafletAreas, useLeafletSizes, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
+import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { useStepForm } from './StepForm';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
@@ -125,7 +125,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
   // Use leafleting data hooks
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
-  const { data: leafletSizes, isLoading: leafletSizesLoading, error: leafletSizesError } = useLeafletSizes();
   const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
@@ -292,7 +291,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       if (selectedDuration && relevantDurations && relevantDurations.length > 0) {
         const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
         if (!isValidSelection) {
-          console.log('Current duration selection invalid for', pricingModel, '- clearing');
+          
           setSelectedDuration("");
         }
       }
@@ -560,7 +559,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                              id={`free-${area.id}`}
                              checked={bogofFreeAreas.includes(area.id)}
                              onCheckedChange={(checked) => {
-                               console.log('Free area change:', { area: area.id, checked, bogofFreeAreasLength: bogofFreeAreas.length, bogofPaidAreasLength: bogofPaidAreas.length });
+                               
                                handleBogofFreeAreaChange(area.id, checked as boolean);
                              }}
                              disabled={!bogofFreeAreas.includes(area.id) && bogofFreeAreas.length >= bogofPaidAreas.length}
@@ -682,16 +681,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                         {leafletAreas
                           ?.filter(area => selectedAreas.includes(area.id))
                           .map((area) => {
-                            const availableMonths = area.schedule || [];
-                            const areaSelectedMonths = selectedMonths[area.id] || [];
-                            
-                            // Add debugging for month data structure
-                            console.log(`[LeafletAreas] Area ${area.area_number} schedule:`, availableMonths);
-                            if (availableMonths.length > 0) {
-                              console.log(`[LeafletAreas] First month sample:`, availableMonths[0]);
-                            }
-                            
-                            if (availableMonths.length === 0) {
+                             const availableMonths = area.schedule || [];
+                             const areaSelectedMonths = selectedMonths[area.id] || [];
+                             
+                             if (availableMonths.length === 0) {
                               return (
                                 <div key={area.id} className="border rounded-lg p-4">
                                   <h4 className="font-medium text-lg mb-2">Area {area.area_number}: {area.name}</h4>
@@ -772,8 +765,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                                            }}>
                                              <div className="font-medium text-sm">
                                                {(() => {
-                                                 console.log(`[MonthDisplay] Raw month data:`, monthData);
-                                                 console.log(`[MonthDisplay] monthData.month:`, monthData.month);
                                                  return formatMonthDisplay(monthData.month);
                                                })()}
                                              </div>
@@ -1070,8 +1061,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                                        }}>
                                          <div className="font-medium text-sm">
                                            {(() => {
-                                             console.log(`[MonthDisplay2] Raw month data:`, monthData);
-                                             console.log(`[MonthDisplay2] monthData.month:`, monthData.month);
                                              return formatMonthDisplay(monthData.month);
                                            })()}
                                          </div>

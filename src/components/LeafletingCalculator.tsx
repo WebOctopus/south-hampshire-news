@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useLeafletAreas, useLeafletSizes } from '@/hooks/useLeafletData';
+import { useLeafletAreas } from '@/hooks/useLeafletData';
 import { calculateLeafletingPrice, formatLeafletPrice, calculateLeafletCPM } from '@/lib/leafletingCalculator';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
@@ -35,10 +35,9 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
   
   // Fetch leafleting data from Supabase
   const { data: areas = [], isLoading: areasLoading, isError: areasError } = useLeafletAreas();
-  const { data: sizes = [], isLoading: sizesLoading, isError: sizesError } = useLeafletSizes();
   
-  const isLoading = areasLoading || sizesLoading;
-  const isError = areasError || sizesError;
+  const isLoading = areasLoading;
+  const isError = areasError;
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -237,10 +236,10 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                         <Label htmlFor={area.id} className="flex-1 cursor-pointer">
                           <div className="font-medium">Area {area.area_number}: {area.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {area.postcodes} • {area.bimonthly_circulation.toLocaleString()} circulation
+                            {area.household_count.toLocaleString()} households
                           </div>
                           <div className="text-sm font-medium text-primary">
-                            {formatLeafletPrice(Number(area.price_with_vat))}
+                            £{(area.price_per_thousand * (area.household_count / 1000)).toFixed(2)}
                           </div>
                         </Label>
                       </div>
@@ -255,45 +254,9 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                   <CardTitle>Leaflet Size *</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Select value={formData.leafletSize} onValueChange={(value) => setFormData({...formData, leafletSize: value})}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Choose leaflet size" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-lg z-50">
-                      {sizes.length > 0 ? (
-                        sizes.map((size) => (
-                          <SelectItem 
-                            key={size.id} 
-                            value={size.id}
-                            className="cursor-pointer hover:bg-accent"
-                          >
-                            <div className="w-full">
-                              <div className="font-medium">{size.label}</div>
-                              {size.description && (
-                                <div className="text-sm text-muted-foreground">{size.description}</div>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-options" disabled>
-                          No leaflet sizes available
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {sizesLoading && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-                      Loading sizes...
-                    </p>
-                  )}
-                  {sizesError && (
-                    <p className="text-sm text-destructive mt-2">
-                      <AlertCircle className="h-4 w-4 inline mr-2" />
-                      Error loading leaflet sizes
-                    </p>
-                  )}
+                  <div className="text-center p-4 text-muted-foreground">
+                    Leaflet size selection coming soon
+                  </div>
                 </CardContent>
               </Card>
 
