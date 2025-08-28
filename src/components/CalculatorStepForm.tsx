@@ -18,10 +18,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
-  console.log('[formatMonthDisplay] Input monthString:', monthString);
-  
   if (!monthString) {
-    console.log('[formatMonthDisplay] Empty monthString provided');
     return 'Invalid Date';
   }
   
@@ -44,11 +41,9 @@ const formatMonthDisplay = (monthString: string) => {
         month = String(monthIndex + 1).padStart(2, '0');
         year = parts[1];
       } else {
-        console.error('[formatMonthDisplay] Unrecognized month name:', parts[0]);
         return monthString; // Return original if we can't parse
       }
     } else {
-      console.error('[formatMonthDisplay] Unexpected format with space:', monthString);
       return monthString;
     }
   } else {
@@ -60,10 +55,8 @@ const formatMonthDisplay = (monthString: string) => {
     const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthString.toLowerCase());
     if (monthIndex !== -1) {
       // It's a valid month name, return as-is
-      console.log('[formatMonthDisplay] Standalone month name detected:', monthString);
       return monthString;
     } else {
-      console.error('[formatMonthDisplay] Unrecognized format:', monthString);
       return monthString; // Return original if we can't parse
     }
   }
@@ -76,12 +69,10 @@ const formatMonthDisplay = (monthString: string) => {
   ];
   
   if (monthNumber < 1 || monthNumber > 12 || !year) {
-    console.error('[formatMonthDisplay] Invalid month number or year:', { monthNumber, year, original: monthString });
     return monthString; // Return original if invalid
   }
   
   const result = `${monthNames[monthNumber - 1]} ${year}`;
-  console.log('[formatMonthDisplay] Formatted result:', result);
   return result;
 };
 
@@ -181,17 +172,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
     const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
     
-    console.log('About to call calculateAdvertisingPrice with:', {
-      effectiveSelectedAreas,
-      selectedAdSize,
-      selectedDuration,
-      isSubscription: pricingModel === 'bogof',
-      areasData: areas?.map(a => ({ id: a.id, name: a.name })),
-      adSizesData: adSizes?.map(a => ({ id: a.id, name: a.name })),
-      durationsData: relevantDurations?.map(d => ({ id: d.id, name: d.name })),
-      subscriptionDurationsData: subscriptionDurations?.map(d => ({ id: d.id, name: d.name })),
-      volumeDiscountsData: volumeDiscounts?.length
-    });
     
     const result = calculateAdvertisingPrice(
       effectiveSelectedAreas,
@@ -204,19 +184,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       subscriptionDurations,
       volumeDiscounts
     );
-    
-    console.log('calculateAdvertisingPrice result:', {
-      result: !!result,
-      resultData: result ? {
-        subtotal: result.subtotal,
-        finalTotal: result.finalTotal,
-        totalCirculation: result.totalCirculation
-      } : null,
-      effectiveSelectedAreas: effectiveSelectedAreas.length,
-      selectedAdSize,
-      selectedDuration,
-      pricingModel
-    });
     
     return result;
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations]);

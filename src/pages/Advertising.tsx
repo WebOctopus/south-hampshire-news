@@ -83,17 +83,7 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
   const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
 
-  // Debug logging
-  console.log('Calculator Test - Data state:', {
-    areas: areas?.length,
-    adSizes: adSizes?.length,
-    durations: durations?.length,
-    subscriptionDurations: subscriptionDurations?.length,
-    leafletAreas: leafletAreas?.length,
-    leafletDurations: leafletDurations?.length,
-    isLoading,
-    isError
-  });
+  // Debug logging - remove in production
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
     setSelectedAreas(prev => 
@@ -174,22 +164,17 @@ const effectiveSelectedAreas = useMemo(() => {
     try {
       const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
         (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-        
-      console.log('Relevant durations for', pricingModel, ':', relevantDurations);
-      
       if (relevantDurations && relevantDurations.length > 0) {
         // If no duration selected or it was cleared, set the first/default one
         if (!selectedDuration) {
           const defaultDuration = relevantDurations.find(d => (d as any).is_default) || relevantDurations[0];
           if (defaultDuration) {
-            console.log('Setting default duration:', defaultDuration.id);
             setSelectedDuration(defaultDuration.id);
           }
         } else {
           // Check if current selection is valid for this pricing model
           const isValidSelection = relevantDurations.some(d => d.id === selectedDuration);
           if (!isValidSelection) {
-            console.log('Current duration selection invalid for', pricingModel, '- clearing');
             setSelectedDuration("");
           }
         }
@@ -248,14 +233,6 @@ const effectiveSelectedAreas = useMemo(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          console.log('Intersection observer triggered:', {
-            isIntersecting: entry.isIntersecting,
-            contactSectionReached,
-            pricingModel,
-            showFixedTermConfirmation,
-            hasPricingBreakdown: !!pricingBreakdown
-          });
-          
           if (entry.isIntersecting && !contactSectionReached) {
             setContactSectionReached(true);
             
