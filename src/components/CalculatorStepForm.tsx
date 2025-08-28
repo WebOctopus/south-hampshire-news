@@ -52,8 +52,20 @@ const formatMonthDisplay = (monthString: string) => {
       return monthString;
     }
   } else {
-    console.error('[formatMonthDisplay] Unrecognized format:', monthString);
-    return monthString; // Return original if we can't parse
+    // Check if it's just a standalone month name (e.g., "June")
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthString.toLowerCase());
+    if (monthIndex !== -1) {
+      // It's a valid month name, return as-is
+      console.log('[formatMonthDisplay] Standalone month name detected:', monthString);
+      return monthString;
+    } else {
+      console.error('[formatMonthDisplay] Unrecognized format:', monthString);
+      return monthString; // Return original if we can't parse
+    }
   }
   
   const monthNumber = parseInt(month, 10);
