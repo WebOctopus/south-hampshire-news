@@ -551,13 +551,16 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {areas.filter(area => !bogofPaidAreas.includes(area.id)).map((area) => (
-                        <div key={area.id} className="flex items-center space-x-3 p-3 bg-white rounded border border-green-200">
-                          <Checkbox
-                            id={`free-${area.id}`}
-                            checked={bogofFreeAreas.includes(area.id)}
-                            onCheckedChange={(checked) => handleBogofFreeAreaChange(area.id, checked as boolean)}
-                            disabled={!bogofFreeAreas.includes(area.id) && bogofFreeAreas.length >= bogofPaidAreas.length}
-                          />
+                         <div key={area.id} className="flex items-center space-x-3 p-3 bg-white rounded border border-green-200">
+                           <Checkbox
+                             id={`free-${area.id}`}
+                             checked={bogofFreeAreas.includes(area.id)}
+                             onCheckedChange={(checked) => {
+                               console.log('Free area change:', { area: area.id, checked, bogofFreeAreasLength: bogofFreeAreas.length, bogofPaidAreasLength: bogofPaidAreas.length });
+                               handleBogofFreeAreaChange(area.id, checked as boolean);
+                             }}
+                             disabled={!bogofFreeAreas.includes(area.id) && bogofFreeAreas.length >= bogofPaidAreas.length}
+                           />
                           <Label htmlFor={`free-${area.id}`} className="text-sm cursor-pointer flex-1">
                             <div className="flex items-center justify-between">
                               <span className="font-medium">{area.name}</span>
