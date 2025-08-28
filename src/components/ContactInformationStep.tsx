@@ -18,7 +18,7 @@ interface ContactInformationStepProps {
   selectedDuration: string;
   pricingBreakdown: any;
   campaignData: any;
-  onSaveQuote: () => Promise<void>;
+  onSaveQuote: (formData: FormData) => Promise<void>;
 }
 
 interface FormData {
@@ -60,7 +60,34 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   });
 
   const handleSaveQuote = async () => {
-    await onSaveQuote();
+    // Validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+      toast({
+        title: "Missing Information", 
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.", 
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onSaveQuote(formData);
+    } catch (error) {
+      console.error('Error saving quote:', error);
+      // Error handling is done in parent component
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Expose the handleSaveQuote function to parent component
@@ -94,6 +121,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                       setFormData(prev => ({ ...prev, businessType: value }))
                     }
                     className="flex flex-col space-y-2"
+                    disabled={submitting}
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="company" id="company" />
@@ -115,6 +143,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.firstName}
                     onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
                     placeholder="Enter your first name"
+                    disabled={submitting}
                   />
                 </div>
                 <div>
@@ -125,6 +154,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.lastName}
                     onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
                     placeholder="Enter your last name"
+                    disabled={submitting}
                   />
                 </div>
                 <div>
@@ -135,6 +165,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.companyName}
                     onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
                     placeholder="Enter your company name"
+                    disabled={submitting}
                   />
                 </div>
                 <div>
@@ -145,6 +176,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.companySector}
                     onChange={(e) => setFormData(prev => ({ ...prev, companySector: e.target.value }))}
                     placeholder="Enter your company sector"
+                    disabled={submitting}
                   />
                 </div>
                 <div>
@@ -156,6 +188,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="Enter your email"
+                    disabled={submitting}
                   />
                 </div>
                 <div>
@@ -166,6 +199,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                     placeholder="Enter your phone number"
+                    disabled={submitting}
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -176,6 +210,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.invoiceAddress}
                     onChange={(e) => setFormData(prev => ({ ...prev, invoiceAddress: e.target.value }))}
                     placeholder="Enter your invoice address"
+                    disabled={submitting}
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -187,6 +222,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     placeholder="At least 6 characters"
+                    disabled={submitting}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     This password will be used to access your dashboard and saved quotes.
@@ -199,6 +235,12 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
         </CardContent>
       </Card>
+      
+      {submitting && (
+        <div className="text-center">
+          <p className="text-muted-foreground">Saving your quote and creating your account...</p>
+        </div>
+      )}
     </div>
   );
 };

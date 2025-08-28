@@ -83,153 +83,149 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     nextStep(); // Proceed normally for other cases
   };
 
-  const handleContactInfoSave = async () => {
-    console.log('handleContactInfoSave called');
+  const handleContactInfoSave = async (contactData: any) => {
+    console.log('handleContactInfoSave called with data:', contactData);
     
-    // Get form data from the contact form
-    const contactFormElement = document.querySelector('form') as HTMLFormElement;
-    if (!contactFormElement) {
-      console.error('No form element found');
-      return;
-    }
+    setSubmitting(true);
 
-    const formData = new FormData(contactFormElement);
-    console.log('Form data entries:', Array.from(formData.entries()));
-    
-    const contactData = {
-      firstName: formData.get('firstName') as string || '',
-      lastName: formData.get('lastName') as string || '',
-      email: formData.get('email') as string || '',
-      phone: formData.get('phone') as string || '',
-      companyName: formData.get('companyName') as string || '',
-      companySector: formData.get('companySector') as string || '',
-      invoiceAddress: formData.get('invoiceAddress') as string || '',
-      businessType: formData.get('businessType') as string || 'company',
-      password: formData.get('password') as string || '',
-    };
+    try {
+      const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
 
-    console.log('Parsed contact data:', contactData);
-
-    const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
-
-    // Validation
-    if (!contactData.firstName || !contactData.lastName || !contactData.email || !contactData.password) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      throw new Error('Missing required fields');
-    }
-
-    if (contactData.password.length < 6) {
-      toast({
-        title: "Password Too Short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
-      throw new Error('Password too short');
-    }
-
-    const fullName = `${contactData.firstName} ${contactData.lastName}`;
-    
-    // First, try to sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: contactData.email,
-      password: contactData.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: {
-          display_name: fullName,
-          phone: contactData.phone || '',
-          company: contactData.companyName || ''
-        }
-      }
-    });
-
-    if (authError && authError.message !== 'User already registered') {
-      throw authError;
-    }
-
-    // If user already exists, sign them in
-    if (authError?.message === 'User already registered') {
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      const fullName = `${contactData.firstName} ${contactData.lastName}`;
+      
+      // First, try to sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: contactData.email,
         password: contactData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            display_name: fullName,
+            phone: contactData.phone || '',
+            company: contactData.companyName || ''
+          }
+        }
       });
-      
-      if (signInError) {
-        throw new Error('User already exists with this email. Please use a different email or sign in with your existing password.');
+
+      let userId = authData?.user?.id;
+
+      // If user already exists, sign them in
+      if (authError?.message === 'User already registered') {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: contactData.email,
+          password: contactData.password,
+        });
+        
+        if (signInError) {
+          toast({
+            title: "Sign In Failed",
+            description: "User already exists with this email. Please check your password or use a different email.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        userId = signInData?.user?.id;
+      } else if (authError) {
+        toast({
+          title: "Sign Up Failed",
+          description: authError.message || "Failed to create account.",
+          variant: "destructive",
+        });
+        return;
       }
+
+      if (!userId) {
+        toast({
+          title: "Authentication Failed",
+          description: "Failed to create or authenticate user.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Save to quotes table (user's saved quotes)
+      const quotePayload = {
+        user_id: userId,
+        contact_name: fullName,
+        email: contactData.email,
+        phone: contactData.phone || '',
+        company: contactData.companyName || '',
+        title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Quote`,
+        pricing_model: selectedPricingModel,
+        ad_size_id: campaignData.selectedAdSize,
+        duration_id: campaignData.selectedDuration,
+        selected_area_ids: effectiveSelectedAreas,
+        bogof_paid_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : [],
+        bogof_free_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofFreeAreas : [],
+        monthly_price: campaignData.pricingBreakdown?.finalTotal || 0,
+        subtotal: campaignData.pricingBreakdown?.subtotal || 0,
+        final_total: campaignData.pricingBreakdown?.finalTotal || 0,
+        duration_multiplier: campaignData.pricingBreakdown?.durationMultiplier || 1,
+        total_circulation: campaignData.pricingBreakdown?.totalCirculation || 0,
+        volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent || 0,
+        duration_discount_percent: campaignData.pricingBreakdown?.durationDiscountPercent || 0,
+        pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+        selections: {
+          pricingModel: selectedPricingModel,
+          selectedAdSize: campaignData.selectedAdSize,
+          selectedDuration: campaignData.selectedDuration,
+          selectedAreas: campaignData.selectedAreas,
+          bogofPaidAreas: campaignData.bogofPaidAreas,
+          bogofFreeAreas: campaignData.bogofFreeAreas,
+          ...campaignData
+        } as any
+      };
+
+      const { error: quoteError } = await supabase.from('quotes').insert(quotePayload);
+      if (quoteError) {
+        console.error('Quote save error:', quoteError);
+        toast({
+          title: "Error Saving Quote",
+          description: "Failed to save quote to database.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Also save to quote_requests table for admin tracking
+      const requestPayload = {
+        ...quotePayload,
+        user_id: userId
+      };
+      
+      const { error: requestError } = await supabase.from('quote_requests').insert(requestPayload);
+      if (requestError) {
+        console.error('Quote request save error:', requestError);
+        // Don't fail completely if this fails, just log it
+      }
+      
+      toast({
+        title: "Quote Saved Successfully!",
+        description: "Redirecting to your dashboard...",
+      });
+
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1000);
+      
+    } catch (error: any) {
+      console.error('Error in handleContactInfoSave:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save quote. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
-
-    // Get the user ID (either from sign up or sign in)
-    const userId = authData?.user?.id || (await supabase.auth.getUser()).data.user?.id;
-
-    if (!userId) {
-      throw new Error('Failed to create or authenticate user');
-    }
-
-    // Save to quotes table (user's saved quotes)
-    const quotePayload = {
-      user_id: userId,
-      contact_name: fullName,
-      email: contactData.email,
-      phone: contactData.phone || '',
-      company: contactData.companyName || '',
-      title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Quote`,
-      pricing_model: selectedPricingModel,
-      ad_size_id: campaignData.selectedAdSize,
-      duration_id: campaignData.selectedDuration,
-      selected_area_ids: effectiveSelectedAreas,
-      bogof_paid_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : [],
-      bogof_free_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofFreeAreas : [],
-      monthly_price: campaignData.pricingBreakdown?.finalTotal || 0,
-      subtotal: campaignData.pricingBreakdown?.subtotal || 0,
-      final_total: campaignData.pricingBreakdown?.finalTotal || 0,
-      duration_multiplier: campaignData.pricingBreakdown?.durationMultiplier || 1,
-      total_circulation: campaignData.pricingBreakdown?.totalCirculation || 0,
-      volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent || 0,
-      duration_discount_percent: campaignData.pricingBreakdown?.durationDiscountPercent || 0,
-      pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
-      selections: {
-        pricingModel: selectedPricingModel,
-        selectedAdSize: campaignData.selectedAdSize,
-        selectedDuration: campaignData.selectedDuration,
-        selectedAreas: campaignData.selectedAreas,
-        bogofPaidAreas: campaignData.bogofPaidAreas,
-        bogofFreeAreas: campaignData.bogofFreeAreas,
-        ...campaignData
-      } as any
-    };
-
-    const { error: quoteError } = await supabase.from('quotes').insert(quotePayload);
-    if (quoteError) throw quoteError;
-
-    // Also save to quote_requests table for admin tracking
-    const requestPayload = {
-      ...quotePayload,
-      user_id: userId
-    };
-    
-    const { error: requestError } = await supabase.from('quote_requests').insert(requestPayload);
-    if (requestError) throw requestError;
-    
-    toast({
-      title: "Quote Saved Successfully!",
-      description: "Your quote has been saved to your dashboard. You can access it anytime!",
-    });
-
-    // Redirect to dashboard after a short delay
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1000);
   };
 
   const stepLabels = {
     nextButtonLabels: ['Select Campaign Details', 'Enter Contact Info', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
-    onLastStepNext: handleContactInfoSave,
+    onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: handleStepTransition
   };
 
