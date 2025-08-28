@@ -14,8 +14,8 @@ interface Business {
   name: string;
   description: string;
   category_id: string;
-  email: string;
-  phone: string;
+  email?: string; // Optional for public users
+  phone?: string; // Optional for public users
   website: string;
   address_line1: string;
   address_line2: string;
@@ -62,23 +62,22 @@ const BusinessDetail = () => {
   }, [id]);
 
   const fetchBusiness = async () => {
-    const { data, error } = await supabase
-      .from('businesses')
-      .select(`
-        *,
-        business_categories (
-          name,
-          icon
-        )
-      `)
-      .eq('id', id)
-      .eq('is_active', true)
-      .single();
+    const { data, error } = await supabase.rpc('get_business_detail', {
+      business_id: id
+    });
     
     if (error) {
       console.error('Error fetching business:', error);
+      setBusiness(null);
+    } else if (data && data.length > 0) {
+      // Transform the data to match the expected Business interface
+      const businessData = {
+        ...data[0],
+        business_categories: (data[0].business_categories as any) || { name: '', icon: '' }
+      };
+      setBusiness(businessData as Business);
     } else {
-      setBusiness(data);
+      setBusiness(null);
     }
     setLoading(false);
   };

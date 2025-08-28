@@ -1076,6 +1076,32 @@ export type Database = {
         Args: { user_email: string }
         Returns: string
       }
+      get_business_detail: {
+        Args: { business_id: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          business_categories: Json
+          category_id: string
+          city: string
+          created_at: string
+          description: string
+          email: string
+          featured: boolean
+          featured_image_url: string
+          id: string
+          images: string[]
+          is_verified: boolean
+          logo_url: string
+          name: string
+          opening_hours: Json
+          owner_id: string
+          phone: string
+          postcode: string
+          updated_at: string
+          website: string
+        }[]
+      }
       get_public_businesses: {
         Args: {
           category_filter?: string
