@@ -136,11 +136,6 @@ const effectiveSelectedAreas = useMemo(() => {
     // Handle leafleting service pricing
     if (pricingModel === 'leafleting') {
       if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
-        console.log('Leafleting pricing conditions not met:', {
-          selectedAdSize: !!selectedAdSize,
-          selectedDuration: !!selectedDuration,
-          effectiveSelectedAreas: effectiveSelectedAreas.length
-        });
         return null;
       }
 
@@ -148,31 +143,15 @@ const effectiveSelectedAreas = useMemo(() => {
       const selectedLeafletDurationData = leafletDurations?.find(d => d.id === selectedDuration);
       const durationMultiplier = selectedLeafletDurationData?.months || 1;
       
-      const result = calculateLeafletingPrice(
+      return calculateLeafletingPrice(
         effectiveSelectedAreas,
         leafletAreas || [],
         durationMultiplier
       );
-      
-      console.log('Leafleting pricing breakdown calculated:', {
-        result: !!result,
-        effectiveSelectedAreas: effectiveSelectedAreas.length,
-        selectedAdSize,
-        selectedDuration,
-        durationMultiplier,
-        pricingModel
-      });
-      
-      return result;
     }
 
     // Handle regular advertising pricing
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
-      console.log('Pricing breakdown conditions not met:', {
-        selectedAdSize: !!selectedAdSize,
-        selectedDuration: !!selectedDuration,
-        effectiveSelectedAreas: effectiveSelectedAreas.length
-      });
       return null;
     }
 
@@ -189,14 +168,6 @@ const effectiveSelectedAreas = useMemo(() => {
       subscriptionDurations,
       volumeDiscounts
     );
-    
-    console.log('Pricing breakdown calculated:', {
-      result: !!result,
-      effectiveSelectedAreas: effectiveSelectedAreas.length,
-      selectedAdSize,
-      selectedDuration,
-      pricingModel
-    });
     
     return result;
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations]);
@@ -291,18 +262,10 @@ const effectiveSelectedAreas = useMemo(() => {
           
           if (entry.isIntersecting && !contactSectionReached) {
             setContactSectionReached(true);
-            console.log('Contact section reached, checking popup conditions...');
             
             // Show confirmation dialog for Fixed Term users only when pricing is calculated
             if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
-              console.log('Showing Fixed Term confirmation popup');
               setShowFixedTermConfirmation(true);
-            } else {
-              console.log('Popup not shown - conditions not met:', {
-                isFixed: pricingModel === 'fixed',
-                notAlreadyShown: !showFixedTermConfirmation,
-                hasPricing: !!pricingBreakdown
-              });
             }
           }
         });

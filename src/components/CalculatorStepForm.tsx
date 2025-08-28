@@ -176,23 +176,8 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
       return calculateLeafletingPrice(effectiveSelectedAreas, leafletAreas || [], durationMultiplier);
     }
 
-    console.log('Pricing breakdown calculation - inputs:', {
-      effectiveSelectedAreas: effectiveSelectedAreas.length,
-      selectedAdSize,
-      selectedDuration,
-      pricingModel,
-      areasCount: areas?.length,
-      adSizesCount: adSizes?.length,
-      durationsCount: durations?.length
-    });
-
     // Handle regular advertising pricing
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
-      console.log('Pricing breakdown conditions not met:', {
-        selectedAdSize: !!selectedAdSize,
-        selectedDuration: !!selectedDuration,
-        effectiveSelectedAreas: effectiveSelectedAreas.length
-      });
       return null;
     }
 
