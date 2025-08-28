@@ -282,7 +282,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedAdSize={campaignData.selectedAdSize}
                 selectedDuration={campaignData.selectedDuration}
                 pricingBreakdown={campaignData.pricingBreakdown}
-                onSaveQuote={handleSaveQuote}
+                campaignData={campaignData}
               />
               
               <div className="text-center space-y-4">
@@ -307,16 +307,16 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             initialData={campaignData}
           />
           
-          <ContactInformationStep
-            pricingModel={selectedPricingModel}
-            selectedAreas={campaignData.selectedAreas}
-            bogofPaidAreas={campaignData.bogofPaidAreas}
-            bogofFreeAreas={campaignData.bogofFreeAreas}
-            selectedAdSize={campaignData.selectedAdSize}
-            selectedDuration={campaignData.selectedDuration}
-            pricingBreakdown={campaignData.pricingBreakdown}
-            onSaveQuote={handleSaveQuote}
-          />
+        <ContactInformationStep
+          pricingModel={selectedPricingModel}
+          selectedAreas={campaignData.selectedAreas}
+          bogofPaidAreas={campaignData.bogofPaidAreas}
+          bogofFreeAreas={campaignData.bogofFreeAreas}
+          selectedAdSize={campaignData.selectedAdSize}
+          selectedDuration={campaignData.selectedDuration}
+          pricingBreakdown={campaignData.pricingBreakdown}
+          campaignData={campaignData}
+        />
           
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">

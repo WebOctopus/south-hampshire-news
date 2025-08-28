@@ -3,6 +3,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 
 interface ContactInformationStepProps {
@@ -13,7 +17,7 @@ interface ContactInformationStepProps {
   selectedAdSize: string;
   selectedDuration: string;
   pricingBreakdown: any;
-  onSaveQuote: (formData: FormData) => Promise<void>;
+  campaignData: any;
 }
 
 interface FormData {
@@ -29,8 +33,18 @@ interface FormData {
 }
 
 export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
-  onSaveQuote
+  pricingModel,
+  selectedAreas,
+  bogofPaidAreas,
+  bogofFreeAreas,
+  selectedAdSize,
+  selectedDuration,
+  pricingBreakdown,
+  campaignData
 }) => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     businessType: 'company',
     firstName: "",
@@ -42,6 +56,134 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     invoiceAddress: "",
     password: "",
   });
+
+  const handleSaveQuote = async () => {
+    const effectiveSelectedAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
+
+    // Validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const fullName = `${formData.firstName} ${formData.lastName}`;
+      
+      // First, try to sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            display_name: fullName,
+            phone: formData.phone || '',
+            company: formData.companyName || ''
+          }
+        }
+      });
+
+      if (authError && authError.message !== 'User already registered') {
+        throw authError;
+      }
+
+      // If user already exists, sign them in
+      if (authError?.message === 'User already registered') {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (signInError) {
+          throw new Error('User already exists with this email. Please use a different email or sign in with your existing password.');
+        }
+      }
+
+      // Get the user ID (either from sign up or sign in)
+      const userId = authData?.user?.id || (await supabase.auth.getUser()).data.user?.id;
+
+      if (!userId) {
+        throw new Error('Failed to create or authenticate user');
+      }
+
+      // Save to quotes table (user's saved quotes)
+      const quotePayload = {
+        user_id: userId,
+        contact_name: fullName,
+        email: formData.email,
+        phone: formData.phone || '',
+        company: formData.companyName || '',
+        title: `${pricingModel === 'fixed' ? 'Fixed Term' : pricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Quote`,
+        pricing_model: pricingModel,
+        ad_size_id: selectedAdSize,
+        duration_id: selectedDuration,
+        selected_area_ids: effectiveSelectedAreas,
+        bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
+        bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
+        monthly_price: pricingBreakdown?.finalTotal || 0,
+        subtotal: pricingBreakdown?.subtotal || 0,
+        final_total: pricingBreakdown?.finalTotal || 0,
+        duration_multiplier: pricingBreakdown?.durationMultiplier || 1,
+        total_circulation: pricingBreakdown?.totalCirculation || 0,
+        volume_discount_percent: pricingBreakdown?.volumeDiscountPercent || 0,
+        duration_discount_percent: pricingBreakdown?.durationDiscountPercent || 0,
+        pricing_breakdown: JSON.parse(JSON.stringify(pricingBreakdown || {})) as any,
+        selections: {
+          pricingModel,
+          selectedAdSize,
+          selectedDuration,
+          selectedAreas,
+          bogofPaidAreas,
+          bogofFreeAreas,
+          ...campaignData
+        } as any
+      };
+
+      const { error: quoteError } = await supabase.from('quotes').insert(quotePayload);
+      if (quoteError) throw quoteError;
+
+      // Also save to quote_requests table for admin tracking
+      const requestPayload = {
+        ...quotePayload,
+        user_id: userId
+      };
+      
+      const { error: requestError } = await supabase.from('quote_requests').insert(requestPayload);
+      if (requestError) throw requestError;
+      
+      toast({
+        title: "Quote Saved Successfully!",
+        description: "Your quote has been saved to your dashboard. You can access it anytime!",
+      });
+
+      // Redirect to dashboard
+      navigate('/dashboard');
+      
+    } catch (err: any) {
+      console.error('Save quote error:', err);
+      toast({ 
+        title: "Error", 
+        description: err.message || 'Failed to save quote. Please try again.', 
+        variant: "destructive" 
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -165,6 +307,17 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   </p>
                 </div>
                 </div>
+              </div>
+              
+              <div className="flex justify-end mt-6">
+                <Button 
+                  onClick={handleSaveQuote}
+                  disabled={submitting}
+                  size="lg"
+                  className="px-8"
+                >
+                  {submitting ? "Saving Quote..." : "Save My Quote"}
+                </Button>
               </div>
             </form>
           </div>
