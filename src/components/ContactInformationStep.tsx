@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 interface ContactInformationStepProps {
@@ -16,6 +17,7 @@ interface ContactInformationStepProps {
 }
 
 interface FormData {
+  businessType: 'sole_trader' | 'company';
   firstName: string;
   lastName: string;
   companyName: string;
@@ -30,6 +32,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   onSaveQuote
 }) => {
   const [formData, setFormData] = useState<FormData>({
+    businessType: 'company',
     firstName: "",
     lastName: "",
     companyName: "",
@@ -54,7 +57,28 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Your Details</h3>
             <form>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <Label>Business Type *</Label>
+                  <RadioGroup
+                    value={formData.businessType}
+                    onValueChange={(value: 'sole_trader' | 'company') => 
+                      setFormData(prev => ({ ...prev, businessType: value }))
+                    }
+                    className="flex flex-col space-y-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="company" id="company" />
+                      <Label htmlFor="company">Company</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="sole_trader" id="sole_trader" />
+                      <Label htmlFor="sole_trader">Sole Trader</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName">First Name *</Label>
                   <Input
@@ -139,6 +163,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   <p className="text-xs text-muted-foreground mt-1">
                     This password will be used to access your dashboard and saved quotes.
                   </p>
+                </div>
                 </div>
               </div>
             </form>
