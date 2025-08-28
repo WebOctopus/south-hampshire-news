@@ -123,9 +123,24 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
   }, []);
 
   const handleBogofPaidAreaChange = useCallback((areaId: string, checked: boolean) => {
-    setBogofPaidAreas(prev => 
-      checked ? [...prev, areaId] : prev.filter(id => id !== areaId)
-    );
+    setBogofPaidAreas(prev => {
+      const newPaidAreas = checked ? [...prev, areaId] : prev.filter(id => id !== areaId);
+      
+      // If we're reducing paid areas, also reduce free areas to match
+      if (!checked && newPaidAreas.length < prev.length) {
+        setBogofFreeAreas(currentFreeAreas => {
+          // If we have more free areas than paid areas after reduction, trim the free areas
+          if (currentFreeAreas.length > newPaidAreas.length) {
+            const excessCount = currentFreeAreas.length - newPaidAreas.length;
+            // Remove the excess free areas (from the end of the array)
+            return currentFreeAreas.slice(0, currentFreeAreas.length - excessCount);
+          }
+          return currentFreeAreas;
+        });
+      }
+      
+      return newPaidAreas;
+    });
   }, []);
 
   const handleBogofFreeAreaChange = useCallback((areaId: string, checked: boolean) => {
