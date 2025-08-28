@@ -110,9 +110,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       });
 
       let userId = authData?.user?.id;
+      let isNewUser = true;
 
-      // If user already exists, sign them in
+      // If user already exists, try to sign them in with the provided password
       if (authError?.message === 'User already registered') {
+        isNewUser = false;
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email: contactData.email,
           password: contactData.password,
@@ -120,14 +122,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         
         if (signInError) {
           toast({
-            title: "Sign In Failed",
-            description: "User already exists with this email. Please check your password or use a different email.",
+            title: "Incorrect Password",
+            description: "This email is already registered. Please enter your correct password to sign in.",
             variant: "destructive",
           });
           return;
         }
         
         userId = signInData?.user?.id;
+        
+        toast({
+          title: "Welcome Back!",
+          description: "Successfully signed in to your existing account.",
+        });
       } else if (authError) {
         toast({
           title: "Sign Up Failed",
@@ -202,20 +209,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         // Don't fail completely if this fails, just log it
       }
 
-      // Check if this is a new user (successful signup vs existing user signin)
-      const isNewUser = !authError || authError.message !== 'User already registered';
-      
       // Store information for the dashboard to use
       if (isNewUser) {
         localStorage.setItem('newUserFromCalculator', 'true');
-        localStorage.setItem('justSavedQuote', 'true');
       }
+      localStorage.setItem('justSavedQuote', 'true');
       
       toast({
-        title: "Account Created & Quote Saved!",
+        title: isNewUser ? "Account Created & Quote Saved!" : "Quote Saved Successfully!",
         description: isNewUser 
           ? "Welcome! Your account has been created and your quote is saved. Redirecting to your dashboard..." 
-          : "Welcome back! Your quote has been saved. Redirecting to your dashboard...",
+          : "Your quote has been saved to your dashboard. Redirecting...",
       });
 
       // Wait for authentication to complete and then navigate
@@ -236,7 +240,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const stepLabels = {
-    nextButtonLabels: ['Select Campaign Details', 'Enter Contact Info', 'Save My Quote'],
+    nextButtonLabels: ['Select Campaign Details', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: handleStepTransition
@@ -275,16 +279,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 campaignData={campaignData}
                 onSaveQuote={handleContactInfoSave}
               />
-              
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8 text-green-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-green-600">Quote Submitted!</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Thank you for your quote request. Our sales team will contact you within 24 hours to discuss your advertising needs.
-                </p>
-              </div>
             </StepForm>
           </DialogContent>
         </Dialog>
@@ -298,27 +292,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             initialData={campaignData}
           />
           
-        <ContactInformationStep
-          pricingModel={selectedPricingModel}
-          selectedAreas={campaignData.selectedAreas}
-          bogofPaidAreas={campaignData.bogofPaidAreas}
-          bogofFreeAreas={campaignData.bogofFreeAreas}
-          selectedAdSize={campaignData.selectedAdSize}
-          selectedDuration={campaignData.selectedDuration}
-          pricingBreakdown={campaignData.pricingBreakdown}
-          campaignData={campaignData}
-          onSaveQuote={handleContactInfoSave}
-        />
-          
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-green-600">Quote Submitted!</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Thank you for your quote request. Our sales team will contact you within 24 hours to discuss your advertising needs.
-            </p>
-          </div>
+          <ContactInformationStep
+            pricingModel={selectedPricingModel}
+            selectedAreas={campaignData.selectedAreas}
+            bogofPaidAreas={campaignData.bogofPaidAreas}
+            bogofFreeAreas={campaignData.bogofFreeAreas}
+            selectedAdSize={campaignData.selectedAdSize}
+            selectedDuration={campaignData.selectedDuration}
+            pricingBreakdown={campaignData.pricingBreakdown}
+            campaignData={campaignData}
+            onSaveQuote={handleContactInfoSave}
+          />
         </StepForm>
       )}
 
