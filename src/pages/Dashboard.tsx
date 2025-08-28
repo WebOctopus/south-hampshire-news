@@ -147,6 +147,28 @@ const Dashboard = () => {
       loadBusinesses();
       loadEvents();
       loadQuotes();
+      
+      // Check if user came from calculator and set appropriate tab
+      const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
+      const justSavedQuote = localStorage.getItem('justSavedQuote');
+      
+      if (isNewUserFromCalculator === 'true' || justSavedQuote === 'true') {
+        setActiveTab('quotes');
+        // Clean up the flags
+        localStorage.removeItem('newUserFromCalculator');
+        localStorage.removeItem('justSavedQuote');
+        
+        // Show additional welcome message for new users
+        if (isNewUserFromCalculator === 'true') {
+          setTimeout(() => {
+            toast({
+              title: "Welcome to Your Dashboard!",
+              description: "Your quote has been saved below. You can create business listings and events here too.",
+              duration: 5000,
+            });
+          }, 2000);
+        }
+      }
     }
   }, [user]);
 

@@ -101,9 +101,9 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Contact Information</h2>
+        <h2 className="text-2xl font-bold">Contact Information & Account Setup</h2>
         <p className="text-muted-foreground">
-          Complete your details to receive your quote
+          We'll create your account and save your quote to your dashboard
         </p>
       </div>
 
@@ -214,7 +214,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <Label htmlFor="password">Create Password *</Label>
+                  <Label htmlFor="password">Create Account Password *</Label>
                   <Input
                     id="password"
                     name="password"
@@ -225,7 +225,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     disabled={submitting}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    This password will be used to access your dashboard and saved quotes.
+                    We'll create your account automatically and sign you in. You can access your saved quotes anytime.
                   </p>
                 </div>
                 </div>
@@ -238,7 +238,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       
       {submitting && (
         <div className="text-center">
-          <p className="text-muted-foreground">Saving your quote and creating your account...</p>
+          <p className="text-muted-foreground">Creating your account and saving your quote...</p>
         </div>
       )}
     </div>

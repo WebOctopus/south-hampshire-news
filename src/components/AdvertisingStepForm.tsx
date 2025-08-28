@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import StepForm from '@/components/StepForm';
 import PricingOptionsStep from '@/components/PricingOptionsStep';
 import CalculatorStepForm from '@/components/CalculatorStepForm';
@@ -19,6 +20,7 @@ interface AdvertisingStepFormProps {
 
 export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ children, asDialog = false }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { durations, subscriptionDurations } = usePricingData();
   const { data: leafletDurations } = useLeafletCampaignDurations();
   
@@ -199,16 +201,27 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         console.error('Quote request save error:', requestError);
         // Don't fail completely if this fails, just log it
       }
+
+      // Check if this is a new user (successful signup vs existing user signin)
+      const isNewUser = !authError || authError.message !== 'User already registered';
+      
+      // Store information for the dashboard to use
+      if (isNewUser) {
+        localStorage.setItem('newUserFromCalculator', 'true');
+        localStorage.setItem('justSavedQuote', 'true');
+      }
       
       toast({
-        title: "Quote Saved Successfully!",
-        description: "Redirecting to your dashboard...",
+        title: "Account Created & Quote Saved!",
+        description: isNewUser 
+          ? "Welcome! Your account has been created and your quote is saved. Redirecting to your dashboard..." 
+          : "Welcome back! Your quote has been saved. Redirecting to your dashboard...",
       });
 
-      // Redirect to dashboard after a short delay
+      // Wait for authentication to complete and then navigate
       setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1000);
+        navigate('/dashboard');
+      }, 1500);
       
     } catch (error: any) {
       console.error('Error in handleContactInfoSave:', error);
