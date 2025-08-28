@@ -84,11 +84,18 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleContactInfoSave = async () => {
+    console.log('handleContactInfoSave called');
+    
     // Get form data from the contact form
     const contactFormElement = document.querySelector('form') as HTMLFormElement;
-    if (!contactFormElement) return;
+    if (!contactFormElement) {
+      console.error('No form element found');
+      return;
+    }
 
     const formData = new FormData(contactFormElement);
+    console.log('Form data entries:', Array.from(formData.entries()));
+    
     const contactData = {
       firstName: formData.get('firstName') as string || '',
       lastName: formData.get('lastName') as string || '',
@@ -100,6 +107,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       businessType: formData.get('businessType') as string || 'company',
       password: formData.get('password') as string || '',
     };
+
+    console.log('Parsed contact data:', contactData);
 
     const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
 

@@ -10,7 +10,7 @@ interface StepFormProps {
   stepLabels?: {
     nextButtonLabels?: string[];
     prevButtonLabel?: string;
-    onLastStepNext?: (formData: any) => Promise<void>;
+    onLastStepNext?: () => Promise<void>;
     onStepTransition?: (currentStep: number, nextStep: () => void) => void;
   };
 }
@@ -24,7 +24,7 @@ interface StepFormContextValue {
   stepLabels?: {
     nextButtonLabels?: string[];
     prevButtonLabel?: string;
-    onLastStepNext?: (formData: any) => Promise<void>;
+    onLastStepNext?: () => Promise<void>;
     onStepTransition?: (currentStep: number, nextStep: () => void) => void;
   };
 }
@@ -62,15 +62,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
         // On the last step, call the custom handler if provided
         const contactFormElement = document.querySelector('form') as HTMLFormElement;
         if (contactFormElement) {
-          const formData = new FormData(contactFormElement);
-          const formValues = {
-            name: formData.get('name') as string || '',
-            email: formData.get('email') as string || '',
-            phone: formData.get('phone') as string || '',
-            company: formData.get('company') as string || '',
-            password: formData.get('password') as string || '',
-          };
-          stepLabels.onLastStepNext(formValues).then(() => {
+          stepLabels.onLastStepNext().then(() => {
             setCurrentStep(prev => prev + 1); // Move to completion step only on success
           }).catch(() => {
             // Error is already handled in the parent component
