@@ -1153,8 +1153,8 @@ const Dashboard = () => {
           editingEvent={editingEvent}
         />
         
-        <SidebarInset className="flex-1">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarInset className="flex-1 min-w-0">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-6">
             <SidebarTrigger className="-ml-1" />
             <div className="h-4 w-px bg-sidebar-border" />
             <div className="flex-1">
@@ -1163,7 +1163,7 @@ const Dashboard = () => {
           </header>
           
           <div className="flex-1 overflow-auto">
-            <div className="p-6 space-y-6">
+            <div className="max-w-7xl mx-auto p-6 space-y-6">
               <WelcomeHeader user={user} quotes={quotes} />
               
               {activeTab === 'create' && renderCreateBusinessForm()}
@@ -1177,8 +1177,11 @@ const Dashboard = () => {
         </SidebarInset>
       </div>
 
-      <Navigation />
-      <Footer />
+      {/* Navigation and Footer moved outside sidebar layout */}
+      <div className="hidden">
+        <Navigation />
+        <Footer />
+      </div>
 
       <Dialog open={!!viewingQuote} onOpenChange={() => setViewingQuote(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
