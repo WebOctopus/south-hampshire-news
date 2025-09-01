@@ -59,6 +59,102 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          ad_size_id: string | null
+          bogof_free_area_ids: string[] | null
+          bogof_paid_area_ids: string[] | null
+          company: string | null
+          contact_name: string
+          created_at: string
+          duration_discount_percent: number | null
+          duration_id: string | null
+          duration_multiplier: number | null
+          email: string
+          final_total: number | null
+          id: string
+          monthly_price: number
+          notes: string | null
+          phone: string | null
+          pricing_breakdown: Json
+          pricing_model: string
+          selected_area_ids: string[] | null
+          selections: Json
+          status: string
+          subtotal: number | null
+          title: string | null
+          total_circulation: number | null
+          updated_at: string
+          user_id: string
+          volume_discount_percent: number | null
+          webhook_payload: Json
+          webhook_response: Json | null
+          webhook_sent_at: string | null
+        }
+        Insert: {
+          ad_size_id?: string | null
+          bogof_free_area_ids?: string[] | null
+          bogof_paid_area_ids?: string[] | null
+          company?: string | null
+          contact_name: string
+          created_at?: string
+          duration_discount_percent?: number | null
+          duration_id?: string | null
+          duration_multiplier?: number | null
+          email: string
+          final_total?: number | null
+          id?: string
+          monthly_price?: number
+          notes?: string | null
+          phone?: string | null
+          pricing_breakdown?: Json
+          pricing_model: string
+          selected_area_ids?: string[] | null
+          selections?: Json
+          status?: string
+          subtotal?: number | null
+          title?: string | null
+          total_circulation?: number | null
+          updated_at?: string
+          user_id: string
+          volume_discount_percent?: number | null
+          webhook_payload?: Json
+          webhook_response?: Json | null
+          webhook_sent_at?: string | null
+        }
+        Update: {
+          ad_size_id?: string | null
+          bogof_free_area_ids?: string[] | null
+          bogof_paid_area_ids?: string[] | null
+          company?: string | null
+          contact_name?: string
+          created_at?: string
+          duration_discount_percent?: number | null
+          duration_id?: string | null
+          duration_multiplier?: number | null
+          email?: string
+          final_total?: number | null
+          id?: string
+          monthly_price?: number
+          notes?: string | null
+          phone?: string | null
+          pricing_breakdown?: Json
+          pricing_model?: string
+          selected_area_ids?: string[] | null
+          selections?: Json
+          status?: string
+          subtotal?: number | null
+          title?: string | null
+          total_circulation?: number | null
+          updated_at?: string
+          user_id?: string
+          volume_discount_percent?: number | null
+          webhook_payload?: Json
+          webhook_response?: Json | null
+          webhook_sent_at?: string | null
+        }
+        Relationships: []
+      }
       business_categories: {
         Row: {
           created_at: string

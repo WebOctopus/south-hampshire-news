@@ -239,6 +239,171 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     }
   };
 
+  const handleContactInfoBook = async (contactData: any) => {
+    
+    setSubmitting(true);
+
+    try {
+      const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
+      const fullName = `${contactData.firstName} ${contactData.lastName}`;
+      
+      // First, try to sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: contactData.email,
+        password: contactData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            display_name: fullName,
+            phone: contactData.phone || '',
+            company: contactData.companyName || ''
+          }
+        }
+      });
+
+      let userId = authData?.user?.id;
+      let isNewUser = true;
+
+      // If user already exists, try to sign them in with the provided password
+      if (authError?.message === 'User already registered') {
+        isNewUser = false;
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: contactData.email,
+          password: contactData.password,
+        });
+        
+        if (signInError) {
+          toast({
+            title: "Incorrect Password",
+            description: "This email is already registered. Please enter your correct password to sign in.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        userId = signInData?.user?.id;
+      } else if (authError) {
+        toast({
+          title: "Sign Up Failed",
+          description: authError.message || "Failed to create account.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!userId) {
+        toast({
+          title: "Authentication Failed",
+          description: "Failed to create or authenticate user.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create booking record
+      const bookingPayload = {
+        user_id: userId,
+        contact_name: fullName,
+        email: contactData.email,
+        phone: contactData.phone || '',
+        company: contactData.companyName || '',
+        title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Booking`,
+        pricing_model: selectedPricingModel,
+        ad_size_id: campaignData.selectedAdSize,
+        duration_id: campaignData.selectedDuration,
+        selected_area_ids: effectiveSelectedAreas,
+        bogof_paid_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : [],
+        bogof_free_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofFreeAreas : [],
+        monthly_price: campaignData.pricingBreakdown?.finalTotal || 0,
+        subtotal: campaignData.pricingBreakdown?.subtotal || 0,
+        final_total: campaignData.pricingBreakdown?.finalTotal || 0,
+        duration_multiplier: campaignData.pricingBreakdown?.durationMultiplier || 1,
+        total_circulation: campaignData.pricingBreakdown?.totalCirculation || 0,
+        volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent || 0,
+        duration_discount_percent: campaignData.pricingBreakdown?.durationDiscountPercent || 0,
+        pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+        selections: {
+          pricingModel: selectedPricingModel,
+          selectedAdSize: campaignData.selectedAdSize,
+          selectedDuration: campaignData.selectedDuration,
+          selectedAreas: campaignData.selectedAreas,
+          bogofPaidAreas: campaignData.bogofPaidAreas,
+          bogofFreeAreas: campaignData.bogofFreeAreas,
+          ...campaignData
+        } as any,
+        status: 'pending'
+      };
+
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('bookings')
+        .insert(bookingPayload)
+        .select()
+        .single();
+
+      if (bookingError) {
+        console.error('Booking save error:', bookingError);
+        toast({
+          title: "Error Creating Booking",
+          description: "Failed to create booking. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Send webhook to Go High-Level
+      try {
+        const { error: webhookError } = await supabase.functions.invoke('send-booking-webhook', {
+          body: {
+            bookingData,
+            step1Data: { pricingModel: selectedPricingModel },
+            step2Data: campaignData,
+            step3Data: contactData,
+            userId
+          }
+        });
+
+        if (webhookError) {
+          console.error('Webhook error:', webhookError);
+          toast({
+            title: "Booking Created",
+            description: "Your booking has been created but there was an issue sending it to our system. Our team will process it manually.",
+            variant: "default",
+          });
+        }
+      } catch (webhookError) {
+        console.error('Webhook send error:', webhookError);
+      }
+
+      // Store information for the dashboard
+      if (isNewUser) {
+        localStorage.setItem('newUserFromCalculator', 'true');
+      }
+      localStorage.setItem('justCreatedBooking', 'true');
+      
+      toast({
+        title: isNewUser ? "Account Created & Booking Submitted!" : "Booking Submitted Successfully!",
+        description: isNewUser 
+          ? "Welcome! Your account has been created and your booking is being processed. Redirecting to your dashboard..." 
+          : "Your booking has been submitted and is being processed. Redirecting to your dashboard...",
+      });
+
+      // Wait for authentication to complete and then navigate
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+      
+    } catch (error: any) {
+      console.error('Error in handleContactInfoBook:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create booking. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const stepLabels = {
     nextButtonLabels: ['Select Campaign Details', 'Contact Details', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
@@ -278,6 +443,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingBreakdown={campaignData.pricingBreakdown}
                 campaignData={campaignData}
                 onSaveQuote={handleContactInfoSave}
+                onBookNow={handleContactInfoBook}
               />
             </StepForm>
           </DialogContent>
@@ -302,6 +468,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             pricingBreakdown={campaignData.pricingBreakdown}
             campaignData={campaignData}
             onSaveQuote={handleContactInfoSave}
+            onBookNow={handleContactInfoBook}
           />
         </StepForm>
       )}

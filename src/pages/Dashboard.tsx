@@ -27,6 +27,7 @@ import UrgencyAlerts from '@/components/dashboard/UrgencyAlerts';
 import ROICalculator from '@/components/dashboard/ROICalculator';
 import CampaignTimeline from '@/components/dashboard/CampaignTimeline';
 import DeleteQuoteDialog from '@/components/dashboard/DeleteQuoteDialog';
+import BookingCard from '@/components/dashboard/BookingCard';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -42,6 +43,8 @@ const Dashboard = () => {
   const [editingQuote, setEditingQuote] = useState<any | null>(null);
   const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
   const [quoteToDelete, setQuoteToDelete] = useState<any | null>(null);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('create');
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   
@@ -150,15 +153,29 @@ const Dashboard = () => {
     }
   };
 
+  const loadBookings = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (data) {
+      setBookings(data);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadBusinesses();
       loadEvents();
       loadQuotes();
+      loadBookings();
       
       // Check if user came from calculator and set appropriate tab
       const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
       const justSavedQuote = localStorage.getItem('justSavedQuote');
+      const justCreatedBooking = localStorage.getItem('justCreatedBooking');
       
       if (isNewUserFromCalculator === 'true' || justSavedQuote === 'true') {
         setActiveTab('quotes');
@@ -176,6 +193,11 @@ const Dashboard = () => {
             });
           }, 2000);
         }
+      }
+      
+      if (justCreatedBooking === 'true') {
+        setActiveTab('bookings');
+        localStorage.removeItem('justCreatedBooking');
       }
     }
   }, [user]);
@@ -461,6 +483,33 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteBooking = async (bookingId: string) => {
+    setDeletingBookingId(bookingId);
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Booking Deleted",
+        description: "Your booking has been removed successfully.",
+      });
+
+      await loadBookings();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingBookingId(null);
+    }
+  };
+
   const handleDeleteQuoteClick = (quote: any) => {
     setQuoteToDelete(quote);
   };
@@ -481,7 +530,7 @@ const Dashboard = () => {
           <WelcomeHeader user={user} quotes={quotes} />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger 
                 value="create" 
                 disabled={hasExistingBusiness && !editingBusiness}
@@ -494,6 +543,7 @@ const Dashboard = () => {
               </TabsTrigger>
               <TabsTrigger value="events">Your Events ({events.length})</TabsTrigger>
               <TabsTrigger value="quotes">Saved Quotes ({quotes.length})</TabsTrigger>
+              <TabsTrigger value="bookings">Bookings ({bookings.length})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="create">
@@ -1227,6 +1277,87 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+            </TabsContent>
+
+            <TabsContent value="bookings">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-3">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Your Bookings</CardTitle>
+                      <p className="text-muted-foreground">
+                        Track your submitted advertising campaign bookings
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      {bookings.length === 0 ? (
+                        <div className="text-center py-12">
+                          <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-medium mb-2">No bookings yet</h3>
+                          <p className="text-muted-foreground mb-4">
+                            You haven't submitted any advertising campaigns for booking yet.
+                          </p>
+                          <Button onClick={() => navigate('/advertising')} className="bg-primary hover:bg-primary/90">
+                            Create Your First Campaign
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {bookings.map((booking) => (
+                            <BookingCard
+                              key={booking.id}
+                              booking={booking}
+                              onDelete={handleDeleteBooking}
+                              isDeleting={deletingBookingId === booking.id}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Sidebar with info */}
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Booking Status Guide</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <span className="text-sm">Pending - Just submitted</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="text-sm">Submitted - Sent to our team</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                        <span className="text-sm">Processing - Being reviewed</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span className="text-sm">Confirmed - Approved & scheduled</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Need Help?</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Questions about your booking or need to make changes?
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => navigate('/contact')} className="w-full">
+                        Contact Our Team
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

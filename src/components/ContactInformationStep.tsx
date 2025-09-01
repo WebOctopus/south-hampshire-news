@@ -19,6 +19,7 @@ interface ContactInformationStepProps {
   pricingBreakdown: any;
   campaignData: any;
   onSaveQuote: (formData: FormData) => Promise<void>;
+  onBookNow?: (formData: FormData) => Promise<void>;
 }
 
 interface FormData {
@@ -42,7 +43,8 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   selectedDuration,
   pricingBreakdown,
   campaignData,
-  onSaveQuote
+  onSaveQuote,
+  onBookNow
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -112,12 +114,11 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
     setSubmitting(true);
     try {
-      await onSaveQuote(formData);
-      // After saving quote, could redirect to booking confirmation or payment
-      toast({
-        title: "Booking Initiated",
-        description: "Your quote has been saved and booking process will begin.",
-      });
+      if (onBookNow) {
+        await onBookNow(formData);
+      } else {
+        await onSaveQuote(formData);
+      }
     } catch (error) {
       console.error('Error booking:', error);
     } finally {
