@@ -6,8 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Calendar } from 'lucide-react';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
+import { calculateLeafletingPrice, formatLeafletPrice } from '@/lib/leafletingCalculator';
 import { usePricingData } from '@/hooks/usePricingData';
+import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 
 interface EditQuoteFormProps {
   quote: any;
@@ -21,6 +25,9 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   onCancel
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
+  const { data: leafletAreas, isLoading: leafletAreasLoading } = useLeafletAreas();
+  const { data: leafletDurations, isLoading: leafletDurationsLoading } = useLeafletCampaignDurations();
+  
   const [formData, setFormData] = useState({
     contact_name: quote.contact_name || '',
     email: quote.email || '',
@@ -29,34 +36,50 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
     title: quote.title || ''
   });
 
-  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof'>(quote.pricing_model || 'fixed');
+  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof' | 'leafleting'>(quote.pricing_model || 'fixed');
   const [selectedAreas, setSelectedAreas] = useState<string[]>(quote.selected_area_ids || []);
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>(quote.bogof_paid_area_ids || []);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>(quote.bogof_free_area_ids || []);
   const [selectedAdSize, setSelectedAdSize] = useState<string>(quote.ad_size_id || '');
   const [selectedDuration, setSelectedDuration] = useState<string>(quote.duration_id || '');
+  const [selectedMonths, setSelectedMonths] = useState<Record<string, string[]>>(quote.selections?.selectedMonths || {});
   const [submitting, setSubmitting] = useState(false);
 
   // Calculate effective areas based on pricing model
   const effectiveSelectedAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
 
-  // Filter ad sizes and durations based on pricing model
-  const availableAdSizes = adSizes?.filter(size => 
-    size.available_for.includes(pricingModel === 'bogof' ? 'subscription' : pricingModel)
-  ) || [];
+  // Get effective areas and data sources based on pricing model
+  const effectiveAreas = pricingModel === 'leafleting' ? leafletAreas : areas;
+  const effectiveDurations = pricingModel === 'leafleting' ? leafletDurations : 
+                            (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
 
-  const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') 
-    ? (subscriptionDurations || [])
-    : (durations || []);
+  // Filter ad sizes and durations based on pricing model
+  const availableAdSizes = pricingModel === 'leafleting' 
+    ? [] // Leafleting doesn't use ad sizes
+    : (adSizes?.filter(size => 
+        size.available_for.includes(pricingModel === 'bogof' ? 'subscription' : pricingModel)
+      ) || []);
 
   // Calculate pricing breakdown
   const pricingBreakdown = React.useMemo(() => {
-    if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0 || !adSizes || !areas) {
+    if (effectiveSelectedAreas.length === 0 || !effectiveAreas) {
+      return null;
+    }
+
+    if (pricingModel === 'leafleting') {
+      if (!selectedDuration || !leafletDurations) return null;
+      const selectedLeafletDurationData = leafletDurations.find(d => d.id === selectedDuration);
+      const durationMultiplier = selectedLeafletDurationData?.months || 1;
+      return calculateLeafletingPrice(effectiveSelectedAreas, leafletAreas || [], durationMultiplier);
+    }
+
+    // Regular advertising pricing
+    if (!selectedAdSize || !selectedDuration || !adSizes || !areas) {
       return null;
     }
 
     const adSize = adSizes.find(size => size.id === selectedAdSize);
-    const duration = relevantDurations.find(d => d.id === selectedDuration);
+    const duration = effectiveDurations?.find(d => d.id === selectedDuration);
     
     if (!adSize || !duration) return null;
 
@@ -69,11 +92,11 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
       isSubscription,
       areas,
       adSizes,
-      relevantDurations,
+      (effectiveDurations as any) || [],
       subscriptionDurations || [],
       [] // volume discounts array - we can add this later if needed
     );
-  }, [selectedAdSize, selectedDuration, effectiveSelectedAreas, pricingModel, bogofPaidAreas, bogofFreeAreas, areas, adSizes, relevantDurations, subscriptionDurations]);
+  }, [selectedAdSize, selectedDuration, effectiveSelectedAreas, pricingModel, bogofPaidAreas, bogofFreeAreas, areas, adSizes, effectiveDurations, subscriptionDurations, leafletAreas, leafletDurations]);
 
   const handleAreaSelection = (areaId: string, checked: boolean) => {
     if (pricingModel === 'bogof') {
@@ -104,10 +127,19 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
     setSubmitting(true);
     try {
       console.log('Starting quote save...');
-      const relevantDurationData = relevantDurations.find(d => d.id === selectedDuration);
-      const durationDiscountPercent = relevantDurationData?.discount_percentage || 0;
-      const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
-      const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+      
+      let monthlyFinal, durationDiscountPercent = 0;
+      
+      if (pricingModel === 'leafleting') {
+        monthlyFinal = pricingBreakdown.finalTotal;
+      } else {
+        const relevantDurationData = effectiveDurations?.find(d => d.id === selectedDuration);
+        // Check if it's a regular duration (has discount_percentage) or leaflet duration
+        const isRegularDuration = relevantDurationData && 'discount_percentage' in relevantDurationData;
+        durationDiscountPercent = isRegularDuration ? (relevantDurationData as any).discount_percentage : 0;
+        const subtotalAfterVolume = pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0);
+        monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+      }
 
       const updatedQuote = {
         contact_name: formData.contact_name,
@@ -116,17 +148,17 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
         company: formData.company || null,
         title: formData.title,
         pricing_model: pricingModel,
-        ad_size_id: selectedAdSize,
+        ad_size_id: pricingModel === 'leafleting' ? null : selectedAdSize,
         duration_id: selectedDuration,
         selected_area_ids: effectiveSelectedAreas,
         bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
-        subtotal: pricingBreakdown.subtotal,
+        subtotal: pricingBreakdown.subtotal || pricingBreakdown.finalTotal,
         final_total: pricingBreakdown.finalTotal,
-        duration_multiplier: pricingBreakdown.durationMultiplier,
+        duration_multiplier: pricingBreakdown.durationMultiplier || 1,
         total_circulation: pricingBreakdown.totalCirculation,
-        volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
+        volume_discount_percent: pricingBreakdown.volumeDiscountPercent || 0,
         duration_discount_percent: durationDiscountPercent,
         pricing_breakdown: JSON.parse(JSON.stringify(pricingBreakdown)),
         selections: {
@@ -135,7 +167,8 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
           selectedDuration,
           selectedAreas,
           bogofPaidAreas,
-          bogofFreeAreas
+          bogofFreeAreas,
+          selectedMonths
         }
       };
 
@@ -150,7 +183,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
     }
   };
 
-  if (pricingLoading) {
+  if (pricingLoading || leafletAreasLoading || leafletDurationsLoading) {
     return (
       <div className="flex justify-center items-center py-8">
         <div>Loading pricing data...</div>
@@ -223,39 +256,49 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
           <CardTitle>Pricing Model</CardTitle>
         </CardHeader>
         <CardContent>
-          <RadioGroup value={pricingModel} onValueChange={(value: 'fixed' | 'bogof') => setPricingModel(value)}>
+          <RadioGroup value={pricingModel} onValueChange={(value: 'fixed' | 'subscription' | 'bogof' | 'leafleting') => setPricingModel(value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="fixed" id="fixed" />
-              <Label htmlFor="fixed">Fixed Rate</Label>
+              <Label htmlFor="fixed">Fixed Term</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="subscription" id="subscription" />
+              <Label htmlFor="subscription">Subscription</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="bogof" id="bogof" />
-              <Label htmlFor="bogof">Buy 1 Get 1 Free</Label>
+              <Label htmlFor="bogof">3+ Repeat Package (BOGOF)</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="leafleting" id="leafleting" />
+              <Label htmlFor="leafleting">Leafleting Service</Label>
             </div>
           </RadioGroup>
         </CardContent>
       </Card>
 
-      {/* Ad Size Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Advertisement Size</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedAdSize} onValueChange={setSelectedAdSize}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select ad size" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableAdSizes.map((size) => (
-                <SelectItem key={size.id} value={size.id}>
-                  {size.name} ({size.dimensions})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      {/* Ad Size Selection - Only for non-leafleting */}
+      {pricingModel !== 'leafleting' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Advertisement Size</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedAdSize} onValueChange={setSelectedAdSize}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select ad size" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableAdSizes.map((size) => (
+                  <SelectItem key={size.id} value={size.id}>
+                    {size.name} ({size.dimensions})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Duration Selection */}
       <Card>
@@ -268,9 +311,10 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
               <SelectValue placeholder="Select duration" />
             </SelectTrigger>
             <SelectContent>
-              {relevantDurations.map((duration) => (
+              {effectiveDurations?.map((duration) => (
                 <SelectItem key={duration.id} value={duration.id}>
                   {duration.name}
+                  {pricingModel === 'leafleting' && ` (${duration.months} months)`}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -282,12 +326,13 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
       <Card>
         <CardHeader>
           <CardTitle>
-            {pricingModel === 'bogof' ? 'Area Selection (Buy 1 Get 1 Free)' : 'Distribution Areas'}
+            {pricingModel === 'bogof' ? 'Area Selection (Buy 1 Get 1 Free)' : 
+             pricingModel === 'leafleting' ? 'Leafleting Distribution Areas' : 'Distribution Areas'}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {areas?.map((area) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {effectiveAreas?.map((area) => {
               const isSelected = pricingModel === 'bogof' 
                 ? bogofPaidAreas.includes(area.id) || bogofFreeAreas.includes(area.id)
                 : selectedAreas.includes(area.id);
@@ -295,19 +340,70 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
               const isFree = bogofFreeAreas.includes(area.id);
 
               return (
-                <div key={area.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={area.id}
-                    checked={isSelected}
-                    onCheckedChange={(checked) => handleAreaSelection(area.id, checked as boolean)}
-                    disabled={pricingModel === 'bogof' && bogofPaidAreas.length === 1 && bogofFreeAreas.length === 1 && !isSelected}
-                  />
-                  <Label htmlFor={area.id} className="text-sm">
-                    {area.name}
-                    {pricingModel === 'bogof' && isPaid && <span className="ml-1 text-green-600">(Paid)</span>}
-                    {pricingModel === 'bogof' && isFree && <span className="ml-1 text-blue-600">(Free)</span>}
-                  </Label>
-                </div>
+                <Card key={area.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id={area.id}
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleAreaSelection(area.id, checked as boolean)}
+                        disabled={pricingModel === 'bogof' && bogofPaidAreas.length === 1 && bogofFreeAreas.length === 1 && !isSelected}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor={area.id} className="text-sm font-medium cursor-pointer">
+                            {area.name}
+                            {pricingModel === 'bogof' && isPaid && <span className="ml-1 text-green-600">(Paid)</span>}
+                            {pricingModel === 'bogof' && isFree && <span className="ml-1 text-blue-600">(Free)</span>}
+                          </Label>
+                          <Badge variant="outline" className="text-xs">
+                            {pricingModel === 'leafleting' 
+                              ? `${area.bimonthly_circulation?.toLocaleString() || 0} homes`
+                              : `${area.circulation?.toLocaleString() || 0} homes`
+                            }
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>
+                            Postcodes: {pricingModel === 'leafleting' 
+                              ? area.postcodes || 'N/A'
+                              : (Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A')
+                            }
+                          </span>
+                        </div>
+                        
+                        {pricingModel === 'leafleting' && area.price_with_vat && (
+                          <div className="text-xs font-medium text-primary">
+                            Price: {formatLeafletPrice(area.price_with_vat)} (inc. VAT)
+                          </div>
+                        )}
+                        
+                        {/* Schedule Information */}
+                        {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-1 text-xs font-medium text-gray-700 mb-1">
+                              <Calendar className="h-3 w-3" />
+                              Publication Schedule:
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-xs">
+                              <div>
+                                <span className="font-medium">Copy:</span> {area.schedule[0]?.copyDeadline || 'N/A'}
+                              </div>
+                              <div>
+                                <span className="font-medium">Print:</span> {area.schedule[0]?.printDeadline || 'N/A'}
+                              </div>
+                              <div>
+                                <span className="font-medium">Delivery:</span> {area.schedule[0]?.deliveryDate || 'N/A'}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
@@ -322,20 +418,52 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>{formatPrice(pricingBreakdown.subtotal)}</span>
-              </div>
-              {pricingBreakdown.volumeDiscount > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                  <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
-                </div>
+              {pricingModel === 'leafleting' ? (
+                <>
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{formatLeafletPrice(pricingBreakdown.subtotal)}</span>
+                  </div>
+                  {pricingBreakdown.volumeDiscountPercent > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                      <span>-{formatLeafletPrice(pricingBreakdown.volumeDiscount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                    <span>Total Price:</span>
+                    <span>{formatLeafletPrice(pricingBreakdown.finalTotal)}</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Circulation: {pricingBreakdown.totalCirculation?.toLocaleString()} homes
+                  </div>
+                  {pricingBreakdown.totalCirculation && pricingBreakdown.finalTotal && (
+                    <div className="text-sm text-muted-foreground">
+                      CPM: {formatLeafletPrice((pricingBreakdown.finalTotal / pricingBreakdown.totalCirculation) * 1000)}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{formatPrice(pricingBreakdown.subtotal)}</span>
+                  </div>
+                  {pricingBreakdown.volumeDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                      <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                    <span>Total Monthly Price:</span>
+                    <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Circulation: {pricingBreakdown.totalCirculation?.toLocaleString()} homes
+                  </div>
+                </>
               )}
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
-                <span>Total Monthly Price:</span>
-                <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
-              </div>
             </div>
           </CardContent>
         </Card>
