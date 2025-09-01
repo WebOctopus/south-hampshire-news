@@ -41,17 +41,17 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   const effectiveSelectedAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
 
   // Filter ad sizes and durations based on pricing model
-  const availableAdSizes = adSizes.filter(size => 
+  const availableAdSizes = adSizes?.filter(size => 
     size.available_for.includes(pricingModel === 'bogof' ? 'subscription' : pricingModel)
-  );
+  ) || [];
 
   const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') 
-    ? subscriptionDurations 
-    : durations;
+    ? (subscriptionDurations || [])
+    : (durations || []);
 
   // Calculate pricing breakdown
   const pricingBreakdown = React.useMemo(() => {
-    if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
+    if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0 || !adSizes || !areas) {
       return null;
     }
 
@@ -70,7 +70,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
       areas,
       adSizes,
       relevantDurations,
-      subscriptionDurations,
+      subscriptionDurations || [],
       [] // volume discounts array - we can add this later if needed
     );
   }, [selectedAdSize, selectedDuration, effectiveSelectedAreas, pricingModel, bogofPaidAreas, bogofFreeAreas, areas, adSizes, relevantDurations, subscriptionDurations]);
@@ -287,7 +287,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {areas.map((area) => {
+            {areas?.map((area) => {
               const isSelected = pricingModel === 'bogof' 
                 ? bogofPaidAreas.includes(area.id) || bogofFreeAreas.includes(area.id)
                 : selectedAreas.includes(area.id);
