@@ -2,16 +2,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Calendar, MapPin, Users, TrendingUp, Edit, Download, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, TrendingUp, Edit, Download, CheckCircle, Trash2 } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 
 interface QuoteConversionCardProps {
   quote: any;
   onEdit: (quote: any) => void;
   onView: (quote: any) => void;
+  onDelete?: (quoteId: string) => void;
+  isDeleting?: boolean;
 }
 
-export default function QuoteConversionCard({ quote, onEdit, onView }: QuoteConversionCardProps) {
+export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, isDeleting }: QuoteConversionCardProps) {
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'active': return 'bg-green-100 text-green-800 border-green-200';
@@ -111,7 +113,7 @@ export default function QuoteConversionCard({ quote, onEdit, onView }: QuoteConv
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <Button 
             variant="outline" 
             size="sm"
@@ -130,6 +132,18 @@ export default function QuoteConversionCard({ quote, onEdit, onView }: QuoteConv
             <Download className="h-4 w-4 mr-1" />
             View PDF
           </Button>
+          {onDelete && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => onDelete(quote.id)}
+              disabled={isDeleting}
+              className="flex items-center text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          )}
           <Button 
             size="sm"
             className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center"

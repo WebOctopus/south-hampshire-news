@@ -1022,6 +1022,8 @@ const Dashboard = () => {
                             quote={quote}
                             onEdit={setEditingQuote}
                             onView={setViewingQuote}
+                            onDelete={handleDeleteQuote}
+                            isDeleting={deletingQuoteId === quote.id}
                           />
                         ))}
                       </div>
