@@ -81,9 +81,15 @@ const Navigation = () => {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setIsMenuOpen(false);
-    setIsAdmin(false);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAdmin(false);
+      setIsMenuOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const homeDropdownItems = [
