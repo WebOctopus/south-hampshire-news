@@ -99,26 +99,39 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   }, [selectedAdSize, selectedDuration, effectiveSelectedAreas, pricingModel, bogofPaidAreas, bogofFreeAreas, areas, adSizes, effectiveDurations, subscriptionDurations, leafletAreas, leafletDurations]);
 
   const handleAreaSelection = (areaId: string, checked: boolean) => {
-    if (pricingModel === 'bogof') {
-      // BOGOF logic - handle paid and free areas
-      if (checked) {
-        if (bogofPaidAreas.length === 0) {
-          setBogofPaidAreas([areaId]);
-        } else if (bogofPaidAreas.length === 1 && !bogofPaidAreas.includes(areaId)) {
-          setBogofFreeAreas([areaId]);
-        }
-      } else {
-        setBogofPaidAreas(prev => prev.filter(id => id !== areaId));
-        setBogofFreeAreas(prev => prev.filter(id => id !== areaId));
+    // Regular area selection for fixed/subscription/leafleting
+    setSelectedAreas(prev => 
+      checked 
+        ? [...prev, areaId]
+        : prev.filter(id => id !== areaId)
+    );
+  };
+
+  const handleBogofPaidAreaChange = (areaId: string, checked: boolean) => {
+    setBogofPaidAreas(prev => {
+      const newPaidAreas = checked ? [...prev, areaId] : prev.filter(id => id !== areaId);
+      
+      // If we're reducing paid areas, also reduce free areas to match
+      if (!checked && newPaidAreas.length < prev.length) {
+        setBogofFreeAreas(currentFreeAreas => {
+          // If we have more free areas than paid areas after reduction, trim the free areas
+          if (currentFreeAreas.length > newPaidAreas.length) {
+            const excessCount = currentFreeAreas.length - newPaidAreas.length;
+            // Remove the excess free areas (from the end of the array)
+            return currentFreeAreas.slice(0, currentFreeAreas.length - excessCount);
+          }
+          return currentFreeAreas;
+        });
       }
-    } else {
-      // Regular area selection
-      setSelectedAreas(prev => 
-        checked 
-          ? [...prev, areaId]
-          : prev.filter(id => id !== areaId)
-      );
-    }
+      
+      return newPaidAreas;
+    });
+  };
+
+  const handleBogofFreeAreaChange = (areaId: string, checked: boolean) => {
+    setBogofFreeAreas(prev => 
+      checked ? [...prev, areaId] : prev.filter(id => id !== areaId)
+    );
   };
 
   const handleSave = async () => {
@@ -331,82 +344,184 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {effectiveAreas?.map((area) => {
-              const isSelected = pricingModel === 'bogof' 
-                ? bogofPaidAreas.includes(area.id) || bogofFreeAreas.includes(area.id)
-                : selectedAreas.includes(area.id);
-              const isPaid = bogofPaidAreas.includes(area.id);
-              const isFree = bogofFreeAreas.includes(area.id);
-
-              return (
-                <Card key={area.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        id={area.id}
-                        checked={isSelected}
-                        onCheckedChange={(checked) => handleAreaSelection(area.id, checked as boolean)}
-                        disabled={pricingModel === 'bogof' && bogofPaidAreas.length === 1 && bogofFreeAreas.length === 1 && !isSelected}
-                        className="mt-1"
-                      />
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor={area.id} className="text-sm font-medium cursor-pointer">
-                            {area.name}
-                            {pricingModel === 'bogof' && isPaid && <span className="ml-1 text-green-600">(Paid)</span>}
-                            {pricingModel === 'bogof' && isFree && <span className="ml-1 text-blue-600">(Free)</span>}
+          {/* BOGOF Paid Areas Section */}
+          {pricingModel === 'bogof' && (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Select Paid Areas</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {effectiveAreas?.map((area) => (
+                    <Card key={area.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-start space-x-3">
+                          <Checkbox
+                            id={`paid-${area.id}`}
+                            checked={bogofPaidAreas.includes(area.id)}
+                            onCheckedChange={(checked) => handleBogofPaidAreaChange(area.id, checked as boolean)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 space-y-2" onClick={() => handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id))}>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor={`paid-${area.id}`} className="text-sm font-medium cursor-pointer">
+                                {area.name}
+                              </Label>
+                              <Badge variant="outline" className="text-xs">
+                                {(area as any).circulation?.toLocaleString() || 0} homes
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>
+                                Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A'}
+                              </span>
+                            </div>
+                            
+                            {/* Schedule Information */}
+                            {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <div className="flex items-center gap-1 text-xs font-medium text-gray-700 mb-1">
+                                  <Calendar className="h-3 w-3" />
+                                  Publication Schedule:
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                  <div>
+                                    <span className="font-medium">Copy:</span> {(area.schedule[0] as any)?.copyDeadline || (area.schedule[0] as any)?.copy_deadline || 'N/A'}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Print:</span> {(area.schedule[0] as any)?.printDeadline || (area.schedule[0] as any)?.print_deadline || 'N/A'}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Delivery:</span> {(area.schedule[0] as any)?.deliveryDate || (area.schedule[0] as any)?.delivery_date || 'N/A'}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+              
+              {/* BOGOF Free Areas Section */}
+              {bogofPaidAreas.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-green-600">Select Your FREE Areas!</h4>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm text-green-700 font-medium mb-3">
+                      🎁 You can select up to {bogofPaidAreas.length} FREE area{bogofPaidAreas.length > 1 ? 's' : ''} to go with your {bogofPaidAreas.length} paid area{bogofPaidAreas.length > 1 ? 's' : ''}!
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {effectiveAreas?.filter(area => !bogofPaidAreas.includes(area.id)).map((area) => (
+                         <div key={area.id} className="flex items-center space-x-3 p-3 bg-white rounded border border-green-200">
+                           <Checkbox
+                             id={`free-${area.id}`}
+                             checked={bogofFreeAreas.includes(area.id)}
+                             onCheckedChange={(checked) => handleBogofFreeAreaChange(area.id, checked as boolean)}
+                             disabled={!bogofFreeAreas.includes(area.id) && bogofFreeAreas.length >= bogofPaidAreas.length}
+                           />
+                          <Label htmlFor={`free-${area.id}`} className="text-sm cursor-pointer flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">{area.name}</span>
+                              <Badge variant="secondary" className="text-xs text-green-700">FREE</Badge>
+                            </div>
+                             <div className="text-xs text-muted-foreground mt-1">
+                               {(area as any).circulation?.toLocaleString() || 0} homes
+                             </div>
+                            {/* Schedule Information for Free Areas */}
+                            {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 && (
+                              <div className="text-xs text-gray-600 mt-2">
+                                <div className="font-medium mb-1">Publication Schedule:</div>
+                                 <div className="grid grid-cols-3 gap-1">
+                                   <div>Copy: {(area.schedule[0] as any)?.copyDeadline || (area.schedule[0] as any)?.copy_deadline || 'N/A'}</div>
+                                   <div>Print: {(area.schedule[0] as any)?.printDeadline || (area.schedule[0] as any)?.print_deadline || 'N/A'}</div>
+                                   <div>Delivery: {(area.schedule[0] as any)?.deliveryDate || (area.schedule[0] as any)?.delivery_date || 'N/A'}</div>
+                                 </div>
+                              </div>
+                            )}
                           </Label>
-                          <Badge variant="outline" className="text-xs">
-                            {pricingModel === 'leafleting' 
-                              ? `${area.bimonthly_circulation?.toLocaleString() || 0} homes`
-                              : `${area.circulation?.toLocaleString() || 0} homes`
-                            }
-                          </Badge>
                         </div>
-                        
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>
-                            Postcodes: {pricingModel === 'leafleting' 
-                              ? area.postcodes || 'N/A'
-                              : (Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A')
-                            }
-                          </span>
-                        </div>
-                        
-                        {pricingModel === 'leafleting' && area.price_with_vat && (
-                          <div className="text-xs font-medium text-primary">
-                            Price: {formatLeafletPrice(area.price_with_vat)} (inc. VAT)
-                          </div>
-                        )}
-                        
-                        {/* Schedule Information */}
-                        {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-1 text-xs font-medium text-gray-700 mb-1">
-                              <Calendar className="h-3 w-3" />
-                              Publication Schedule:
-                            </div>
-                            <div className="grid grid-cols-3 gap-2 text-xs">
-                              <div>
-                                <span className="font-medium">Copy:</span> {area.schedule[0]?.copyDeadline || 'N/A'}
-                              </div>
-                              <div>
-                                <span className="font-medium">Print:</span> {area.schedule[0]?.printDeadline || 'N/A'}
-                              </div>
-                              <div>
-                                <span className="font-medium">Delivery:</span> {area.schedule[0]?.deliveryDate || 'N/A'}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      ))}
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Non-BOGOF Area Selection */}
+          {pricingModel !== 'bogof' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {effectiveAreas?.map((area) => {
+                const isSelected = selectedAreas.includes(area.id);
+
+                return (
+                  <Card key={area.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id={area.id}
+                          checked={isSelected}
+                          onCheckedChange={(checked) => handleAreaSelection(area.id, checked as boolean)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor={area.id} className="text-sm font-medium cursor-pointer">
+                              {area.name}
+                            </Label>
+                            <Badge variant="outline" className="text-xs">
+                              {pricingModel === 'leafleting' 
+                                ? `${area.bimonthly_circulation?.toLocaleString() || 0} homes`
+                                : `${area.circulation?.toLocaleString() || 0} homes`
+                              }
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>
+                              Postcodes: {pricingModel === 'leafleting' 
+                                ? area.postcodes || 'N/A'
+                                : (Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A')
+                              }
+                            </span>
+                          </div>
+                          
+                          {pricingModel === 'leafleting' && area.price_with_vat && (
+                            <div className="text-xs font-medium text-primary">
+                              Price: {formatLeafletPrice(area.price_with_vat)} (inc. VAT)
+                            </div>
+                          )}
+                          
+                          {/* Schedule Information */}
+                          {area.schedule && Array.isArray(area.schedule) && area.schedule.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-gray-100">
+                              <div className="flex items-center gap-1 text-xs font-medium text-gray-700 mb-1">
+                                <Calendar className="h-3 w-3" />
+                                Publication Schedule:
+                              </div>
+                               <div className="grid grid-cols-3 gap-2 text-xs">
+                                 <div>
+                                   <span className="font-medium">Copy:</span> {(area.schedule[0] as any)?.copyDeadline || (area.schedule[0] as any)?.copy_deadline || 'N/A'}
+                                 </div>
+                                 <div>
+                                   <span className="font-medium">Print:</span> {(area.schedule[0] as any)?.printDeadline || (area.schedule[0] as any)?.print_deadline || 'N/A'}
+                                 </div>
+                                 <div>
+                                   <span className="font-medium">Delivery:</span> {(area.schedule[0] as any)?.deliveryDate || (area.schedule[0] as any)?.delivery_date || 'N/A'}
+                                 </div>
+                               </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
