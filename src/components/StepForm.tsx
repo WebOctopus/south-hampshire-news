@@ -173,14 +173,39 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
               Step {currentStep + 1} of {totalSteps}
             </div>
             
-            <Button
-              onClick={nextStep}
-              className="flex items-center gap-2"
-            >
-              {stepLabels?.nextButtonLabels?.[currentStep] || 
-               (currentStep === totalSteps - 1 ? 'Complete' : 'Next Step')}
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+            {currentStep === totalSteps - 1 ? (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if ((window as any).handleContactFormSave) {
+                      (window as any).handleContactFormSave();
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  Save My Quote
+                </Button>
+                <Button
+                  onClick={() => {
+                    if ((window as any).handleContactFormBook) {
+                      (window as any).handleContactFormBook();
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  Book Now
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={nextStep}
+                className="flex items-center gap-2"
+              >
+                {stepLabels?.nextButtonLabels?.[currentStep] || 'Next Step'}
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         )}
       </div>

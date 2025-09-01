@@ -125,13 +125,15 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     }
   };
 
-  // Expose the handleSaveQuote function to parent component
+  // Expose the functions to parent component
   React.useEffect(() => {
     (window as any).handleContactFormSave = handleSaveQuote;
+    (window as any).handleContactFormBook = handleBookNow;
     return () => {
       delete (window as any).handleContactFormSave;
+      delete (window as any).handleContactFormBook;
     };
-  }, [handleSaveQuote]);
+  }, [handleSaveQuote, handleBookNow]);
 
   return (
     <div className="space-y-8">
@@ -271,26 +273,6 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
         </CardContent>
       </Card>
 
-      {/* Action buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button 
-          onClick={handleSaveQuote}
-          disabled={submitting}
-          variant="outline"
-          size="lg"
-          className="flex-1 sm:flex-none"
-        >
-          {submitting ? "Saving..." : "Save My Quote"}
-        </Button>
-        <Button 
-          onClick={handleBookNow}
-          disabled={submitting}
-          size="lg"
-          className="flex-1 sm:flex-none"
-        >
-          {submitting ? "Processing..." : "Book Now"}
-        </Button>
-      </div>
       
       {submitting && (
         <div className="text-center">
