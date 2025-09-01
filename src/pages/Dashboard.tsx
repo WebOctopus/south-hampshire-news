@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -28,6 +28,7 @@ import ROICalculator from '@/components/dashboard/ROICalculator';
 import CampaignTimeline from '@/components/dashboard/CampaignTimeline';
 import DeleteQuoteDialog from '@/components/dashboard/DeleteQuoteDialog';
 import BookingCard from '@/components/dashboard/BookingCard';
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -179,11 +180,9 @@ const Dashboard = () => {
       
       if (isNewUserFromCalculator === 'true' || justSavedQuote === 'true') {
         setActiveTab('quotes');
-        // Clean up the flags
         localStorage.removeItem('newUserFromCalculator');
         localStorage.removeItem('justSavedQuote');
         
-        // Show additional welcome message for new users
         if (isNewUserFromCalculator === 'true') {
           setTimeout(() => {
             toast({
@@ -217,11 +216,9 @@ const Dashboard = () => {
         await loadQuotes();
         setActiveTab('quotes');
         
-        // Check if this is a new user from the calculator
         const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
         if (isNewUserFromCalculator === 'true') {
           localStorage.removeItem('newUserFromCalculator');
-          // Small delay to let the quote save toast show first
           setTimeout(() => {
             setShowPasswordSetup(true);
           }, 1500);
@@ -262,7 +259,6 @@ const Dashboard = () => {
 
     try {
       if (editingBusiness) {
-        // Update existing business
         const { error } = await supabase
           .from('businesses')
           .update(formData)
@@ -278,7 +274,6 @@ const Dashboard = () => {
         setEditingBusiness(null);
         setActiveTab('listings');
       } else {
-        // Create new business
         const { error } = await supabase
           .from('businesses')
           .insert([{
@@ -295,7 +290,6 @@ const Dashboard = () => {
         });
       }
 
-      // Reset form
       setFormData({
         name: '',
         description: '',
@@ -363,7 +357,6 @@ const Dashboard = () => {
 
     try {
       if (editingEvent) {
-        // Update existing event
         const { error } = await supabase
           .from('events')
           .update(eventFormData)
@@ -379,7 +372,6 @@ const Dashboard = () => {
         setEditingEvent(null);
         setActiveTab('events');
       } else {
-        // Create new event
         const { error } = await supabase
           .from('events')
           .insert([{
@@ -395,7 +387,6 @@ const Dashboard = () => {
         });
       }
 
-      // Reset form
       setEventFormData({
         title: '',
         description: '',
@@ -522,729 +513,756 @@ const Dashboard = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <Navigation />
-      <main className="py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <WelcomeHeader user={user} quotes={quotes} />
+  const renderCreateBusinessForm = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          {editingBusiness ? 'Edit Business Listing' : 'Create New Business Listing'}
+        </CardTitle>
+        {editingBusiness && (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelEdit}
+              size="sm"
+            >
+              Cancel Edit
+            </Button>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">
+                Business Name *
+              </label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                required
+                placeholder="Enter your business name"
+              />
+            </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger 
-                value="create" 
-                disabled={hasExistingBusiness && !editingBusiness}
-              >
-                {editingBusiness ? 'Edit Listing' : 'Create New Listing'}
-              </TabsTrigger>
-              <TabsTrigger value="listings">Your Listings ({businesses.length})</TabsTrigger>
-              <TabsTrigger value="create-event">
-                {editingEvent ? 'Edit Event' : 'Create Event'}
-              </TabsTrigger>
-              <TabsTrigger value="events">Your Events ({events.length})</TabsTrigger>
-              <TabsTrigger value="quotes">Saved Quotes ({quotes.length})</TabsTrigger>
-              <TabsTrigger value="bookings">Bookings ({bookings.length})</TabsTrigger>
-            </TabsList>
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium mb-1">
+                Category
+              </label>
+              <Select value={formData.category_id} onValueChange={(value) => handleInputChange('category_id', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <TabsContent value="create">
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {editingBusiness ? 'Edit Business Listing' : 'Create New Business Listing'}
-                  </CardTitle>
-                  {editingBusiness && (
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancelEdit}
-                        size="sm"
-                      >
-                        Cancel Edit
-                      </Button>
-                    </div>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium mb-1">
-                          Business Name *
-                        </label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => handleInputChange('name', e.target.value)}
-                          required
-                          placeholder="Enter your business name"
-                        />
-                      </div>
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium mb-1">
+              Description
+            </label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="Describe your business..."
+              rows={4}
+            />
+          </div>
 
-                      <div>
-                        <label htmlFor="category" className="block text-sm font-medium mb-1">
-                          Category
-                        </label>
-                        <Select value={formData.category_id} onValueChange={(value) => handleInputChange('category_id', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium mb-1">
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="business@example.com"
+              />
+            </div>
 
-                    <div>
-                      <label htmlFor="description" className="block text-sm font-medium mb-1">
-                        Description
-                      </label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => handleInputChange('description', e.target.value)}
-                        placeholder="Describe your business..."
-                        rows={4}
-                      />
-                    </div>
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium mb-1">
+                Phone
+              </label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                placeholder="01234 567890"
+              />
+            </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium mb-1">
-                          Email
-                        </label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          placeholder="business@example.com"
-                        />
-                      </div>
+            <div>
+              <label htmlFor="website" className="block text-sm font-medium mb-1">
+                Website
+              </label>
+              <Input
+                id="website"
+                value={formData.website}
+                onChange={(e) => handleInputChange('website', e.target.value)}
+                placeholder="https://www.yourbusiness.com"
+              />
+            </div>
+          </div>
 
-                      <div>
-                        <label htmlFor="phone" className="block text-sm font-medium mb-1">
-                          Phone
-                        </label>
-                        <Input
-                          id="phone"
-                          value={formData.phone}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
-                          placeholder="01234 567890"
-                        />
-                      </div>
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Address</h3>
+            
+            <div>
+              <label htmlFor="address_line1" className="block text-sm font-medium mb-1">
+                Address Line 1
+              </label>
+              <Input
+                id="address_line1"
+                value={formData.address_line1}
+                onChange={(e) => handleInputChange('address_line1', e.target.value)}
+                placeholder="123 High Street"
+              />
+            </div>
 
-                      <div>
-                        <label htmlFor="website" className="block text-sm font-medium mb-1">
-                          Website
-                        </label>
-                        <Input
-                          id="website"
-                          value={formData.website}
-                          onChange={(e) => handleInputChange('website', e.target.value)}
-                          placeholder="https://www.yourbusiness.com"
-                        />
-                      </div>
-                    </div>
+            <div>
+              <label htmlFor="address_line2" className="block text-sm font-medium mb-1">
+                Address Line 2
+              </label>
+              <Input
+                id="address_line2"
+                value={formData.address_line2}
+                onChange={(e) => handleInputChange('address_line2', e.target.value)}
+                placeholder="Suite 100"
+              />
+            </div>
 
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Address</h3>
-                      
-                      <div>
-                        <label htmlFor="address_line1" className="block text-sm font-medium mb-1">
-                          Address Line 1
-                        </label>
-                        <Input
-                          id="address_line1"
-                          value={formData.address_line1}
-                          onChange={(e) => handleInputChange('address_line1', e.target.value)}
-                          placeholder="123 High Street"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="address_line2" className="block text-sm font-medium mb-1">
-                          Address Line 2
-                        </label>
-                        <Input
-                          id="address_line2"
-                          value={formData.address_line2}
-                          onChange={(e) => handleInputChange('address_line2', e.target.value)}
-                          placeholder="Suite 100"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="city" className="block text-sm font-medium mb-1">
-                            City
-                          </label>
-                          <Input
-                            id="city"
-                            value={formData.city}
-                            onChange={(e) => handleInputChange('city', e.target.value)}
-                            placeholder="London"
-                          />
-                        </div>
-
-                        <div>
-                          <label htmlFor="postcode" className="block text-sm font-medium mb-1">
-                            Postcode
-                          </label>
-                          <Input
-                            id="postcode"
-                            value={formData.postcode}
-                            onChange={(e) => handleInputChange('postcode', e.target.value)}
-                            placeholder="SW1A 1AA"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-community-green hover:bg-green-600"
-                      disabled={submitting || !formData.name}
-                    >
-                      {submitting 
-                        ? (editingBusiness ? 'Updating Listing...' : 'Creating Listing...') 
-                        : (editingBusiness ? 'Update Business Listing' : 'Create Business Listing')
-                      }
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="listings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Business Listings</CardTitle>
-                  {hasExistingBusiness && (
-                    <p className="text-sm text-gray-600">
-                      You can only have one business listing per account. To add a different business, please edit your existing listing.
-                    </p>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  {businesses.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>You haven't created any business listings yet.</p>
-                      <p className="mt-2">Click on "Create New Listing" to get started.</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Business Name</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Location</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {businesses.map((business) => (
-                            <TableRow key={business.id}>
-                              <TableCell className="font-medium">{business.name}</TableCell>
-                              <TableCell>
-                                {business.business_categories?.name || 'No category'}
-                              </TableCell>
-                              <TableCell>
-                                {business.city ? `${business.city}${business.postcode ? ', ' + business.postcode : ''}` : 'No location'}
-                              </TableCell>
-                              <TableCell>
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  business.is_active 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-red-100 text-red-800'
-                                }`}>
-                                  {business.is_active ? 'Active' : 'Inactive'}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleEdit(business)}
-                                  className="flex items-center gap-2"
-                                >
-                                  <Edit size={14} />
-                                  Edit
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="create-event">
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {editingEvent ? 'Edit Event' : 'Create New Event'}
-                  </CardTitle>
-                  {editingEvent && (
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingEvent(null);
-                          setEventFormData({
-                            title: '',
-                            description: '',
-                            date: '',
-                            time: '',
-                            location: '',
-                            area: '',
-                            postcode: '',
-                            organizer: '',
-                            category: '',
-                            type: ''
-                          });
-                        }}
-                        size="sm"
-                      >
-                        Cancel Edit
-                      </Button>
-                    </div>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleEventSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="event-title" className="block text-sm font-medium mb-1">
-                          Event Title *
-                        </label>
-                        <Input
-                          id="event-title"
-                          value={eventFormData.title}
-                          onChange={(e) => handleEventInputChange('title', e.target.value)}
-                          required
-                          placeholder="Enter event title"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="event-organizer" className="block text-sm font-medium mb-1">
-                          Organizer
-                        </label>
-                        <Input
-                          id="event-organizer"
-                          value={eventFormData.organizer}
-                          onChange={(e) => handleEventInputChange('organizer', e.target.value)}
-                          placeholder="Event organizer"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label htmlFor="event-description" className="block text-sm font-medium mb-1">
-                        Description
-                      </label>
-                      <Textarea
-                        id="event-description"
-                        value={eventFormData.description}
-                        onChange={(e) => handleEventInputChange('description', e.target.value)}
-                        placeholder="Describe your event..."
-                        rows={4}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="event-date" className="block text-sm font-medium mb-1">
-                          Date *
-                        </label>
-                        <Input
-                          id="event-date"
-                          type="date"
-                          value={eventFormData.date}
-                          onChange={(e) => handleEventInputChange('date', e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="event-time" className="block text-sm font-medium mb-1">
-                          Time *
-                        </label>
-                        <Input
-                          id="event-time"
-                          type="time"
-                          value={eventFormData.time}
-                          onChange={(e) => handleEventInputChange('time', e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label htmlFor="event-location" className="block text-sm font-medium mb-1">
-                          Location *
-                        </label>
-                        <Input
-                          id="event-location"
-                          value={eventFormData.location}
-                          onChange={(e) => handleEventInputChange('location', e.target.value)}
-                          required
-                          placeholder="Event venue"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="event-area" className="block text-sm font-medium mb-1">
-                          Area *
-                        </label>
-                        <Input
-                          id="event-area"
-                          value={eventFormData.area}
-                          onChange={(e) => handleEventInputChange('area', e.target.value)}
-                          required
-                          placeholder="City/Town"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="event-postcode" className="block text-sm font-medium mb-1">
-                          Postcode
-                        </label>
-                        <Input
-                          id="event-postcode"
-                          value={eventFormData.postcode}
-                          onChange={(e) => handleEventInputChange('postcode', e.target.value)}
-                          placeholder="PO1 2AB"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="event-category" className="block text-sm font-medium mb-1">
-                          Category *
-                        </label>
-                        <Select value={eventFormData.category} onValueChange={(value) => handleEventInputChange('category', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Arts & Culture">Arts & Culture</SelectItem>
-                            <SelectItem value="Community Activities">Community Activities</SelectItem>
-                            <SelectItem value="Food & Drink">Food & Drink</SelectItem>
-                            <SelectItem value="Music & Concerts">Music & Concerts</SelectItem>
-                            <SelectItem value="Theatre & Shows">Theatre & Shows</SelectItem>
-                            <SelectItem value="Sports & Fitness">Sports & Fitness</SelectItem>
-                            <SelectItem value="Education">Education</SelectItem>
-                            <SelectItem value="Business">Business</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <label htmlFor="event-type" className="block text-sm font-medium mb-1">
-                          Type *
-                        </label>
-                        <Select value={eventFormData.type} onValueChange={(value) => handleEventInputChange('type', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Festival">Festival</SelectItem>
-                            <SelectItem value="Workshop">Workshop</SelectItem>
-                            <SelectItem value="Concert">Concert</SelectItem>
-                            <SelectItem value="Theatre">Theatre</SelectItem>
-                            <SelectItem value="Exhibition">Exhibition</SelectItem>
-                            <SelectItem value="Comedy">Comedy</SelectItem>
-                            <SelectItem value="Sports">Sports</SelectItem>
-                            <SelectItem value="Film">Film</SelectItem>
-                            <SelectItem value="Market">Market</SelectItem>
-                            <SelectItem value="Conference">Conference</SelectItem>
-                            <SelectItem value="Meetup">Meetup</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-community-green hover:bg-green-600"
-                      disabled={submitting || !eventFormData.title || !eventFormData.date || !eventFormData.time || !eventFormData.location || !eventFormData.area || !eventFormData.category || !eventFormData.type}
-                    >
-                      {submitting 
-                        ? (editingEvent ? 'Updating Event...' : 'Creating Event...') 
-                        : (editingEvent ? 'Update Event' : 'Create Event')
-                      }
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="events">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar size={20} />
-                    Your Events
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {events.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <Calendar size={48} className="mx-auto mb-4 text-gray-400" />
-                      <p>You haven't created any events yet.</p>
-                      <p className="mt-2">Click on "Create Event" to get started.</p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Event Title</TableHead>
-                            <TableHead>Date & Time</TableHead>
-                            <TableHead>Location</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {events.map((event) => (
-                            <TableRow key={event.id}>
-                              <TableCell className="font-medium">{event.title}</TableCell>
-                              <TableCell>
-                                {new Date(event.date).toLocaleDateString()} at {event.time}
-                              </TableCell>
-                              <TableCell>
-                                {event.location}, {event.area}
-                              </TableCell>
-                              <TableCell>{event.category}</TableCell>
-                              <TableCell>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditEvent(event)}
-                                    className="flex items-center gap-1"
-                                  >
-                                    <Edit size={14} />
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteEvent(event.id)}
-                                    className="flex items-center gap-1 text-red-600 hover:text-red-700"
-                                  >
-                                    <Trash2 size={14} />
-                                    Delete
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="quotes">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Quotes Column */}
-                <div className="lg:col-span-2 space-y-6">
-                  {quotes.length > 0 ? (
-                    <>
-                      <div className="grid gap-6">
-                        {quotes.map((quote) => (
-                          <QuoteConversionCard 
-                            key={quote.id}
-                            quote={quote}
-                            onEdit={setEditingQuote}
-                            onView={setViewingQuote}
-                            onDelete={handleDeleteQuoteClick}
-                            isDeleting={deletingQuoteId === quote.id}
-                          />
-                        ))}
-                      </div>
-                      
-                      {/* ROI Calculator for all quotes */}
-                      <ROICalculator 
-                        totalCirculation={quotes.reduce((sum, q) => sum + (q.total_circulation || 0), 0)}
-                        totalInvestment={quotes.reduce((sum, q) => sum + (q.final_total || 0), 0)}
-                      />
-                    </>
-                  ) : (
-                    <Card className="text-center py-12">
-                      <CardContent>
-                        <div className="mb-4">
-                          <Calendar className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-                          <h3 className="text-xl font-semibold text-gray-600 mb-2">No Saved Quotes Yet</h3>
-                          <p className="text-gray-500 mb-6">
-                            Ready to reach thousands of local customers? Create your first advertising quote!
-                          </p>
-                        </div>
-                        <Button 
-                          size="lg" 
-                          className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white"
-                          onClick={() => navigate('/advertising')}
-                        >
-                          Create Your First Quote
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Sidebar with conversion elements */}
-                <div className="space-y-6">
-                  <UrgencyAlerts />
-                  <SuccessStories />
-                  {quotes.length > 0 && quotes[0] && (
-                    <CampaignTimeline quote={quotes[0]} />
-                  )}
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium mb-1">
+                  City
+                </label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  placeholder="London"
+                />
               </div>
 
-      {/* Quote Details Dialog */}
+              <div>
+                <label htmlFor="postcode" className="block text-sm font-medium mb-1">
+                  Postcode
+                </label>
+                <Input
+                  id="postcode"
+                  value={formData.postcode}
+                  onChange={(e) => handleInputChange('postcode', e.target.value)}
+                  placeholder="SW1A 1AA"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={submitting || !formData.name}
+          >
+            {submitting 
+              ? (editingBusiness ? 'Updating Listing...' : 'Creating Listing...') 
+              : (editingBusiness ? 'Update Business Listing' : 'Create Business Listing')
+            }
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+
+  const renderBusinessListings = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Your Business Listings</CardTitle>
+        {hasExistingBusiness && (
+          <p className="text-sm text-muted-foreground">
+            You can only have one business listing per account. To add a different business, please edit your existing listing.
+          </p>
+        )}
+      </CardHeader>
+      <CardContent>
+        {businesses.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>You haven't created any business listings yet.</p>
+            <p className="mt-2">Click on "Create New Listing" to get started.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Business Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {businesses.map((business) => (
+                  <TableRow key={business.id}>
+                    <TableCell className="font-medium">{business.name}</TableCell>
+                    <TableCell>
+                      {business.business_categories?.name || 'No category'}
+                    </TableCell>
+                    <TableCell>
+                      {business.city ? `${business.city}${business.postcode ? ', ' + business.postcode : ''}` : 'No location'}
+                    </TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        business.is_active 
+                          ? 'bg-success/10 text-success' 
+                          : 'bg-destructive/10 text-destructive'
+                      }`}>
+                        {business.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(business)}
+                        className="flex items-center gap-2"
+                      >
+                        <Edit size={14} />
+                        Edit
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderCreateEventForm = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          {editingEvent ? 'Edit Event' : 'Create New Event'}
+        </CardTitle>
+        {editingEvent && (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEditingEvent(null);
+                setEventFormData({
+                  title: '',
+                  description: '',
+                  date: '',
+                  time: '',
+                  location: '',
+                  area: '',
+                  postcode: '',
+                  organizer: '',
+                  category: '',
+                  type: ''
+                });
+              }}
+              size="sm"
+            >
+              Cancel Edit
+            </Button>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleEventSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="event-title" className="block text-sm font-medium mb-1">
+                Event Title *
+              </label>
+              <Input
+                id="event-title"
+                value={eventFormData.title}
+                onChange={(e) => handleEventInputChange('title', e.target.value)}
+                required
+                placeholder="Enter event title"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="event-organizer" className="block text-sm font-medium mb-1">
+                Organizer
+              </label>
+              <Input
+                id="event-organizer"
+                value={eventFormData.organizer}
+                onChange={(e) => handleEventInputChange('organizer', e.target.value)}
+                placeholder="Event organizer"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="event-description" className="block text-sm font-medium mb-1">
+              Description
+            </label>
+            <Textarea
+              id="event-description"
+              value={eventFormData.description}
+              onChange={(e) => handleEventInputChange('description', e.target.value)}
+              placeholder="Describe your event..."
+              rows={4}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="event-date" className="block text-sm font-medium mb-1">
+                Date *
+              </label>
+              <Input
+                id="event-date"
+                type="date"
+                value={eventFormData.date}
+                onChange={(e) => handleEventInputChange('date', e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="event-time" className="block text-sm font-medium mb-1">
+                Time *
+              </label>
+              <Input
+                id="event-time"
+                type="time"
+                value={eventFormData.time}
+                onChange={(e) => handleEventInputChange('time', e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="event-location" className="block text-sm font-medium mb-1">
+                Location *
+              </label>
+              <Input
+                id="event-location"
+                value={eventFormData.location}
+                onChange={(e) => handleEventInputChange('location', e.target.value)}
+                required
+                placeholder="Event venue"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="event-area" className="block text-sm font-medium mb-1">
+                Area *
+              </label>
+              <Input
+                id="event-area"
+                value={eventFormData.area}
+                onChange={(e) => handleEventInputChange('area', e.target.value)}
+                required
+                placeholder="Area/Region"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="event-postcode" className="block text-sm font-medium mb-1">
+                Postcode
+              </label>
+              <Input
+                id="event-postcode"
+                value={eventFormData.postcode}
+                onChange={(e) => handleEventInputChange('postcode', e.target.value)}
+                placeholder="SW1A 1AA"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="event-category" className="block text-sm font-medium mb-1">
+                Category
+              </label>
+              <Input
+                id="event-category"
+                value={eventFormData.category}
+                onChange={(e) => handleEventInputChange('category', e.target.value)}
+                placeholder="e.g., Concert, Workshop, Festival"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="event-type" className="block text-sm font-medium mb-1">
+                Event Type
+              </label>
+              <Select 
+                value={eventFormData.type} 
+                onValueChange={(value) => handleEventInputChange('type', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select event type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public Event</SelectItem>
+                  <SelectItem value="private">Private Event</SelectItem>
+                  <SelectItem value="ticketed">Ticketed Event</SelectItem>
+                  <SelectItem value="free">Free Event</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={submitting || !eventFormData.title || !eventFormData.date || !eventFormData.time || !eventFormData.location || !eventFormData.area}
+          >
+            {submitting 
+              ? (editingEvent ? 'Updating Event...' : 'Creating Event...') 
+              : (editingEvent ? 'Update Event' : 'Create Event')
+            }
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+
+  const renderEventListings = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Your Events</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {events.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>You haven't created any events yet.</p>
+            <p className="mt-2">Click on "Create Event" to get started.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Event Title</TableHead>
+                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {events.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="font-medium">{event.title}</TableCell>
+                    <TableCell>
+                      {event.date && new Date(event.date).toLocaleDateString()}
+                      {event.time && ` at ${event.time}`}
+                    </TableCell>
+                    <TableCell>
+                      {event.location}
+                      {event.area && `, ${event.area}`}
+                    </TableCell>
+                    <TableCell>
+                      <span className="capitalize">{event.type || 'Not specified'}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditEvent(event)}
+                          className="flex items-center gap-1"
+                        >
+                          <Edit size={12} />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteEvent(event.id)}
+                          className="flex items-center gap-1"
+                        >
+                          <Trash2 size={12} />
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderQuotes = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <QuoteConversionCard 
+                quote={quotes[0] || null}
+                onEdit={setEditingQuote}
+                onView={setViewingQuote}
+              />
+              <UrgencyAlerts />
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Saved Quotes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {quotes.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>You don't have any saved quotes yet.</p>
+                  <p className="mt-2">Visit our advertising calculator to create your first quote!</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date Created</TableHead>
+                        <TableHead>Campaign Type</TableHead>
+                        <TableHead>Total Cost</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {quotes.map((quote) => (
+                        <TableRow key={quote.id}>
+                          <TableCell>
+                            {new Date(quote.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="capitalize">
+                            {quote.campaign_type?.replace('_', ' ') || 'N/A'}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {formatPrice(quote.total_cost)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setViewingQuote(quote)}
+                              >
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingQuote(quote)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteQuoteClick(quote)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="space-y-6">
+            <ROICalculator 
+              totalCirculation={50000}
+              totalInvestment={quotes[0]?.total_cost || 1000}
+            />
+            <CampaignTimeline quote={quotes[0] || null} />
+        </div>
+      </div>
+      
+      <SuccessStories />
+    </div>
+  );
+
+  const renderBookings = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Your Bookings</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {bookings.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>You don't have any bookings yet.</p>
+            <p className="mt-2">Book an advertising campaign to see it here!</p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {bookings.map((booking) => (
+              <BookingCard
+                key={booking.id}
+                booking={booking}
+                onDelete={() => handleDeleteBooking(booking.id)}
+                isDeleting={deletingBookingId === booking.id}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex w-full">
+        <DashboardSidebar 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          businessCount={businesses.length}
+          eventCount={events.length}
+          quoteCount={quotes.length}
+          bookingCount={bookings.length}
+          editingBusiness={editingBusiness}
+          editingEvent={editingEvent}
+        />
+        
+        <SidebarInset className="flex-1">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <div className="h-4 w-px bg-sidebar-border" />
+            <div className="flex-1">
+              <h1 className="text-lg font-semibold">Dashboard</h1>
+            </div>
+          </header>
+          
+          <div className="flex-1 overflow-auto">
+            <div className="p-6 space-y-6">
+              <WelcomeHeader user={user} quotes={quotes} />
+              
+              {activeTab === 'create' && renderCreateBusinessForm()}
+              {activeTab === 'listings' && renderBusinessListings()}
+              {activeTab === 'create-event' && renderCreateEventForm()}
+              {activeTab === 'events' && renderEventListings()}
+              {activeTab === 'quotes' && renderQuotes()}
+              {activeTab === 'bookings' && renderBookings()}
+            </div>
+          </div>
+        </SidebarInset>
+      </div>
+
+      <Navigation />
+      <Footer />
+
       <Dialog open={!!viewingQuote} onOpenChange={() => setViewingQuote(null)}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Campaign Quote Details</DialogTitle>
+            <DialogTitle>Quote Details</DialogTitle>
             <DialogDescription>
-              Complete overview of your advertising campaign
+              Created on {viewingQuote && new Date(viewingQuote.created_at).toLocaleDateString()}
             </DialogDescription>
           </DialogHeader>
-          
           {viewingQuote && (
-            <div className="space-y-6">
-              {/* Header Stats */}
-              <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">{formatPrice(viewingQuote.final_total)}</p>
-                  <p className="text-sm text-muted-foreground">Total Investment</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Campaign Type</Label>
+                  <p className="capitalize">{viewingQuote.campaign_type?.replace('_', ' ')}</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{(viewingQuote.total_circulation || 0).toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">Homes Reached</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{viewingQuote.selected_area_ids?.length || 0}</p>
-                  <p className="text-sm text-muted-foreground">Areas</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-600">{formatPrice((viewingQuote.final_total || 0) / (viewingQuote.total_circulation || 1))}</p>
-                  <p className="text-sm text-muted-foreground">Cost per Home</p>
+                <div>
+                  <Label>Total Cost</Label>
+                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.total_cost)}</p>
                 </div>
               </div>
-
-              {/* Campaign & Contact Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Campaign Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+              {viewingQuote.advert_size && (
+                <div>
+                  <Label>Advert Size</Label>
+                  <p>{viewingQuote.advert_size}</p>
+                </div>
+              )}
+              {viewingQuote.locations && viewingQuote.locations.length > 0 && (
+                <div>
+                  <Label>Locations</Label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {viewingQuote.locations.map((location: any, index: number) => (
+                      <span key={index} className="bg-primary/10 text-primary px-2 py-1 rounded text-sm">
+                        {location.name || location}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {viewingQuote.quantity && (
+                <div>
+                  <Label>Quantity</Label>
+                  <p>{viewingQuote.quantity.toLocaleString()}</p>
+                </div>
+              )}
+              {viewingQuote.contact_name && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Contact Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Campaign Title</p>
-                      <p className="font-medium">{viewingQuote.title || 'Advertising Campaign'}</p>
+                      <Label>Name</Label>
+                      <p>{viewingQuote.contact_name}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Pricing Model</p>
-                      <p className="font-medium capitalize">{viewingQuote.pricing_model}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Duration</p>
-                      <p className="font-medium">{viewingQuote.duration_multiplier || 1} months</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Monthly Investment</p>
-                      <p className="font-medium text-primary">{formatPrice(viewingQuote.monthly_price)}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Contact Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Contact Name</p>
-                      <p className="font-medium">{viewingQuote.contact_name}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="font-medium">{viewingQuote.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Phone</p>
-                      <p className="font-medium">{viewingQuote.phone || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Company</p>
-                      <p className="font-medium">{viewingQuote.company || 'Not provided'}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Timeline */}
-              <CampaignTimeline quote={viewingQuote} />
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t">
-                <Button 
-                  onClick={() => setEditingQuote(viewingQuote)}
-                  className="flex-1"
-                  variant="outline"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Quote
-                </Button>
-                <Button 
-                  className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
-                >
-                  Book This Campaign
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setViewingQuote(null)}
-                >
-                  Close
-                </Button>
-              </div>
+                    {viewingQuote.contact_email && (
+                      <div>
+                        <Label>Email</Label>
+                        <p>{viewingQuote.contact_email}</p>
+                      </div>
+                    )}
+                    {viewingQuote.contact_phone && (
+                      <div>
+                        <Label>Phone</Label>
+                        <p>{viewingQuote.contact_phone}</p>
+                      </div>
+                    )}
+                    {viewingQuote.company_name && (
+                      <div>
+                        <Label>Company</Label>
+                        <p>{viewingQuote.company_name}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Edit Quote Dialog */}
       <Dialog open={!!editingQuote} onOpenChange={() => setEditingQuote(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Quote</DialogTitle>
-            <DialogDescription>
-              Update your quote details and pricing
-            </DialogDescription>
           </DialogHeader>
-          
           {editingQuote && (
             <EditQuoteForm
               quote={editingQuote}
@@ -1258,17 +1276,17 @@ const Dashboard = () => {
                   if (error) throw error;
                   
                   toast({
-                    title: "Success!",
-                    description: "Quote updated successfully."
+                    title: 'Quote Updated',
+                    description: 'Your quote has been updated successfully.'
                   });
                   
                   setEditingQuote(null);
-                  await loadQuotes();
+                  loadQuotes();
                 } catch (error: any) {
                   toast({
-                    title: "Error",
+                    title: 'Error',
                     description: error.message,
-                    variant: "destructive"
+                    variant: 'destructive'
                   });
                 }
               }}
@@ -1277,100 +1295,7 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
-            </TabsContent>
 
-            <TabsContent value="bookings">
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Your Bookings</CardTitle>
-                      <p className="text-muted-foreground">
-                        Track your submitted advertising campaign bookings
-                      </p>
-                    </CardHeader>
-                    <CardContent>
-                      {bookings.length === 0 ? (
-                        <div className="text-center py-12">
-                          <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2">No bookings yet</h3>
-                          <p className="text-muted-foreground mb-4">
-                            You haven't submitted any advertising campaigns for booking yet.
-                          </p>
-                          <Button onClick={() => navigate('/advertising')} className="bg-primary hover:bg-primary/90">
-                            Create Your First Campaign
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {bookings.map((booking) => (
-                            <BookingCard
-                              key={booking.id}
-                              booking={booking}
-                              onDelete={handleDeleteBooking}
-                              isDeleting={deletingBookingId === booking.id}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Sidebar with info */}
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Booking Status Guide</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <span className="text-sm">Pending - Just submitted</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="text-sm">Submitted - Sent to our team</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                        <span className="text-sm">Processing - Being reviewed</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                        <span className="text-sm">Confirmed - Approved & scheduled</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Need Help?</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        Questions about your booking or need to make changes?
-                      </p>
-                      <Button variant="outline" size="sm" onClick={() => navigate('/contact')} className="w-full">
-                        Contact Our Team
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
-      <Footer />
-      
-      {/* Password Setup Dialog */}
-      <PasswordSetupDialog 
-        open={showPasswordSetup} 
-        onClose={() => setShowPasswordSetup(false)}
-      />
-
-      {/* Delete Quote Dialog */}
       <DeleteQuoteDialog
         open={!!quoteToDelete}
         onClose={() => setQuoteToDelete(null)}
@@ -1378,7 +1303,12 @@ const Dashboard = () => {
         quote={quoteToDelete}
         isDeleting={deletingQuoteId === quoteToDelete?.id}
       />
-    </div>
+
+      <PasswordSetupDialog
+        open={showPasswordSetup}
+        onClose={() => setShowPasswordSetup(false)}
+      />
+    </SidebarProvider>
   );
 };
 
