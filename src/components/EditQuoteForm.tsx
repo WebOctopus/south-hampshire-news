@@ -36,7 +36,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
     title: quote.title || ''
   });
 
-  const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof' | 'leafleting'>(quote.pricing_model || 'fixed');
+  const [pricingModel, setPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>(quote.pricing_model || 'fixed');
   const [selectedAreas, setSelectedAreas] = useState<string[]>(quote.selected_area_ids || []);
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>(quote.bogof_paid_area_ids || []);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>(quote.bogof_free_area_ids || []);
@@ -51,7 +51,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   // Get effective areas and data sources based on pricing model
   const effectiveAreas = pricingModel === 'leafleting' ? leafletAreas : areas;
   const effectiveDurations = pricingModel === 'leafleting' ? leafletDurations : 
-                            (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+                            pricingModel === 'bogof' ? subscriptionDurations : durations;
 
   // Filter ad sizes and durations based on pricing model
   const availableAdSizes = pricingModel === 'leafleting' 
@@ -83,7 +83,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
     
     if (!adSize || !duration) return null;
 
-    const isSubscription = pricingModel === 'subscription' || pricingModel === 'bogof';
+    const isSubscription = pricingModel === 'bogof';
     
     return calculateAdvertisingPrice(
       effectiveSelectedAreas,
@@ -269,14 +269,10 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
           <CardTitle>Pricing Model</CardTitle>
         </CardHeader>
         <CardContent>
-          <RadioGroup value={pricingModel} onValueChange={(value: 'fixed' | 'subscription' | 'bogof' | 'leafleting') => setPricingModel(value)}>
+          <RadioGroup value={pricingModel} onValueChange={(value: 'fixed' | 'bogof' | 'leafleting') => setPricingModel(value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="fixed" id="fixed" />
               <Label htmlFor="fixed">Fixed Term</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="subscription" id="subscription" />
-              <Label htmlFor="subscription">Subscription</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="bogof" id="bogof" />
