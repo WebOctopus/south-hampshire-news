@@ -20,6 +20,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { formatPrice } from '@/lib/pricingCalculator';
 import EditQuoteForm from '@/components/EditQuoteForm';
 import PasswordSetupDialog from '@/components/PasswordSetupDialog';
+import WelcomeHeader from '@/components/dashboard/WelcomeHeader';
+import QuoteConversionCard from '@/components/dashboard/QuoteConversionCard';
+import SuccessStories from '@/components/dashboard/SuccessStories';
+import UrgencyAlerts from '@/components/dashboard/UrgencyAlerts';
+import ROICalculator from '@/components/dashboard/ROICalculator';
+import CampaignTimeline from '@/components/dashboard/CampaignTimeline';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -462,18 +468,11 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Navigation />
-      <main className="py-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-heading font-bold mb-4">
-              Dashboard
-            </h1>
-            <p className="text-gray-600">
-              Welcome back! Create and manage your business listings and events here.
-            </p>
-          </div>
+      <main className="py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <WelcomeHeader user={user} quotes={quotes} />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="grid w-full grid-cols-5">
@@ -1011,165 +1010,215 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="quotes">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Saved Quotes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {quotes.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>You don't have any saved quotes yet.</p>
-                      <p className="mt-2">Use the Advertising Cost Calculator to save a quote.</p>
-                    </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Quotes Column */}
+                <div className="lg:col-span-2 space-y-6">
+                  {quotes.length > 0 ? (
+                    <>
+                      <div className="grid gap-6">
+                        {quotes.map((quote) => (
+                          <QuoteConversionCard 
+                            key={quote.id}
+                            quote={quote}
+                            onEdit={setEditingQuote}
+                            onView={setViewingQuote}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* ROI Calculator for all quotes */}
+                      <ROICalculator 
+                        totalCirculation={quotes.reduce((sum, q) => sum + (q.total_circulation || 0), 0)}
+                        totalInvestment={quotes.reduce((sum, q) => sum + (q.final_total || 0), 0)}
+                      />
+                    </>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Saved On</TableHead>
-                            <TableHead>Pricing Model</TableHead>
-                            <TableHead>Monthly Price</TableHead>
-                            <TableHead>Areas</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {quotes.map((q) => (
-                            <TableRow key={q.id}>
-                              <TableCell className="font-medium">{q.title || 'Untitled Quote'}</TableCell>
-                              <TableCell>{q.created_at ? new Date(q.created_at).toLocaleString() : '-'}</TableCell>
-                              <TableCell className="capitalize">{q.pricing_model}</TableCell>
-                              <TableCell>{formatPrice(Number(q.monthly_price || 0))}</TableCell>
-                              <TableCell>{Array.isArray(q.selected_area_ids) ? q.selected_area_ids.length : 0}</TableCell>
-                              <TableCell>
-                                 <div className="flex gap-2">
-                                   <Button
-                                     variant="outline"
-                                     size="sm"
-                                     onClick={() => setViewingQuote(q)}
-                                   >
-                                     View
-                                   </Button>
-                                   <Button
-                                     variant="outline"
-                                     size="sm"
-                                     onClick={() => setEditingQuote(q)}
-                                     className="flex items-center gap-1"
-                                   >
-                                     <Edit size={14} />
-                                     Edit
-                                   </Button>
-                                   <Button
-                                     variant="outline"
-                                     size="sm"
-                                     onClick={() => handleDeleteQuote(q.id)}
-                                     disabled={deletingQuoteId === q.id}
-                                     className="text-red-600 hover:text-red-700"
-                                   >
-                                     {deletingQuoteId === q.id ? 'Deleting...' : 'Delete'}
-                                   </Button>
-                                 </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
+                    <Card className="text-center py-12">
+                      <CardContent>
+                        <div className="mb-4">
+                          <Calendar className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                          <h3 className="text-xl font-semibold text-gray-600 mb-2">No Saved Quotes Yet</h3>
+                          <p className="text-gray-500 mb-6">
+                            Ready to reach thousands of local customers? Create your first advertising quote!
+                          </p>
+                        </div>
+                        <Button 
+                          size="lg" 
+                          className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white"
+                          onClick={() => navigate('/advertising')}
+                        >
+                          Create Your First Quote
+                        </Button>
+                      </CardContent>
+                    </Card>
                   )}
-                </CardContent>
-              </Card>
+                </div>
 
-              <Dialog open={!!viewingQuote} onOpenChange={(open) => setViewingQuote(open ? viewingQuote : null)}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{viewingQuote?.title || 'Quote details'}</DialogTitle>
-                    <DialogDescription>
-                      {viewingQuote?.created_at ? new Date(viewingQuote.created_at).toLocaleString() : ''}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span>Pricing Model</span>
-                      <span className="capitalize">{viewingQuote?.pricing_model}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Monthly Price</span>
-                      <span className="font-medium">{formatPrice(Number(viewingQuote?.monthly_price || 0))}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Areas</span>
-                      <span>{Array.isArray(viewingQuote?.selected_area_ids) ? viewingQuote.selected_area_ids.length : 0}</span>
-                    </div>
-                    {viewingQuote?.duration_id && (
-                      <div className="flex justify-between">
-                        <span>Duration</span>
-                        <span>{viewingQuote.duration_id}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span>Contact Email</span>
-                      <span>{viewingQuote?.email}</span>
-                    </div>
-                    {viewingQuote?.phone && (
-                      <div className="flex justify-between">
-                        <span>Phone</span>
-                        <span>{viewingQuote.phone}</span>
-                      </div>
-                    )}
-                    {viewingQuote?.company && (
-                      <div className="flex justify-between">
-                        <span>Company</span>
-                        <span>{viewingQuote.company}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-4 text-right">
-                    <Button variant="outline" onClick={() => setViewingQuote(null)}>Close</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                {/* Sidebar with conversion elements */}
+                <div className="space-y-6">
+                  <UrgencyAlerts />
+                  <SuccessStories />
+                  {quotes.length > 0 && quotes[0] && (
+                    <CampaignTimeline quote={quotes[0]} />
+                  )}
+                </div>
+              </div>
 
-              {/* Edit Quote Dialog */}
-              <Dialog open={!!editingQuote} onOpenChange={(open) => setEditingQuote(open ? editingQuote : null)}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Edit Quote</DialogTitle>
-                    <DialogDescription>
-                      Update your advertising quote details
-                    </DialogDescription>
-                  </DialogHeader>
+      {/* Quote Details Dialog */}
+      <Dialog open={!!viewingQuote} onOpenChange={() => setViewingQuote(null)}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Campaign Quote Details</DialogTitle>
+            <DialogDescription>
+              Complete overview of your advertising campaign
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewingQuote && (
+            <div className="space-y-6">
+              {/* Header Stats */}
+              <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">{formatPrice(viewingQuote.final_total)}</p>
+                  <p className="text-sm text-muted-foreground">Total Investment</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{(viewingQuote.total_circulation || 0).toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">Homes Reached</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">{viewingQuote.selected_area_ids?.length || 0}</p>
+                  <p className="text-sm text-muted-foreground">Areas</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">{formatPrice((viewingQuote.final_total || 0) / (viewingQuote.total_circulation || 1))}</p>
+                  <p className="text-sm text-muted-foreground">Cost per Home</p>
+                </div>
+              </div>
+
+              {/* Campaign & Contact Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Campaign Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Campaign Title</p>
+                      <p className="font-medium">{viewingQuote.title || 'Advertising Campaign'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Pricing Model</p>
+                      <p className="font-medium capitalize">{viewingQuote.pricing_model}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Duration</p>
+                      <p className="font-medium">{viewingQuote.duration_multiplier || 1} months</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Monthly Investment</p>
+                      <p className="font-medium text-primary">{formatPrice(viewingQuote.monthly_price)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Contact Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Contact Name</p>
+                      <p className="font-medium">{viewingQuote.contact_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="font-medium">{viewingQuote.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <p className="font-medium">{viewingQuote.phone || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Company</p>
+                      <p className="font-medium">{viewingQuote.company || 'Not provided'}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Timeline */}
+              <CampaignTimeline quote={viewingQuote} />
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button 
+                  onClick={() => setEditingQuote(viewingQuote)}
+                  className="flex-1"
+                  variant="outline"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Quote
+                </Button>
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                >
+                  Book This Campaign
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewingQuote(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Quote Dialog */}
+      <Dialog open={!!editingQuote} onOpenChange={() => setEditingQuote(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Quote</DialogTitle>
+            <DialogDescription>
+              Update your quote details and pricing
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingQuote && (
+            <EditQuoteForm
+              quote={editingQuote}
+              onSave={async (updatedQuote) => {
+                try {
+                  const { error } = await supabase
+                    .from('quotes')
+                    .update(updatedQuote)
+                    .eq('id', editingQuote.id);
                   
-                  {editingQuote && <EditQuoteForm 
-                    quote={editingQuote}
-                    onSave={async (updatedQuote) => {
-                      try {
-                        const { error } = await supabase
-                          .from('quotes')
-                          .update(updatedQuote)
-                          .eq('id', editingQuote.id);
-                        
-                        if (error) throw error;
-                        
-                        toast({
-                          title: "Quote Updated",
-                          description: "Your quote has been updated successfully."
-                        });
-                        
-                        setEditingQuote(null);
-                        await loadQuotes();
-                      } catch (error: any) {
-                        toast({
-                          title: "Error",
-                          description: error.message,
-                          variant: "destructive"
-                        });
-                      }
-                    }}
-                    onCancel={() => setEditingQuote(null)}
-                  />}
-                </DialogContent>
-              </Dialog>
+                  if (error) throw error;
+                  
+                  toast({
+                    title: "Success!",
+                    description: "Quote updated successfully."
+                  });
+                  
+                  setEditingQuote(null);
+                  await loadQuotes();
+                } catch (error: any) {
+                  toast({
+                    title: "Error",
+                    description: error.message,
+                    variant: "destructive"
+                  });
+                }
+              }}
+              onCancel={() => setEditingQuote(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
             </TabsContent>
           </Tabs>
         </div>
@@ -1179,7 +1228,7 @@ const Dashboard = () => {
       {/* Password Setup Dialog */}
       <PasswordSetupDialog 
         open={showPasswordSetup} 
-        onClose={() => setShowPasswordSetup(false)} 
+        onClose={() => setShowPasswordSetup(false)}
       />
     </div>
   );
