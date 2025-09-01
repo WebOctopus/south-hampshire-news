@@ -26,6 +26,7 @@ import SuccessStories from '@/components/dashboard/SuccessStories';
 import UrgencyAlerts from '@/components/dashboard/UrgencyAlerts';
 import ROICalculator from '@/components/dashboard/ROICalculator';
 import CampaignTimeline from '@/components/dashboard/CampaignTimeline';
+import DeleteQuoteDialog from '@/components/dashboard/DeleteQuoteDialog';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -40,6 +41,7 @@ const Dashboard = () => {
   const [viewingQuote, setViewingQuote] = useState<any | null>(null);
   const [editingQuote, setEditingQuote] = useState<any | null>(null);
   const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
+  const [quoteToDelete, setQuoteToDelete] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('create');
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   
@@ -442,7 +444,6 @@ const Dashboard = () => {
   };
 
   const handleDeleteQuote = async (quoteId: string) => {
-    if (!confirm('Are you sure you want to delete this quote?')) return;
     setDeletingQuoteId(quoteId);
     try {
       const { error } = await supabase
@@ -452,11 +453,16 @@ const Dashboard = () => {
       if (error) throw error;
       toast({ title: 'Deleted', description: 'Quote deleted successfully.' });
       await loadQuotes();
+      setQuoteToDelete(null);
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setDeletingQuoteId(null);
     }
+  };
+
+  const handleDeleteQuoteClick = (quote: any) => {
+    setQuoteToDelete(quote);
   };
 
   if (loading) {
@@ -1022,7 +1028,7 @@ const Dashboard = () => {
                             quote={quote}
                             onEdit={setEditingQuote}
                             onView={setViewingQuote}
-                            onDelete={handleDeleteQuote}
+                            onDelete={handleDeleteQuoteClick}
                             isDeleting={deletingQuoteId === quote.id}
                           />
                         ))}
@@ -1231,6 +1237,15 @@ const Dashboard = () => {
       <PasswordSetupDialog 
         open={showPasswordSetup} 
         onClose={() => setShowPasswordSetup(false)}
+      />
+
+      {/* Delete Quote Dialog */}
+      <DeleteQuoteDialog
+        open={!!quoteToDelete}
+        onClose={() => setQuoteToDelete(null)}
+        onConfirm={() => quoteToDelete && handleDeleteQuote(quoteToDelete.id)}
+        quote={quoteToDelete}
+        isDeleting={deletingQuoteId === quoteToDelete?.id}
       />
     </div>
   );

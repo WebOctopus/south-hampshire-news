@@ -9,7 +9,7 @@ interface QuoteConversionCardProps {
   quote: any;
   onEdit: (quote: any) => void;
   onView: (quote: any) => void;
-  onDelete?: (quoteId: string) => void;
+  onDelete?: (quote: any) => void;
   isDeleting?: boolean;
 }
 
@@ -136,7 +136,7 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onDelete(quote.id)}
+              onClick={() => onDelete(quote)}
               disabled={isDeleting}
               className="flex items-center text-red-600 hover:text-red-700 hover:bg-red-50"
             >
