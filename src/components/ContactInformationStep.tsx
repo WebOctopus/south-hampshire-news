@@ -90,6 +90,41 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     }
   };
 
+  const handleBookNow = async () => {
+    // Same validation as save quote
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+      toast({
+        title: "Missing Information", 
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.", 
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onSaveQuote(formData);
+      // After saving quote, could redirect to booking confirmation or payment
+      toast({
+        title: "Booking Initiated",
+        description: "Your quote has been saved and booking process will begin.",
+      });
+    } catch (error) {
+      console.error('Error booking:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Expose the handleSaveQuote function to parent component
   React.useEffect(() => {
     (window as any).handleContactFormSave = handleSaveQuote;
@@ -235,6 +270,27 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
         </CardContent>
       </Card>
+
+      {/* Action buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Button 
+          onClick={handleSaveQuote}
+          disabled={submitting}
+          variant="outline"
+          size="lg"
+          className="flex-1 sm:flex-none"
+        >
+          {submitting ? "Saving..." : "Save My Quote"}
+        </Button>
+        <Button 
+          onClick={handleBookNow}
+          disabled={submitting}
+          size="lg"
+          className="flex-1 sm:flex-none"
+        >
+          {submitting ? "Processing..." : "Book Now"}
+        </Button>
+      </div>
       
       {submitting && (
         <div className="text-center">
