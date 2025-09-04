@@ -436,14 +436,16 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
 
           {/* BOGOF Areas Selection */}
           {pricingModel === 'bogof' && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Select Your Paid Areas (Buy One Get One Free!)</h3>
-              <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 mb-4">
-                <p className="text-sm text-primary font-medium">
-                  🎉 Special BOGOF Offer: For every area you select and pay for, you get an additional area FREE!
-                </p>
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-semibold mb-2">3+ Repeat Package Areas Selection</h3>
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-primary font-medium">
+                    🎉 Special BOGOF Offer: For every area you select and pay for, you get an additional area FREE!
+                  </p>
+                </div>
               </div>
-              
+
               {isLoading ? (
                 <div className="flex items-center justify-center p-8">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -459,106 +461,118 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {areas.map((area) => (
-                    <Card key={area.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-start space-x-3">
-                          <Checkbox
-                            id={`paid-${area.id}`}
-                            checked={bogofPaidAreas.includes(area.id)}
-                            onCheckedChange={(checked) => handleBogofPaidAreaChange(area.id, checked as boolean)}
-                            className="mt-1"
-                          />
-                          <div className="flex-1 space-y-2" onClick={() => handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id))}>
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor={`paid-${area.id}`} className="text-sm font-medium cursor-pointer">
-                                {area.name}
-                              </Label>
-                              <Badge variant="outline" className="text-xs">
-                                {area.circulation?.toLocaleString()} homes
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                              {(area as any).description || 'Area description'}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : 'N/A'}</span>
-                            </div>
-                            {/* Schedule Information */}
-                            {area.schedule && area.schedule.length > 0 && (
-                              <div className="mt-2 pt-2 border-t border-gray-100">
-                                <div className="text-xs font-medium text-gray-700 mb-1">Publication Schedule:</div>
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                  <div>
-                                    <span className="font-medium">Copy:</span> {area.schedule[0]?.copyDeadline || 'N/A'}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Print:</span> {area.schedule[0]?.printDeadline || 'N/A'}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Delivery:</span> {area.schedule[0]?.deliveryDate || 'N/A'}
-                                  </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Paid Areas Section */}
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <h4 className="text-lg font-semibold text-primary">Select Your Paid Areas</h4>
+                      <p className="text-sm text-muted-foreground">Choose the areas you want to pay for</p>
+                    </div>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                      {areas.map((area) => (
+                        <Card key={area.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                          <CardContent className="p-3">
+                            <div className="flex items-start space-x-3">
+                              <Checkbox
+                                id={`paid-${area.id}`}
+                                checked={bogofPaidAreas.includes(area.id)}
+                                onCheckedChange={(checked) => handleBogofPaidAreaChange(area.id, checked as boolean)}
+                                className="mt-1"
+                              />
+                              <div className="flex-1 space-y-1" onClick={() => handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id))}>
+                                <div className="flex items-center justify-between">
+                                  <Label htmlFor={`paid-${area.id}`} className="text-sm font-medium cursor-pointer">
+                                    {area.name}
+                                  </Label>
+                                  <Badge variant="outline" className="text-xs">
+                                    {area.circulation?.toLocaleString()} homes
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                                  {(area as any).description || 'Area description'}
+                                </p>
+                                <div className="text-xs text-muted-foreground">
+                                  Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.slice(0, 2).join(', ') : 'N/A'}
+                                  {Array.isArray(area.postcodes) && area.postcodes.length > 2 && '...'}
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-              
-              {/* Show Free Areas Selection when paid areas are selected */}
-              {bogofPaidAreas.length > 0 && (
-                <div className="space-y-4 mt-6">
-                  <h4 className="text-lg font-semibold text-green-600">Select Your FREE Areas!</h4>
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-sm text-green-700 font-medium mb-3">
-                      🎁 You can select up to {bogofPaidAreas.length} FREE area{bogofPaidAreas.length > 1 ? 's' : ''} to go with your {bogofPaidAreas.length} paid area{bogofPaidAreas.length > 1 ? 's' : ''}!
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {areas.filter(area => !bogofPaidAreas.includes(area.id)).map((area) => (
-                         <div key={area.id} className="flex items-center space-x-3 p-3 bg-white rounded border border-green-200">
-                           <Checkbox
-                             id={`free-${area.id}`}
-                             checked={bogofFreeAreas.includes(area.id)}
-                             onCheckedChange={(checked) => {
-                               
-                               handleBogofFreeAreaChange(area.id, checked as boolean);
-                             }}
-                             disabled={!bogofFreeAreas.includes(area.id) && bogofFreeAreas.length >= bogofPaidAreas.length}
-                           />
-                          <Label htmlFor={`free-${area.id}`} className="text-sm cursor-pointer flex-1">
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium">{area.name}</span>
-                              <Badge variant="secondary" className="text-xs text-green-700">FREE</Badge>
                             </div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {area.circulation?.toLocaleString()} homes
-                            </div>
-                            {/* Schedule Information for Free Areas */}
-                            {area.schedule && area.schedule.length > 0 && (
-                              <div className="text-xs text-gray-600 mt-2">
-                                <div className="font-medium mb-1">Publication Schedule:</div>
-                                <div className="grid grid-cols-3 gap-1">
-                                  <div>Copy: {area.schedule[0]?.copyDeadline}</div>
-                                  <div>Print: {area.schedule[0]?.printDeadline}</div>
-                                  <div>Delivery: {area.schedule[0]?.deliveryDate}</div>
-                                </div>
-                              </div>
-                            )}
-                          </Label>
-                        </div>
+                          </CardContent>
+                        </Card>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Free Areas Section */}
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <h4 className="text-lg font-semibold text-green-600">Select Your FREE Areas</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {bogofPaidAreas.length > 0 
+                          ? `Choose up to ${bogofPaidAreas.length} FREE area${bogofPaidAreas.length > 1 ? 's' : ''}`
+                          : 'Select paid areas first to unlock free areas'
+                        }
+                      </p>
+                    </div>
+                    
+                    {bogofPaidAreas.length > 0 ? (
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                        {areas.filter(area => !bogofPaidAreas.includes(area.id)).map((area) => (
+                          <Card key={area.id} className={`cursor-pointer transition-all ${
+                            bogofFreeAreas.includes(area.id) || bogofFreeAreas.length < bogofPaidAreas.length
+                              ? 'hover:shadow-md' 
+                              : 'opacity-50 cursor-not-allowed'
+                          }`}>
+                            <CardContent className="p-3 bg-green-50/50">
+                              <div className="flex items-start space-x-3">
+                                <Checkbox
+                                  id={`free-${area.id}`}
+                                  checked={bogofFreeAreas.includes(area.id)}
+                                  onCheckedChange={(checked) => handleBogofFreeAreaChange(area.id, checked as boolean)}
+                                  disabled={!bogofFreeAreas.includes(area.id) && bogofFreeAreas.length >= bogofPaidAreas.length}
+                                  className="mt-1"
+                                />
+                                <div className="flex-1 space-y-1" onClick={() => {
+                                  if (bogofFreeAreas.includes(area.id) || bogofFreeAreas.length < bogofPaidAreas.length) {
+                                    handleBogofFreeAreaChange(area.id, !bogofFreeAreas.includes(area.id));
+                                  }
+                                }}>
+                                  <div className="flex items-center justify-between">
+                                    <Label htmlFor={`free-${area.id}`} className="text-sm font-medium cursor-pointer">
+                                      {area.name}
+                                    </Label>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="secondary" className="text-xs text-green-700 bg-green-100">
+                                        FREE
+                                      </Badge>
+                                      <Badge variant="outline" className="text-xs">
+                                        {area.circulation?.toLocaleString()} homes
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                                    {(area as any).description || 'Area description'}
+                                  </p>
+                                  <div className="text-xs text-muted-foreground">
+                                    Postcodes: {Array.isArray(area.postcodes) ? area.postcodes.slice(0, 2).join(', ') : 'N/A'}
+                                    {Array.isArray(area.postcodes) && area.postcodes.length > 2 && '...'}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground bg-muted/30 rounded-lg">
+                        <p className="text-sm">Select paid areas above to unlock free area selection</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </div>
           )}
-
           {/* Leafleting Areas */}
           {pricingModel === 'leafleting' && (
             <div className="space-y-4">
