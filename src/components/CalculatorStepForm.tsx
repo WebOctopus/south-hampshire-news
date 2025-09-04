@@ -15,6 +15,9 @@ import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { useStepForm } from './StepForm';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import AreaSelectionStep from './AreaSelectionStep';
+import AdvertisementSizeStep from './AdvertisementSizeStep';
+import DurationScheduleStep from './DurationScheduleStep';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
