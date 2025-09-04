@@ -547,8 +547,8 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         )}
       </div>
 
-      {/* Duration Selection */}
-      {effectiveSelectedAreas.length > 0 && (
+      {/* Duration Selection - Hidden for BOGOF as it's fixed to 6 months */}
+      {effectiveSelectedAreas.length > 0 && pricingModel !== 'bogof' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Clock className="h-5 w-5" />
