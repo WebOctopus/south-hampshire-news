@@ -1187,36 +1187,43 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                 <div className="space-y-3">
                   <div className="text-sm">
                     <div className="mb-2"><span className="font-medium">Booking Type:</span> 3+ Repeat Package</div>
-                    <div className="mb-2"><span className="font-medium">Where:</span></div>
+                    
+                    <div className="mb-2"><span className="font-medium">Advert Size:</span> {adSizes?.find(size => size.id === selectedAdSize)?.name || 'Selected size'}</div>
+                    
+                    <div className="mb-2"><span className="font-medium">Paid Area Locations:</span></div>
                     {bogofPaidAreas.map((areaId, index) => {
                       const area = areas?.find(a => a.id === areaId);
                       return area ? (
                         <div key={areaId} className="ml-2">
-                          Area {index + 1} {area.name}
+                          Paid - Area {index + 1} - {area.name}
                         </div>
                       ) : null;
                     })}
+                    
                     {bogofFreeAreas.length > 0 && (
                       <>
-                        <div className="mb-1 mt-3 text-green-600 font-medium">FREE Areas:</div>
+                        <div className="mb-1 mt-3 font-medium">FREE Area Locations:</div>
+                        <div className="ml-2 text-sm text-muted-foreground mb-2">
+                          - These are the free areas that you'll get for the next 3 Issues/6 Months<br/>
+                          - To keep these areas after 6 months, you'll need to purchase them separately<br/>
+                          - Use these areas to experiment with new customer generation.
+                        </div>
                         {bogofFreeAreas.map((areaId, index) => {
                           const area = areas?.find(a => a.id === areaId);
                           return area ? (
                             <div key={areaId} className="ml-2 text-green-600">
-                              Free Area {index + 1} {area.name}
+                              Free - Area {index + 1} - {area.name}
                             </div>
                           ) : null;
                         })}
                       </>
                     )}
-                    <div className="mt-2">
+                    
+                    <div className="mt-3">
                       <span className="font-medium">Total Circulation per selection of area/s = </span>
                       {pricingBreakdown.totalCirculation.toLocaleString()} homes
                     </div>
-                    <div className="mt-2">
-                      <span className="font-medium">Advert Size = </span>
-                      {adSizes?.find(size => size.id === selectedAdSize)?.name || 'Selected size'}
-                    </div>
+                    
                     <div className="mt-3 pt-3 border-t">
                       <span className="font-medium">Pre-payment Required = </span>
                       {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)}) per insertion in {bogofPaidAreas.length + bogofFreeAreas.length} area{(bogofPaidAreas.length + bogofFreeAreas.length) > 1 ? 's' : ''} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
