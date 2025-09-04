@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ interface AdvertisementSizeStepProps {
   bogofPaidAreas: string[];
   bogofFreeAreas: string[];
   selectedDuration: string;
+  onPricingChange?: (breakdown: any) => void;
+  showSummary?: boolean;
   onNext: () => void;
 }
 
@@ -27,10 +29,36 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
   bogofPaidAreas,
   bogofFreeAreas,
   selectedDuration,
+  onPricingChange,
+  showSummary = false,
   onNext
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const [previewMode, setPreviewMode] = useState<'grid' | 'magazine'>('grid');
+
+  // Calculate and notify pricing changes
+  useEffect(() => {
+    if (onPricingChange && selectedAdSize && selectedDuration && 
+        (pricingModel === 'bogof' ? bogofPaidAreas.length > 0 : selectedAreas.length > 0) &&
+        areas && adSizes && durations && subscriptionDurations && volumeDiscounts) {
+      
+      const pricingBreakdown = calculateAdvertisingPrice(
+        pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas,
+        selectedAdSize,
+        selectedDuration,
+        pricingModel === 'bogof',
+        areas,
+        adSizes,
+        pricingModel === 'bogof' ? subscriptionDurations : durations,
+        subscriptionDurations,
+        volumeDiscounts
+      );
+      
+      if (pricingBreakdown) {
+        onPricingChange(pricingBreakdown);
+      }
+    }
+  }, [selectedAdSize, selectedDuration, selectedAreas, bogofPaidAreas, bogofFreeAreas, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, onPricingChange]);
 
   const handleSizeSelect = (sizeId: string) => {
     onAdSizeChange(sizeId);
@@ -387,7 +415,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
       )}
 
       {/* Summary Section */}
-      {renderSummary()}
+      {showSummary && renderSummary()}
 
       {selectedAdSize && (
         <div className="flex justify-center pt-4">
