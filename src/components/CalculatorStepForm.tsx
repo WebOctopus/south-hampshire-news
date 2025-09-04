@@ -892,31 +892,125 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
             <div className="bg-background border rounded-lg p-6 space-y-6">
               <h3 className="text-lg font-semibold">Publication Schedule</h3>
               <p className="text-sm text-muted-foreground">
-                Select the months you want your advertising to run for each selected area:
+                {pricingModel === 'bogof' 
+                  ? 'Select ONE publication start date that will apply to ALL your selected areas:'
+                  : 'Select the months you want your advertising to run for each selected area:'}
               </p>
               
               {(() => {
                 // Get campaign duration info
                 const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
                 const durationData = relevantDurations?.find(d => d.id === selectedDuration);
-                // Calculate number of issues: 1 issue = 2 months
-                const maxSelectableMonths = pricingModel === 'bogof' 
-                  ? Math.floor((durationData?.duration_value || 6) / 2) // Convert months to issues (6 months = 3 issues)
-                  : (durationData?.duration_value || 1);
                 
-                // For BOGOF, we need to show both paid and free areas
-                const areasToShow = pricingModel === 'bogof' 
-                  ? [
-                      ...bogofPaidAreas.map(id => ({ id, type: 'paid' as const })),
-                      ...bogofFreeAreas.map(id => ({ id, type: 'free' as const }))
-                    ]
-                  : effectiveSelectedAreas.map(id => ({ id, type: 'regular' as const }));
+                if (pricingModel === 'bogof') {
+                  // For 3+ Repeat Package, show single start date selection
+                  const maxSelectableMonths = Math.floor((durationData?.duration_value || 6) / 2); // Convert months to issues
+                  const allAreas = [
+                    ...bogofPaidAreas.map(id => areas.find(a => a.id === id)).filter(Boolean),
+                    ...bogofFreeAreas.map(id => areas.find(a => a.id === id)).filter(Boolean)
+                  ];
+                  
+                  // Get all available months from all areas to find common start dates
+                  const availableStartDates = allAreas.length > 0 && allAreas[0]?.schedule 
+                    ? allAreas[0].schedule.map((monthData: any) => monthData.month)
+                    : [];
+                  
+                  // Get the first selected area's selected month as the global start date
+                  const globalStartDate = Object.keys(selectedMonths).length > 0 
+                    ? selectedMonths[Object.keys(selectedMonths)[0]]?.[0] || null
+                    : null;
+                  
+                  return (
+                    <div className="space-y-6">
+                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                        <p className="text-sm font-medium text-primary">
+                          📅 Select your campaign start date - this will apply to ALL {allAreas.length} selected areas
+                        </p>
+                      </div>
+                      
+                      <div className="border rounded-lg p-6">
+                        <h4 className="font-medium text-lg mb-4">
+                          Campaign Start Date for All Areas
+                        </h4>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          This start date will be used for all {allAreas.length} areas in your campaign.
+                        </p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {availableStartDates.map((month: string, index: number) => {
+                            const isSelected = globalStartDate === month;
+                            
+                            return (
+                              <div key={index} className={`
+                                border rounded-lg p-4 cursor-pointer transition-all
+                                ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-muted hover:border-primary/50'}
+                              `}>
+                                <div className="flex items-start space-x-3">
+                                  <input
+                                    type="radio"
+                                    id={`global-start-${index}`}
+                                    name="global-start-date"
+                                    checked={isSelected}
+                                    onChange={() => {
+                                      // Set the same start date for all areas
+                                      const newSelectedMonths: { [key: string]: string[] } = {};
+                                      [...bogofPaidAreas, ...bogofFreeAreas].forEach(areaId => {
+                                        newSelectedMonths[areaId] = [month];
+                                      });
+                                      setSelectedMonths(newSelectedMonths);
+                                    }}
+                                    className="mt-1"
+                                  />
+                                  <div className="flex-1 space-y-2" onClick={() => {
+                                    // Set the same start date for all areas
+                                    const newSelectedMonths: { [key: string]: string[] } = {};
+                                    [...bogofPaidAreas, ...bogofFreeAreas].forEach(areaId => {
+                                      newSelectedMonths[areaId] = [month];
+                                    });
+                                    setSelectedMonths(newSelectedMonths);
+                                  }}>
+                                    <div className="font-medium text-sm">
+                                      {formatMonthDisplay(month)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Applies to all {allAreas.length} selected areas
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {allAreas.length > 0 && (
+                          <div className="mt-4 pt-4 border-t">
+                            <h5 className="text-sm font-medium mb-2">Areas included in this campaign:</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {allAreas.map((area) => (
+                                <Badge key={area?.id} variant="outline" className="text-xs">
+                                  {area?.name}
+                                  {bogofFreeAreas.includes(area?.id || '') && (
+                                    <span className="ml-1 text-green-600">(FREE)</span>
+                                  )}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+                
+                // Regular pricing model logic (unchanged)
+                const maxSelectableMonths = (durationData?.duration_value || 1);
+                const areasToShow = effectiveSelectedAreas.map(id => ({ id, type: 'regular' as const }));
                 
                 return (
                   <div className="space-y-6">
                     <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                       <p className="text-sm font-medium text-primary">
-                        📅 You can select up to {maxSelectableMonths} {pricingModel === 'bogof' ? 'issue' : 'month'}{maxSelectableMonths > 1 ? (pricingModel === 'bogof' ? 's' : 's') : ''} for each area based on your selected campaign duration
+                        📅 You can select up to {maxSelectableMonths} month{maxSelectableMonths > 1 ? 's' : ''} for each area based on your selected campaign duration
                       </p>
                     </div>
                     
@@ -944,11 +1038,6 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                           <h4 className="font-medium text-lg mb-4 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               {area.name}
-                              {type === 'free' && (
-                                <Badge variant="secondary" className="text-xs text-green-700 bg-green-100">
-                                  FREE AREA
-                                </Badge>
-                              )}
                             </div>
                             <Badge variant="outline" className="text-xs">
                               {areaSelectedMonths.length}/{maxSelectableMonths} selected
