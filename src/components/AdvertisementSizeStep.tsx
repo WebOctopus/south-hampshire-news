@@ -3,14 +3,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle, Ruler, Eye } from 'lucide-react';
+import { Loader2, AlertCircle, Ruler, Eye, Palette } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
+import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { cn } from '@/lib/utils';
 
 interface AdvertisementSizeStepProps {
   selectedAdSize: string;
   onAdSizeChange: (sizeId: string) => void;
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
+  selectedAreas: string[];
+  bogofPaidAreas: string[];
+  bogofFreeAreas: string[];
+  selectedDuration: string;
   onNext: () => void;
 }
 
@@ -18,9 +23,13 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
   selectedAdSize,
   onAdSizeChange,
   pricingModel,
+  selectedAreas,
+  bogofPaidAreas,
+  bogofFreeAreas,
+  selectedDuration,
   onNext
 }) => {
-  const { adSizes, isLoading, isError } = usePricingData();
+  const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const [previewMode, setPreviewMode] = useState<'grid' | 'magazine'>('grid');
 
   const handleSizeSelect = (sizeId: string) => {
@@ -202,15 +211,104 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
     );
   }
 
+  const renderSummary = () => {
+    if (!selectedAdSize || !pricingModel || 
+        (pricingModel === 'bogof' ? bogofPaidAreas.length === 0 : selectedAreas.length === 0)) {
+      return null;
+    }
+
+    const pricingBreakdown = calculateAdvertisingPrice(
+      pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas,
+      selectedAdSize,
+      selectedDuration || '',
+      pricingModel === 'bogof',
+      areas || [],
+      adSizes || [],
+      pricingModel === 'bogof' ? subscriptionDurations || [] : durations || [],
+      subscriptionDurations || [],
+      volumeDiscounts || []
+    );
+
+    if (!pricingBreakdown) return null;
+
+    return (
+      <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4">SUMMARY & COST TO BOOK</h3>
+        <div className="space-y-3">
+          <div className="text-sm">
+            <div className="mb-2"><span className="font-medium">Booking Type:</span> {pricingModel === 'bogof' ? '3+ Repeat Package' : 'Fixed Term'}</div>
+            
+            <div className="mb-2"><span className="font-medium">Advert Size:</span> {adSizes?.find(size => size.id === selectedAdSize)?.name || 'Selected size'}</div>
+            
+            {pricingModel === 'bogof' ? (
+              <>
+                <div className="mb-2"><span className="font-medium">Paid Area Locations:</span></div>
+                {bogofPaidAreas.map((areaId, index) => {
+                  const area = areas?.find(a => a.id === areaId);
+                  return area ? (
+                    <div key={areaId} className="ml-2">
+                      Paid - Area {index + 1} - {area.name}
+                    </div>
+                  ) : null;
+                })}
+                
+                {bogofFreeAreas.length > 0 && (
+                  <>
+                    <div className="mb-1 mt-3 font-medium">FREE Area Locations:</div>
+                    <div className="ml-2 text-sm text-muted-foreground mb-2">
+                      - These are the free areas that you'll get for the next 3 Issues/6 Months<br/>
+                      - To keep these areas after 6 months, you'll need to purchase them separately<br/>
+                      - Use these areas to experiment with new customer generation.
+                    </div>
+                    {bogofFreeAreas.map((areaId, index) => {
+                      const area = areas?.find(a => a.id === areaId);
+                      return area ? (
+                        <div key={areaId} className="ml-2 text-green-600">
+                          Free - Area {index + 1} - {area.name}
+                        </div>
+                      ) : null;
+                    })}
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="mb-2"><span className="font-medium">Where:</span></div>
+                {selectedAreas.map((areaId, index) => {
+                  const area = areas?.find(a => a.id === areaId);
+                  return area ? (
+                    <div key={areaId} className="ml-2">
+                      Area {index + 1} {area.name}
+                    </div>
+                  ) : null;
+                })}
+              </>
+            )}
+            
+            <div className="mt-3">
+              <span className="font-medium">Total Circulation per selection of area/s = </span>
+              {pricingBreakdown.totalCirculation.toLocaleString()} homes
+            </div>
+            
+            <div className="mt-3 pt-3 border-t">
+              <span className="font-medium">Pre-payment Required = </span>
+              {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)}) per insertion in {(pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).length} area{(pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).length > 1 ? 's' : ''} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-          <Ruler className="h-6 w-6" />
+          <Palette className="h-6 w-6" />
           Choose Your Advertisement Size
         </h2>
         <p className="text-muted-foreground">
-          Select the size that best fits your advertising needs and budget
+          Select the size that best fits your advertising needs
         </p>
       </div>
 
@@ -288,10 +386,13 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
         renderMagazinePreview()
       )}
 
+      {/* Summary Section */}
+      {renderSummary()}
+
       {selectedAdSize && (
         <div className="flex justify-center pt-4">
           <Button onClick={onNext} size="lg" className="px-8">
-            Continue to Campaign Details
+            Continue to Contact Information
           </Button>
         </div>
       )}

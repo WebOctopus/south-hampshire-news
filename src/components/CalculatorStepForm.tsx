@@ -2,9 +2,8 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useStepForm } from './StepForm';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
-import AreaSelectionStep from './AreaSelectionStep';
+import AreaAndScheduleStep from './AreaAndScheduleStep';
 import AdvertisementSizeStep from './AdvertisementSizeStep';
-import DurationScheduleStep from './DurationScheduleStep';
 
 interface CalculatorStepFormProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -49,16 +48,20 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({
 
   return (
     <ErrorBoundary>
-      <AreaSelectionStep 
+      <AreaAndScheduleStep 
         pricingModel={pricingModel}
         selectedAreas={selectedAreas}
         bogofPaidAreas={bogofPaidAreas}
         bogofFreeAreas={bogofFreeAreas}
+        selectedDuration={selectedDuration}
+        selectedMonths={selectedMonths}
         onAreasChange={setSelectedAreas}
         onBogofAreasChange={(paid, free) => {
           setBogofPaidAreas(paid);
           setBogofFreeAreas(free);
         }}
+        onDurationChange={setSelectedDuration}
+        onMonthsChange={setSelectedMonths}
         onNext={nextStep}
       />
       
@@ -66,19 +69,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({
         selectedAdSize={selectedAdSize}
         onAdSizeChange={setSelectedAdSize}
         pricingModel={pricingModel}
-        onNext={nextStep}
-      />
-      
-      <DurationScheduleStep
-        pricingModel={pricingModel}
         selectedAreas={selectedAreas}
         bogofPaidAreas={bogofPaidAreas}
         bogofFreeAreas={bogofFreeAreas}
-        selectedAdSize={selectedAdSize}
         selectedDuration={selectedDuration}
-        selectedMonths={selectedMonths}
-        onDurationChange={setSelectedDuration}
-        onMonthsChange={setSelectedMonths}
         onNext={nextStep}
       />
     </ErrorBoundary>
