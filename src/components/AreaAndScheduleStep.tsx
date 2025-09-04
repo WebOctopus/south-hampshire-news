@@ -572,14 +572,6 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
       {/* Schedule Selection */}
       {renderScheduleSection()}
-
-      {canProceed() && (
-        <div className="flex justify-center pt-4">
-          <Button onClick={onNext} size="lg" className="px-8">
-            Continue to Advertisement Size
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
