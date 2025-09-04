@@ -541,14 +541,9 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({ pricingM
                                     <Label htmlFor={`free-${area.id}`} className="text-sm font-medium cursor-pointer">
                                       {area.name}
                                     </Label>
-                                    <div className="flex items-center gap-2">
-                                      <Badge variant="secondary" className="text-xs text-green-700 bg-green-100">
-                                        FREE
-                                      </Badge>
-                                      <Badge variant="outline" className="text-xs">
-                                        {area.circulation?.toLocaleString()} homes
-                                      </Badge>
-                                    </div>
+                                    <Badge variant="outline" className="text-xs">
+                                      {area.circulation?.toLocaleString()} homes
+                                    </Badge>
                                   </div>
                                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                                     {(area as any).description || 'Area description'}
