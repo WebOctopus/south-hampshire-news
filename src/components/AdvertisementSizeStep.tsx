@@ -416,14 +416,6 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
 
       {/* Summary Section */}
       {showSummary && renderSummary()}
-
-      {selectedAdSize && (
-        <div className="flex justify-center pt-4">
-          <Button onClick={onNext} size="lg" className="px-8">
-            Continue to Contact Information
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
