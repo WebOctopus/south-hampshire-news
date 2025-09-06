@@ -163,9 +163,9 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
       )}
 
       {pricingModel === 'bogof' ? (
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[400px]">
           {/* Paid Areas Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">Paid Areas</h3>
               <Badge variant="default">Required</Badge>
@@ -174,7 +174,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
               These are the areas you will pay for throughout your campaign.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-2">
               {effectiveAreas.map((area) => (
                 <Card 
                   key={`paid-${area.id}`} 
@@ -216,7 +216,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
           </div>
 
           {/* Free Areas Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">FREE Bonus Areas</h3>
               <Badge variant="secondary">6 Months Free</Badge>
@@ -228,7 +228,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
               }
             </p>
             
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2 ${
+            <div className={`grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-2 ${
               bogofPaidAreas.length === 0 ? 'opacity-50' : ''
             }`}>
               {effectiveAreas
