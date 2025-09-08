@@ -4,9 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 
 
 interface ContactInformationStepProps {
@@ -30,7 +32,10 @@ interface FormData {
   companySector: string;
   email: string;
   phone: string;
-  invoiceAddress: string;
+  postcode: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
   password: string;
 }
 
@@ -57,16 +62,103 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     companySector: "",
     email: "",
     phone: "",
-    invoiceAddress: "",
+    postcode: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
     password: "",
   });
+  
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+
+  const businessSectors = [
+    "Accounting & Finance",
+    "Advertising & Marketing", 
+    "Architecture & Construction",
+    "Arts & Entertainment",
+    "Automotive",
+    "Beauty & Wellness",
+    "Consulting",
+    "Education & Training",
+    "Engineering",
+    "Food & Beverage",
+    "Healthcare & Medical",
+    "Hospitality & Tourism",
+    "Information Technology",
+    "Legal Services",
+    "Manufacturing",
+    "Non-profit",
+    "Real Estate",
+    "Retail & E-commerce",
+    "Sports & Recreation",
+    "Transportation & Logistics",
+    "Other"
+  ];
+
+  // Postcode lookup function
+  const handlePostcodeLookup = async () => {
+    if (!formData.postcode) {
+      toast({
+        title: "No Postcode Entered",
+        description: "Please enter a postcode to lookup addresses.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoadingAddress(true);
+    try {
+      // Using postcodes.io API for UK postcode lookup
+      const response = await fetch(`https://api.postcodes.io/postcodes/${formData.postcode}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.result) {
+          // Set the city/town from the postcode data
+          setFormData(prev => ({
+            ...prev,
+            city: data.result.admin_district || data.result.parish || ''
+          }));
+          toast({
+            title: "Postcode Found",
+            description: "Please enter your full address in the fields below.",
+          });
+        }
+      } else {
+        toast({
+          title: "Invalid Postcode",
+          description: "Please check your postcode and try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Postcode lookup error:', error);
+      toast({
+        title: "Lookup Failed",
+        description: "Unable to lookup postcode. Please enter your address manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingAddress(false);
+    }
+  };
 
   const handleSaveQuote = async () => {
-    // Validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    // Validation - companySector is no longer required
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
       toast({
         title: "Missing Information", 
         description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Company name is required for company type
+    if (formData.businessType === 'company' && !formData.companyName) {
+      toast({
+        title: "Missing Information", 
+        description: "Company name is required for business type 'Company'.",
         variant: "destructive",
       });
       return;
@@ -94,10 +186,20 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
   const handleBookNow = async () => {
     // Same validation as save quote
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
       toast({
         title: "Missing Information", 
         description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Company name is required for company type
+    if (formData.businessType === 'company' && !formData.companyName) {
+      toast({
+        title: "Missing Information", 
+        description: "Company name is required for business type 'Company'.",
         variant: "destructive",
       });
       return;
@@ -172,86 +274,300 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   </RadioGroup>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Conditional form fields based on business type */}
+                {formData.businessType === 'company' ? (
+                  // Company Form
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium">Company Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="firstName">First Name *</Label>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                          placeholder="Enter your first name"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="lastName">Last Name *</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                          placeholder="Enter your last name"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companyName">Company Name *</Label>
+                        <Input
+                          id="companyName"
+                          name="companyName"
+                          value={formData.companyName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                          placeholder="Enter your company name"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companySector">Business Sector</Label>
+                        <Select 
+                          value={formData.companySector} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, companySector: value }))}
+                          disabled={submitting}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your business sector" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {businessSectors.map((sector) => (
+                              <SelectItem key={sector} value={sector}>
+                                {sector}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email Address *</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                          placeholder="Enter your email"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="Enter your phone number"
+                          disabled={submitting}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Company Address Section with Postcode Lookup */}
+                    <div className="space-y-4">
+                      <h5 className="text-sm font-medium">Company Address</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="postcode">Postcode *</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="postcode"
+                              name="postcode"
+                              value={formData.postcode}
+                              onChange={(e) => setFormData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
+                              placeholder="e.g. SW1A 1AA"
+                              disabled={submitting}
+                              className="flex-1"
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={handlePostcodeLookup}
+                              disabled={isLoadingAddress || submitting}
+                              size="sm"
+                            >
+                              <Search className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="addressLine1">Address Line 1 *</Label>
+                          <Input
+                            id="addressLine1"
+                            name="addressLine1"
+                            value={formData.addressLine1}
+                            onChange={(e) => setFormData(prev => ({ ...prev, addressLine1: e.target.value }))}
+                            placeholder="House number and street name"
+                            disabled={submitting}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="addressLine2">Address Line 2</Label>
+                          <Input
+                            id="addressLine2"
+                            name="addressLine2"
+                            value={formData.addressLine2}
+                            onChange={(e) => setFormData(prev => ({ ...prev, addressLine2: e.target.value }))}
+                            placeholder="Area, district (optional)"
+                            disabled={submitting}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="city">Town/City *</Label>
+                          <Input
+                            id="city"
+                            name="city"
+                            value={formData.city}
+                            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                            placeholder="Town or city"
+                            disabled={submitting}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Sole Trader Form
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium">Personal Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="firstName">First Name *</Label>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                          placeholder="Enter your first name"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="lastName">Last Name *</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                          placeholder="Enter your last name"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companyName">Business/Trading Name</Label>
+                        <Input
+                          id="companyName"
+                          name="companyName"
+                          value={formData.companyName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                          placeholder="Enter your business name (optional)"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="companySector">Business Sector</Label>
+                        <Select 
+                          value={formData.companySector} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, companySector: value }))}
+                          disabled={submitting}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your business sector" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {businessSectors.map((sector) => (
+                              <SelectItem key={sector} value={sector}>
+                                {sector}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email Address *</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                          placeholder="Enter your email"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="Enter your phone number"
+                          disabled={submitting}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Business Address Section with Postcode Lookup */}
+                    <div className="space-y-4">
+                      <h5 className="text-sm font-medium">Business Address</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="postcode">Postcode *</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="postcode"
+                              name="postcode"
+                              value={formData.postcode}
+                              onChange={(e) => setFormData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
+                              placeholder="e.g. SW1A 1AA"
+                              disabled={submitting}
+                              className="flex-1"
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={handlePostcodeLookup}
+                              disabled={isLoadingAddress || submitting}
+                              size="sm"
+                            >
+                              <Search className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="addressLine1">Address Line 1 *</Label>
+                          <Input
+                            id="addressLine1"
+                            name="addressLine1"
+                            value={formData.addressLine1}
+                            onChange={(e) => setFormData(prev => ({ ...prev, addressLine1: e.target.value }))}
+                            placeholder="House number and street name"
+                            disabled={submitting}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="addressLine2">Address Line 2</Label>
+                          <Input
+                            id="addressLine2"
+                            name="addressLine2"
+                            value={formData.addressLine2}
+                            onChange={(e) => setFormData(prev => ({ ...prev, addressLine2: e.target.value }))}
+                            placeholder="Area, district (optional)"
+                            disabled={submitting}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="city">Town/City *</Label>
+                          <Input
+                            id="city"
+                            name="city"
+                            value={formData.city}
+                            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                            placeholder="Town or city"
+                            disabled={submitting}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div>
-                  <Label htmlFor="firstName">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    placeholder="Enter your first name"
-                    disabled={submitting}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    placeholder="Enter your last name"
-                    disabled={submitting}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="companyName">Company Name *</Label>
-                  <Input
-                    id="companyName"
-                    name="companyName"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                    placeholder="Enter your company name"
-                    disabled={submitting}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="companySector">Company Sector *</Label>
-                  <Input
-                    id="companySector"
-                    name="companySector"
-                    value={formData.companySector}
-                    onChange={(e) => setFormData(prev => ({ ...prev, companySector: e.target.value }))}
-                    placeholder="Enter your company sector"
-                    disabled={submitting}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Enter your email"
-                    disabled={submitting}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone Number *</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="Enter your phone number"
-                    disabled={submitting}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Label htmlFor="invoiceAddress">Invoice Address *</Label>
-                  <Input
-                    id="invoiceAddress"
-                    name="invoiceAddress"
-                    value={formData.invoiceAddress}
-                    onChange={(e) => setFormData(prev => ({ ...prev, invoiceAddress: e.target.value }))}
-                    placeholder="Enter your invoice address"
-                    disabled={submitting}
-                  />
-                </div>
-                <div className="md:col-span-2">
                   <Label htmlFor="password">Create Account Password *</Label>
                   <Input
                     id="password"
@@ -265,7 +581,6 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   <p className="text-xs text-muted-foreground mt-1">
                     We'll create your account automatically and sign you in. You can access your saved quotes anytime.
                   </p>
-                </div>
                 </div>
               </div>
             </form>
