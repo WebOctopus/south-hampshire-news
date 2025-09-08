@@ -163,7 +163,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
       )}
 
       {pricingModel === 'bogof' ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 min-h-[400px] w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px] w-full">
           {/* Paid Areas Section */}
           <div className="space-y-4 min-w-0">
             <div className="flex items-center gap-2">
