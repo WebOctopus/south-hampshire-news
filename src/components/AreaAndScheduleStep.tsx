@@ -394,7 +394,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                 These are the areas you will pay for throughout your campaign.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {effectiveAreas.map((area) => (
                   <Card 
                     key={`paid-${area.id}`} 
@@ -440,7 +440,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                   You can choose up to {bogofPaidAreas.length} free area{bogofPaidAreas.length > 1 ? 's' : ''}.
                 </p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {effectiveAreas
                     .filter(area => !bogofPaidAreas.includes(area.id))
                     .map((area) => {
