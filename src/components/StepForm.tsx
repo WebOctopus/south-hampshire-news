@@ -111,7 +111,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
 
   return (
     <StepFormContext.Provider value={contextValue}>
-      <div ref={formRef} className="w-full max-w-7xl mx-auto">
+      <div ref={formRef} className="w-full max-w-none mx-auto px-4">
         {/* Progress Indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
