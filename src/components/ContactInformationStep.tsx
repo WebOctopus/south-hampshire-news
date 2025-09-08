@@ -96,7 +96,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     "Other"
   ];
 
-  // Postcode lookup function
+  // Enhanced postcode lookup function
   const handlePostcodeLookup = async () => {
     if (!formData.postcode) {
       toast({
@@ -109,27 +109,67 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
     setIsLoadingAddress(true);
     try {
-      // Using postcodes.io API for UK postcode lookup
+      // First try postcodes.io for basic info
       const response = await fetch(`https://api.postcodes.io/postcodes/${formData.postcode}`);
       if (response.ok) {
         const data = await response.json();
         if (data.result) {
-          // Set the city/town from the postcode data
+          // Populate available address information
+          const district = data.result.admin_district || '';
+          const ward = data.result.admin_ward || '';
+          const region = data.result.region || '';
+          
+          // Create a more comprehensive address line 2 with available location info
+          let addressLine2 = '';
+          if (ward && ward !== district) {
+            addressLine2 = ward;
+          }
+          
           setFormData(prev => ({
             ...prev,
-            city: data.result.admin_district || data.result.parish || ''
+            addressLine2: addressLine2,
+            city: district || data.result.parish || ''
           }));
+          
           toast({
             title: "Postcode Found",
-            description: "Please enter your full address in the fields below.",
+            description: `Found: ${district}${ward && ward !== district ? `, ${ward}` : ''}. Please enter your house number and street name in Address Line 1.`,
           });
         }
       } else {
-        toast({
-          title: "Invalid Postcode",
-          description: "Please check your postcode and try again.",
-          variant: "destructive",
-        });
+        // Try alternative format or show helpful error
+        const cleanPostcode = formData.postcode.replace(/\s/g, '');
+        const altResponse = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+        
+        if (altResponse.ok) {
+          const altData = await altResponse.json();
+          if (altData.result) {
+            const district = altData.result.admin_district || '';
+            const ward = altData.result.admin_ward || '';
+            
+            let addressLine2 = '';
+            if (ward && ward !== district) {
+              addressLine2 = ward;
+            }
+            
+            setFormData(prev => ({
+              ...prev,
+              addressLine2: addressLine2,
+              city: district || altData.result.parish || ''
+            }));
+            
+            toast({
+              title: "Postcode Found",
+              description: `Found: ${district}${ward && ward !== district ? `, ${ward}` : ''}. Please enter your house number and street name in Address Line 1.`,
+            });
+          }
+        } else {
+          toast({
+            title: "Invalid Postcode",
+            description: "Please check your postcode format (e.g. SW1A 1AA) and try again.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error('Postcode lookup error:', error);
