@@ -395,7 +395,9 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
               </p>
               
               <div className="grid grid-cols-1 gap-4">
-                {effectiveAreas.map((area) => (
+                {effectiveAreas
+                  .filter(area => !bogofFreeAreas.includes(area.id))
+                  .map((area) => (
                   <Card 
                     key={`paid-${area.id}`} 
                     className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
