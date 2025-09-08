@@ -3,14 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, MapPin, DollarSign, Clock, Eye, FileText } from 'lucide-react';
+import { Calculator, MapPin, DollarSign, Clock, FileText } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePricingInvalidation } from '@/hooks/usePricingMutations';
 import LocationsManagement from './LocationsManagement';
 import AdvertSizesPricingManagement from './AdvertSizesPricingManagement';
 import SubscriptionSettingsManagement from './SubscriptionSettingsManagement';
 import LeafletingManagement from './LeafletingManagement';
-import CalculatorPreview from './CalculatorPreview';
 
 const CostCalculatorManagement = () => {
   const [activeTab, setActiveTab] = useState('locations');
@@ -120,7 +119,7 @@ const CostCalculatorManagement = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="locations" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 Locations
@@ -136,10 +135,6 @@ const CostCalculatorManagement = () => {
               <TabsTrigger value="leaflets" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Leaflets
-              </TabsTrigger>
-              <TabsTrigger value="preview" className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Preview Calculator
               </TabsTrigger>
             </TabsList>
 
@@ -157,10 +152,6 @@ const CostCalculatorManagement = () => {
 
             <TabsContent value="leaflets" className="mt-6">
               <LeafletingManagement onStatsUpdate={loadStats} />
-            </TabsContent>
-
-            <TabsContent value="preview" className="mt-6">
-              <CalculatorPreview />
             </TabsContent>
           </Tabs>
         </CardContent>
