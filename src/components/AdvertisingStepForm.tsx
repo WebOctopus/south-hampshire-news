@@ -6,6 +6,7 @@ import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
 import ContactInformationStep from '@/components/ContactInformationStep';
+import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
@@ -478,49 +479,65 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           </DialogContent>
         </Dialog>
       ) : (
-        <StepForm stepLabels={stepLabels}>
-          <PricingOptionsStep onSelectOption={handleSelectOption} />
+        <>
+          <StepForm stepLabels={stepLabels}>
+            <PricingOptionsStep onSelectOption={handleSelectOption} />
+            
+            <AreaAndScheduleStep 
+              pricingModel={selectedPricingModel}
+              selectedAreas={campaignData.selectedAreas}
+              bogofPaidAreas={campaignData.bogofPaidAreas}
+              bogofFreeAreas={campaignData.bogofFreeAreas}
+              selectedDuration={campaignData.selectedDuration}
+              selectedMonths={campaignData.selectedMonths}
+              onAreasChange={(areas) => setCampaignData(prev => ({ ...prev, selectedAreas: areas }))}
+              onBogofAreasChange={(paid, free) => setCampaignData(prev => ({ ...prev, bogofPaidAreas: paid, bogofFreeAreas: free }))}
+              onDurationChange={(duration) => setCampaignData(prev => ({ ...prev, selectedDuration: duration }))}
+              onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
+              onNext={() => {}}
+            />
+            
+            <AdvertisementSizeStep
+              selectedAdSize={campaignData.selectedAdSize}
+              onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
+              pricingModel={selectedPricingModel}
+              selectedAreas={campaignData.selectedAreas}
+              bogofPaidAreas={campaignData.bogofPaidAreas}
+              bogofFreeAreas={campaignData.bogofFreeAreas}
+              selectedDuration={campaignData.selectedDuration}
+              onPricingChange={(breakdown) => setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }))}
+              showSummary={true}
+              onNext={() => {}}
+            />
+            
+            <ContactInformationStep
+              pricingModel={selectedPricingModel}
+              selectedAreas={campaignData.selectedAreas}
+              bogofPaidAreas={campaignData.bogofPaidAreas}
+              bogofFreeAreas={campaignData.bogofFreeAreas}
+              selectedAdSize={campaignData.selectedAdSize}
+              selectedDuration={campaignData.selectedDuration}
+              pricingBreakdown={campaignData.pricingBreakdown}
+              campaignData={campaignData}
+              onSaveQuote={handleContactInfoSave}
+              onBookNow={handleContactInfoBook}
+            />
+          </StepForm>
           
-          <AreaAndScheduleStep 
-            pricingModel={selectedPricingModel}
-            selectedAreas={campaignData.selectedAreas}
-            bogofPaidAreas={campaignData.bogofPaidAreas}
-            bogofFreeAreas={campaignData.bogofFreeAreas}
-            selectedDuration={campaignData.selectedDuration}
-            selectedMonths={campaignData.selectedMonths}
-            onAreasChange={(areas) => setCampaignData(prev => ({ ...prev, selectedAreas: areas }))}
-            onBogofAreasChange={(paid, free) => setCampaignData(prev => ({ ...prev, bogofPaidAreas: paid, bogofFreeAreas: free }))}
-            onDurationChange={(duration) => setCampaignData(prev => ({ ...prev, selectedDuration: duration }))}
-            onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
-            onNext={() => {}}
+          {/* Sales Assistant Popup - only show in regular (non-dialog) mode */}
+          <SalesAssistantPopup 
+            campaignData={{
+              selectedModel: selectedPricingModel,
+              selectedAreas: campaignData.selectedAreas,
+              bogofPaidAreas: campaignData.bogofPaidAreas,
+              bogofFreeAreas: campaignData.bogofFreeAreas,
+              selectedSize: campaignData.selectedAdSize,
+              selectedDuration: campaignData.selectedDuration,
+              totalCost: campaignData.pricingBreakdown?.finalTotal,
+              pricingBreakdown: campaignData.pricingBreakdown
+            }}
           />
-          
-          <AdvertisementSizeStep
-            selectedAdSize={campaignData.selectedAdSize}
-            onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
-            pricingModel={selectedPricingModel}
-            selectedAreas={campaignData.selectedAreas}
-            bogofPaidAreas={campaignData.bogofPaidAreas}
-            bogofFreeAreas={campaignData.bogofFreeAreas}
-            selectedDuration={campaignData.selectedDuration}
-            onPricingChange={(breakdown) => setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }))}
-            showSummary={true}
-            onNext={() => {}}
-          />
-          
-          <ContactInformationStep
-            pricingModel={selectedPricingModel}
-            selectedAreas={campaignData.selectedAreas}
-            bogofPaidAreas={campaignData.bogofPaidAreas}
-            bogofFreeAreas={campaignData.bogofFreeAreas}
-            selectedAdSize={campaignData.selectedAdSize}
-            selectedDuration={campaignData.selectedDuration}
-            pricingBreakdown={campaignData.pricingBreakdown}
-            campaignData={campaignData}
-            onSaveQuote={handleContactInfoSave}
-            onBookNow={handleContactInfoBook}
-          />
-        </StepForm>
+        </>
       )}
 
       {/* Fixed Term Confirmation Dialog */}
