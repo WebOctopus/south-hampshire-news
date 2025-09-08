@@ -117,16 +117,17 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
           <div className="flex items-center justify-center space-x-4">
             {Array.from({ length: totalSteps }, (_, index) => (
               <div key={index} className="flex items-center">
-                <div
+                <button
+                  onClick={() => goToStep(index)}
                   className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200",
+                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 hover:scale-105 cursor-pointer",
                     index <= currentStep
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "bg-muted text-muted-foreground border-2 border-muted"
+                      ? "bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground border-2 border-muted hover:bg-muted/80"
                   )}
                 >
                   {index + 1}
-                </div>
+                </button>
                 {index < totalSteps - 1 && (
                   <div
                     className={cn(
