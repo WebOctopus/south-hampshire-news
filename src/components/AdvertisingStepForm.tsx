@@ -6,7 +6,7 @@ import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
 import ContactInformationStep from '@/components/ContactInformationStep';
-import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
+import { SalesAssistantWrapper } from '@/components/SalesAssistantWrapper';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
@@ -522,21 +522,21 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               onSaveQuote={handleContactInfoSave}
               onBookNow={handleContactInfoBook}
             />
+            
+            {/* Sales Assistant Popup - rendered inside StepForm context but positioned absolutely */}
+            <SalesAssistantWrapper 
+              campaignData={{
+                selectedModel: selectedPricingModel,
+                selectedAreas: campaignData.selectedAreas,
+                bogofPaidAreas: campaignData.bogofPaidAreas,
+                bogofFreeAreas: campaignData.bogofFreeAreas,
+                selectedSize: campaignData.selectedAdSize,
+                selectedDuration: campaignData.selectedDuration,
+                totalCost: campaignData.pricingBreakdown?.finalTotal,
+                pricingBreakdown: campaignData.pricingBreakdown
+              }}
+            />
           </StepForm>
-          
-          {/* Sales Assistant Popup - only show in regular (non-dialog) mode */}
-          <SalesAssistantPopup 
-            campaignData={{
-              selectedModel: selectedPricingModel,
-              selectedAreas: campaignData.selectedAreas,
-              bogofPaidAreas: campaignData.bogofPaidAreas,
-              bogofFreeAreas: campaignData.bogofFreeAreas,
-              selectedSize: campaignData.selectedAdSize,
-              selectedDuration: campaignData.selectedDuration,
-              totalCost: campaignData.pricingBreakdown?.finalTotal,
-              pricingBreakdown: campaignData.pricingBreakdown
-            }}
-          />
         </>
       )}
 

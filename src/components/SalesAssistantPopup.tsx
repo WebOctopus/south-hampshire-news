@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, Phone, MessageCircle, ChevronDown, ChevronUp, User, MapPin, Ruler, CreditCard } from 'lucide-react';
-import { useStepForm } from './StepForm';
 import { cn } from '@/lib/utils';
 
 interface StepContent {
@@ -68,10 +67,10 @@ const stepContent: Record<number, StepContent> = {
 
 interface SalesAssistantPopupProps {
   campaignData?: any;
+  currentStep: number;
 }
 
-export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campaignData }) => {
-  const { currentStep } = useStepForm();
+export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campaignData, currentStep }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   
