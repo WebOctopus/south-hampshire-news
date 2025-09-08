@@ -106,8 +106,10 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
                 if (typeof size.subscription_pricing_per_issue === 'number') {
                   return size.subscription_pricing_per_issue;
                 }
-                if (typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue && 'price' in size.subscription_pricing_per_issue) {
-                  return size.subscription_pricing_per_issue.price;
+                if (typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue) {
+                  // Extract the price for the first duration (key "1")
+                  const firstPrice = size.subscription_pricing_per_issue["1"] || size.subscription_pricing_per_issue[1];
+                  if (firstPrice) return firstPrice;
                 }
                 return size.base_price_per_area || 0;
               }
