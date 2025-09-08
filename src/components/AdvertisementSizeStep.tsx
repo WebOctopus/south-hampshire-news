@@ -230,6 +230,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
   }
 
   if (isError || !adSizes || adSizes.length === 0) {
+    console.log('AdvertisementSizeStep - adSizes:', adSizes);
     return (
       <div className="space-y-6">
         <div className="text-center">
@@ -249,6 +250,11 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
     );
   }
 
+  // Ensure adSizes is an array and convert if it's an object
+  const adSizesArray = Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {});
+  
+  console.log('AdvertisementSizeStep - adSizesArray:', adSizesArray);
+
   const renderSummary = () => {
     if (!selectedAdSize || !pricingModel || 
         (pricingModel === 'bogof' ? bogofPaidAreas.length === 0 : selectedAreas.length === 0)) {
@@ -261,7 +267,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
       selectedDuration || '',
       pricingModel === 'bogof',
       areas || [],
-      adSizes || [],
+      Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}),
       pricingModel === 'bogof' ? subscriptionDurations || [] : durations || [],
       subscriptionDurations || [],
       volumeDiscounts || []
@@ -276,7 +282,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
           <div className="text-sm">
             <div className="mb-2"><span className="font-medium">Booking Type:</span> {pricingModel === 'bogof' ? '3+ Repeat Package' : 'Fixed Term'}</div>
             
-            <div className="mb-2"><span className="font-medium">Advert Size:</span> {adSizes?.find(size => size.id === selectedAdSize)?.name || 'Selected size'}</div>
+            <div className="mb-2"><span className="font-medium">Advert Size:</span> {(Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}) as typeof adSizes).find(size => size.id === selectedAdSize)?.name || 'Selected size'}</div>
             
             {pricingModel === 'bogof' ? (
               <>
@@ -375,7 +381,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
 
       {previewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {adSizes
+          {(Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}) as typeof adSizes)
             .filter((size) => {
               // Filter sizes based on pricing model using available_for array
               if (pricingModel === 'bogof') {
