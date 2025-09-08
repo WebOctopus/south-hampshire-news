@@ -400,14 +400,6 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
                 <CardContent className="text-center space-y-4">
                   {renderAdSizeVisual(size, isSelected)}
                   
-                  {size.base_price_per_area && (
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Starting from </span>
-                      <span className="font-bold text-lg">£{size.base_price_per_area}</span>
-                      <span className="text-muted-foreground"> per area</span>
-                    </div>
-                  )}
-                  
                   <div className={cn(
                     "w-full py-2 px-4 rounded-md text-sm font-medium transition-colors",
                     isSelected 
