@@ -7,7 +7,6 @@ import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
 import ContactInformationStep from '@/components/ContactInformationStep';
 import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
-import { StepTracker } from '@/components/StepTracker';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
