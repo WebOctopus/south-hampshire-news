@@ -95,9 +95,9 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
   if (!isVisible) return null;
 
   return (
-    <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 w-80 animate-fade-in">
-      <Card className="shadow-elegant border-primary/20 bg-background/95 backdrop-blur-sm">
-        <CardHeader className="pb-3">
+    <div className="fixed right-4 top-4 bottom-4 z-50 w-96 max-w-[calc(100vw-2rem)] animate-fade-in">
+      <Card className="shadow-elegant border-primary/20 bg-background/95 backdrop-blur-sm h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
@@ -143,9 +143,12 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
           </div>
         </CardHeader>
 
-        <CardContent className={cn("pt-0 transition-all duration-300", isMinimized && "pb-4")}>
-          <div className={cn("transition-all duration-300 overflow-hidden", isMinimized ? "max-h-0 opacity-0" : "max-h-96 opacity-100")}>
-            <div className="space-y-4">
+        <CardContent className={cn("pt-0 flex-1 overflow-hidden transition-all duration-300", isMinimized && "pb-4")}>
+          <div className={cn(
+            "transition-all duration-300 h-full", 
+            isMinimized ? "max-h-0 opacity-0 overflow-hidden" : "opacity-100 overflow-y-auto"
+          )}>
+            <div className="space-y-4 pr-2">
               <div>
                 <h3 className="font-semibold text-sm mb-2">{currentContent.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -283,36 +286,39 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
                   </div>
                 </div>
               )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-2">
-                {currentContent.action && (
-                  <Button
-                    variant={currentContent.action.variant || "outline"}
-                    size="sm"
-                    className="flex-1 text-xs"
-                    onClick={currentStep === 4 ? handleCallSales : undefined}
-                  >
-                    {currentContent.action.text}
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="px-3"
-                  onClick={handleCallSales}
-                >
-                  <Phone className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="px-3"
-                >
-                  <MessageCircle className="h-3 w-3" />
-                </Button>
-              </div>
             </div>
+          </div>
+          
+          {/* Action Buttons - Always visible at bottom */}
+          <div className={cn(
+            "flex gap-2 pt-3 border-t border-muted/20 mt-3 flex-shrink-0",
+            isMinimized && "hidden"
+          )}>
+            {currentContent.action && (
+              <Button
+                variant={currentContent.action.variant || "outline"}
+                size="sm"
+                className="flex-1 text-xs"
+                onClick={currentStep === 4 ? handleCallSales : undefined}
+              >
+                {currentContent.action.text}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-3"
+              onClick={handleCallSales}
+            >
+              <Phone className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-3"
+            >
+              <MessageCircle className="h-3 w-3" />
+            </Button>
           </div>
         </CardContent>
       </Card>
