@@ -383,9 +383,9 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         )}
 
         {pricingModel === 'bogof' ? (
-          <div className="space-y-8">
+          <div className="grid grid-cols-2 gap-6 min-h-[400px] w-full">
             {/* Paid Areas Section */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
               <div className="flex items-center gap-2">
                 <h4 className="font-medium">Paid Areas</h4>
                 <Badge variant="default">Required</Badge>
@@ -430,7 +430,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
             {/* Free Areas Section */}
             {bogofPaidAreas.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-4 min-w-0">
                 <div className="flex items-center gap-2">
                   <h4 className="font-medium">FREE Bonus Areas</h4>
                   <Badge variant="secondary">6 Months Free</Badge>
