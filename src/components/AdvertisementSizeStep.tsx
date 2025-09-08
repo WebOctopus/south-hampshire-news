@@ -365,7 +365,18 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
 
       {previewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {adSizes.map((size) => {
+          {adSizes
+            .sort((a, b) => {
+              // Calculate area for each ad size to sort by size (largest to smallest)
+              const getArea = (size: any) => {
+                const dimensions = size.dimensions?.split('x') || ['0', '0'];
+                const width = parseFloat(dimensions[0].replace('mm', '').trim()) || 0;
+                const height = parseFloat(dimensions[1].replace('mm', '').trim()) || 0;
+                return width * height;
+              };
+              return getArea(b) - getArea(a); // Sort descending (largest first)
+            })
+            .map((size) => {
             const isSelected = selectedAdSize === size.id;
             
             return (
