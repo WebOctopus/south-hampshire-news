@@ -6,7 +6,8 @@ import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
 import ContactInformationStep from '@/components/ContactInformationStep';
-import { SalesAssistantWrapper } from '@/components/SalesAssistantWrapper';
+import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
+import { StepTracker } from '@/components/StepTracker';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
@@ -27,6 +28,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const { data: leafletDurations } = useLeafletCampaignDurations();
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
+  const [currentStep, setCurrentStep] = useState(1);
   const [campaignData, setCampaignData] = useState({
     selectedAreas: [] as string[],
     bogofPaidAreas: [] as string[],
@@ -417,7 +419,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
-    onStepTransition: handleStepTransition
+    onStepTransition: (currentStep: number, nextStep: () => void) => {
+      setCurrentStep(currentStep + 1); // Update local state
+      handleStepTransition(currentStep, nextStep);
+    }
   };
 
   return (
@@ -479,7 +484,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           </DialogContent>
         </Dialog>
       ) : (
-        <>
+        <div className="relative">
           <StepForm stepLabels={stepLabels}>
             <PricingOptionsStep onSelectOption={handleSelectOption} />
             
@@ -522,22 +527,23 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               onSaveQuote={handleContactInfoSave}
               onBookNow={handleContactInfoBook}
             />
-            
-            {/* Sales Assistant Popup - rendered inside StepForm context but positioned absolutely */}
-            <SalesAssistantWrapper 
-              campaignData={{
-                selectedModel: selectedPricingModel,
-                selectedAreas: campaignData.selectedAreas,
-                bogofPaidAreas: campaignData.bogofPaidAreas,
-                bogofFreeAreas: campaignData.bogofFreeAreas,
-                selectedSize: campaignData.selectedAdSize,
-                selectedDuration: campaignData.selectedDuration,
-                totalCost: campaignData.pricingBreakdown?.finalTotal,
-                pricingBreakdown: campaignData.pricingBreakdown
-              }}
-            />
           </StepForm>
-        </>
+          
+          {/* Sales Assistant Popup - positioned absolutely */}
+          <SalesAssistantPopup 
+            currentStep={currentStep}
+            campaignData={{
+              selectedModel: selectedPricingModel,
+              selectedAreas: campaignData.selectedAreas,
+              bogofPaidAreas: campaignData.bogofPaidAreas,
+              bogofFreeAreas: campaignData.bogofFreeAreas,
+              selectedSize: campaignData.selectedAdSize,
+              selectedDuration: campaignData.selectedDuration,
+              totalCost: campaignData.pricingBreakdown?.finalTotal,
+              pricingBreakdown: campaignData.pricingBreakdown
+            }}
+          />
+        </div>
       )}
 
       {/* Fixed Term Confirmation Dialog */}
