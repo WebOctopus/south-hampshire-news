@@ -101,13 +101,18 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
           (pricingModel !== 'bogof' && size.base_price_per_area)
         ) && (
           <Badge variant="outline" className="text-xs">
-            From £{pricingModel === 'bogof' 
-              ? (typeof size.subscription_pricing_per_issue === 'number' 
-                  ? size.subscription_pricing_per_issue
-                  : typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue && 'price' in size.subscription_pricing_per_issue
-                    ? size.subscription_pricing_per_issue.price
-                    : size.subscription_pricing_per_issue)
-              : size.base_price_per_area}
+            From £{(() => {
+              if (pricingModel === 'bogof') {
+                if (typeof size.subscription_pricing_per_issue === 'number') {
+                  return size.subscription_pricing_per_issue;
+                }
+                if (typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue && 'price' in size.subscription_pricing_per_issue) {
+                  return size.subscription_pricing_per_issue.price;
+                }
+                return size.base_price_per_area || 0;
+              }
+              return size.base_price_per_area || 0;
+            })()}
           </Badge>
         )}
       </div>
