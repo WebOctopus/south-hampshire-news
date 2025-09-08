@@ -96,9 +96,13 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
           </span>
         </div>
         
-        {size.base_price_per_area && (
+        {(size.base_price_per_area || (pricingModel === 'bogof' && size.subscription_pricing_per_issue)) && (
           <Badge variant="outline" className="text-xs">
-            From £{size.base_price_per_area}
+            From £{pricingModel === 'bogof' 
+              ? (typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue && 'price' in size.subscription_pricing_per_issue 
+                  ? size.subscription_pricing_per_issue.price 
+                  : size.base_price_per_area)
+              : size.base_price_per_area}
           </Badge>
         )}
       </div>
@@ -362,6 +366,16 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
       {previewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {adSizes
+            .filter((size) => {
+              // Filter sizes based on pricing model using available_for array
+              if (pricingModel === 'bogof') {
+                // For 3+ Repeat Package (bogof), only show sizes available for subscription pricing
+                return size.available_for?.includes('subscription');
+              } else {
+                // For fixed pricing, show sizes with fixed pricing
+                return size.available_for?.includes('fixed') || size.base_price_per_area > 0;
+              }
+            })
             .sort((a, b) => {
               // Calculate area for each ad size to sort by size (largest to smallest)
               const getArea = (size: any) => {
