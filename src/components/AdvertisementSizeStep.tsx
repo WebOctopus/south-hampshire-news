@@ -76,7 +76,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
     const displayHeight = height * scale;
 
     return (
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center space-y-3">
         <div 
           className={cn(
             "border-2 border-dashed rounded-lg flex items-center justify-center transition-all",
@@ -95,6 +95,12 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
             {size.name}
           </span>
         </div>
+        
+        {size.base_price_per_area && (
+          <Badge variant="outline" className="text-xs">
+            From £{size.base_price_per_area}
+          </Badge>
+        )}
       </div>
     );
   };
