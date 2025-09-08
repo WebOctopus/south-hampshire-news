@@ -13,18 +13,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import PricingManagement from '@/components/PricingManagement';
 import CostCalculatorManagement from '@/components/admin/CostCalculatorManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import LocationsManagement from '@/components/admin/LocationsManagement';
-import AdvertSizesPricingManagement from '@/components/admin/AdvertSizesPricingManagement';
-import SubscriptionSettingsManagement from '@/components/admin/SubscriptionSettingsManagement';
-import CalculatorPreview from '@/components/admin/CalculatorPreview';
-import IssuePricingManagement from '@/components/admin/IssuePricingManagement';
-import { SpecialDealsManagement } from '@/components/admin/SpecialDealsManagement';
 import { User } from '@supabase/supabase-js';
-import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Clock, TrendingUp, Receipt, Tag } from 'lucide-react';
-import LeafletingManagement from '@/components/admin/LeafletingManagement';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -625,82 +617,8 @@ const AdminDashboard = () => {
           </div>
         );
 
-      case 'pricing':
-        return <PricingManagement />;
-
       case 'calculator':
-      case 'calculator-locations':
-        return (
-          <div className="space-y-6">
-            <LocationsManagement onStatsUpdate={() => {}} />
-          </div>
-        );
-
-      case 'calculator-ad-sizes':
-        return (
-          <div className="space-y-6">
-            <AdvertSizesPricingManagement onStatsUpdate={() => {}} />
-          </div>
-        );
-
-      case 'calculator-subscriptions':
-        return (
-          <div className="space-y-6">
-            <SubscriptionSettingsManagement onStatsUpdate={() => {}} />
-          </div>
-        );
-
-      case 'calculator-leaflets':
-        return (
-          <div className="space-y-6">
-            <LeafletingManagement onStatsUpdate={() => {}} />
-          </div>
-        );
-
-      case 'calculator-durations':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Duration Management</h2>
-              <p className="text-muted-foreground">Manage pricing duration options and their discounts.</p>
-            </div>
-            <div className="text-center py-8 text-muted-foreground">
-              <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p>Duration management functionality coming soon.</p>
-            </div>
-          </div>
-        );
-
-      case 'calculator-volume-discounts':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Volume Discounts</h2>
-              <p className="text-muted-foreground">Configure volume-based discount tiers for bulk purchases.</p>
-            </div>
-            <div className="text-center py-8 text-muted-foreground">
-              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p>Volume discount management functionality coming soon.</p>
-            </div>
-          </div>
-        );
-
-      case 'calculator-preview':
-        return (
-          <div className="space-y-6">
-            <CalculatorPreview />
-          </div>
-        );
-
-      case 'calculator-issue-pricing':
-        return (
-          <div className="space-y-6">
-            <IssuePricingManagement onStatsUpdate={() => {}} />
-          </div>
-        );
-
-      case 'calculator-special-deals':
-        return <SpecialDealsManagement />;
+        return <CostCalculatorManagement />;
 
       default:
         return <div>Section not found</div>;
