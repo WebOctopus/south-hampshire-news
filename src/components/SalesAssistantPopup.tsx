@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, Phone, MessageCircle, ChevronDown, ChevronUp, User, MapPin, Ruler, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePricingData } from '@/hooks/usePricingData';
 
 interface StepContent {
   title: string;
@@ -71,11 +72,33 @@ interface SalesAssistantPopupProps {
 }
 
 export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campaignData, currentStep }) => {
+  const { areas, adSizes } = usePricingData();
   const [isMinimized, setIsMinimized] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   
   const currentContent = stepContent[currentStep] || stepContent[1];
   const progress = ((currentStep - 1) / 3) * 100;
+
+  // Debug: Log pricing data to console
+  useEffect(() => {
+    if (campaignData?.pricingBreakdown) {
+      console.log('Sales Assistant - Pricing Breakdown:', campaignData.pricingBreakdown);
+      console.log('Sales Assistant - Total Cost:', campaignData.totalCost);
+      console.log('Sales Assistant - Campaign Data:', campaignData);
+    }
+  }, [campaignData]);
+
+  // Helper function to get area name by ID
+  const getAreaName = (areaId: string) => {
+    const area = areas?.find(a => a.id === areaId);
+    return area ? area.name : `Area ${areaId}`;
+  };
+
+  // Helper function to get ad size name by ID
+  const getAdSizeName = (adSizeId: string) => {
+    const adSize = adSizes?.find(s => s.id === adSizeId);
+    return adSize ? adSize.name : adSizeId;
+  };
 
   const handleCallSales = () => {
     window.open('tel:+1234567890', '_self');
@@ -194,7 +217,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
                   {campaignData.selectedSize && (
                     <div className="text-xs">
                       <span className="text-muted-foreground">Advert Size:</span>{" "}
-                      <span className="font-medium">{campaignData.selectedSize}</span>
+                      <span className="font-medium">{getAdSizeName(campaignData.selectedSize)}</span>
                     </div>
                   )}
 
@@ -206,7 +229,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
                       <div className="space-y-0.5 ml-2">
                         {(campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas)?.map((areaId: string, index: number) => (
                           <div key={areaId} className="text-xs text-muted-foreground">
-                            • Paid - Area {index + 1} - {areaId}
+                            • Paid - {getAreaName(areaId)}
                           </div>
                         ))}
                       </div>
@@ -223,7 +246,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
                       <div className="space-y-0.5 ml-2">
                         {campaignData.bogofFreeAreas?.map((areaId: string, index: number) => (
                           <div key={areaId} className="text-xs text-green-600">
-                            • Free - Area {index + 1} - {areaId}
+                            • Free - {getAreaName(areaId)}
                           </div>
                         ))}
                       </div>
