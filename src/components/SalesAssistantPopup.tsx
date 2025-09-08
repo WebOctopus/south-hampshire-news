@@ -81,10 +81,12 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
 
   // Debug: Log pricing data to console
   useEffect(() => {
+    console.log('Sales Assistant - All Campaign Data:', campaignData);
     if (campaignData?.pricingBreakdown) {
       console.log('Sales Assistant - Pricing Breakdown:', campaignData.pricingBreakdown);
       console.log('Sales Assistant - Total Cost:', campaignData.totalCost);
-      console.log('Sales Assistant - Campaign Data:', campaignData);
+    } else {
+      console.log('Sales Assistant - No pricingBreakdown found in campaignData');
     }
   }, [campaignData]);
 

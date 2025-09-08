@@ -38,6 +38,16 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     pricingBreakdown: null as any
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Debug: Track campaign data changes
+  React.useEffect(() => {
+    console.log('AdvertisingStepForm - Campaign data updated:', campaignData);
+    if (campaignData.pricingBreakdown) {
+      console.log('AdvertisingStepForm - Has pricing breakdown:', campaignData.pricingBreakdown);
+    } else {
+      console.log('AdvertisingStepForm - No pricing breakdown yet');
+    }
+  }, [campaignData]);
   const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
   const [pendingNextStep, setPendingNextStep] = useState<(() => void) | null>(null);
 
@@ -462,7 +472,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 bogofPaidAreas={campaignData.bogofPaidAreas}
                 bogofFreeAreas={campaignData.bogofFreeAreas}
                 selectedDuration={campaignData.selectedDuration}
-                onPricingChange={(breakdown) => setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }))}
+                onPricingChange={(breakdown) => {
+                  console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
+                  setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
+                }}
                 showSummary={true}
                 onNext={() => {}}
               />
@@ -509,7 +522,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               bogofPaidAreas={campaignData.bogofPaidAreas}
               bogofFreeAreas={campaignData.bogofFreeAreas}
               selectedDuration={campaignData.selectedDuration}
-              onPricingChange={(breakdown) => setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }))}
+              onPricingChange={(breakdown) => {
+                console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
+                setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
+              }}
               showSummary={true}
               onNext={() => {}}
             />
