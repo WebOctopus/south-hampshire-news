@@ -74,6 +74,10 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   const { data: areas = [], isLoading: areasLoading, isError: areasError, refetch: refetchAreas } = useLeafletAreas();
   const { data: durations = [], isLoading: durationsLoading, isError: durationsError, refetch: refetchDurations } = useLeafletCampaignDurations();
 
+  // Ensure arrays are always defined to prevent undefined.length errors
+  const safeAreas = areas || [];
+  const safeDurations = durations || [];
+
   const dataLoading = areasLoading || durationsLoading;
   const hasError = areasError || durationsError;
 
@@ -262,11 +266,11 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="areas" className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            Distribution Areas ({areas.length})
+            Distribution Areas ({safeAreas.length})
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Campaign Settings ({durations.length})
+            Campaign Settings ({safeDurations.length})
           </TabsTrigger>
         </TabsList>
 
@@ -400,7 +404,7 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
               </Dialog>
             </CardHeader>
             <CardContent>
-              {areas.length === 0 ? (
+              {safeAreas.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No distribution areas configured yet.
                 </div>
@@ -419,7 +423,7 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {areas.map((area) => (
+                    {safeAreas.map((area) => (
                       <TableRow key={area.id}>
                         <TableCell className="font-medium">{area.area_number}</TableCell>
                         <TableCell>{area.name}</TableCell>
@@ -593,7 +597,7 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
               </Dialog>
             </CardHeader>
             <CardContent>
-              {durations.length === 0 ? (
+              {safeDurations.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No campaign durations configured yet.
                 </div>
@@ -610,7 +614,7 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {durations.map((duration) => (
+                    {safeDurations.map((duration) => (
                       <TableRow key={duration.id}>
                         <TableCell className="font-medium">{duration.name}</TableCell>
                         <TableCell>{duration.description || '-'}</TableCell>
