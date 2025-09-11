@@ -1346,49 +1346,6 @@ const effectiveSelectedAreas = useMemo(() => {
             </div>
           </div>
 
-          {/* Local Areas Accordion */}
-          <div className="mb-12">
-            <div className="text-center mb-8">
-              <h3 className="text-3xl font-heading font-bold text-community-navy mb-4">
-                12 Areas to Target - Trial Areas - Add More Later - Tailored Campaigns - Mix Adverts with Leaflets!
-              </h3>
-              <p className="text-xl text-gray-600 mb-6">
-                Our 158,000 circulation is divided into 12 Areas - each with a circulation of up to 14,000** homes
-              </p>
-            </div>
-            
-            <Accordion type="multiple" className="w-full max-w-4xl mx-auto">
-              {localAreas.map((area, index) => (
-                <AccordionItem key={index} value={`area-${index}`}>
-                  <AccordionTrigger className="text-left">
-                    <div className="flex justify-between items-center w-full pr-4">
-                      <div>
-                        <span className="font-bold text-community-navy">{area.area}: {area.title}</span>
-                        <div className="text-sm text-gray-600">{area.postcodes}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-community-green">{area.circulation}</div>
-                        <div className="text-xs text-gray-500">Circulation</div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="pt-4 pb-2">
-                      <p className="text-gray-700 mb-3">{area.description}</p>
-                      <div className="flex justify-between items-center">
-                        <Badge variant={area.leaflets === "YES" ? "default" : "secondary"} className={area.leaflets === "YES" ? "bg-community-green text-white" : ""}>
-                          Leaflets: {area.leaflets}
-                        </Badge>
-                        <div className="text-sm text-gray-600">
-                          Circulation: <span className="font-bold text-community-green">{area.circulation}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
 
           {/* FAQ Section */}
           <div className="max-w-4xl mx-auto">
