@@ -430,9 +430,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStepIndex: number, nextStep: () => void) => {
-      // Update current step properly - when transitioning FROM step 1 TO step 2, set currentStep to 2
-      const nextStepNumber = currentStepIndex + 2; // Convert 0-indexed to 1-indexed and go to next step
-      setCurrentStep(nextStepNumber);
+      // The currentStepIndex is 0-indexed, so convert to 1-indexed for display
+      // When on step 3 (Advertisement Size), currentStepIndex = 2, so we want currentStep = 3
+      const actualStepNumber = currentStepIndex + 1;
+      setCurrentStep(actualStepNumber);
       
       // Set global navigation functions for Sales Assistant
       (window as any).salesAssistantNextStep = nextStep;
