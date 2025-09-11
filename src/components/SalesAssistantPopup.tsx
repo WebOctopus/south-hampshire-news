@@ -88,6 +88,11 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   
+  // Only show the Sales Assistant from step 2 onwards
+  if (currentStep < 2) {
+    return null;
+  }
+  
   const currentContent = stepContent[currentStep] || stepContent[1];
   const progress = ((currentStep - 1) / 3) * 100;
 
