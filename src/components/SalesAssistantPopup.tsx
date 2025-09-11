@@ -192,11 +192,12 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
+                    size="sm"
+                    className="h-6 text-xs"
                     onClick={() => setIsCollapsed(true)}
                     title="Minimize to side"
                   >
+                    <span className="mr-1">Hide Assistant</span>
                     <ChevronRight className="h-3 w-3" />
                   </Button>
                   <Button
