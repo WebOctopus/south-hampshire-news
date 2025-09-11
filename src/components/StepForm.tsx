@@ -45,14 +45,18 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
   const totalSteps = React.Children.count(children);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to top of form when step changes and set up global functions
+  // Set up global functions and handle step changes
+  const prevStepRef = useRef(currentStep);
+  
   useEffect(() => {
-    if (formRef.current) {
+    // Only scroll when step actually changes (not on initial render or re-renders)
+    if (prevStepRef.current !== currentStep && formRef.current) {
       formRef.current.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'start' 
       });
     }
+    prevStepRef.current = currentStep;
 
     // Notify parent component of step change
     onStepChange?.(currentStep + 1); // Convert to 1-indexed
