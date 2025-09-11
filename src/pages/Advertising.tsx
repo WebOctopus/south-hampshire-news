@@ -924,46 +924,31 @@ const effectiveSelectedAreas = useMemo(() => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
-            <Card className="text-center p-6">
-              <CardContent>
-                <h3 className="font-bold text-community-navy mb-2">Southampton Suburbs</h3>
-                <p className="text-gray-600 text-sm mb-2">SO15 SO16 SO17</p>
-                <div className="text-2xl font-bold text-community-green">13,500</div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-12">
+            {/* Facts List */}
+            <Card className="h-fit">
+              <CardContent className="p-8">
+                <ul className="space-y-3 text-gray-700">
+                  <li>• A5 (148mm x 210mm) full colour, self cover</li>
+                  <li>• Frequency per edition is 6 times a year (bi-monthly)</li>
+                  <li>• 12 different publications; target your advertising</li>
+                  <li>• Each edition is tailored with local stories & What's On</li>
+                  <li>• Average circulation per edition is 13,500 homes</li>
+                  <li>• Book 12 editions for 158,000 circulation</li>
+                  <li>• Distribution is GPS tracked, monitored and recorded</li>
+                  <li>• 50,000 rural homes only get Discover, no other publication</li>
+                  <li>• Available for pick up at selected supermarkets</li>
+                </ul>
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6">
-              <CardContent>
-                <h3 className="font-bold text-community-navy mb-2">Chandler's Ford & North Baddesley</h3>
-                <p className="text-gray-600 text-sm mb-2">SO53 SO52</p>
-                <div className="text-2xl font-bold text-community-green">13,500</div>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6">
-              <CardContent>
-                <h3 className="font-bold text-community-navy mb-2">Eastleigh & Villages</h3>
-                <p className="text-gray-600 text-sm mb-2">SO50</p>
-                <div className="text-2xl font-bold text-community-green">10,500</div>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6">
-              <CardContent>
-                <h3 className="font-bold text-community-navy mb-2">Hedge End & Surrounds</h3>
-                <p className="text-gray-600 text-sm mb-2">SO30</p>
-                <div className="text-2xl font-bold text-community-green">13,000</div>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6">
-              <CardContent>
-                <h3 className="font-bold text-community-navy mb-2">Locks Heath & Surrounds</h3>
-                <p className="text-gray-600 text-sm mb-2">SO31</p>
-                <div className="text-2xl font-bold text-community-green">13,000</div>
-              </CardContent>
-            </Card>
+            {/* Map Section */}
+            <div id="distribution-map" className="text-center">
+              <img src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas" className="w-full max-w-md mx-auto rounded-lg shadow-lg" />
+              <p className="text-sm text-gray-600 mt-4 font-medium">
+                12 Distribution Areas across South Hampshire
+              </p>
+            </div>
           </div>
 
           {/* Magazine Covers */}
@@ -1320,22 +1305,70 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
-            {/* Facts List */}
-            <Card className="h-fit">
-              <CardContent className="p-8">
-                <ul className="space-y-3 text-gray-700">
-                  <li>• A5 (148mm x 210mm) full colour, self cover</li>
-                  <li>• Frequency per edition is 6 times a year (bi-monthly)</li>
-                  <li>• 12 different publications; target your advertising</li>
-                  <li>• Each edition is tailored with local stories & What's On</li>
-                  <li>• Average circulation per edition is 13,500 homes</li>
-                  <li>• Book 12 editions for 158,000 circulation</li>
-                  <li>• Distribution is GPS tracked, monitored and recorded</li>
-                  <li>• 50,000 rural homes only get Discover, no other publication</li>
-                  <li>• Available for pick up at selected supermarkets</li>
-                </ul>
-              </CardContent>
-            </Card>
+            {/* Area Cards */}
+            <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">1</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">SOUTHAMPTON SUBURBS</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO15 SO16 SO17</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">13,500</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">2</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">CHANDLER'S FORD & NORTH BADDESLEY</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO53 SO52</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">13,500</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">3</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">EASTLEIGH & VILLAGES</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO50</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">10,500</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">4</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">HEDGE END & SURROUNDS</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO30</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">5</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">LOCKS HEATH & SURROUNDS</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO31</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
 
             {/* Map Section */}
             <div id="distribution-map" className="text-center">
