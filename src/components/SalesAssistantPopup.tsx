@@ -234,99 +234,174 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                 </ul>
               </div>
 
-              {/* Enhanced Pricing Summary for Steps 2+ */}
-              {campaignData && currentStep >= 2 && (
-                <div className="bg-gradient-to-br from-primary/5 to-accent/10 rounded-lg p-4 space-y-3 border border-primary/20">
-                  <h4 className="text-sm font-semibold text-primary flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    SUMMARY & COST TO BOOK
-                  </h4>
-                  
-                  {/* Booking Type */}
-                  {campaignData.selectedModel && (
-                    <div className="space-y-1">
-                      <div className="text-xs font-medium text-foreground">
-                        <span className="text-muted-foreground">Booking Type:</span>{" "}
-                        {campaignData.selectedModel === 'fixed' ? 'Fixed Term' : 
-                         campaignData.selectedModel === 'bogof' ? '3+ Repeat Package' : 
-                         'Leafleting Campaign'}
-                      </div>
-                    </div>
-                  )}
+               {/* Enhanced Pricing Summary for Steps 2+ */}
+               {campaignData && currentStep >= 2 && (
+                 <div className="bg-gradient-to-br from-primary/5 to-accent/10 rounded-lg p-4 space-y-3 border border-primary/20">
+                   <h4 className="text-sm font-semibold text-primary flex items-center gap-2">
+                     <CreditCard className="h-4 w-4" />
+                     {currentStep >= 3 ? 'FINAL PRICING BREAKDOWN' : 'SUMMARY & COST TO BOOK'}
+                   </h4>
+                   
+                   {/* Booking Type */}
+                   {campaignData.selectedModel && (
+                     <div className="space-y-1">
+                       <div className="text-xs font-medium text-foreground">
+                         <span className="text-muted-foreground">Booking Type:</span>{" "}
+                         {campaignData.selectedModel === 'fixed' ? 'Fixed Term' : 
+                          campaignData.selectedModel === 'bogof' ? '3+ Repeat Package' : 
+                          'Leafleting Campaign'}
+                       </div>
+                     </div>
+                   )}
 
-                  {/* Advert Size */}
-                  {campaignData.selectedSize && (
-                    <div className="text-xs">
-                      <span className="text-muted-foreground">Advert Size:</span>{" "}
-                      <span className="font-medium">{getAdSizeName(campaignData.selectedSize)}</span>
-                    </div>
-                  )}
+                   {/* Advert Size */}
+                   {campaignData.selectedSize && (
+                     <div className="text-xs">
+                       <span className="text-muted-foreground">Advert Size:</span>{" "}
+                       <span className="font-medium">{getAdSizeName(campaignData.selectedSize)}</span>
+                     </div>
+                   )}
 
-                  {/* Paid Area Locations */}
-                  {((campaignData.selectedModel === 'bogof' && campaignData.bogofPaidAreas?.length > 0) || 
-                    (campaignData.selectedModel !== 'bogof' && campaignData.selectedAreas?.length > 0)) && (
-                    <div className="space-y-1">
-                      <div className="text-xs font-medium text-foreground">Paid Area Locations:</div>
-                      <div className="space-y-0.5 ml-2">
-                        {(campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas)?.map((areaId: string, index: number) => (
-                          <div key={areaId} className="text-xs text-muted-foreground">
-                            • Paid - {getAreaName(areaId)}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                   {/* Paid Area Locations */}
+                   {((campaignData.selectedModel === 'bogof' && campaignData.bogofPaidAreas?.length > 0) || 
+                     (campaignData.selectedModel !== 'bogof' && campaignData.selectedAreas?.length > 0)) && (
+                     <div className="space-y-1">
+                       <div className="text-xs font-medium text-foreground">Paid Area Locations:</div>
+                       <div className="space-y-0.5 ml-2">
+                         {(campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas)?.map((areaId: string, index: number) => (
+                           <div key={areaId} className="text-xs text-muted-foreground">
+                             • Paid - {getAreaName(areaId)}
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   )}
 
-                  {/* FREE Area Locations (BOGOF only) */}
-                  {campaignData.selectedModel === 'bogof' && campaignData.bogofFreeAreas?.length > 0 && (
-                    <div className="space-y-1">
-                      <div className="text-xs font-medium text-green-600">FREE Area Locations:</div>
-                      <div className="text-xs text-green-600/80 italic mb-1">
-                        These are the free areas that you'll get for the next 3 Issues/6 Months
-                      </div>
-                      <div className="space-y-0.5 ml-2">
-                        {campaignData.bogofFreeAreas?.map((areaId: string, index: number) => (
-                          <div key={areaId} className="text-xs text-green-600">
-                            • Free - {getAreaName(areaId)}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="text-xs text-green-600/70 italic">
-                        To keep these areas after 6 months, you'll need to purchase them separately. 
-                        Use these areas to experiment with new customer generation.
-                      </div>
-                    </div>
-                  )}
+                   {/* FREE Area Locations (BOGOF only) */}
+                   {campaignData.selectedModel === 'bogof' && campaignData.bogofFreeAreas?.length > 0 && (
+                     <div className="space-y-1">
+                       <div className="text-xs font-medium text-green-600">FREE Area Locations:</div>
+                       <div className="text-xs text-green-600/80 italic mb-1">
+                         These are the free areas that you'll get for the next 3 Issues/6 Months
+                       </div>
+                       <div className="space-y-0.5 ml-2">
+                         {campaignData.bogofFreeAreas?.map((areaId: string, index: number) => (
+                           <div key={areaId} className="text-xs text-green-600">
+                             • Free - {getAreaName(areaId)}
+                           </div>
+                         ))}
+                       </div>
+                       <div className="text-xs text-green-600/70 italic">
+                         To keep these areas after 6 months, you'll need to purchase them separately. 
+                         Use these areas to experiment with new customer generation.
+                       </div>
+                     </div>
+                   )}
 
-                  {/* Circulation & Pricing */}
-                  {campaignData.pricingBreakdown && (
-                    <div className="space-y-2 pt-2 border-t border-primary/10">
-                      {campaignData.pricingBreakdown.totalCirculation && (
-                        <div className="text-xs">
-                          <span className="text-muted-foreground">Total Circulation per selection of area/s:</span>{" "}
-                          <span className="font-semibold text-primary">
-                            {campaignData.pricingBreakdown.totalCirculation?.toLocaleString()} homes
-                          </span>
-                        </div>
-                      )}
-                      
-                      {campaignData.totalCost && (
-                        <div className="bg-primary/10 rounded p-2 space-y-1">
-                          <div className="text-xs">
-                            <span className="text-muted-foreground">Pre-payment Required:</span>
-                          </div>
-                          <div className="text-sm font-bold text-primary">
-                            £{campaignData.totalCost.toFixed(2)} + VAT (£{(campaignData.totalCost * 1.2).toFixed(2)})
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            per insertion reaching {campaignData.pricingBreakdown.totalCirculation?.toLocaleString() || 'selected'} homes
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                   {/* Enhanced Pricing Details for Step 3+ */}
+                   {campaignData.pricingBreakdown && currentStep >= 3 && (
+                     <div className="space-y-3 pt-2 border-t border-primary/10">
+                       {/* Detailed Cost Breakdown */}
+                       <div className="space-y-2">
+                         <div className="text-xs font-medium text-foreground">Pricing Breakdown:</div>
+                         
+                         {/* Base Cost */}
+                         <div className="text-xs flex justify-between">
+                           <span className="text-muted-foreground">Base Cost:</span>
+                           <span className="font-medium">£{campaignData.pricingBreakdown.subtotal?.toFixed(2) || '0.00'}</span>
+                         </div>
+                         
+                         {/* Volume Discount */}
+                         {campaignData.pricingBreakdown.volumeDiscountPercent > 0 && (
+                           <div className="text-xs flex justify-between text-green-600">
+                             <span>Volume Discount ({campaignData.pricingBreakdown.volumeDiscountPercent}%):</span>
+                             <span>-£{campaignData.pricingBreakdown.volumeDiscount?.toFixed(2) || '0.00'}</span>
+                           </div>
+                         )}
+                         
+                         {/* Duration Multiplier */}
+                         {campaignData.pricingBreakdown.durationMultiplier > 1 && (
+                           <div className="text-xs flex justify-between">
+                             <span className="text-muted-foreground">Duration ({campaignData.pricingBreakdown.durationMultiplier} issues):</span>
+                             <span className="font-medium">×{campaignData.pricingBreakdown.durationMultiplier}</span>
+                           </div>
+                         )}
+                         
+                         {/* Total Circulation */}
+                         {campaignData.pricingBreakdown.totalCirculation && (
+                           <div className="text-xs flex justify-between">
+                             <span className="text-muted-foreground">Total Circulation:</span>
+                             <span className="font-semibold text-primary">
+                               {campaignData.pricingBreakdown.totalCirculation?.toLocaleString()} homes
+                             </span>
+                           </div>
+                         )}
+                         
+                         {/* Cost Per Thousand (CPM) */}
+                         {campaignData.pricingBreakdown.totalCirculation && campaignData.pricingBreakdown.finalTotal && (
+                           <div className="text-xs flex justify-between">
+                             <span className="text-muted-foreground">Cost per 1,000 homes:</span>
+                             <span className="font-medium">
+                               £{((campaignData.pricingBreakdown.finalTotal / campaignData.pricingBreakdown.totalCirculation) * 1000).toFixed(2)}
+                             </span>
+                           </div>
+                         )}
+                       </div>
+                       
+                       {/* Final Total */}
+                       <div className="bg-primary/15 rounded-lg p-3 space-y-1">
+                         <div className="text-xs font-medium text-primary">
+                           TOTAL INVESTMENT REQUIRED:
+                         </div>
+                         <div className="text-lg font-bold text-primary">
+                           £{campaignData.pricingBreakdown.finalTotal?.toFixed(2) || '0.00'} + VAT
+                         </div>
+                         <div className="text-sm font-semibold text-primary">
+                           £{((campaignData.pricingBreakdown.finalTotal || 0) * 1.2).toFixed(2)} (inc. VAT)
+                         </div>
+                         <div className="text-xs text-muted-foreground">
+                           per insertion reaching {campaignData.pricingBreakdown.totalCirculation?.toLocaleString() || 'selected'} homes
+                         </div>
+                         
+                         {/* Savings Display for BOGOF */}
+                         {campaignData.selectedModel === 'bogof' && campaignData.bogofFreeAreas?.length > 0 && (
+                           <div className="text-xs text-green-600 font-medium pt-1 border-t border-green-200">
+                             You're saving £{((campaignData.pricingBreakdown.finalTotal || 0) * 0.5).toFixed(2)} with FREE areas!
+                           </div>
+                         )}
+                       </div>
+                     </div>
+                   )}
+                   
+                   {/* Basic Pricing for Step 2 */}
+                   {campaignData.pricingBreakdown && currentStep < 3 && (
+                     <div className="space-y-2 pt-2 border-t border-primary/10">
+                       {campaignData.pricingBreakdown.totalCirculation && (
+                         <div className="text-xs">
+                           <span className="text-muted-foreground">Total Circulation per selection of area/s:</span>{" "}
+                           <span className="font-semibold text-primary">
+                             {campaignData.pricingBreakdown.totalCirculation?.toLocaleString()} homes
+                           </span>
+                         </div>
+                       )}
+                       
+                       {campaignData.totalCost && (
+                         <div className="bg-primary/10 rounded p-2 space-y-1">
+                           <div className="text-xs">
+                             <span className="text-muted-foreground">Pre-payment Required:</span>
+                           </div>
+                           <div className="text-sm font-bold text-primary">
+                             £{campaignData.totalCost.toFixed(2)} + VAT (£{(campaignData.totalCost * 1.2).toFixed(2)})
+                           </div>
+                           <div className="text-xs text-muted-foreground">
+                             per insertion reaching {campaignData.pricingBreakdown.totalCirculation?.toLocaleString() || 'selected'} homes
+                           </div>
+                         </div>
+                       )}
+                     </div>
+                   )}
+                 </div>
+               )}
 
               {/* Basic Selection Summary for Step 1 or No Pricing */}
               {(!campaignData || currentStep < 2 || !campaignData.pricingBreakdown) && campaignData && (

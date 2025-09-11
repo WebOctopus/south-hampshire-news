@@ -86,62 +86,138 @@ export function calculateAdvertisingPrice(
   let subtotal: number;
   let areaBreakdown: Array<{area: DbArea; adSize: DbAdSize; basePrice: number; multipliedPrice: number;}>;
 
+  // Get volume discount for this number of areas
+  const volumeDiscountPercent = getVolumeDiscount(areasCount, volumeDiscounts);
+  const volumeDiscountMultiplier = 1 - (volumeDiscountPercent / 100);
+
   if (isSubscription) {
-    // For subscription: use issue-based pricing from database
+    // For subscription (BOGOF): use subscription pricing from database
     const subscriptionPricing = selectedAdSize.subscription_pricing_per_issue;
     let basePrice = selectedAdSize.base_price_per_month;
     
-    // Check if we have issue-based pricing configured for this number of areas
+    // Check if we have area-specific pricing configured
     if (subscriptionPricing && typeof subscriptionPricing === 'object') {
-      const issuePriceKey = areasCount.toString();
-      basePrice = subscriptionPricing[issuePriceKey] || selectedAdSize.base_price_per_month;
+      const areasKey = areasCount.toString();
+      if (subscriptionPricing[areasKey]) {
+        basePrice = subscriptionPricing[areasKey];
+      }
     }
     
-    subtotal = basePrice;
+    // Apply area multipliers for more accurate pricing
+    const areaSpecificTotal = selectedAreas.reduce((total, area) => {
+      let areaPrice = basePrice / areasCount; // Base price per area
+      
+      // Apply area-specific multipliers based on ad size
+      if (selectedAdSize.name.toLowerCase().includes('quarter')) {
+        areaPrice *= area.quarter_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('half')) {
+        areaPrice *= area.half_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('full')) {
+        areaPrice *= area.full_page_multiplier || 1;
+      } else {
+        areaPrice *= area.base_price_multiplier || 1;
+      }
+      
+      return total + areaPrice;
+    }, 0);
     
-    // Create area breakdown
-    const pricePerArea = basePrice / areasCount;
-    areaBreakdown = selectedAreas.map((area) => ({
-      area,
-      adSize: selectedAdSize,
-      basePrice: pricePerArea,
-      multipliedPrice: pricePerArea
-    }));
+    subtotal = areaSpecificTotal;
+    
+    // Create detailed area breakdown for subscription
+    areaBreakdown = selectedAreas.map((area) => {
+      let areaPrice = basePrice / areasCount;
+      let multiplier = 1;
+      
+      if (selectedAdSize.name.toLowerCase().includes('quarter')) {
+        multiplier = area.quarter_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('half')) {
+        multiplier = area.half_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('full')) {
+        multiplier = area.full_page_multiplier || 1;
+      } else {
+        multiplier = area.base_price_multiplier || 1;
+      }
+      
+      return {
+        area,
+        adSize: selectedAdSize,
+        basePrice: areaPrice,
+        multipliedPrice: areaPrice * multiplier
+      };
+    });
   } else {
-    // For fixed pricing: use issue-based pricing from database
+    // For fixed pricing: use fixed pricing from database
     const fixedPricing = selectedAdSize.fixed_pricing_per_issue;
     let basePrice = selectedAdSize.base_price_per_month;
     
-    // Check if we have issue-based pricing configured for this number of areas
+    // Check if we have area-specific pricing configured
     if (fixedPricing && typeof fixedPricing === 'object') {
-      const issuePriceKey = areasCount.toString();
-      basePrice = fixedPricing[issuePriceKey] || selectedAdSize.base_price_per_month;
+      const areasKey = areasCount.toString();
+      if (fixedPricing[areasKey]) {
+        basePrice = fixedPricing[areasKey];
+      }
     }
     
-    subtotal = basePrice;
+    // Apply area multipliers for more accurate pricing
+    const areaSpecificTotal = selectedAreas.reduce((total, area) => {
+      let areaPrice = basePrice / areasCount; // Base price per area
+      
+      // Apply area-specific multipliers based on ad size
+      if (selectedAdSize.name.toLowerCase().includes('quarter')) {
+        areaPrice *= area.quarter_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('half')) {
+        areaPrice *= area.half_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('full')) {
+        areaPrice *= area.full_page_multiplier || 1;
+      } else {
+        areaPrice *= area.base_price_multiplier || 1;
+      }
+      
+      return total + areaPrice;
+    }, 0);
     
-    // Create area breakdown
-    const pricePerArea = basePrice / areasCount;
-    areaBreakdown = selectedAreas.map((area) => ({
-      area,
-      adSize: selectedAdSize,
-      basePrice: pricePerArea,
-      multipliedPrice: pricePerArea
-    }));
+    subtotal = areaSpecificTotal;
+    
+    // Create detailed area breakdown for fixed pricing
+    areaBreakdown = selectedAreas.map((area) => {
+      let areaPrice = basePrice / areasCount;
+      let multiplier = 1;
+      
+      if (selectedAdSize.name.toLowerCase().includes('quarter')) {
+        multiplier = area.quarter_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('half')) {
+        multiplier = area.half_page_multiplier || 1;
+      } else if (selectedAdSize.name.toLowerCase().includes('full')) {
+        multiplier = area.full_page_multiplier || 1;
+      } else {
+        multiplier = area.base_price_multiplier || 1;
+      }
+      
+      return {
+        area,
+        adSize: selectedAdSize,
+        basePrice: areaPrice,
+        multipliedPrice: areaPrice * multiplier
+      };
+    });
   }
 
-  // Apply duration multiplier (convert discount percentage to multiplier)
+  // Apply volume discount
+  const subtotalAfterVolumeDiscount = subtotal * volumeDiscountMultiplier;
+  const volumeDiscountAmount = subtotal - subtotalAfterVolumeDiscount;
+
+  // Apply duration multiplier and discount
   const durationMultiplier = selectedDuration.duration_value;
-  const discountMultiplier = 1 - (selectedDuration.discount_percentage / 100);
-  const finalTotal = subtotal * durationMultiplier * discountMultiplier;
+  const durationDiscountMultiplier = 1 - (selectedDuration.discount_percentage / 100);
+  const finalTotal = subtotalAfterVolumeDiscount * durationMultiplier * durationDiscountMultiplier;
 
   // Calculate total circulation
   const totalCirculation = selectedAreas.reduce((sum, area) => sum + area.circulation, 0);
 
   return {
     subtotal,
-    volumeDiscount: 0,
-    volumeDiscountPercent: 0,
+    volumeDiscount: volumeDiscountAmount,
+    volumeDiscountPercent,
     durationMultiplier: durationMultiplier,
     finalTotal,
     totalCirculation,

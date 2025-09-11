@@ -38,14 +38,28 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
 
   // Calculate and notify pricing changes
   useEffect(() => {
-    if (onPricingChange && selectedAdSize && selectedDuration && 
+    // For pricing calculation, use a default duration if none selected
+    const effectiveDuration = selectedDuration || (pricingModel === 'bogof' ? 
+      subscriptionDurations?.[0]?.id : durations?.[0]?.id);
+    
+    if (onPricingChange && selectedAdSize && effectiveDuration && 
         (pricingModel === 'bogof' ? bogofPaidAreas.length > 0 : selectedAreas.length > 0) &&
         areas && adSizes && durations && subscriptionDurations && volumeDiscounts) {
+      
+      console.log('AdvertisementSizeStep - Calculating pricing with:', {
+        selectedAdSize,
+        effectiveDuration,
+        selectedDuration,
+        pricingModel,
+        selectedAreas: pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas,
+        areas: areas?.length,
+        adSizes: adSizes?.length
+      });
       
       const pricingBreakdown = calculateAdvertisingPrice(
         pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas,
         selectedAdSize,
-        selectedDuration,
+        effectiveDuration,
         pricingModel === 'bogof',
         areas,
         adSizes,
@@ -54,9 +68,22 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
         volumeDiscounts
       );
       
+      console.log('AdvertisementSizeStep - Pricing calculation result:', pricingBreakdown);
+      
       if (pricingBreakdown) {
         onPricingChange(pricingBreakdown);
+      } else {
+        console.log('AdvertisementSizeStep - Pricing calculation returned null');
       }
+    } else {
+      console.log('AdvertisementSizeStep - Pricing calculation skipped, missing:', {
+        hasOnPricingChange: !!onPricingChange,
+        hasSelectedAdSize: !!selectedAdSize,
+        hasEffectiveDuration: !!effectiveDuration,
+        hasSelectedDuration: !!selectedDuration,
+        hasAreas: pricingModel === 'bogof' ? bogofPaidAreas.length > 0 : selectedAreas.length > 0,
+        hasData: !!(areas && adSizes && durations && subscriptionDurations && volumeDiscounts)
+      });
     }
   }, [selectedAdSize, selectedDuration, selectedAreas, bogofPaidAreas, bogofFreeAreas, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, onPricingChange]);
 
