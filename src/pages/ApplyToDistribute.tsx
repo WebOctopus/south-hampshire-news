@@ -65,16 +65,28 @@ const ApplyToDistribute = () => {
   };
 
   const perks = [
-    { icon: DollarSign, title: "Competitive Pay", description: "Earn £0.08-£0.12 per leaflet delivered" },
-    { icon: Clock, title: "Flexible Hours", description: "Work around your schedule - early mornings or weekends" },
+    { icon: DollarSign, title: "Competitive Pay", description: "Earn £9.18 per 100 magazines delivered, plus other bonuses and top ups" },
+    { icon: Clock, title: "Flexible Hours", description: "Work around your schedule as long as they are delivered within 7 days" },
     { icon: MapPin, title: "Local Routes", description: "Deliver in your neighborhood or preferred areas" },
     { icon: Users, title: "Great Team", description: "Join a supportive community of distributors" },
   ];
 
-  const payScales = [
-    { area: "City Centre", rate: "£0.12 per leaflet", bonus: "Weekend bonus: +£0.02" },
-    { area: "Residential Areas", rate: "£0.10 per leaflet", bonus: "Early morning: +£0.01" },
-    { area: "Rural Areas", rate: "£0.08 per leaflet", bonus: "Distance bonus: +£0.03" },
+  const payRates = [
+    { 
+      title: "Base Pay", 
+      rate: "£9.18 per 100 Magazines",
+      description: "Standard delivery rate"
+    },
+    { 
+      title: "Extra for Leaflet Inserts", 
+      rate: "£0.75 per 100 Leaflets",
+      description: "Additional payment for leaflet distribution"
+    },
+    { 
+      title: "Early Delivery Bonus", 
+      rate: "10% of your base pay",
+      description: "If 100% delivered in 5 days"
+    },
   ];
 
   return (
@@ -103,7 +115,7 @@ const ApplyToDistribute = () => {
             <div className="ml-3">
               <h3 className="text-lg font-medium text-amber-800">Age Requirement</h3>
               <p className="text-amber-700 mt-1">
-                You must be 16 years or older to apply for a distribution position. Parental consent required for applicants under 18.
+                You must be 13 years or older to apply for a distribution position. Parental consent required for applicants under 18.
               </p>
             </div>
           </div>
@@ -129,24 +141,67 @@ const ApplyToDistribute = () => {
           </div>
         </section>
 
-        {/* Pay Scales Section */}
+        {/* Pay Rates Section */}
         <section className="mb-12">
-          <h2 className="text-3xl font-heading font-bold text-center mb-8">Pay Scales</h2>
+          <h2 className="text-3xl font-heading font-bold text-center mb-8">Pay Rates</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {payScales.map((scale, index) => (
+            {payRates.map((rate, index) => (
               <Card key={index}>
                 <CardHeader>
-                  <CardTitle className="text-xl">{scale.area}</CardTitle>
+                  <CardTitle className="text-xl">{rate.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <p className="text-2xl font-bold text-community-green">{scale.rate}</p>
-                    <p className="text-sm text-gray-600">{scale.bonus}</p>
+                    <p className="text-2xl font-bold text-community-green">{rate.rate}</p>
+                    <p className="text-sm text-gray-600">{rate.description}</p>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+        </section>
+
+        {/* What's Involved Section */}
+        <section className="mb-12">
+          <Card className="max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">What's Involved</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-gray max-w-none">
+                <p className="text-gray-600 mb-4">
+                  As a magazine distributor, you'll be responsible for delivering our community magazines to households in your assigned area. Here's what you need to know:
+                </p>
+                <ul className="space-y-2 text-gray-600">
+                  <li>• Collect magazines from designated collection points</li>
+                  <li>• Deliver to every household in your assigned route</li>
+                  <li>• Complete deliveries within 7 days of collection</li>
+                  <li>• Handle magazines with care to ensure quality delivery</li>
+                  <li>• Report any issues or problems to your area coordinator</li>
+                  <li>• Maintain accurate delivery records</li>
+                  <li>• Follow health and safety guidelines at all times</li>
+                </ul>
+                <p className="text-gray-600 mt-4">
+                  This is a great opportunity to earn money while getting exercise and helping connect your local community with important information and local business promotions.
+                </p>
+              </div>
+              
+              <div className="mt-6 text-center">
+                <Button 
+                  size="lg" 
+                  className="bg-community-green hover:bg-community-green/90"
+                  onClick={() => {
+                    window.open('https://roundcontrol.co.uk/discover-magazines-ltd/join-waiting-list', '_blank');
+                  }}
+                >
+                  Join Waiting List
+                </Button>
+                <p className="text-sm text-gray-500 mt-2">
+                  Or fill out the application form below to apply now
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Application Form */}
@@ -233,6 +288,7 @@ const ApplyToDistribute = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="13-15">13-15 years</SelectItem>
                               <SelectItem value="16-18">16-18 years</SelectItem>
                               <SelectItem value="19-25">19-25 years</SelectItem>
                               <SelectItem value="26-35">26-35 years</SelectItem>
