@@ -531,6 +531,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               onBogofAreasChange={(paid, free) => setCampaignData(prev => ({ ...prev, bogofPaidAreas: paid, bogofFreeAreas: free }))}
               onDurationChange={(duration) => setCampaignData(prev => ({ ...prev, selectedDuration: duration }))}
               onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
+              onPricingChange={(pricingData) => setCampaignData(prev => ({ ...prev, ...pricingData }))}
               onNext={() => {}}
             />
             

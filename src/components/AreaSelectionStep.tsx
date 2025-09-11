@@ -16,6 +16,7 @@ interface AreaSelectionStepProps {
   bogofFreeAreas: string[];
   onAreasChange: (areas: string[]) => void;
   onBogofAreasChange: (paidAreas: string[], freeAreas: string[]) => void;
+  onPricingChange?: (pricingData: any) => void;
   onNext: () => void;
 }
 
@@ -26,6 +27,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
   bogofFreeAreas,
   onAreasChange,
   onBogofAreasChange,
+  onPricingChange,
   onNext
 }) => {
   const { areas, isLoading, isError } = usePricingData();
@@ -51,15 +53,37 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
 
   const handleAreaChange = (areaId: string, checked: boolean) => {
     if (pricingModel === 'leafleting' || pricingModel === 'fixed') {
-      if (checked) {
-        onAreasChange([...selectedAreas, areaId]);
-      } else {
-        onAreasChange(selectedAreas.filter(id => id !== areaId));
+      const newAreas = checked 
+        ? [...selectedAreas, areaId]
+        : selectedAreas.filter(id => id !== areaId);
+      onAreasChange(newAreas);
+      
+      // Calculate and send total circulation to parent
+      if (onPricingChange && effectiveAreas) {
+        const totalCirculation = effectiveAreas
+          .filter(area => newAreas.includes(area.id))
+          .reduce((sum, area) => {
+            const areaCirculation = pricingModel === 'leafleting' 
+              ? (area as any).household_count || 0
+              : (area as any).circulation || 0;
+            return sum + areaCirculation;
+          }, 0);
+        
+        onPricingChange({
+          selectedModel: pricingModel,
+          selectedAreas: newAreas,
+          bogofPaidAreas: [],
+          bogofFreeAreas: [],
+          pricingBreakdown: { totalCirculation }
+        });
       }
     }
   };
 
   const handleBogofPaidAreaChange = (areaId: string, checked: boolean) => {
+    let newPaidAreas: string[];
+    let newFreeAreas: string[];
+    
     if (checked) {
       // Don't allow more than 7 paid areas
       if (bogofPaidAreas.length >= 7) {
@@ -67,35 +91,75 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
       }
       
       // Remove from free areas if it was there, add to paid areas
-      const newFreeAreas = bogofFreeAreas.filter(id => id !== areaId);
-      const newPaidAreas = [...bogofPaidAreas, areaId];
+      newFreeAreas = bogofFreeAreas.filter(id => id !== areaId);
+      newPaidAreas = [...bogofPaidAreas, areaId];
       
       // If we now have 7 paid areas, automatically select all remaining areas as free
       if (newPaidAreas.length === 7) {
         const allRemainingAreas = effectiveAreas
           .filter(area => !newPaidAreas.includes(area.id))
           .map(area => area.id);
-        onBogofAreasChange(newPaidAreas, allRemainingAreas);
-      } else {
-        onBogofAreasChange(newPaidAreas, newFreeAreas);
+        newFreeAreas = allRemainingAreas;
       }
     } else {
       // Remove from paid areas
-      const newPaidAreas = bogofPaidAreas.filter(id => id !== areaId);
-      onBogofAreasChange(newPaidAreas, bogofFreeAreas);
+      newPaidAreas = bogofPaidAreas.filter(id => id !== areaId);
+      newFreeAreas = bogofFreeAreas;
+    }
+    
+    onBogofAreasChange(newPaidAreas, newFreeAreas);
+    
+    // Calculate and send total circulation to parent
+    if (onPricingChange && effectiveAreas) {
+      const allSelectedAreas = [...newPaidAreas, ...newFreeAreas];
+      const totalCirculation = effectiveAreas
+        .filter(area => allSelectedAreas.includes(area.id))
+        .reduce((sum, area) => {
+          return sum + ((area as any).circulation || 0);
+        }, 0);
+      
+      onPricingChange({
+        selectedModel: pricingModel,
+        selectedAreas: [],
+        bogofPaidAreas: newPaidAreas,
+        bogofFreeAreas: newFreeAreas,
+        pricingBreakdown: { totalCirculation }
+      });
     }
   };
 
   const handleBogofFreeAreaChange = (areaId: string, checked: boolean) => {
+    let newPaidAreas: string[];
+    let newFreeAreas: string[];
+    
     if (checked) {
       // Remove from paid areas if it was there, add to free areas
-      const newPaidAreas = bogofPaidAreas.filter(id => id !== areaId);
-      const newFreeAreas = [...bogofFreeAreas, areaId];
-      onBogofAreasChange(newPaidAreas, newFreeAreas);
+      newPaidAreas = bogofPaidAreas.filter(id => id !== areaId);
+      newFreeAreas = [...bogofFreeAreas, areaId];
     } else {
       // Remove from free areas
-      const newFreeAreas = bogofFreeAreas.filter(id => id !== areaId);
-      onBogofAreasChange(bogofPaidAreas, newFreeAreas);
+      newPaidAreas = bogofPaidAreas;
+      newFreeAreas = bogofFreeAreas.filter(id => id !== areaId);
+    }
+    
+    onBogofAreasChange(newPaidAreas, newFreeAreas);
+    
+    // Calculate and send total circulation to parent
+    if (onPricingChange && effectiveAreas) {
+      const allSelectedAreas = [...newPaidAreas, ...newFreeAreas];
+      const totalCirculation = effectiveAreas
+        .filter(area => allSelectedAreas.includes(area.id))
+        .reduce((sum, area) => {
+          return sum + ((area as any).circulation || 0);
+        }, 0);
+      
+      onPricingChange({
+        selectedModel: pricingModel,
+        selectedAreas: [],
+        bogofPaidAreas: newPaidAreas,
+        bogofFreeAreas: newFreeAreas,
+        pricingBreakdown: { totalCirculation }
+      });
     }
   };
 
