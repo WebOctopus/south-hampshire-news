@@ -1345,38 +1345,6 @@ const effectiveSelectedAreas = useMemo(() => {
             </div>
           </div>
 
-          {/* Special SO19 Section */}
-          <Card className="mb-8 border-community-green border-2">
-            <CardHeader className="bg-community-green text-white">
-              <CardTitle className="text-2xl">!! NEW !! LAUNCH AUG '25</CardTitle>
-              <CardDescription className="text-green-100">
-                After repeated requests from our current advertisers and local business in SO19, Discover will started delivering in June 2025.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-bold text-community-navy mb-2">SO19 - 8,000 CIRCULATION</h3>
-                  <p className="text-gray-600 mb-4">
-                    WESTON, SHOLING, WOOLSTON. Not the leafy suburbs of SO17/16/15 but the dense residential streets of hardworking folk seeking value for money. A strong catchment with busy high streets, growing communities and plenty of families and retired folk requiring services.
-                  </p>
-                  <p className="text-community-green font-bold">Available from August 2025</p>
-                </div>
-
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-bold text-community-navy mb-2">Key Features:</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• 8,000 homes circulation</li>
-                    <li>• Dense residential coverage</li>
-                    <li>• Value-conscious demographic</li>
-                    <li>• Growing community</li>
-                    <li>• High service demand</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Area Information */}
           <div className="max-w-6xl mx-auto">
             <h3 className="text-3xl font-heading font-bold text-community-navy mb-8 text-center">
