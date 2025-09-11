@@ -72,9 +72,18 @@ const stepContent: Record<number, StepContent> = {
 interface SalesAssistantPopupProps {
   campaignData?: any;
   currentStep: number;
+  onNextStep?: () => void;
+  onPrevStep?: () => void;
+  totalSteps?: number;
 }
 
-export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campaignData, currentStep }) => {
+export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ 
+  campaignData, 
+  currentStep, 
+  onNextStep, 
+  onPrevStep, 
+  totalSteps = 4 
+}) => {
   const { areas, adSizes } = usePricingData();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -345,11 +354,37 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
               
               {/* Action Buttons - Always visible at bottom */}
               <div className="flex gap-2 pt-3 border-t border-muted/20 mt-3 flex-shrink-0">
+                {/* Step Navigation Buttons */}
+                {currentStep < totalSteps && onNextStep && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={onNextStep}
+                  >
+                    Next Step
+                    <ChevronRight className="h-3 w-3 ml-1" />
+                  </Button>
+                )}
+                
+                {currentStep > 1 && onPrevStep && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="px-4 text-xs"
+                    onClick={onPrevStep}
+                  >
+                    <ChevronLeft className="h-3 w-3 mr-1" />
+                    Back
+                  </Button>
+                )}
+                
+                {/* Contact/Action Buttons */}
                 {currentContent.action && (
                   <Button
                     variant={currentContent.action.variant || "outline"}
                     size="sm"
-                    className="flex-1 text-xs"
+                    className="text-xs"
                     onClick={currentStep === 4 ? handleCallSales : undefined}
                   >
                     {currentContent.action.text}

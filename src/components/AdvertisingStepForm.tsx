@@ -28,6 +28,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
   const [currentStep, setCurrentStep] = useState(1);
+  const [stepFormRef, setStepFormRef] = useState<{ nextStep: () => void; prevStep: () => void } | null>(null);
   const [campaignData, setCampaignData] = useState({
     selectedAreas: [] as string[],
     bogofPaidAreas: [] as string[],
@@ -430,9 +431,28 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStepIndex: number, nextStep: () => void) => {
       setCurrentStep(currentStepIndex + 2); // Convert 0-indexed to 1-indexed and prepare for next step
+      
+      // Set global navigation functions for Sales Assistant
+      (window as any).salesAssistantNextStep = nextStep;
+      (window as any).salesAssistantPrevStep = () => {
+        if (currentStepIndex > 0) {
+          setCurrentStep(currentStepIndex); // Go back one step
+        }
+      };
+      
       handleStepTransition(currentStepIndex, nextStep);
     }
   };
+
+  // Initialize navigation functions on first render
+  React.useEffect(() => {
+    (window as any).salesAssistantNextStep = () => {
+      // This will be overwritten by the stepTransition handler
+    };
+    (window as any).salesAssistantPrevStep = () => {
+      setCurrentStep(prev => Math.max(1, prev - 1));
+    };
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -548,6 +568,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           
           <SalesAssistantPopup 
             currentStep={currentStep}
+            totalSteps={4}
+            onNextStep={() => {
+              if ((window as any).salesAssistantNextStep) {
+                (window as any).salesAssistantNextStep();
+              }
+            }}
+            onPrevStep={() => {
+              if ((window as any).salesAssistantPrevStep) {
+                (window as any).salesAssistantPrevStep();
+              }
+            }}
             campaignData={{
               selectedModel: selectedPricingModel,
               selectedAreas: campaignData.selectedAreas,
