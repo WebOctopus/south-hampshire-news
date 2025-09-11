@@ -149,7 +149,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
 
       {/* Expanded Panel */}
       {!isCollapsed && (
-        <div className="fixed right-4 top-4 z-50 w-96 max-w-[calc(100vw-2rem)] animate-slide-in-right">
+        <div className="fixed right-4 top-1/2 -translate-y-1/2 z-50 w-96 max-w-[calc(100vw-2rem)] animate-slide-in-right">
           <Card className="shadow-elegant border-primary/20 bg-background/95 backdrop-blur-sm max-h-[600px] flex flex-col">
             <CardHeader className="pb-3 flex-shrink-0">
               <div className="flex items-center justify-between">
