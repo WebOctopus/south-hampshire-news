@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import StepForm, { useStepForm } from '@/components/StepForm';
+import StepForm from '@/components/StepForm';
 import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
@@ -425,31 +425,25 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     }
   };
 
-  // Component to capture StepForm navigation functions
-  const StepFormWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const stepFormContext = useStepForm();
-    
-    // Update current step whenever the step form context changes
-    React.useEffect(() => {
-      setCurrentStep(stepFormContext.currentStep + 1); // Convert 0-indexed to 1-indexed
-    }, [stepFormContext.currentStep]);
-    
-    // Store reference to navigation functions
-    React.useEffect(() => {
-      setStepFormRef({
-        nextStep: stepFormContext.nextStep,
-        prevStep: stepFormContext.prevStep
-      });
-    }, [stepFormContext.nextStep, stepFormContext.prevStep]);
-    
-    return <>{children}</>;
-  };
 
   const stepLabels = {
     nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStepIndex: number, nextStep: () => void) => {
+      // Update current step for sales assistant
+      setCurrentStep(currentStepIndex + 1); // Convert 0-indexed to 1-indexed
+      
+      // Store navigation functions for sales assistant
+      setStepFormRef({
+        nextStep,
+        prevStep: () => {
+          if (currentStepIndex > 0) {
+            setCurrentStep(currentStepIndex); // Go back one step
+          }
+        }
+      });
+      
       handleStepTransition(currentStepIndex, nextStep);
     }
   };
@@ -467,56 +461,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 Advertising Cost Calculator
               </DialogTitle>
             </DialogHeader>
-            <StepForm stepLabels={stepLabels}>
-              <PricingOptionsStep onSelectOption={handleSelectOption} />
-              
-              <AreaAndScheduleStep 
-                pricingModel={selectedPricingModel}
-                selectedAreas={campaignData.selectedAreas}
-                bogofPaidAreas={campaignData.bogofPaidAreas}
-                bogofFreeAreas={campaignData.bogofFreeAreas}
-                selectedDuration={campaignData.selectedDuration}
-                selectedMonths={campaignData.selectedMonths}
-                onAreasChange={(areas) => setCampaignData(prev => ({ ...prev, selectedAreas: areas }))}
-                onBogofAreasChange={(paid, free) => setCampaignData(prev => ({ ...prev, bogofPaidAreas: paid, bogofFreeAreas: free }))}
-                onDurationChange={(duration) => setCampaignData(prev => ({ ...prev, selectedDuration: duration }))}
-                onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
-                onNext={() => {}}
-              />
-              
-              <AdvertisementSizeStep
-                selectedAdSize={campaignData.selectedAdSize}
-                onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
-                pricingModel={selectedPricingModel}
-                selectedAreas={campaignData.selectedAreas}
-                bogofPaidAreas={campaignData.bogofPaidAreas}
-                bogofFreeAreas={campaignData.bogofFreeAreas}
-                selectedDuration={campaignData.selectedDuration}
-                onPricingChange={(breakdown) => {
-                  console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
-                  setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
-                }}
-                showSummary={true}
-                onNext={() => {}}
-              />
-              
-              <ContactInformationStep
-                pricingModel={selectedPricingModel}
-                selectedAreas={campaignData.selectedAreas}
-                bogofPaidAreas={campaignData.bogofPaidAreas}
-                bogofFreeAreas={campaignData.bogofFreeAreas}
-                selectedAdSize={campaignData.selectedAdSize}
-                selectedDuration={campaignData.selectedDuration}
-                pricingBreakdown={campaignData.pricingBreakdown}
-                campaignData={campaignData}
-                onSaveQuote={handleContactInfoSave}
-                onBookNow={handleContactInfoBook}
-              />
-            </StepForm>
-          </DialogContent>
-        </Dialog>
-      ) : (
-        <div className="relative">
           <StepForm stepLabels={stepLabels}>
             <PricingOptionsStep onSelectOption={handleSelectOption} />
             
@@ -531,7 +475,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               onBogofAreasChange={(paid, free) => setCampaignData(prev => ({ ...prev, bogofPaidAreas: paid, bogofFreeAreas: free }))}
               onDurationChange={(duration) => setCampaignData(prev => ({ ...prev, selectedDuration: duration }))}
               onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
-              onPricingChange={(pricingData) => setCampaignData(prev => ({ ...prev, ...pricingData }))}
               onNext={() => {}}
             />
             
@@ -563,8 +506,57 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               onSaveQuote={handleContactInfoSave}
               onBookNow={handleContactInfoBook}
             />
+          </StepForm>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <div className="relative">
+          <StepForm stepLabels={stepLabels}>
+            <PricingOptionsStep onSelectOption={handleSelectOption} />
             
-            {/* Sales Assistant Popup - positioned absolutely */}
+            <AreaAndScheduleStep 
+              pricingModel={selectedPricingModel}
+              selectedAreas={campaignData.selectedAreas}
+              bogofPaidAreas={campaignData.bogofPaidAreas}
+              bogofFreeAreas={campaignData.bogofFreeAreas}
+              selectedDuration={campaignData.selectedDuration}
+              selectedMonths={campaignData.selectedMonths}
+              onAreasChange={(areas) => setCampaignData(prev => ({ ...prev, selectedAreas: areas }))}
+              onBogofAreasChange={(paid, free) => setCampaignData(prev => ({ ...prev, bogofPaidAreas: paid, bogofFreeAreas: free }))}
+              onDurationChange={(duration) => setCampaignData(prev => ({ ...prev, selectedDuration: duration }))}
+              onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
+              onPricingChange={(pricingData) => setCampaignData(prev => ({ ...prev, ...pricingData }))}
+              onNext={() => {}}
+            />
+            
+            <AdvertisementSizeStep
+              selectedAdSize={campaignData.selectedAdSize}
+              onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
+              pricingModel={selectedPricingModel}
+              selectedAreas={campaignData.selectedAreas}
+              bogofPaidAreas={campaignData.bogofPaidAreas}
+              bogofFreeAreas={campaignData.bogofFreeAreas}
+              selectedDuration={campaignData.selectedDuration}
+              onPricingChange={(breakdown) => {
+                console.log('AdvertisingStepForm - Pricing breakthrough received:', breakdown);
+                setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
+              }}
+              showSummary={true}
+              onNext={() => {}}
+            />
+            
+            <ContactInformationStep
+              pricingModel={selectedPricingModel}
+              selectedAreas={campaignData.selectedAreas}
+              bogofPaidAreas={campaignData.bogofPaidAreas}
+              bogofFreeAreas={campaignData.bogofFreeAreas}
+              selectedAdSize={campaignData.selectedAdSize}
+              selectedDuration={campaignData.selectedDuration}
+              pricingBreakdown={campaignData.pricingBreakdown}
+              campaignData={campaignData}
+              onSaveQuote={handleContactInfoSave}
+              onBookNow={handleContactInfoBook}
+            />
           </StepForm>
           
           <SalesAssistantPopup 
