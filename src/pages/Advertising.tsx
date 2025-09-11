@@ -654,19 +654,22 @@ const effectiveSelectedAreas = useMemo(() => {
   return <div className="min-h-screen bg-gray-50">
       <Navigation />
       
-      {/* Hero Banner */}
+      {/* Header Section */}
       <section className="relative bg-gradient-to-r from-community-navy to-community-green text-white py-20 overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{
-        backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
-      }} />
+          backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
+        }} />
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-community-navy/80 to-community-green/80" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-heading font-bold mb-6">
-            YOUR BUSINESS NEEDS TO BE SEEN
+          <h1 className="text-2xl md:text-3xl font-heading font-bold mb-4 text-gray-200">
+            ADVERTISING
           </h1>
+          <h2 className="text-5xl md:text-6xl font-heading font-bold mb-6">
+            YOUR BUSINESS NEEDS TO BE SEEN
+          </h2>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             We can't promise to find you a mate, but we will match you up with new customers!
           </p>
@@ -685,8 +688,57 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Three Service Types Section */}
       <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Display Advertising</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/34ecfbb2-fff7-4b7e-a22f-14509fe08bf3.png" 
+                  alt="Discover Magazine Cover Example" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
+                />
+                <p className="text-gray-600">We offer 11 ad sizes to more easily match with your budget and campaign needs</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Premium Position Advertising</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/9f1d05c6-6723-48d2-9b24-3aee6cb957bd.png" 
+                  alt="Premium Position Advertising Example" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
+                />
+                <p className="text-gray-600">Pay a little extra for pages 2,3,5 or back cover... Stand out from the Crowd!</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Small Budget Options</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <img 
+                  src="/lovable-uploads/9ba0441a-d421-4a65-8738-115023b9fc55.png" 
+                  alt="Think Big Shop Small - Small Budget Options" 
+                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
+                />
+                <p className="text-gray-600">Low cost sizes, special packages and generous discounts for selected businesses</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Statistics Section */}
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
             {stats.map((stat, index) => {
@@ -705,27 +757,231 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
-      {/* Magazine Covers Carousel */}
-      <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
-        {/* Futuristic Background Effects */}
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,255,255,0.03)_50%,transparent_75%,transparent_100%)] bg-[length:30px_30px] animate-pulse" />
-        <div className="absolute top-0 left-0 w-96 h-96 bg-community-green/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-community-navy/20 rounded-full blur-3xl" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Getting Started Process Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-full px-6 py-2 mb-6">
-              <div className="w-2 h-2 bg-community-green rounded-full animate-pulse" />
-              <span className="text-white font-medium">LIVE PUBLICATIONS</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-4">
-              Discover Magazine Editions
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              WANT TO GET STARTED?
             </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Explore our stunning collection of local editions covering all areas of South Hampshire
+            <p className="text-xl text-gray-600">
+              From Quote to Artwork - We'll Help you All the Way!
             </p>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Identifying What's Right for You</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-community-green/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-community-green">1</span>
+                </div>
+                <p className="text-gray-600">Assessment and consultation process</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Self Select Quotations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-community-green/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-community-green">2</span>
+                </div>
+                <p className="text-gray-600">You choose - Instant quotations with pricing options</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Free In-house Design</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-community-green/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-community-green">3</span>
+                </div>
+                <p className="text-gray-600">At your service - Design support and account management</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Quote Selection Section */}
+      <section id="calculator" className="py-16 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              Get Your Instant Quote
+            </h2>
+            <p className="text-xl text-gray-600">
+              Start by selecting your preferred advertising package
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <Card className="text-center p-6">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Fixed Term</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Pay as you go with no contract</p>
+                <Button className="w-full bg-community-green hover:bg-green-600 text-white">
+                  Select Package
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6 border-2 border-community-green">
+              <CardHeader>
+                <Badge className="bg-community-green text-white mb-2">Special Offer</Badge>
+                <CardTitle className="text-community-navy">3+ Repeat Package</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Subscription with monthly payment plan</p>
+                <Button className="w-full bg-community-green hover:bg-green-600 text-white">
+                  Select Package
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6">
+              <CardHeader>
+                <CardTitle className="text-community-navy">Leafleting Service</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Design, Print & Delivery</p>
+                <Button className="w-full bg-community-green hover:bg-green-600 text-white">
+                  Select Package
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <AdvertisingStepForm />
+        </div>
+      </section>
+
+      {/* Top Website Features Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              Top 10+ Website Features Users Will Value the Most in 2023
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-xl font-bold text-community-green">1</span>
+                </div>
+                <h3 className="font-bold text-community-navy mb-2">Easy Navigation</h3>
+                <p className="text-gray-600 text-sm">Intuitive menu structure and clear pathways</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-xl font-bold text-community-green">2</span>
+                </div>
+                <h3 className="font-bold text-community-navy mb-2">Intuitive Design</h3>
+                <p className="text-gray-600 text-sm">User experience that feels natural</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-xl font-bold text-community-green">3</span>
+                </div>
+                <h3 className="font-bold text-community-navy mb-2">Value Propositions</h3>
+                <p className="text-gray-600 text-sm">Clear benefits and unique selling points</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-xl font-bold text-community-green">4</span>
+                </div>
+                <h3 className="font-bold text-community-navy mb-2">About Us</h3>
+                <p className="text-gray-600 text-sm">Build trust with company information</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-xl font-bold text-community-green">5</span>
+                </div>
+                <h3 className="font-bold text-community-navy mb-2">Client Lists</h3>
+                <p className="text-gray-600 text-sm">Showcase existing and past clients</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Magazine Coverage Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              14 MAGAZINES—ESSENTIAL FACTS AND FIGURES
+            </h2>
+            <p className="text-2xl font-heading font-bold text-community-green mb-4">
+              RESULTS DRIVEN, DISPLAY ADVERTISING
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+            <Card className="text-center p-6">
+              <CardContent>
+                <h3 className="font-bold text-community-navy mb-2">Southampton Suburbs</h3>
+                <p className="text-gray-600 text-sm mb-2">SO15 SO16 SO17</p>
+                <div className="text-2xl font-bold text-community-green">13,500</div>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6">
+              <CardContent>
+                <h3 className="font-bold text-community-navy mb-2">Chandler's Ford & North Baddesley</h3>
+                <p className="text-gray-600 text-sm mb-2">SO53 SO52</p>
+                <div className="text-2xl font-bold text-community-green">13,500</div>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6">
+              <CardContent>
+                <h3 className="font-bold text-community-navy mb-2">Eastleigh & Villages</h3>
+                <p className="text-gray-600 text-sm mb-2">SO50</p>
+                <div className="text-2xl font-bold text-community-green">10,500</div>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6">
+              <CardContent>
+                <h3 className="font-bold text-community-navy mb-2">Hedge End & Surrounds</h3>
+                <p className="text-gray-600 text-sm mb-2">SO30</p>
+                <div className="text-2xl font-bold text-community-green">13,000</div>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6">
+              <CardContent>
+                <h3 className="font-bold text-community-navy mb-2">Locks Heath & Surrounds</h3>
+                <p className="text-gray-600 text-sm mb-2">SO31</p>
+                <div className="text-2xl font-bold text-community-green">13,000</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Magazine Covers */}
           <div className="relative max-w-5xl mx-auto">
             <Carousel opts={{
             align: "center",
@@ -733,43 +989,20 @@ const effectiveSelectedAreas = useMemo(() => {
           }} className="w-full">
               <CarouselContent className="-ml-6">
                 {magazineCovers.map((cover, index) => <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
-                    <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
+                    <Card className="group relative overflow-hidden bg-white border hover:shadow-lg transition-all duration-300">
                       <CardContent className="p-6">
                         <div className="relative overflow-hidden rounded-lg">
-                          <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
-                          {/* Futuristic Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                            <h3 className="text-white font-bold text-sm mb-2">{cover.title}</h3>
-                            <div className="flex items-center gap-2">
-                              <div className="w-1 h-1 bg-community-green rounded-full" />
-                              <span className="text-community-green text-xs font-medium">CURRENT EDITION</span>
-                            </div>
-                          </div>
+                          <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain" />
                         </div>
-                        {/* Glow Effect */}
-                        <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <h3 className="text-community-navy font-bold text-sm mt-4 text-center">{cover.title}</h3>
                       </CardContent>
                     </Card>
                   </CarouselItem>)}
               </CarouselContent>
               
-              {/* Custom Navigation Buttons */}
-              <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
-              <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
+              <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2" />
+              <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2" />
             </Carousel>
-          </div>
-
-          {/* Call to Action */}
-          <div className="text-center mt-12">
-            <div className="inline-flex flex-col sm:flex-row gap-4">
-              <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
-                EXPLORE ALL EDITIONS
-              </Button>
-              <Button variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
-                VIEW DISTRIBUTION MAP
-              </Button>
-            </div>
           </div>
         </div>
       </section>
@@ -789,7 +1022,7 @@ const effectiveSelectedAreas = useMemo(() => {
               Reach 158,000 Homes Across All 12 Areas
             </p>
             <p className="text-xl mb-8 opacity-90">
-              Save over £500 with our exclusive package deal - Perfect for businesses ready to make a big impact!
+              Save over £500 with our exclusive package deal
             </p>
           </div>
 
@@ -820,26 +1053,7 @@ const effectiveSelectedAreas = useMemo(() => {
                 CLAIM THIS OFFER - £999
               </Button>
             </SpecialOfferForm>
-            <p className="mt-4 text-lg opacity-90">
-              Includes professional design support & account management
-            </p>
           </div>
-        </div>
-      </section>
-
-      {/* Calculator Section - Step Form */}
-      <section id="calculator" className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Get Your Instant Quote
-            </h2>
-            <p className="text-xl text-gray-600">
-              Start by selecting your preferred advertising package
-            </p>
-          </div>
-          
-          <AdvertisingStepForm />
         </div>
       </section>
 
@@ -1108,7 +1322,7 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
-      {/* Essential Facts */}
+      {/* Expandable Sections */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -1118,12 +1332,9 @@ const effectiveSelectedAreas = useMemo(() => {
             <h3 className="text-2xl font-heading font-bold text-community-green mb-4">
               RESULTS DRIVEN, DISPLAY ADVERTISING
             </h3>
-            <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-              Discover is the region's most established and widespread local publication available to businesses wanting to generate brand awareness, lead generation and website traffic from affluent homeowners in South Hampshire.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
             {/* Facts List */}
             <Card className="h-fit">
               <CardContent className="p-8">
@@ -1149,19 +1360,89 @@ const effectiveSelectedAreas = useMemo(() => {
               </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Local Areas */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              12 Areas to Target - Trial Areas - Add More Later - Tailored Campaigns - Mix Adverts with Leaflets!
-            </h2>
-            <p className="text-xl text-gray-600 mb-6">
-              Our 158,000 circulation is divided into 12 Areas - each with a circulation of up to 14,000** homes
-            </p>
+          {/* Local Areas Accordion */}
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h3 className="text-3xl font-heading font-bold text-community-navy mb-4">
+                12 Areas to Target - Trial Areas - Add More Later - Tailored Campaigns - Mix Adverts with Leaflets!
+              </h3>
+              <p className="text-xl text-gray-600 mb-6">
+                Our 158,000 circulation is divided into 12 Areas - each with a circulation of up to 14,000** homes
+              </p>
+            </div>
+            
+            <Accordion type="multiple" className="w-full max-w-4xl mx-auto">
+              {localAreas.map((area, index) => (
+                <AccordionItem key={index} value={`area-${index}`}>
+                  <AccordionTrigger className="text-left">
+                    <div className="flex justify-between items-center w-full pr-4">
+                      <div>
+                        <span className="font-bold text-community-navy">{area.area}: {area.title}</span>
+                        <div className="text-sm text-gray-600">{area.postcodes}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-community-green">{area.circulation}</div>
+                        <div className="text-xs text-gray-500">Circulation</div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="pt-4 pb-2">
+                      <p className="text-gray-700 mb-3">{area.description}</p>
+                      <div className="flex justify-between items-center">
+                        <Badge variant={area.leaflets === "YES" ? "default" : "secondary"} className={area.leaflets === "YES" ? "bg-community-green text-white" : ""}>
+                          Leaflets: {area.leaflets}
+                        </Badge>
+                        <div className="text-sm text-gray-600">
+                          Circulation: <span className="font-bold text-community-green">{area.circulation}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-3xl font-heading font-bold text-community-navy mb-8 text-center">
+              Frequently Asked Questions
+            </h3>
+            
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="faq-1">
+                <AccordionTrigger>What areas do you cover?</AccordionTrigger>
+                <AccordionContent>
+                  We cover 12 distinct areas across South Hampshire, reaching over 158,000 homes with our magazine distribution and leafleting services.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="faq-2">
+                <AccordionTrigger>How often are the magazines published?</AccordionTrigger>
+                <AccordionContent>
+                  Our magazines are published bi-monthly (6 times per year) with each edition tailored to local stories and events.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="faq-3">
+                <AccordionTrigger>Do you offer design services?</AccordionTrigger>
+                <AccordionContent>
+                  Yes! We provide free artwork services for series bookings and offer comprehensive design support for all advertising formats.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="faq-4">
+                <AccordionTrigger>Can I track my leaflet distribution?</AccordionTrigger>
+                <AccordionContent>
+                  Absolutely! All our leaflet distribution is GPS tracked, monitored, and recorded for 100% transparency and accountability.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          <div className="text-center mt-12">
             <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto">
               <p className="text-lg text-gray-700 mb-4">
                 Get an <span className="font-bold text-community-green">instant quote</span> for any combination of areas using our cost calculator
