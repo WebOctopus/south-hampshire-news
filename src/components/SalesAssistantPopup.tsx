@@ -200,15 +200,6 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                     <span className="mr-1">Hide Assistant</span>
                     <ChevronRight className="h-3 w-3" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setIsVisible(false)}
-                    title="Close"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
                 </div>
               </div>
               
