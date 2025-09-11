@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import StepForm from '@/components/StepForm';
+import StepForm, { useStepForm } from '@/components/StepForm';
 import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
@@ -15,6 +15,30 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
+// Sales Assistant wrapper component to access StepForm context
+const SalesAssistantWrapper: React.FC<{ 
+  selectedPricingModel: 'fixed' | 'bogof' | 'leafleting';
+  campaignData: any;
+}> = ({ selectedPricingModel, campaignData }) => {
+  const { currentStep } = useStepForm();
+  
+  return (
+    <SalesAssistantPopup 
+      currentStep={currentStep + 1} // Convert 0-indexed to 1-indexed
+      campaignData={{
+        selectedModel: selectedPricingModel,
+        selectedAreas: campaignData.selectedAreas,
+        bogofPaidAreas: campaignData.bogofPaidAreas,
+        bogofFreeAreas: campaignData.bogofFreeAreas,
+        selectedSize: campaignData.selectedAdSize,
+        selectedDuration: campaignData.selectedDuration,
+        totalCost: campaignData.pricingBreakdown?.finalTotal,
+        pricingBreakdown: campaignData.pricingBreakdown
+      }}
+    />
+  );
+};
+
 interface AdvertisingStepFormProps {
   children?: React.ReactNode;
   asDialog?: boolean;
@@ -27,7 +51,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const { data: leafletDurations } = useLeafletCampaignDurations();
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
-  const [currentStep, setCurrentStep] = useState(1);
   const [campaignData, setCampaignData] = useState({
     selectedAreas: [] as string[],
     bogofPaidAreas: [] as string[],
@@ -427,11 +450,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const stepLabels = {
     nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
-    onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
-    onStepTransition: (currentStep: number, nextStep: () => void) => {
-      setCurrentStep(currentStep + 1); // Update local state
-      handleStepTransition(currentStep, nextStep);
-    }
+    onLastStepNext: () => Promise.resolve() // Dummy function since we use the global handler
   };
 
   return (
@@ -545,18 +564,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           </StepForm>
           
           {/* Sales Assistant Popup - positioned absolutely */}
-          <SalesAssistantPopup 
-            currentStep={currentStep}
-            campaignData={{
-              selectedModel: selectedPricingModel,
-              selectedAreas: campaignData.selectedAreas,
-              bogofPaidAreas: campaignData.bogofPaidAreas,
-              bogofFreeAreas: campaignData.bogofFreeAreas,
-              selectedSize: campaignData.selectedAdSize,
-              selectedDuration: campaignData.selectedDuration,
-              totalCost: campaignData.pricingBreakdown?.finalTotal,
-              pricingBreakdown: campaignData.pricingBreakdown
-            }}
+          <SalesAssistantWrapper 
+            selectedPricingModel={selectedPricingModel}
+            campaignData={campaignData}
           />
         </div>
       )}
