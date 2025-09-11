@@ -912,6 +912,232 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
+      {/* Essential Facts & Figures Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              Essential Facts & Figures
+            </h2>
+            <h3 className="text-2xl font-heading font-bold text-community-green mb-4">
+              RESULTS DRIVEN, DISPLAY ADVERTISING
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
+            {/* Area Cards */}
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="text-center p-4">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-2">
+                      <span className="text-lg font-bold text-white">1</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-1 text-sm">SOUTHAMPTON SUBURBS</h3>
+                    <p className="text-gray-600 text-xs mb-1">SO15 SO16 SO17</p>
+                    <div className="text-xl font-bold text-community-green mb-1">13,500</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">2</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">CHANDLER'S FORD & NORTH BADDESLEY</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO53 SO52</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">13,500</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">3</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">EASTLEIGH & VILLAGES</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO50</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">10,500</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">4</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">HEDGE END & SURROUNDS</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO30</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center p-6">
+                  <CardContent>
+                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-xl font-bold text-white">5</span>
+                    </div>
+                    <h3 className="font-bold text-community-navy mb-2">LOCKS HEATH & SURROUNDS</h3>
+                    <p className="text-gray-600 text-sm mb-2">SO31</p>
+                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
+                    <p className="text-xs text-gray-600">Circulation</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Map Section */}
+            <div id="distribution-map" className="text-center">
+              <img src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas" className="w-full max-w-md mx-auto rounded-lg shadow-lg" />
+              <p className="text-sm text-gray-600 mt-4 font-medium">
+                12 Distribution Areas across South Hampshire
+              </p>
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-3xl font-heading font-bold text-community-navy mb-8 text-center">
+              Frequently Asked Questions
+            </h3>
+            
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="faq-1">
+                <AccordionTrigger>What areas do you cover?</AccordionTrigger>
+                <AccordionContent>
+                  We cover 12 distinct areas across South Hampshire, reaching over 158,000 homes with our magazine distribution and leafleting services.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="faq-2">
+                <AccordionTrigger>How often are the magazines published?</AccordionTrigger>
+                <AccordionContent>
+                  Our magazines are published bi-monthly (6 times per year) with each edition tailored to local stories and events.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="faq-3">
+                <AccordionTrigger>Do you offer design services?</AccordionTrigger>
+                <AccordionContent>
+                  Yes! We provide free artwork services for series bookings and offer comprehensive design support for all advertising formats.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="faq-4">
+                <AccordionTrigger>Can I track my leaflet distribution?</AccordionTrigger>
+                <AccordionContent>
+                  Absolutely! All our leaflet distribution is GPS tracked, monitored, and recorded for 100% transparency and accountability.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          <div className="text-center mt-12">
+            <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto">
+              <p className="text-lg text-gray-700 mb-4">
+                Get an <span className="font-bold text-community-green">instant quote</span> for any combination of areas using our cost calculator
+              </p>
+              <Button 
+                className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg"
+                onClick={() => {
+                  const calculatorElement = document.getElementById('calculator');
+                  if (calculatorElement) {
+                    calculatorElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                GET INSTANT QUOTE
+              </Button>
+            </div>
+          </div>
+
+          {/* Special SO19 Section */}
+          <Card className="mb-8 border-community-green border-2">
+            <CardHeader className="bg-community-green text-white">
+              <CardTitle className="text-2xl">!! NEW !! LAUNCH AUG '25</CardTitle>
+              <CardDescription className="text-green-100">
+                After repeated requests from our current advertisers and local business in SO19, Discover will started delivering in June 2025.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-xl font-bold text-community-navy mb-2">SO19 - 8,000 CIRCULATION</h3>
+                  <p className="text-gray-600 mb-4">
+                    WESTON, SHOLING, WOOLSTON. Not the leafy suburbs of SO17/16/15 but the dense residential streets of hardworking folk seeking value for money. A strong catchment with busy high streets, growing communities and plenty of families and retired folk requiring services.
+                  </p>
+                  <p className="text-community-green font-bold">Available from August 2025</p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-bold text-community-navy mb-2">Key Features:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• 8,000 homes circulation</li>
+                    <li>• Dense residential coverage</li>
+                    <li>• Value-conscious demographic</li>
+                    <li>• Growing community</li>
+                    <li>• High service demand</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Area Information */}
+          <div className="max-w-6xl mx-auto">
+            <h3 className="text-3xl font-heading font-bold text-community-navy mb-8 text-center">
+              Our Coverage Areas
+            </h3>
+            
+            <Accordion type="single" collapsible className="w-full">
+              {localAreas.map((area, index) => <AccordionItem key={index} value={`area-${index}`}>
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-4 w-full">
+                      <div className="bg-community-green text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
+                        {area.area.split(' ')[1]}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                          <div className="text-left">
+                            <div className="font-heading font-bold text-lg">{area.title}</div>
+                            <div className="text-sm text-gray-600">{area.postcodes}</div>
+                            <div className="text-sm text-community-green font-bold">Circulation: {area.circulation}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-heading font-bold text-community-navy mb-2">Coverage Details</h4>
+                          <p className="text-gray-600">{area.description}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-heading font-bold text-community-navy mb-2">Leaflet Distribution</h4>
+                          <p className={`font-bold ${area.leaflets === 'YES' ? 'text-community-green' : 'text-red-500'}`}>
+                            {area.leaflets}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <Button className="w-full">
+                          REQUEST A QUOTE
+                        </Button>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>)}
+            </Accordion>
+          </div>
+        </div>
+      </section>
+
 
       {/* Special Offer Section */}
       <section className="py-16 bg-gradient-to-r from-community-green to-green-600 text-white relative overflow-hidden">
@@ -1227,228 +1453,6 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
         </div>
       </section>
-
-      {/* Expandable Sections */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Essential Facts & Figures
-            </h2>
-            <h3 className="text-2xl font-heading font-bold text-community-green mb-4">
-              RESULTS DRIVEN, DISPLAY ADVERTISING
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
-            {/* Area Cards */}
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="text-center p-4">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-2">
-                      <span className="text-lg font-bold text-white">1</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-1 text-sm">SOUTHAMPTON SUBURBS</h3>
-                    <p className="text-gray-600 text-xs mb-1">SO15 SO16 SO17</p>
-                    <div className="text-xl font-bold text-community-green mb-1">13,500</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">2</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">CHANDLER'S FORD & NORTH BADDESLEY</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO53 SO52</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">13,500</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">3</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">EASTLEIGH & VILLAGES</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO50</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">10,500</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">4</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">HEDGE END & SURROUNDS</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO30</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">5</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">LOCKS HEATH & SURROUNDS</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO31</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            {/* Map Section */}
-            <div id="distribution-map" className="text-center">
-              <img src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas" className="w-full max-w-md mx-auto rounded-lg shadow-lg" />
-              <p className="text-sm text-gray-600 mt-4 font-medium">
-                12 Distribution Areas across South Hampshire
-              </p>
-            </div>
-          </div>
-
-
-          {/* FAQ Section */}
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-3xl font-heading font-bold text-community-navy mb-8 text-center">
-              Frequently Asked Questions
-            </h3>
-            
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="faq-1">
-                <AccordionTrigger>What areas do you cover?</AccordionTrigger>
-                <AccordionContent>
-                  We cover 12 distinct areas across South Hampshire, reaching over 158,000 homes with our magazine distribution and leafleting services.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="faq-2">
-                <AccordionTrigger>How often are the magazines published?</AccordionTrigger>
-                <AccordionContent>
-                  Our magazines are published bi-monthly (6 times per year) with each edition tailored to local stories and events.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="faq-3">
-                <AccordionTrigger>Do you offer design services?</AccordionTrigger>
-                <AccordionContent>
-                  Yes! We provide free artwork services for series bookings and offer comprehensive design support for all advertising formats.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="faq-4">
-                <AccordionTrigger>Can I track my leaflet distribution?</AccordionTrigger>
-                <AccordionContent>
-                  Absolutely! All our leaflet distribution is GPS tracked, monitored, and recorded for 100% transparency and accountability.
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-
-          <div className="text-center mt-12">
-            <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto">
-              <p className="text-lg text-gray-700 mb-4">
-                Get an <span className="font-bold text-community-green">instant quote</span> for any combination of areas using our cost calculator
-              </p>
-              <Button 
-                className="bg-community-green hover:bg-green-600 text-white px-8 py-3 font-bold rounded-lg"
-                onClick={() => {
-                  const calculatorElement = document.getElementById('calculator');
-                  if (calculatorElement) {
-                    calculatorElement.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-              >
-                GET INSTANT QUOTE
-              </Button>
-            </div>
-          </div>
-
-          {/* Special SO19 Section */}
-          <Card className="mb-8 border-community-green border-2">
-            <CardHeader className="bg-community-green text-white">
-              <CardTitle className="text-2xl">!! NEW !! LAUNCH AUG '25</CardTitle>
-              <CardDescription className="text-green-100">
-                After repeated requests from our current advertisers and local business in SO19, Discover will started delivering in June 2025.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-bold text-community-navy mb-2">SO19 - 8,000 CIRCULATION</h3>
-                  <p className="text-gray-600">
-                    Letterbox (7,100) delivered to selected areas of SO19; primarily 3+ bedroom properties, with a driveway and attached garage. Flats and rental areas excluded. Available at Tesco, Sainsbury & Co-op in SO19
-                  </p>
-                </div>
-                <div className="text-center">
-                  <Button 
-                    className="bg-community-green hover:bg-green-600"
-                    onClick={() => {
-                      const calculatorElement = document.getElementById('calculator');
-                      if (calculatorElement) {
-                        calculatorElement.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
-                  >
-                    COST CALCULATOR
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="max-w-6xl mx-auto">
-            <Accordion type="single" collapsible className="space-y-4">
-              {localAreas.map((area, index) => <AccordionItem key={area.area} value={`item-${index}`} className="bg-white rounded-lg border shadow-sm">
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center">
-                        <div className="bg-community-green text-white rounded-full w-16 h-16 flex items-center justify-center font-bold mr-4 text-xs">
-                          {area.area}
-                        </div>
-                        <div className="text-left">
-                          <div className="font-heading font-bold text-lg">{area.title}</div>
-                          <div className="text-sm text-gray-600">{area.postcodes}</div>
-                          <div className="text-sm text-community-green font-bold">Circulation: {area.circulation}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-heading font-bold text-community-navy mb-2">Coverage Details</h4>
-                          <p className="text-gray-600">{area.description}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-heading font-bold text-community-navy mb-2">Leaflet Distribution</h4>
-                          <p className={`font-bold ${area.leaflets === 'YES' ? 'text-community-green' : 'text-red-500'}`}>
-                            {area.leaflets}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <Button className="w-full">
-                          REQUEST A QUOTE
-                        </Button>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>)}
-            </Accordion>
-          </div>
-        </div>
-      </section>
-
 
       {/* CTA Section */}
       <section className="py-16 bg-community-navy text-white">
