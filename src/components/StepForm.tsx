@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 interface StepFormProps {
   children: React.ReactNode[];
   onComplete?: () => void;
+  onStepChange?: (stepNumber: number) => void;
   stepLabels?: {
     nextButtonLabels?: string[];
     prevButtonLabel?: string;
@@ -39,12 +40,12 @@ export const useStepForm = () => {
   return context;
 };
 
-export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLabels }) => {
+export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLabels, onStepChange }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = React.Children.count(children);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to top of form when step changes
+  // Scroll to top of form when step changes and set up global functions
   useEffect(() => {
     if (formRef.current) {
       formRef.current.scrollIntoView({ 
@@ -52,7 +53,31 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
         block: 'start' 
       });
     }
-  }, [currentStep]);
+
+    // Notify parent component of step change
+    onStepChange?.(currentStep + 1); // Convert to 1-indexed
+
+    // Set up global functions for Sales Assistant
+    (window as any).salesAssistantNextStep = () => {
+      if (currentStep < totalSteps - 1) {
+        setCurrentStep(prev => prev + 1);
+      }
+    };
+    
+    (window as any).salesAssistantPrevStep = () => {
+      if (currentStep > 0) {
+        setCurrentStep(prev => prev - 1);
+      }
+    };
+    
+    (window as any).salesAssistantGoToStep = (step: number) => {
+      if (step >= 1 && step <= totalSteps) {
+        setCurrentStep(step - 1); // Convert from 1-indexed to 0-indexed
+      }
+    };
+    
+    (window as any).salesAssistantGetCurrentStep = () => currentStep + 1; // Return 1-indexed
+  }, [currentStep, totalSteps, onStepChange]);
 
   const nextStep = async () => {
     const standardNextStep = () => {

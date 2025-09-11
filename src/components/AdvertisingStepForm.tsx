@@ -429,33 +429,22 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
-    onStepTransition: (currentStepIndex: number, nextStep: () => void) => {
-      // currentStepIndex is 0-indexed and represents the step we're transitioning FROM
-      // We want to show the step we're transitioning TO, so add 2
-      const nextStepNumber = currentStepIndex + 2;
-      setCurrentStep(nextStepNumber);
-      
-      // Set global navigation functions for Sales Assistant
-      (window as any).salesAssistantNextStep = nextStep;
-      (window as any).salesAssistantPrevStep = () => {
-        if (currentStepIndex > 0) {
-          setCurrentStep(currentStepIndex + 1); // Go back one step properly
-        }
-      };
-      
-      handleStepTransition(currentStepIndex, nextStep);
+    onStepTransition: (currentStep: number, nextStep: () => void) => {
+      // Intercept transition from advert size step (step 2) to contact (step 3) for Fixed Term
+      if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.pricingBreakdown) {
+        setPendingNextStep(() => nextStep);
+        setShowFixedTermConfirmation(true);
+        return; // Don't proceed to next step yet
+      }
+      nextStep(); // Proceed normally for other cases
     }
   };
 
-  // Initialize navigation functions on first render
-  React.useEffect(() => {
-    (window as any).salesAssistantNextStep = () => {
-      // This will be overwritten by the stepTransition handler
-    };
-    (window as any).salesAssistantPrevStep = () => {
-      setCurrentStep(prev => Math.max(1, prev - 1));
-    };
-  }, []);
+  const handleStepChange = (stepNumber: number) => {
+    setCurrentStep(stepNumber);
+  };
+
+  // Remove manual initialization - StepForm will handle this now
 
   return (
     <ErrorBoundary>
@@ -470,7 +459,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 Advertising Cost Calculator
               </DialogTitle>
             </DialogHeader>
-            <StepForm stepLabels={stepLabels}>
+            <StepForm 
+              stepLabels={stepLabels}
+              onStepChange={handleStepChange}
+            >
               <PricingOptionsStep onSelectOption={handleSelectOption} />
               
               <AreaAndScheduleStep 
@@ -520,7 +512,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         </Dialog>
       ) : (
         <div className="relative">
-          <StepForm stepLabels={stepLabels}>
+          <StepForm 
+            stepLabels={stepLabels}
+            onStepChange={handleStepChange}
+          >
             <PricingOptionsStep onSelectOption={handleSelectOption} />
             
             <AreaAndScheduleStep 
