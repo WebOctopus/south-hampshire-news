@@ -91,11 +91,6 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   const currentContent = stepContent[currentStep] || stepContent[1];
   const progress = ((currentStep - 1) / 3) * 100;
 
-  // Only show the Sales Assistant from step 2 onwards (moved after hooks)
-  if (currentStep < 2) {
-    return null;
-  }
-
   // Debug: Log pricing data to console
   useEffect(() => {
     console.log('Sales Assistant - All Campaign Data:', campaignData);
@@ -134,10 +129,11 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
     return <Icon className="h-4 w-4" />;
   };
 
-  if (!isVisible) return null;
+  // Hide the component for step 1 but maintain consistent structure
+  const shouldShow = isVisible && currentStep >= 2;
 
   return (
-    <>
+    <div style={{ display: shouldShow ? 'block' : 'none' }}>
       {/* Collapsed Side Tab */}
       {isCollapsed && (
         <div className="fixed right-0 top-1/2 -translate-y-1/2 z-50 animate-slide-in-right">
@@ -501,11 +497,11 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                 >
                   <MessageCircle className="h-3 w-3" />
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </>
-  );
-};
+               </div>
+             </CardContent>
+           </Card>
+         </div>
+       )}
+     </div>
+   );
+ };
