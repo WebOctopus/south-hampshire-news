@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import StepForm from '@/components/StepForm';
+import StepForm, { useStepForm } from '@/components/StepForm';
 import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
@@ -425,34 +425,34 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     }
   };
 
+  // Component to capture StepForm navigation functions
+  const StepFormWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const stepFormContext = useStepForm();
+    
+    // Update current step whenever the step form context changes
+    React.useEffect(() => {
+      setCurrentStep(stepFormContext.currentStep + 1); // Convert 0-indexed to 1-indexed
+    }, [stepFormContext.currentStep]);
+    
+    // Store reference to navigation functions
+    React.useEffect(() => {
+      setStepFormRef({
+        nextStep: stepFormContext.nextStep,
+        prevStep: stepFormContext.prevStep
+      });
+    }, [stepFormContext.nextStep, stepFormContext.prevStep]);
+    
+    return <>{children}</>;
+  };
+
   const stepLabels = {
     nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStepIndex: number, nextStep: () => void) => {
-      setCurrentStep(currentStepIndex + 2); // Convert 0-indexed to 1-indexed and prepare for next step
-      
-      // Set global navigation functions for Sales Assistant
-      (window as any).salesAssistantNextStep = nextStep;
-      (window as any).salesAssistantPrevStep = () => {
-        if (currentStepIndex > 0) {
-          setCurrentStep(currentStepIndex); // Go back one step
-        }
-      };
-      
       handleStepTransition(currentStepIndex, nextStep);
     }
   };
-
-  // Initialize navigation functions on first render
-  React.useEffect(() => {
-    (window as any).salesAssistantNextStep = () => {
-      // This will be overwritten by the stepTransition handler
-    };
-    (window as any).salesAssistantPrevStep = () => {
-      setCurrentStep(prev => Math.max(1, prev - 1));
-    };
-  }, []);
 
   return (
     <ErrorBoundary>
@@ -570,16 +570,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           <SalesAssistantPopup 
             currentStep={currentStep}
             totalSteps={4}
-            onNextStep={() => {
-              if ((window as any).salesAssistantNextStep) {
-                (window as any).salesAssistantNextStep();
-              }
-            }}
-            onPrevStep={() => {
-              if ((window as any).salesAssistantPrevStep) {
-                (window as any).salesAssistantPrevStep();
-              }
-            }}
+            onNextStep={stepFormRef?.nextStep}
+            onPrevStep={stepFormRef?.prevStep}
             campaignData={{
               selectedModel: selectedPricingModel,
               selectedAreas: campaignData.selectedAreas,
