@@ -139,8 +139,8 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
     return <Icon className="h-4 w-4" />;
   };
 
-  // Show the component from step 1 onwards
-  const shouldShow = isVisible && currentStep >= 1;
+  // Show the component only on step 2
+  const shouldShow = isVisible && currentStep === 2;
 
   return (
     <div style={{ display: shouldShow ? 'block' : 'none' }}>
