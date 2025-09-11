@@ -330,6 +330,20 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                      </div>
                    )}
 
+                   {/* Clean Summary Subtitle for Non-BOGOF */}
+                   {campaignData.selectedModel !== 'bogof' && campaignData.pricingBreakdown?.totalCirculation && (
+                     <div className="bg-muted/30 rounded-lg p-2 border border-muted/40">
+                       <div className="text-xs text-center text-muted-foreground">
+                         <span className="font-medium">
+                           {campaignData.selectedAreas?.length || 0} total areas selected
+                         </span>
+                         {" • "}
+                         <span className="font-semibold text-primary">
+                           {campaignData.pricingBreakdown.totalCirculation.toLocaleString()} homes reached
+                         </span>
+                       </div>
+                     </div>
+                   )}
 
                    {/* Enhanced Pricing Details for Step 3+ */}
                    {campaignData.pricingBreakdown && currentStep >= 3 && (
