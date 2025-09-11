@@ -770,39 +770,63 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center">
+            <Card className="text-left">
               <CardHeader>
-                <CardTitle className="text-community-navy">Identifying What's Right for You</CardTitle>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-white">1</span>
+                  </div>
+                  <CardTitle className="text-community-navy text-xl">Identifying What's Right for You</CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-community-green/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-community-green">1</span>
-                </div>
-                <p className="text-gray-600">Assessment and consultation process</p>
+                <p className="text-gray-600 mb-4">
+                  If you are new to advertising or need a fresh pair of eyes to improve what you are getting from your current advertising, our sales team are focused on what's right for your business; starting with the size of advert, the style, the design to which areas to choose.
+                </p>
+                <p className="text-gray-600 font-semibold">
+                  If Discover isn't right for you, we'll tell you – honest!
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="text-left">
               <CardHeader>
-                <CardTitle className="text-community-navy">Self Select Quotations</CardTitle>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-white">2</span>
+                  </div>
+                  <CardTitle className="text-community-navy text-xl">Self Select quotations - You choose</CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-community-green/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-community-green">2</span>
-                </div>
-                <p className="text-gray-600">You choose - Instant quotations with pricing options</p>
+                <p className="text-gray-600 mb-4">
+                  You'll receive an instant verbal quotation followed by 3 priced options. PLUS a link to our unique self service online cost calculator so you can play with the combination of advert size, areas and type of booking.
+                </p>
+                <p className="text-gray-600 mb-4 font-semibold">
+                  We believe in the power of informed choice with no hidden costs or surprises!
+                </p>
+                <p className="text-community-green font-semibold">
+                  Payment plans available
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="text-left">
               <CardHeader>
-                <CardTitle className="text-community-navy">Free In-house Design</CardTitle>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xl font-bold text-white">3</span>
+                  </div>
+                  <CardTitle className="text-community-navy text-xl">Free In-house Design - At your service</CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-community-green/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-community-green">3</span>
-                </div>
-                <p className="text-gray-600">At your service - Design support and account management</p>
+                <p className="text-gray-600 mb-4">
+                  Many of customers rely on us to create eye catching adverts for them from scratch or adapting what they have. Our editorial department is on hand to write a complimentary article if you book a series.
+                </p>
+                <p className="text-gray-600 font-semibold">
+                  You'll be allocated an account manager to look after you throughout your journey – with us.
+                </p>
               </CardContent>
             </Card>
           </div>
