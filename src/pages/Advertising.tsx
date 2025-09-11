@@ -925,394 +925,359 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
-            {/* Area Cards Carousel */}
-            <div className="relative">
-              <Carousel 
-                orientation="vertical"
-                opts={{
-                  align: "start",
-                  loop: false,
-                }}
-                className="w-full h-auto"
-              >
-                <CarouselContent className="-mt-1 h-[400px]">
-                  {/* Area 1 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-1" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">1</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON SUBURBS</h3>
-                              <p className="text-gray-600 text-xs">SO15 SO16 SO17</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">13,500</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              ABC1 homes in the more affluent residential suburban streets inc Chilworth, 
-                              Upper Shirley, Rownhams, Bassett and Highfield. Excluding student areas & flats
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+            {/* Area Cards - Vertical Stack */}
+            <div className="space-y-3">
+              {/* Area 1 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-1" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">1</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON SUBURBS</h3>
+                        <p className="text-gray-600 text-xs">SO15 SO16 SO17</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        ABC1 homes in the more affluent residential suburban streets inc Chilworth, 
+                        Upper Shirley, Rownhams, Bassett and Highfield. Excluding student areas & flats
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 2 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-2" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">2</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD & NORTH BADDESLEY</h3>
-                              <p className="text-gray-600 text-xs">SO53 SO52</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">13,500</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              High-quality residential areas including Chandler's Ford, North Baddesley, 
-                              and surrounding villages with excellent local amenities.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 2 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-2" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">2</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD & NORTH BADDESLEY</h3>
+                        <p className="text-gray-600 text-xs">SO53 SO52</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        High-quality residential areas including Chandler's Ford, North Baddesley, 
+                        and surrounding villages with excellent local amenities.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 3 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-3" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">3</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">EASTLEIGH & VILLAGES</h3>
-                              <p className="text-gray-600 text-xs">SO50</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">10,500</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Central Eastleigh, Fair Oak, Bishopstoke, and surrounding villages. 
-                              Mix of residential areas with good transport links.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 3 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-3" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">3</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">EASTLEIGH & VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">SO50</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">10,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Central Eastleigh, Fair Oak, Bishopstoke, and surrounding villages. 
+                        Mix of residential areas with good transport links.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 4 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-4" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">4</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & SURROUNDS</h3>
-                              <p className="text-gray-600 text-xs">SO30</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">13,000</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Hedge End town center and surrounding residential areas. 
-                              Popular family area with excellent schools and amenities.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 4 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-4" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">4</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & SURROUNDS</h3>
+                        <p className="text-gray-600 text-xs">SO30</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Hedge End town center and surrounding residential areas. 
+                        Popular family area with excellent schools and amenities.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 5 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-5" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">5</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & SURROUNDS</h3>
-                              <p className="text-gray-600 text-xs">SO31</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">13,000</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Locks Heath, Park Gate, Sarisbury Green, and Whiteley. 
-                              Modern residential developments with strong community feel.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 5 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-5" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">5</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & SURROUNDS</h3>
+                        <p className="text-gray-600 text-xs">SO31</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Locks Heath, Park Gate, Sarisbury Green, and Whiteley. 
+                        Modern residential developments with strong community feel.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 6 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-6" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">6</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & SURROUNDS</h3>
-                              <p className="text-gray-600 text-xs">PO13 PO14 PO15</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">14,000</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Fareham town center, Stubbington, Hill Head, and surrounding areas. 
-                              Historic market town with modern shopping and business districts.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 6 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-6" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">6</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & SURROUNDS</h3>
+                        <p className="text-gray-600 text-xs">PO13 PO14 PO15</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">14,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Fareham town center, Stubbington, Hill Head, and surrounding areas. 
+                        Historic market town with modern shopping and business districts.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 7 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-7" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">7</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">WICKHAM & BISHOP'S WALTHAM</h3>
-                              <p className="text-gray-600 text-xs">SO32 PO17</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">14,000</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Historic market towns of Wickham and Bishop's Waltham plus surrounding villages. 
-                              Affluent rural communities with strong local identity.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 7 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-7" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">7</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WICKHAM & BISHOP'S WALTHAM</h3>
+                        <p className="text-gray-600 text-xs">SO32 PO17</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">14,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Historic market towns of Wickham and Bishop's Waltham plus surrounding villages. 
+                        Affluent rural communities with strong local identity.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 8 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-8" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">8</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">WINCHESTER & VILLAGES</h3>
-                              <p className="text-gray-600 text-xs">SO21 SO22 SO23</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">13,500</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Historic Winchester city center, Weeke, Stanmore, and surrounding villages. 
-                              Cathedral city with mix of heritage and modern residential areas.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 8 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-8" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">8</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WINCHESTER & VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">SO21 SO22 SO23</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Historic Winchester city center, Weeke, Stanmore, and surrounding villages. 
+                        Cathedral city with mix of heritage and modern residential areas.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 9 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-9" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">9</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">ROMSEY & TEST VALLEY</h3>
-                              <p className="text-gray-600 text-xs">SO51 SO20</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">15,000</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Market town of Romsey, North Baddesley, and Test Valley villages. 
-                              Attractive market town with excellent shopping and dining.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 9 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-9" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">9</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">ROMSEY & TEST VALLEY</h3>
+                        <p className="text-gray-600 text-xs">SO51 SO20</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">15,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Market town of Romsey, North Baddesley, and Test Valley villages. 
+                        Attractive market town with excellent shopping and dining.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 10 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-10" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">10</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">WATERSIDE & TOTTON</h3>
-                              <p className="text-gray-600 text-xs">SO40 SO45</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">14,000</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Totton, Hythe, Dibden, and New Forest waterside communities. 
-                              Mix of town center and scenic waterside residential areas.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
+              {/* Area 10 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-10" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">10</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WATERSIDE & TOTTON</h3>
+                        <p className="text-gray-600 text-xs">SO40 SO45</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">14,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Totton, Hythe, Dibden, and New Forest waterside communities. 
+                        Mix of town center and scenic waterside residential areas.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                  {/* Area 11 */}
-                  <CarouselItem className="pt-1 basis-1/6">
-                    <Accordion type="single" collapsible>
-                      <AccordionItem value="area-11" className="border-0">
-                        <AccordionTrigger className="hover:no-underline p-0">
-                          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
-                            <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-lg font-bold text-white">11</span>
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-community-navy text-sm leading-tight">NEW FOREST TO LYMINGTON</h3>
-                              <p className="text-gray-600 text-xs">SO41 SO42 SO43 BH24 4</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-community-green font-bold text-lg">13,500</div>
-                              <p className="text-xs text-gray-600">Circulation</p>
-                            </div>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-3 pb-3">
-                          <div className="bg-gray-50 rounded-lg p-4 mt-2">
-                            <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
-                            <p className="text-xs text-gray-700 mb-3">
-                              Lymington, New Milton, Milford on Sea, and New Forest villages. 
-                              Prestigious coastal and forest communities with high disposable income.
-                            </p>
-                            <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                            <p className="text-xs text-community-green font-bold">YES</p>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </CarouselItem>
-                </CarouselContent>
-                <CarouselPrevious className="absolute left-1/2 -translate-x-1/2 -top-4" />
-                <CarouselNext className="absolute left-1/2 -translate-x-1/2 -bottom-4" />
-              </Carousel>
+              {/* Area 11 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-11" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">11</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">NEW FOREST TO LYMINGTON</h3>
+                        <p className="text-gray-600 text-xs">SO41 SO42 SO43 BH24 4</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Lymington, New Milton, Milford on Sea, and New Forest villages. 
+                        Prestigious coastal and forest communities with high disposable income.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
 
             {/* Map Section */}
