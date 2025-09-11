@@ -61,10 +61,24 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
 
   const handleBogofPaidAreaChange = (areaId: string, checked: boolean) => {
     if (checked) {
+      // Don't allow more than 7 paid areas
+      if (bogofPaidAreas.length >= 7) {
+        return;
+      }
+      
       // Remove from free areas if it was there, add to paid areas
       const newFreeAreas = bogofFreeAreas.filter(id => id !== areaId);
       const newPaidAreas = [...bogofPaidAreas, areaId];
-      onBogofAreasChange(newPaidAreas, newFreeAreas);
+      
+      // If we now have 7 paid areas, automatically select all remaining areas as free
+      if (newPaidAreas.length === 7) {
+        const allRemainingAreas = effectiveAreas
+          .filter(area => !newPaidAreas.includes(area.id))
+          .map(area => area.id);
+        onBogofAreasChange(newPaidAreas, allRemainingAreas);
+      } else {
+        onBogofAreasChange(newPaidAreas, newFreeAreas);
+      }
     } else {
       // Remove from paid areas
       const newPaidAreas = bogofPaidAreas.filter(id => id !== areaId);
@@ -171,7 +185,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
               <Badge variant="default">Required</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              These are the areas you will pay for throughout your campaign.
+              These are the areas you will pay for throughout your campaign. Maximum 7 areas ({bogofPaidAreas.length}/7).
             </p>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-2">
@@ -180,15 +194,22 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                   key={`paid-${area.id}`} 
                   className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
                     bogofPaidAreas.includes(area.id) ? 'ring-2 ring-primary border-primary' : ''
-                  }`}
-                  onClick={() => handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id))}
+                  } ${!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => {
+                    if (!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7) return;
+                    handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id));
+                  }}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-start space-x-2">
                       <Checkbox
                         id={`paid-${area.id}`}
                         checked={bogofPaidAreas.includes(area.id)}
-                        onCheckedChange={(checked) => handleBogofPaidAreaChange(area.id, checked as boolean)}
+                        disabled={!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7}
+                        onCheckedChange={(checked) => {
+                          if (!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7) return;
+                          handleBogofPaidAreaChange(area.id, checked as boolean);
+                        }}
                         className="mt-1"
                       />
                       <div className="flex-1 space-y-1">
@@ -222,9 +243,11 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
               <Badge variant="secondary">6 Months Free</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              {bogofPaidAreas.length > 0 
-                ? `Select additional areas to receive for FREE for 6 months. You can choose up to ${bogofPaidAreas.length} free area${bogofPaidAreas.length > 1 ? 's' : ''}.`
-                : 'Select paid areas first to unlock free bonus areas.'
+              {bogofPaidAreas.length === 7 
+                ? 'All remaining areas automatically selected as FREE bonus areas!'
+                : bogofPaidAreas.length > 0 
+                  ? `Select additional areas to receive for FREE for 6 months. You can choose up to ${bogofPaidAreas.length} free area${bogofPaidAreas.length > 1 ? 's' : ''}.`
+                  : 'Select paid areas first to unlock free bonus areas.'
               }
             </p>
             
@@ -235,7 +258,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                 .filter(area => !bogofPaidAreas.includes(area.id))
                 .map((area) => {
                   const isSelected = bogofFreeAreas.includes(area.id);
-                  const isDisabled = bogofPaidAreas.length === 0 || (!isSelected && bogofFreeAreas.length >= bogofPaidAreas.length);
+                  const isDisabled = bogofPaidAreas.length === 7 || bogofPaidAreas.length === 0 || (!isSelected && bogofFreeAreas.length >= bogofPaidAreas.length);
                   
                   return (
                     <Card 
