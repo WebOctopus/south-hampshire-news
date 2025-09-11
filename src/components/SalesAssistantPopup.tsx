@@ -309,21 +309,33 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                            </div>
                          ))}
                        </div>
-                       <div className="text-xs text-green-600/70 italic">
+                       <div className="text-xs text-green-600/70 italic mb-2">
                          To keep these areas after 6 months, you'll need to purchase them separately. 
                          Use these areas to experiment with new customer generation.
                        </div>
+                       
+                       {/* Total Circulation for BOGOF */}
+                       {campaignData.pricingBreakdown?.totalCirculation && (
+                         <div className="bg-green-50 border border-green-200 rounded-lg p-2 mt-2">
+                           <div className="text-xs text-center">
+                             <span className="font-medium text-green-700">
+                               Total: {campaignData.pricingBreakdown.totalCirculation.toLocaleString()} homes reached
+                             </span>
+                             <div className="text-xs text-green-600/70 mt-1">
+                               ({(campaignData.bogofPaidAreas?.length || 0)} paid + {(campaignData.bogofFreeAreas?.length || 0)} free areas)
+                             </div>
+                           </div>
+                         </div>
+                       )}
                      </div>
                    )}
 
-                   {/* Clean Summary Subtitle */}
-                   {campaignData.pricingBreakdown?.totalCirculation && (
-                     <div className="bg-muted/30 rounded-lg p-2 border-t border-muted/40">
+                   {/* Clean Summary Subtitle for Non-BOGOF */}
+                   {campaignData.selectedModel !== 'bogof' && campaignData.pricingBreakdown?.totalCirculation && (
+                     <div className="bg-muted/30 rounded-lg p-2 border border-muted/40">
                        <div className="text-xs text-center text-muted-foreground">
                          <span className="font-medium">
-                           {((campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas?.length || 0 : 0) + 
-                             (campaignData.selectedModel === 'bogof' ? campaignData.bogofFreeAreas?.length || 0 : 
-                              campaignData.selectedAreas?.length || 0))} total areas selected
+                           {campaignData.selectedAreas?.length || 0} total areas selected
                          </span>
                          {" • "}
                          <span className="font-semibold text-primary">
