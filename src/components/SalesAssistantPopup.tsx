@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -89,9 +89,17 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   const { areas, adSizes } = usePricingData();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const currentContent = stepContent[currentStep] || stepContent[1];
   const progress = ((currentStep - 1) / 3) * 100;
+
+  // Reset scroll to top when step changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [currentStep]);
 
   // Debug: Log pricing data to console
   useEffect(() => {
@@ -214,7 +222,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
               </div>
             </CardHeader>
 
-            <CardContent className="pt-0 flex-1 overflow-y-auto">
+            <CardContent className="pt-0 flex-1 overflow-y-auto" ref={scrollContainerRef}>
               <div className="space-y-4 pr-2">
                 <div>
                   <h3 className="font-semibold text-sm mb-2">{currentContent.title}</h3>
