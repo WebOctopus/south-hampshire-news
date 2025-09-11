@@ -19,11 +19,11 @@ interface StepContent {
 const stepContent: Record<number, StepContent> = {
   1: {
     title: "Choose Your Advertising Package",
-    description: "Select the package that best fits your business goals and budget.",
+    description: "We offer three powerful advertising options to grow your business.",
     tips: [
-      "3+ Repeat Package offers the best value with 50% savings",
-      "Fixed term is perfect for one-time promotions",
-      "Leafleting reaches every door in your chosen areas"
+      "3+ Repeat Package: Get 50% savings + FREE bonus areas for 6 months. Best value for ongoing campaigns",
+      "Fixed Term: Perfect for one-time promotions, events, or testing new markets",
+      "Leafleting: Direct door-to-door delivery reaching every household in your chosen areas"
     ],
     action: {
       text: "Need help choosing?",
@@ -31,33 +31,36 @@ const stepContent: Record<number, StepContent> = {
     }
   },
   2: {
-    title: "Select Your Target Areas & Schedule",
-    description: "Choose the geographic areas where your potential customers live and work. See your pricing summary update in real-time.",
+    title: "Select Your Target Areas & Schedule", 
+    description: "Choose up to 7 areas where your customers live and work. The more areas you select, the more FREE areas you get!",
     tips: [
-      "Select areas close to your business location",
-      "Consider areas with your target demographic",
-      "BOGOF customers get FREE areas for 6 months",
-      "Check circulation numbers for reach estimation"
+      "BOGOF Deal: Select 2 paid areas → Get 2 FREE areas for 6 months",
+      "Select 3 paid areas → Get 3 FREE areas. Select 7 paid areas → Get ALL remaining areas FREE!",
+      "Choose areas close to your business for better response rates",
+      "Check circulation numbers to see total households reached",
+      "FREE areas are perfect for testing new markets risk-free"
     ]
   },
   3: {
     title: "Choose Your Advertisement Size",
-    description: "Pick the size that gives your ad the right impact. View complete cost breakdown with VAT.",
+    description: "Select the ad size that best showcases your business. Each size is optimized for different marketing goals.",
     tips: [
-      "Larger ads get more attention and response",
-      "Quarter page is the most popular choice",
-      "Full page ads dominate the publication",
-      "Final pricing shows pre-payment required"
+      "Business Card: Cost-effective, perfect for contact details and simple offers",
+      "Quarter Page: Most popular choice - great balance of visibility and cost",
+      "Half Page: High impact, ideal for detailed product/service information",
+      "Full Page: Maximum impact, dominates the publication for major campaigns",
+      "Pricing updates instantly as you select different sizes"
     ]
   },
   4: {
-    title: "Complete Your Booking",
-    description: "Review your complete pricing summary and choose your next step.",
+    title: "Review Your Investment & Book",
+    description: "See your complete pricing breakdown and total investment required. All prices include professional design support.",
     tips: [
-      "Save as quote to review and modify later",
-      "Book online for immediate confirmation", 
-      "Call our sales team for personal assistance",
-      "All bookings include professional design support"
+      "Your total shows the pre-payment required (+ VAT)",
+      "FREE areas save you hundreds in additional advertising costs",
+      "Save as quote to review with your team or modify later",
+      "Book now for immediate campaign confirmation",
+      "Our design team will create professional ads at no extra cost"
     ],
     action: {
       text: "Call Sales Team",
