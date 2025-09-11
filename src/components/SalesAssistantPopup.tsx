@@ -280,30 +280,22 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                      </div>
                    )}
 
-                   {/* Area Breakdown with Individual Circulation */}
+                   {/* Area Breakdown - Clean List */}
                    {((campaignData.selectedModel === 'bogof' && campaignData.bogofPaidAreas?.length > 0) || 
                      (campaignData.selectedModel !== 'bogof' && campaignData.selectedAreas?.length > 0)) && (
                      <div className="space-y-1">
                        <div className="text-xs font-medium text-foreground">Paid Area Locations:</div>
                        <div className="space-y-0.5 ml-2">
-                         {(campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas)?.map((areaId: string, index: number) => {
-                           const area = areas?.find(a => a.id === areaId);
-                           return (
-                             <div key={areaId} className="text-xs text-muted-foreground flex justify-between">
-                               <span>• Paid - {getAreaName(areaId)}</span>
-                               {area && (
-                                 <span className="font-medium text-primary">
-                                   {area.circulation.toLocaleString()} homes
-                                 </span>
-                               )}
-                             </div>
-                           );
-                         })}
+                         {(campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas)?.map((areaId: string, index: number) => (
+                           <div key={areaId} className="text-xs text-muted-foreground">
+                             • Paid - {getAreaName(areaId)}
+                           </div>
+                         ))}
                        </div>
                      </div>
                    )}
 
-                   {/* FREE Area Locations (BOGOF only) with Circulation */}
+                   {/* FREE Area Locations (BOGOF only) - Clean List */}
                    {campaignData.selectedModel === 'bogof' && campaignData.bogofFreeAreas?.length > 0 && (
                      <div className="space-y-1">
                        <div className="text-xs font-medium text-green-600">FREE Area Locations:</div>
@@ -311,23 +303,32 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                          These are the free areas that you'll get for the next 3 Issues/6 Months
                        </div>
                        <div className="space-y-0.5 ml-2">
-                         {campaignData.bogofFreeAreas?.map((areaId: string, index: number) => {
-                           const area = areas?.find(a => a.id === areaId);
-                           return (
-                             <div key={areaId} className="text-xs text-green-600 flex justify-between">
-                               <span>• Free - {getAreaName(areaId)}</span>
-                               {area && (
-                                 <span className="font-medium">
-                                   {area.circulation.toLocaleString()} homes
-                                 </span>
-                               )}
-                             </div>
-                           );
-                         })}
+                         {campaignData.bogofFreeAreas?.map((areaId: string, index: number) => (
+                           <div key={areaId} className="text-xs text-green-600">
+                             • Free - {getAreaName(areaId)}
+                           </div>
+                         ))}
                        </div>
                        <div className="text-xs text-green-600/70 italic">
                          To keep these areas after 6 months, you'll need to purchase them separately. 
                          Use these areas to experiment with new customer generation.
+                       </div>
+                     </div>
+                   )}
+
+                   {/* Clean Summary Subtitle */}
+                   {campaignData.pricingBreakdown?.totalCirculation && (
+                     <div className="bg-muted/30 rounded-lg p-2 border-t border-muted/40">
+                       <div className="text-xs text-center text-muted-foreground">
+                         <span className="font-medium">
+                           {((campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas?.length || 0 : 0) + 
+                             (campaignData.selectedModel === 'bogof' ? campaignData.bogofFreeAreas?.length || 0 : 
+                              campaignData.selectedAreas?.length || 0))} total areas selected
+                         </span>
+                         {" • "}
+                         <span className="font-semibold text-primary">
+                           {campaignData.pricingBreakdown.totalCirculation.toLocaleString()} homes reached
+                         </span>
                        </div>
                      </div>
                    )}
