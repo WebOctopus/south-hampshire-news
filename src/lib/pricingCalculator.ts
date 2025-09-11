@@ -62,7 +62,8 @@ export function calculateAdvertisingPrice(
   adSizes: DbAdSize[] = [],
   durations: DbDuration[] = [],
   subscriptionDurations: DbDuration[] = [],
-  volumeDiscounts: DbVolumeDiscount[] = []
+  volumeDiscounts: DbVolumeDiscount[] = [],
+  freeAreaIds: string[] = [] // Add free areas parameter for BOGOF circulation calculation
 ): PricingBreakdown | null {
   // Validate inputs
   if (!selectedAreaIds.length || !adSizeId || !durationId || !areas.length || !adSizes.length) {
@@ -211,8 +212,11 @@ export function calculateAdvertisingPrice(
   const durationDiscountMultiplier = 1 - (selectedDuration.discount_percentage / 100);
   const finalTotal = subtotalAfterVolumeDiscount * durationMultiplier * durationDiscountMultiplier;
 
-  // Calculate total circulation
-  const totalCirculation = selectedAreas.reduce((sum, area) => sum + area.circulation, 0);
+  // Calculate total circulation including free areas for BOGOF
+  const selectedAreasForCirculation = areas.filter(area => selectedAreaIds.includes(area.id));
+  const freeAreasForCirculation = areas.filter(area => freeAreaIds.includes(area.id));
+  const allAreasForCirculation = [...selectedAreasForCirculation, ...freeAreasForCirculation];
+  const totalCirculation = allAreasForCirculation.reduce((sum, area) => sum + area.circulation, 0);
 
   return {
     subtotal,

@@ -152,7 +152,8 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
       adSizes || [],
       pricingModel === 'bogof' ? subscriptionDurations || [] : durations || [],
       subscriptionDurations || [],
-      volumeDiscounts || []
+      volumeDiscounts || [],
+      pricingModel === 'bogof' ? bogofFreeAreas : [] // Include free areas for circulation
     );
 
     if (!pricingBreakdown) return null;

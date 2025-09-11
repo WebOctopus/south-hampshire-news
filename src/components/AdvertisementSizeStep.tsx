@@ -65,7 +65,8 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
         adSizes,
         pricingModel === 'bogof' ? subscriptionDurations : durations,
         subscriptionDurations,
-        volumeDiscounts
+        volumeDiscounts,
+        pricingModel === 'bogof' ? bogofFreeAreas : [] // Pass free areas for BOGOF circulation
       );
       
       console.log('AdvertisementSizeStep - Pricing calculation result:', pricingBreakdown);
@@ -299,7 +300,8 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
       Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}),
       pricingModel === 'bogof' ? subscriptionDurations || [] : durations || [],
       subscriptionDurations || [],
-      volumeDiscounts || []
+      volumeDiscounts || [],
+      pricingModel === 'bogof' ? bogofFreeAreas : [] // Include free areas for circulation
     );
 
     if (!pricingBreakdown) return null;

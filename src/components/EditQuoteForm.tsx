@@ -94,7 +94,8 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
       adSizes,
       (effectiveDurations as any) || [],
       subscriptionDurations || [],
-      [] // volume discounts array - we can add this later if needed
+      [], // volume discounts array - we can add this later if needed
+      pricingModel === 'bogof' ? bogofFreeAreas : [] // Include free areas for circulation
     );
   }, [selectedAdSize, selectedDuration, effectiveSelectedAreas, pricingModel, bogofPaidAreas, bogofFreeAreas, areas, adSizes, effectiveDurations, subscriptionDurations, leafletAreas, leafletDurations]);
 
