@@ -928,15 +928,16 @@ const effectiveSelectedAreas = useMemo(() => {
             {/* Area Cards Carousel */}
             <div className="relative">
               <Carousel 
+                orientation="vertical"
                 opts={{
                   align: "start",
                   loop: false,
                 }}
-                className="w-full"
+                className="w-full h-[400px]"
               >
-                <CarouselContent>
+                <CarouselContent className="-mt-1 h-[400px]">
                   {/* Area 1 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">1</span>
@@ -954,7 +955,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 2 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">2</span>
@@ -972,7 +973,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 3 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">3</span>
@@ -990,7 +991,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 4 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">4</span>
@@ -1008,7 +1009,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 5 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">5</span>
@@ -1026,7 +1027,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 6 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">6</span>
@@ -1044,7 +1045,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 7 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">7</span>
@@ -1062,7 +1063,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 8 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">8</span>
@@ -1080,7 +1081,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 9 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">9</span>
@@ -1098,7 +1099,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 10 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">10</span>
@@ -1116,7 +1117,7 @@ const effectiveSelectedAreas = useMemo(() => {
                   </CarouselItem>
 
                   {/* Area 11 */}
-                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                  <CarouselItem className="pt-1 basis-1/6">
                     <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
                       <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                         <span className="text-lg font-bold text-white">11</span>
@@ -1133,8 +1134,8 @@ const effectiveSelectedAreas = useMemo(() => {
                     </div>
                   </CarouselItem>
                 </CarouselContent>
-                <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4" />
-                <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4" />
+                <CarouselPrevious className="absolute left-1/2 -translate-x-1/2 -top-4" />
+                <CarouselNext className="absolute left-1/2 -translate-x-1/2 -bottom-4" />
               </Carousel>
             </div>
 
