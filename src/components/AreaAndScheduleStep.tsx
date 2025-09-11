@@ -133,9 +133,23 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
   const handleBogofPaidAreaChange = (areaId: string, checked: boolean) => {
     if (checked) {
+      // Don't allow more than 7 paid areas
+      if (bogofPaidAreas.length >= 7) {
+        return;
+      }
+      
       const newFreeAreas = bogofFreeAreas.filter(id => id !== areaId);
       const newPaidAreas = [...bogofPaidAreas, areaId];
-      onBogofAreasChange(newPaidAreas, newFreeAreas);
+      
+      // If we now have 7 paid areas, automatically select all remaining areas as free
+      if (newPaidAreas.length === 7) {
+        const allRemainingAreas = effectiveAreas
+          .filter(area => !newPaidAreas.includes(area.id))
+          .map(area => area.id);
+        onBogofAreasChange(newPaidAreas, allRemainingAreas);
+      } else {
+        onBogofAreasChange(newPaidAreas, newFreeAreas);
+      }
     } else {
       const newPaidAreas = bogofPaidAreas.filter(id => id !== areaId);
       onBogofAreasChange(newPaidAreas, bogofFreeAreas);
@@ -391,7 +405,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                 <Badge variant="default">Required</Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                These are the areas you will pay for throughout your campaign.
+                These are the areas you will pay for throughout your campaign. Maximum 7 areas ({bogofPaidAreas.length}/7).
               </p>
               
               <div className="grid grid-cols-1 gap-4">
@@ -402,15 +416,22 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                     key={`paid-${area.id}`} 
                     className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
                       bogofPaidAreas.includes(area.id) ? 'ring-2 ring-primary border-primary' : ''
-                    }`}
-                    onClick={() => handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id))}
+                    } ${!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => {
+                      if (!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7) return;
+                      handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id));
+                    }}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-3">
                         <Checkbox
                           id={`paid-${area.id}`}
                           checked={bogofPaidAreas.includes(area.id)}
-                          onCheckedChange={(checked) => handleBogofPaidAreaChange(area.id, checked as boolean)}
+                          disabled={!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7}
+                          onCheckedChange={(checked) => {
+                            if (!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7) return;
+                            handleBogofPaidAreaChange(area.id, checked as boolean);
+                          }}
                           className="mt-1"
                         />
                         <div className="flex-1 space-y-2">
@@ -438,8 +459,11 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                   <Badge variant="secondary">6 Months Free</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Select additional areas to receive for FREE for 6 months. 
-                  You can choose up to {bogofPaidAreas.length} free area{bogofPaidAreas.length > 1 ? 's' : ''}.
+                  {bogofPaidAreas.length === 7 
+                    ? 'All remaining areas automatically selected as FREE bonus areas!'
+                    : `Select additional areas to receive for FREE for 6 months. 
+                      You can choose up to ${bogofPaidAreas.length} free area${bogofPaidAreas.length > 1 ? 's' : ''}.`
+                  }
                 </p>
                 
                 <div className="grid grid-cols-1 gap-4">
@@ -447,7 +471,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                     .filter(area => !bogofPaidAreas.includes(area.id))
                     .map((area) => {
                       const isSelected = bogofFreeAreas.includes(area.id);
-                      const isDisabled = !isSelected && bogofFreeAreas.length >= bogofPaidAreas.length;
+                      const isDisabled = bogofPaidAreas.length === 7 || (!isSelected && bogofFreeAreas.length >= bogofPaidAreas.length);
                       
                       return (
                         <Card 
