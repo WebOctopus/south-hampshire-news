@@ -53,14 +53,16 @@ const stepContent: Record<number, StepContent> = {
     ]
   },
   4: {
-    title: "Review Your Investment & Book",
-    description: "See your complete pricing breakdown and total investment required. All prices include professional design support.",
+    title: "Ready to Book Your Campaign?",
+    description: "You're booking a professional advertising campaign that includes ad design, targeted distribution, and ongoing support. Here are your next steps to get started.",
     tips: [
-      "Your total shows the pre-payment required (+ VAT)",
-      "FREE areas save you hundreds in additional advertising costs",
-      "Save as quote to review with your team or modify later",
-      "Book now for immediate campaign confirmation",
-      "Our design team will create professional ads at no extra cost"
+      "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
+      "📞 CALL TO BOOK: Speak directly with our sales team at [phone number] for immediate booking and personalized campaign advice",
+      "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
+      "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
+      "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority design queue placement",
+      "🎨 FREE DESIGN SERVICE: Our professional design team creates stunning ads at no extra cost - just provide your content and branding",
+      "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period"
     ],
     action: {
       text: "Call Sales Team",
