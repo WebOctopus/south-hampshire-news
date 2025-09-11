@@ -1306,16 +1306,16 @@ const effectiveSelectedAreas = useMemo(() => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
             {/* Area Cards */}
-            <div className="lg:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                <Card className="text-center p-6">
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="text-center p-4">
                   <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">1</span>
+                    <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-2">
+                      <span className="text-lg font-bold text-white">1</span>
                     </div>
-                    <h3 className="font-bold text-community-navy mb-2">SOUTHAMPTON SUBURBS</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO15 SO16 SO17</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">13,500</div>
+                    <h3 className="font-bold text-community-navy mb-1 text-sm">SOUTHAMPTON SUBURBS</h3>
+                    <p className="text-gray-600 text-xs mb-1">SO15 SO16 SO17</p>
+                    <div className="text-xl font-bold text-community-green mb-1">13,500</div>
                     <p className="text-xs text-gray-600">Circulation</p>
                   </CardContent>
                 </Card>
