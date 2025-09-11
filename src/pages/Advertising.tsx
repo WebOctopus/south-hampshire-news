@@ -925,68 +925,102 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
-            {/* Area Cards */}
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="text-center p-4">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center mx-auto mb-2">
-                      <span className="text-lg font-bold text-white">1</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-1 text-sm">SOUTHAMPTON SUBURBS</h3>
-                    <p className="text-gray-600 text-xs mb-1">SO15 SO16 SO17</p>
-                    <div className="text-xl font-bold text-community-green mb-1">13,500</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
+            {/* Area Cards - Horizontal Layout */}
+            <div className="space-y-3">
+              {/* Area 1 */}
+              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg font-bold text-white">1</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON SUBURBS</h3>
+                  <p className="text-gray-600 text-xs">SO15 SO16 SO17</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-community-green font-bold text-lg">13,500</div>
+                  <p className="text-xs text-gray-600">Circulation</p>
+                </div>
+                <div className="text-gray-400 text-sm">⌄</div>
+              </div>
 
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">2</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">CHANDLER'S FORD & NORTH BADDESLEY</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO53 SO52</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">13,500</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
+              {/* Area 2 */}
+              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg font-bold text-white">2</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD & NORTH BADDESLEY</h3>
+                  <p className="text-gray-600 text-xs">SO53 SO52</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-community-green font-bold text-lg">13,500</div>
+                  <p className="text-xs text-gray-600">Circulation</p>
+                </div>
+                <div className="text-gray-400 text-sm">⌄</div>
+              </div>
 
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">3</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">EASTLEIGH & VILLAGES</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO50</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">10,500</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
+              {/* Area 3 */}
+              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg font-bold text-white">3</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-community-navy text-sm leading-tight">EASTLEIGH & VILLAGES</h3>
+                  <p className="text-gray-600 text-xs">SO50</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-community-green font-bold text-lg">10,500</div>
+                  <p className="text-xs text-gray-600">Circulation</p>
+                </div>
+                <div className="text-gray-400 text-sm">⌄</div>
+              </div>
 
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">4</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">HEDGE END & SURROUNDS</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO30</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
+              {/* Area 4 */}
+              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg font-bold text-white">4</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & SURROUNDS</h3>
+                  <p className="text-gray-600 text-xs">SO30</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-community-green font-bold text-lg">13,000</div>
+                  <p className="text-xs text-gray-600">Circulation</p>
+                </div>
+                <div className="text-gray-400 text-sm">⌄</div>
+              </div>
 
-                <Card className="text-center p-6">
-                  <CardContent>
-                    <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-xl font-bold text-white">5</span>
-                    </div>
-                    <h3 className="font-bold text-community-navy mb-2">LOCKS HEATH & SURROUNDS</h3>
-                    <p className="text-gray-600 text-sm mb-2">SO31</p>
-                    <div className="text-2xl font-bold text-community-green mb-2">13,000</div>
-                    <p className="text-xs text-gray-600">Circulation</p>
-                  </CardContent>
-                </Card>
+              {/* Area 5 */}
+              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg font-bold text-white">5</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & SURROUNDS</h3>
+                  <p className="text-gray-600 text-xs">SO31</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-community-green font-bold text-lg">13,000</div>
+                  <p className="text-xs text-gray-600">Circulation</p>
+                </div>
+                <div className="text-gray-400 text-sm">⌄</div>
+              </div>
+
+              {/* Area 6 */}
+              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg font-bold text-white">6</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & SURROUNDS</h3>
+                  <p className="text-gray-600 text-xs">PO13 PO14 PO15</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-community-green font-bold text-lg">14,000</div>
+                  <p className="text-xs text-gray-600">Circulation</p>
+                </div>
+                <div className="text-gray-400 text-sm">⌄</div>
               </div>
             </div>
 
