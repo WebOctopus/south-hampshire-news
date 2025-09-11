@@ -60,11 +60,7 @@ const Index = () => {
     <div className="min-h-screen">
       <Navigation />
       <main>
-        <HeroSection />
-        <PostcodeBanner />
-        <IconCardsSection />
-        
-        {/* Magazine Covers Carousel */}
+        {/* Magazine Covers Carousel - Now at the top */}
         <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
           {/* Futuristic Background Effects */}
           <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,255,255,0.03)_50%,transparent_75%,transparent_100%)] bg-[length:30px_30px] animate-pulse" />
@@ -135,9 +131,19 @@ const Index = () => {
           </div>
         </section>
 
-        <LatestStoriesGrid />
-        <FeaturedAdvertisersSection />
+        {/* Five cards section */}
+        <IconCardsSection />
+        
+        {/* Our Readers Say */}
         <TestimonialsCarousel />
+        
+        {/* Featured Advertisers */}
+        <FeaturedAdvertisersSection />
+        
+        {/* Latest Stories */}
+        <LatestStoriesGrid />
+        
+        {/* Discover Extra */}
         <NewsletterSignup />
       </main>
       <Footer />
