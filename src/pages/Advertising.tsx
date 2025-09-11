@@ -1345,54 +1345,6 @@ const effectiveSelectedAreas = useMemo(() => {
             </div>
           </div>
 
-          {/* Area Information */}
-          <div className="max-w-6xl mx-auto">
-            <h3 className="text-3xl font-heading font-bold text-community-navy mb-8 text-center">
-              Our Coverage Areas
-            </h3>
-            
-            <Accordion type="single" collapsible className="w-full">
-              {localAreas.map((area, index) => <AccordionItem key={index} value={`area-${index}`}>
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center gap-4 w-full">
-                      <div className="bg-community-green text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg">
-                        {area.area.split(' ')[1]}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                          <div className="text-left">
-                            <div className="font-heading font-bold text-lg">{area.title}</div>
-                            <div className="text-sm text-gray-600">{area.postcodes}</div>
-                            <div className="text-sm text-community-green font-bold">Circulation: {area.circulation}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-heading font-bold text-community-navy mb-2">Coverage Details</h4>
-                          <p className="text-gray-600">{area.description}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-heading font-bold text-community-navy mb-2">Leaflet Distribution</h4>
-                          <p className={`font-bold ${area.leaflets === 'YES' ? 'text-community-green' : 'text-red-500'}`}>
-                            {area.leaflets}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <Button className="w-full">
-                          REQUEST A QUOTE
-                        </Button>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>)}
-            </Accordion>
-          </div>
         </div>
       </section>
 
