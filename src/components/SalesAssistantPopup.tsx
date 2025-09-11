@@ -242,6 +242,23 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                      {currentStep >= 3 ? 'FINAL PRICING BREAKDOWN' : 'SUMMARY & COST TO BOOK'}
                    </h4>
                    
+                   {/* Total Homes Reached - Prominent Display */}
+                   {campaignData.pricingBreakdown?.totalCirculation && (
+                     <div className="bg-accent/20 rounded-lg p-3 border border-accent/30">
+                       <div className="text-center">
+                         <div className="text-xs font-medium text-muted-foreground mb-1">
+                           TOTAL HOMES YOU'LL REACH
+                         </div>
+                         <div className="text-2xl font-bold text-primary">
+                           {campaignData.pricingBreakdown.totalCirculation.toLocaleString()}
+                         </div>
+                         <div className="text-xs text-muted-foreground">
+                           homes per insertion
+                         </div>
+                       </div>
+                     </div>
+                   )}
+                   
                    {/* Booking Type */}
                    {campaignData.selectedModel && (
                      <div className="space-y-1">
@@ -262,22 +279,30 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                      </div>
                    )}
 
-                   {/* Paid Area Locations */}
+                   {/* Area Breakdown with Individual Circulation */}
                    {((campaignData.selectedModel === 'bogof' && campaignData.bogofPaidAreas?.length > 0) || 
                      (campaignData.selectedModel !== 'bogof' && campaignData.selectedAreas?.length > 0)) && (
                      <div className="space-y-1">
                        <div className="text-xs font-medium text-foreground">Paid Area Locations:</div>
                        <div className="space-y-0.5 ml-2">
-                         {(campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas)?.map((areaId: string, index: number) => (
-                           <div key={areaId} className="text-xs text-muted-foreground">
-                             • Paid - {getAreaName(areaId)}
-                           </div>
-                         ))}
+                         {(campaignData.selectedModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas)?.map((areaId: string, index: number) => {
+                           const area = areas?.find(a => a.id === areaId);
+                           return (
+                             <div key={areaId} className="text-xs text-muted-foreground flex justify-between">
+                               <span>• Paid - {getAreaName(areaId)}</span>
+                               {area && (
+                                 <span className="font-medium text-primary">
+                                   {area.circulation.toLocaleString()} homes
+                                 </span>
+                               )}
+                             </div>
+                           );
+                         })}
                        </div>
                      </div>
                    )}
 
-                   {/* FREE Area Locations (BOGOF only) */}
+                   {/* FREE Area Locations (BOGOF only) with Circulation */}
                    {campaignData.selectedModel === 'bogof' && campaignData.bogofFreeAreas?.length > 0 && (
                      <div className="space-y-1">
                        <div className="text-xs font-medium text-green-600">FREE Area Locations:</div>
@@ -285,11 +310,19 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                          These are the free areas that you'll get for the next 3 Issues/6 Months
                        </div>
                        <div className="space-y-0.5 ml-2">
-                         {campaignData.bogofFreeAreas?.map((areaId: string, index: number) => (
-                           <div key={areaId} className="text-xs text-green-600">
-                             • Free - {getAreaName(areaId)}
-                           </div>
-                         ))}
+                         {campaignData.bogofFreeAreas?.map((areaId: string, index: number) => {
+                           const area = areas?.find(a => a.id === areaId);
+                           return (
+                             <div key={areaId} className="text-xs text-green-600 flex justify-between">
+                               <span>• Free - {getAreaName(areaId)}</span>
+                               {area && (
+                                 <span className="font-medium">
+                                   {area.circulation.toLocaleString()} homes
+                                 </span>
+                               )}
+                             </div>
+                           );
+                         })}
                        </div>
                        <div className="text-xs text-green-600/70 italic">
                          To keep these areas after 6 months, you'll need to purchase them separately. 
@@ -324,16 +357,6 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                            <div className="text-xs flex justify-between">
                              <span className="text-muted-foreground">Duration ({campaignData.pricingBreakdown.durationMultiplier} issues):</span>
                              <span className="font-medium">×{campaignData.pricingBreakdown.durationMultiplier}</span>
-                           </div>
-                         )}
-                         
-                         {/* Total Circulation */}
-                         {campaignData.pricingBreakdown.totalCirculation && (
-                           <div className="text-xs flex justify-between">
-                             <span className="text-muted-foreground">Total Circulation:</span>
-                             <span className="font-semibold text-primary">
-                               {campaignData.pricingBreakdown.totalCirculation?.toLocaleString()} homes
-                             </span>
                            </div>
                          )}
                          
@@ -376,15 +399,6 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                    {/* Basic Pricing for Step 2 */}
                    {campaignData.pricingBreakdown && currentStep < 3 && (
                      <div className="space-y-2 pt-2 border-t border-primary/10">
-                       {campaignData.pricingBreakdown.totalCirculation && (
-                         <div className="text-xs">
-                           <span className="text-muted-foreground">Total Circulation per selection of area/s:</span>{" "}
-                           <span className="font-semibold text-primary">
-                             {campaignData.pricingBreakdown.totalCirculation?.toLocaleString()} homes
-                           </span>
-                         </div>
-                       )}
-                       
                        {campaignData.totalCost && (
                          <div className="bg-primary/10 rounded p-2 space-y-1">
                            <div className="text-xs">
