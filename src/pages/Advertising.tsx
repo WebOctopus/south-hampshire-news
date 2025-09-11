@@ -925,103 +925,217 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
-            {/* Area Cards - Horizontal Layout */}
-            <div className="space-y-3">
-              {/* Area 1 */}
-              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
-                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-white">1</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON SUBURBS</h3>
-                  <p className="text-gray-600 text-xs">SO15 SO16 SO17</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-community-green font-bold text-lg">13,500</div>
-                  <p className="text-xs text-gray-600">Circulation</p>
-                </div>
-                <div className="text-gray-400 text-sm">⌄</div>
-              </div>
+            {/* Area Cards Carousel */}
+            <div className="relative">
+              <Carousel 
+                opts={{
+                  align: "start",
+                  loop: false,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {/* Area 1 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">1</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON SUBURBS</h3>
+                        <p className="text-gray-600 text-xs">SO15 SO16 SO17</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
 
-              {/* Area 2 */}
-              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
-                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-white">2</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD & NORTH BADDESLEY</h3>
-                  <p className="text-gray-600 text-xs">SO53 SO52</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-community-green font-bold text-lg">13,500</div>
-                  <p className="text-xs text-gray-600">Circulation</p>
-                </div>
-                <div className="text-gray-400 text-sm">⌄</div>
-              </div>
+                  {/* Area 2 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">2</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD & NORTH BADDESLEY</h3>
+                        <p className="text-gray-600 text-xs">SO53 SO52</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
 
-              {/* Area 3 */}
-              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
-                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-white">3</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-community-navy text-sm leading-tight">EASTLEIGH & VILLAGES</h3>
-                  <p className="text-gray-600 text-xs">SO50</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-community-green font-bold text-lg">10,500</div>
-                  <p className="text-xs text-gray-600">Circulation</p>
-                </div>
-                <div className="text-gray-400 text-sm">⌄</div>
-              </div>
+                  {/* Area 3 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">3</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">EASTLEIGH & VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">SO50</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">10,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
 
-              {/* Area 4 */}
-              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
-                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-white">4</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & SURROUNDS</h3>
-                  <p className="text-gray-600 text-xs">SO30</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-community-green font-bold text-lg">13,000</div>
-                  <p className="text-xs text-gray-600">Circulation</p>
-                </div>
-                <div className="text-gray-400 text-sm">⌄</div>
-              </div>
+                  {/* Area 4 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">4</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & SURROUNDS</h3>
+                        <p className="text-gray-600 text-xs">SO30</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
 
-              {/* Area 5 */}
-              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
-                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-white">5</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & SURROUNDS</h3>
-                  <p className="text-gray-600 text-xs">SO31</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-community-green font-bold text-lg">13,000</div>
-                  <p className="text-xs text-gray-600">Circulation</p>
-                </div>
-                <div className="text-gray-400 text-sm">⌄</div>
-              </div>
+                  {/* Area 5 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">5</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & SURROUNDS</h3>
+                        <p className="text-gray-600 text-xs">SO31</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
 
-              {/* Area 6 */}
-              <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
-                <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-white">6</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & SURROUNDS</h3>
-                  <p className="text-gray-600 text-xs">PO13 PO14 PO15</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-community-green font-bold text-lg">14,000</div>
-                  <p className="text-xs text-gray-600">Circulation</p>
-                </div>
-                <div className="text-gray-400 text-sm">⌄</div>
-              </div>
+                  {/* Area 6 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">6</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & SURROUNDS</h3>
+                        <p className="text-gray-600 text-xs">PO13 PO14 PO15</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">14,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
+
+                  {/* Area 7 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">7</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WICKHAM & BISHOP'S WALTHAM</h3>
+                        <p className="text-gray-600 text-xs">SO32 PO17</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">14,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
+
+                  {/* Area 8 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">8</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WINCHESTER & VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">SO21 SO22 SO23</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
+
+                  {/* Area 9 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">9</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">ROMSEY & TEST VALLEY</h3>
+                        <p className="text-gray-600 text-xs">SO51 SO20</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">15,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
+
+                  {/* Area 10 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">10</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WATERSIDE & TOTTON</h3>
+                        <p className="text-gray-600 text-xs">SO40 SO45</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">14,000</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
+
+                  {/* Area 11 */}
+                  <CarouselItem className="md:basis-1/2 lg:basis-1/1">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">11</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">NEW FOREST TO LYMINGTON</h3>
+                        <p className="text-gray-600 text-xs">SO41 SO42 SO43 BH24 4</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">13,500</div>
+                        <p className="text-xs text-gray-600">Circulation</p>
+                      </div>
+                      <div className="text-gray-400 text-sm">⌄</div>
+                    </div>
+                  </CarouselItem>
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4" />
+                <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4" />
+              </Carousel>
             </div>
 
             {/* Map Section */}
