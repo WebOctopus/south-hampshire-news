@@ -845,45 +845,6 @@ const effectiveSelectedAreas = useMemo(() => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <Card className="text-center p-6">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Fixed Term</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Pay as you go with no contract</p>
-                <Button className="w-full bg-community-green hover:bg-green-600 text-white">
-                  Select Package
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6 border-2 border-community-green">
-              <CardHeader>
-                <Badge className="bg-community-green text-white mb-2">Special Offer</Badge>
-                <CardTitle className="text-community-navy">3+ Repeat Package</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Subscription with monthly payment plan</p>
-                <Button className="w-full bg-community-green hover:bg-green-600 text-white">
-                  Select Package
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Leafleting Service</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Design, Print & Delivery</p>
-                <Button className="w-full bg-community-green hover:bg-green-600 text-white">
-                  Select Package
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-          
           <AdvertisingStepForm />
         </div>
       </section>
