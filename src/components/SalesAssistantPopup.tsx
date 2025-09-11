@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Phone, MessageCircle, ChevronDown, ChevronUp, User, MapPin, Ruler, CreditCard } from 'lucide-react';
+import { X, Phone, MessageCircle, ChevronLeft, ChevronRight, User, MapPin, Ruler, CreditCard, Headphones } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePricingData } from '@/hooks/usePricingData';
 
@@ -73,7 +73,7 @@ interface SalesAssistantPopupProps {
 
 export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campaignData, currentStep }) => {
   const { areas, adSizes } = usePricingData();
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   
   const currentContent = stepContent[currentStep] || stepContent[1];
@@ -120,66 +120,93 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
   if (!isVisible) return null;
 
   return (
-    <div className="fixed right-4 top-4 bottom-4 z-50 w-96 max-w-[calc(100vw-2rem)] animate-fade-in">
-      <Card className="shadow-elegant border-primary/20 bg-background/95 backdrop-blur-sm h-full flex flex-col">
-        <CardHeader className="pb-3 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                {getStepIcon(currentStep)}
-              </div>
-              <div>
-                <CardTitle className="text-sm font-medium">Sales Assistant</CardTitle>
-                <div className="flex items-center gap-1 mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    Step {currentStep} of 4
+    <>
+      {/* Collapsed Side Tab */}
+      {isCollapsed && (
+        <div className="fixed right-0 top-1/2 -translate-y-1/2 z-50 animate-slide-in-right">
+          <Card 
+            className="shadow-elegant border-primary/20 bg-background/95 backdrop-blur-sm cursor-pointer hover:bg-primary/5 transition-all duration-200 rounded-r-none border-r-0"
+            onClick={() => setIsCollapsed(false)}
+          >
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                  <Headphones className="h-5 w-5 text-primary" />
+                </div>
+                <div className="text-center">
+                  <div className="text-xs font-medium text-foreground whitespace-nowrap">Sales</div>
+                  <div className="text-xs font-medium text-foreground whitespace-nowrap">Assistant</div>
+                  <Badge variant="secondary" className="text-xs mt-1">
+                    Step {currentStep}
                   </Badge>
                 </div>
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
               </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => setIsMinimized(!isMinimized)}
-              >
-                {isMinimized ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => setIsVisible(false)}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="mt-3">
-            <div className="w-full bg-secondary/30 rounded-full h-1.5">
-              <div 
-                className="bg-primary h-1.5 rounded-full transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        </CardHeader>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-        <CardContent className={cn("pt-0 flex-1 overflow-hidden transition-all duration-300", isMinimized && "pb-4")}>
-          <div className={cn(
-            "transition-all duration-300 h-full", 
-            isMinimized ? "max-h-0 opacity-0 overflow-hidden" : "opacity-100 overflow-y-auto"
-          )}>
-            <div className="space-y-4 pr-2">
-              <div>
-                <h3 className="font-semibold text-sm mb-2">{currentContent.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {currentContent.description}
-                </p>
+      {/* Expanded Panel */}
+      {!isCollapsed && (
+        <div className="fixed right-4 top-4 bottom-4 z-50 w-96 max-w-[calc(100vw-2rem)] animate-slide-in-right">
+          <Card className="shadow-elegant border-primary/20 bg-background/95 backdrop-blur-sm h-full flex flex-col">
+            <CardHeader className="pb-3 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                    {getStepIcon(currentStep)}
+                  </div>
+                  <div>
+                    <CardTitle className="text-sm font-medium">Sales Assistant</CardTitle>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        Step {currentStep} of 4
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setIsCollapsed(true)}
+                    title="Minimize to side"
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setIsVisible(false)}
+                    title="Close"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
+              
+              {/* Progress Bar */}
+              <div className="mt-3">
+                <div className="w-full bg-secondary/30 rounded-full h-1.5">
+                  <div 
+                    className="bg-primary h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="pt-0 flex-1 overflow-y-auto">
+              <div className="space-y-4 pr-2">
+                <div>
+                  <h3 className="font-semibold text-sm mb-2">{currentContent.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {currentContent.description}
+                  </p>
+                </div>
 
               <div className="space-y-2">
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -311,42 +338,42 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({ campai
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-          
-          {/* Action Buttons - Always visible at bottom */}
-          <div className={cn(
-            "flex gap-2 pt-3 border-t border-muted/20 mt-3 flex-shrink-0",
-            isMinimized && "hidden"
-          )}>
-            {currentContent.action && (
-              <Button
-                variant={currentContent.action.variant || "outline"}
-                size="sm"
-                className="flex-1 text-xs"
-                onClick={currentStep === 4 ? handleCallSales : undefined}
-              >
-                {currentContent.action.text}
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="px-3"
-              onClick={handleCallSales}
-            >
-              <Phone className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="px-3"
-            >
-              <MessageCircle className="h-3 w-3" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+              </div>
+              
+              {/* Action Buttons - Always visible at bottom */}
+              <div className="flex gap-2 pt-3 border-t border-muted/20 mt-3 flex-shrink-0">
+                {currentContent.action && (
+                  <Button
+                    variant={currentContent.action.variant || "outline"}
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={currentStep === 4 ? handleCallSales : undefined}
+                  >
+                    {currentContent.action.text}
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-3"
+                  onClick={handleCallSales}
+                  title="Call Sales"
+                >
+                  <Phone className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-3"
+                  title="Live Chat"
+                >
+                  <MessageCircle className="h-3 w-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
   );
 };
