@@ -17,6 +17,7 @@ import AddEvent from "./pages/AddEvent";
 import Story from "./pages/Story";
 import StoriesArchive from "./pages/StoriesArchive";
 import BusinessDetail from "./pages/BusinessDetail";
+import Support from "./pages/Support";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ const App = () => (
         <Route path="/advertising" element={<Advertising />} />
         <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/business-directory" element={<BusinessDirectory />} />
         <Route path="/business/:id" element={<BusinessDetail />} />
         <Route path="/stories" element={<StoriesArchive />} />

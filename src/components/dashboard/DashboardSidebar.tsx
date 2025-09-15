@@ -60,7 +60,7 @@ export function DashboardSidebar({
   }
 
   const handleSupport = () => {
-    window.open("mailto:support@example.com", "_blank")
+    navigate("/support")
   }
 
   const getNavCls = (tabValue: string) =>
