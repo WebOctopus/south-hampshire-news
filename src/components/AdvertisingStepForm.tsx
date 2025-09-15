@@ -675,6 +675,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 campaignData={campaignData}
                 onSaveQuote={handleContactInfoSave}
                 onBookNow={handleContactInfoBook}
+                currentStep={currentStep}
               />
             </StepForm>
           </DialogContent>
@@ -759,6 +760,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               campaignData={campaignData}
               onSaveQuote={handleContactInfoSave}
               onBookNow={handleContactInfoBook}
+              currentStep={currentStep}
             />
             
             {/* Sales Assistant Popup - positioned absolutely */}

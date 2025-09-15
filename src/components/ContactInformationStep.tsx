@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 
 
 interface ContactInformationStepProps {
@@ -24,6 +25,7 @@ interface ContactInformationStepProps {
   campaignData: any;
   onSaveQuote: (formData: FormData) => Promise<void>;
   onBookNow?: (formData: FormData) => Promise<void>;
+  currentStep?: number; // Add current step for mobile pricing summary
 }
 
 interface FormData {
@@ -52,7 +54,8 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   pricingBreakdown,
   campaignData,
   onSaveQuote,
-  onBookNow
+  onBookNow,
+  currentStep = 4
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -814,6 +817,23 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
         <div className="text-center">
           <p className="text-muted-foreground">Creating your account and saving your quote...</p>
         </div>
+      )}
+
+      {/* Mobile Pricing Summary */}
+      {campaignData && (
+        <MobilePricingSummary 
+          campaignData={{
+            selectedModel: pricingModel,
+            selectedAreas: selectedAreas,
+            bogofPaidAreas: bogofPaidAreas,
+            bogofFreeAreas: bogofFreeAreas,
+            selectedSize: selectedAdSize,
+            selectedDuration: selectedDuration,
+            totalCost: pricingBreakdown?.finalTotal,
+            pricingBreakdown: pricingBreakdown
+          }} 
+          currentStep={currentStep} 
+        />
       )}
     </div>
   );
