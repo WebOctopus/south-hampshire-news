@@ -616,6 +616,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 onDurationChange={(duration) => setCampaignData(prev => ({ ...prev, selectedDuration: duration }))}
                 onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
                 onNext={() => {}}
+                campaignData={{
+                  selectedModel: selectedPricingModel,
+                  selectedAreas: campaignData.selectedAreas,
+                  bogofPaidAreas: campaignData.bogofPaidAreas,
+                  bogofFreeAreas: campaignData.bogofFreeAreas,
+                  selectedSize: campaignData.selectedAdSize,
+                  selectedDuration: campaignData.selectedDuration,
+                  totalCost: campaignData.pricingBreakdown?.finalTotal,
+                  pricingBreakdown: campaignData.pricingBreakdown
+                }}
+                currentStep={currentStep}
               />
               
 {selectedPricingModel === 'leafleting' ? (
@@ -678,6 +689,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               onMonthsChange={(months) => setCampaignData(prev => ({ ...prev, selectedMonths: months }))}
               onPricingChange={(pricingData) => setCampaignData(prev => ({ ...prev, ...pricingData }))}
               onNext={() => {}}
+              campaignData={{
+                selectedModel: selectedPricingModel,
+                selectedAreas: campaignData.selectedAreas,
+                bogofPaidAreas: campaignData.bogofPaidAreas,
+                bogofFreeAreas: campaignData.bogofFreeAreas,
+                selectedSize: campaignData.selectedAdSize,
+                selectedDuration: campaignData.selectedDuration,
+                totalCost: campaignData.pricingBreakdown?.finalTotal,
+                pricingBreakdown: campaignData.pricingBreakdown
+              }}
+              currentStep={currentStep}
             />
             
 {selectedPricingModel === 'leafleting' ? (
@@ -720,66 +742,68 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             {/* Sales Assistant Popup - positioned absolutely */}
           </StepForm>
           
-          <SalesAssistantPopup 
-            currentStep={currentStep}
-            totalSteps={4}
-            onNextStep={() => {
-              if ((window as any).salesAssistantNextStep) {
-                (window as any).salesAssistantNextStep();
-              }
-            }}
-            onPrevStep={() => {
-              if ((window as any).salesAssistantPrevStep) {
-                (window as any).salesAssistantPrevStep();
-              }
-            }}
-            onBookNow={() => {
-              // Check if we're on step 4 and have access to the contact form functions
-              if (currentStep === 4 && (window as any).handleContactFormBook) {
-                // Call the contact form's book function directly
-                (window as any).handleContactFormBook();
-              } else if (currentStep < 4) {
-                // Navigate to the contact step if not already there
-                if ((window as any).salesAssistantGoToStep) {
-                  (window as any).salesAssistantGoToStep(4);
+          <div className="hidden md:block">
+            <SalesAssistantPopup 
+              currentStep={currentStep}
+              totalSteps={4}
+              onNextStep={() => {
+                if ((window as any).salesAssistantNextStep) {
+                  (window as any).salesAssistantNextStep();
                 }
-              } else {
-                // If already on step 4 but no form handler available, show message
-                toast({
-                  title: "Complete Contact Information",
-                  description: "Please fill out the contact form below to complete your booking.",
-                });
-              }
-            }}
-            onSaveQuote={() => {
-              // Check if we're on step 4 and have access to the contact form functions
-              if (currentStep === 4 && (window as any).handleContactFormSave) {
-                // Call the contact form's save function directly
-                (window as any).handleContactFormSave();
-              } else if (currentStep < 4) {
-                // Navigate to the contact step if not already there
-                if ((window as any).salesAssistantGoToStep) {
-                  (window as any).salesAssistantGoToStep(4);
+              }}
+              onPrevStep={() => {
+                if ((window as any).salesAssistantPrevStep) {
+                  (window as any).salesAssistantPrevStep();
                 }
-              } else {
-                // If already on step 4 but no form handler available, show message
-                toast({
-                  title: "Complete Contact Information",
-                  description: "Please fill out the contact form below to save your quote.",
-                });
-              }
-            }}
-            campaignData={{
-              selectedModel: selectedPricingModel,
-              selectedAreas: campaignData.selectedAreas,
-              bogofPaidAreas: campaignData.bogofPaidAreas,
-              bogofFreeAreas: campaignData.bogofFreeAreas,
-              selectedSize: campaignData.selectedAdSize,
-              selectedDuration: campaignData.selectedDuration,
-              totalCost: campaignData.pricingBreakdown?.finalTotal,
-              pricingBreakdown: campaignData.pricingBreakdown
-            }}
-          />
+              }}
+              onBookNow={() => {
+                // Check if we're on step 4 and have access to the contact form functions
+                if (currentStep === 4 && (window as any).handleContactFormBook) {
+                  // Call the contact form's book function directly
+                  (window as any).handleContactFormBook();
+                } else if (currentStep < 4) {
+                  // Navigate to the contact step if not already there
+                  if ((window as any).salesAssistantGoToStep) {
+                    (window as any).salesAssistantGoToStep(4);
+                  }
+                } else {
+                  // If already on step 4 but no form handler available, show message
+                  toast({
+                    title: "Complete Contact Information",
+                    description: "Please fill out the contact form below to complete your booking.",
+                  });
+                }
+              }}
+              onSaveQuote={() => {
+                // Check if we're on step 4 and have access to the contact form functions
+                if (currentStep === 4 && (window as any).handleContactFormSave) {
+                  // Call the contact form's save function directly
+                  (window as any).handleContactFormSave();
+                } else if (currentStep < 4) {
+                  // Navigate to the contact step if not already there
+                  if ((window as any).salesAssistantGoToStep) {
+                    (window as any).salesAssistantGoToStep(4);
+                  }
+                } else {
+                  // If already on step 4 but no form handler available, show message
+                  toast({
+                    title: "Complete Contact Information",
+                    description: "Please fill out the contact form below to save your quote.",
+                  });
+                }
+              }}
+              campaignData={{
+                selectedModel: selectedPricingModel,
+                selectedAreas: campaignData.selectedAreas,
+                bogofPaidAreas: campaignData.bogofPaidAreas,
+                bogofFreeAreas: campaignData.bogofFreeAreas,
+                selectedSize: campaignData.selectedAdSize,
+                selectedDuration: campaignData.selectedDuration,
+                totalCost: campaignData.pricingBreakdown?.finalTotal,
+                pricingBreakdown: campaignData.pricingBreakdown
+              }}
+            />
+          </div>
         </div>
       )}
 

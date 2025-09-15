@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, AlertCircle, MapPin, Calendar, Clock, Users } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
+import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
@@ -76,6 +77,8 @@ interface AreaAndScheduleStepProps {
   onMonthsChange: (months: Record<string, string[]>) => void;
   onPricingChange?: (pricingData: any) => void;
   onNext: () => void;
+  campaignData?: any; // Add campaign data prop for mobile pricing summary
+  currentStep?: number; // Add current step for mobile pricing summary
 }
 
 export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
@@ -90,7 +93,9 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
   onDurationChange,
   onMonthsChange,
   onPricingChange,
-  onNext
+  onNext,
+  campaignData,
+  currentStep = 2
 }) => {
   const { areas, durations, subscriptionDurations, isLoading, isError } = usePricingData();
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
@@ -662,6 +667,14 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
       {/* Schedule Selection */}
       {renderScheduleSection()}
+
+      {/* Mobile Pricing Summary */}
+      {campaignData && (
+        <MobilePricingSummary 
+          campaignData={campaignData} 
+          currentStep={currentStep} 
+        />
+      )}
     </div>
   );
 };
