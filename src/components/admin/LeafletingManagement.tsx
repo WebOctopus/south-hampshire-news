@@ -93,7 +93,6 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
         area_number: parseInt(formData.get('area_number') as string),
         name: formData.get('name') as string,
         postcodes: formData.get('postcodes') as string,
-        household_count: parseInt(formData.get('household_count') as string) || 0,
         bimonthly_circulation: parseInt(formData.get('bimonthly_circulation') as string) || 0,
         price_with_vat: parseFloat(formData.get('price_with_vat') as string) || 0,
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',

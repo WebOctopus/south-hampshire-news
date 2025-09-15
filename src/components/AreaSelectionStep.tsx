@@ -64,7 +64,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
           .filter(area => newAreas.includes(area.id))
           .reduce((sum, area) => {
             const areaCirculation = pricingModel === 'leafleting' 
-              ? (area as any).household_count || 0
+              ? (area as any).bimonthly_circulation || 0
               : (area as any).circulation || 0;
             return sum + areaCirculation;
           }, 0);
@@ -397,7 +397,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                       </Label>
                       <Badge variant="outline" className="text-xs">
                         {pricingModel === 'leafleting' 
-                          ? (area as any).household_count?.toLocaleString() || 0
+                          ? (area as any).bimonthly_circulation?.toLocaleString() || 0
                           : (area as any).circulation?.toLocaleString() || 0
                         } homes
                       </Badge>
@@ -405,13 +405,10 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                     
                     {pricingModel === 'leafleting' ? (
                       <div className="text-xs text-muted-foreground">
-                        <div>Copy: {(area as any).copy_deadline || 'N/A'}</div>
-                        <div>Print: {(area as any).print_deadline || 'N/A'}</div>
-                        <div>Delivery: {(area as any).delivery_date || 'N/A'}</div>
-                        <div className="flex justify-between mt-1">
-                          <span>Price per 1000:</span>
-                          <span className="font-medium">£{(area as any).price_per_thousand || 0}</span>
+                        <div className="font-medium text-primary">
+                          £{(area as any).price_with_vat?.toFixed(2) || '0.00'}
                         </div>
+                        <div>Postcodes: {(area as any).postcodes || 'N/A'}</div>
                       </div>
                     ) : (
                       (area as any).copy_deadline && (
@@ -447,7 +444,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                 .filter(area => effectiveSelectedAreas.includes(area.id))
                 .reduce((sum, area) => {
                   const areaCirculation = pricingModel === 'leafleting' 
-                    ? (area as any).household_count || 0
+                    ? (area as any).bimonthly_circulation || 0
                     : (area as any).circulation || 0;
                   return sum + areaCirculation;
                 }, 0)

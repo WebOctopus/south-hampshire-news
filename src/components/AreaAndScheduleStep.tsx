@@ -136,7 +136,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
           .filter(area => newAreas.includes(area.id))
           .reduce((sum, area) => {
             const areaCirculation = pricingModel === 'leafleting' 
-              ? (area as any).household_count || 0
+              ? (area as any).bimonthly_circulation || 0
               : (area as any).circulation || 0;
             return sum + areaCirculation;
           }, 0);
@@ -605,7 +605,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                         </Label>
                         <Badge variant="outline" className="text-xs">
                           {pricingModel === 'leafleting' 
-                            ? (area as any).household_count?.toLocaleString() || 0
+                            ? (area as any).bimonthly_circulation?.toLocaleString() || 0
                             : (area as any).circulation?.toLocaleString() || 0
                           } homes
                         </Badge>
