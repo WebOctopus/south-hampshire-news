@@ -14,6 +14,7 @@ import { useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import LeafletSizeStep from '@/components/LeafletSizeStep';
 
 interface AdvertisingStepFormProps {
   children?: React.ReactNode;
@@ -580,21 +581,29 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 onNext={() => {}}
               />
               
-              <AdvertisementSizeStep
-                selectedAdSize={campaignData.selectedAdSize}
-                onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
-                pricingModel={selectedPricingModel}
-                selectedAreas={campaignData.selectedAreas}
-                bogofPaidAreas={campaignData.bogofPaidAreas}
-                bogofFreeAreas={campaignData.bogofFreeAreas}
-                selectedDuration={campaignData.selectedDuration}
-                onPricingChange={(breakdown) => {
-                  console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
-                  setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
-                }}
-                showSummary={true}
-                onNext={() => {}}
-              />
+{selectedPricingModel === 'leafleting' ? (
+  <LeafletSizeStep
+    selectedLeafletSize={campaignData.selectedAdSize}
+    onLeafletSizeChange={(sizeId) => setCampaignData(prev => ({ ...prev, selectedAdSize: sizeId }))}
+    onNext={() => {}}
+  />
+) : (
+  <AdvertisementSizeStep
+    selectedAdSize={campaignData.selectedAdSize}
+    onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
+    pricingModel={selectedPricingModel}
+    selectedAreas={campaignData.selectedAreas}
+    bogofPaidAreas={campaignData.bogofPaidAreas}
+    bogofFreeAreas={campaignData.bogofFreeAreas}
+    selectedDuration={campaignData.selectedDuration}
+    onPricingChange={(breakdown) => {
+      console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
+      setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
+    }}
+    showSummary={true}
+    onNext={() => {}}
+  />
+)}
               
               <ContactInformationStep
                 pricingModel={selectedPricingModel}
@@ -634,21 +643,29 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               onNext={() => {}}
             />
             
-            <AdvertisementSizeStep
-              selectedAdSize={campaignData.selectedAdSize}
-              onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
-              pricingModel={selectedPricingModel}
-              selectedAreas={campaignData.selectedAreas}
-              bogofPaidAreas={campaignData.bogofPaidAreas}
-              bogofFreeAreas={campaignData.bogofFreeAreas}
-              selectedDuration={campaignData.selectedDuration}
-              onPricingChange={(breakdown) => {
-                console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
-                setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
-              }}
-              showSummary={true}
-              onNext={() => {}}
-            />
+{selectedPricingModel === 'leafleting' ? (
+  <LeafletSizeStep
+    selectedLeafletSize={campaignData.selectedAdSize}
+    onLeafletSizeChange={(sizeId) => setCampaignData(prev => ({ ...prev, selectedAdSize: sizeId }))}
+    onNext={() => {}}
+  />
+) : (
+  <AdvertisementSizeStep
+    selectedAdSize={campaignData.selectedAdSize}
+    onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
+    pricingModel={selectedPricingModel}
+    selectedAreas={campaignData.selectedAreas}
+    bogofPaidAreas={campaignData.bogofPaidAreas}
+    bogofFreeAreas={campaignData.bogofFreeAreas}
+    selectedDuration={campaignData.selectedDuration}
+    onPricingChange={(breakdown) => {
+      console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
+      setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
+    }}
+    showSummary={true}
+    onNext={() => {}}
+  />
+)}
             
             <ContactInformationStep
               pricingModel={selectedPricingModel}

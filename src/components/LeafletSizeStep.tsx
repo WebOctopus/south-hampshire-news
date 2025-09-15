@@ -82,17 +82,6 @@ const LeafletSizeStep: React.FC<LeafletSizeStepProps> = ({
           </CardContent>
         </Card>
 
-        <div className="flex justify-between">
-          <div></div>
-          <Button 
-            onClick={handleNext}
-            disabled={!selectedLeafletSize}
-            className="flex items-center gap-2"
-          >
-            Continue
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
     </ErrorBoundary>
   );
