@@ -17,59 +17,177 @@ interface StepContent {
   };
 }
 
-const stepContent: Record<number, StepContent> = {
-  1: {
-    title: "Choose Your Advertising Package",
-    description: "We offer three powerful advertising options to grow your business.",
-    tips: [
-      "3+ Repeat Package: Get 50% savings + FREE bonus areas for 6 months. Best value for ongoing campaigns",
-      "Fixed Term: Perfect for one-time promotions, events, or testing new markets",
-      "Leafleting: Direct door-to-door delivery reaching every household in your chosen areas"
-    ],
-    action: {
-      text: "Need help choosing?",
-      variant: "outline"
+// Step content organized by pricing model
+const stepContentByModel: Record<string, Record<number, StepContent>> = {
+  bogof: {
+    1: {
+      title: "Choose Your Advertising Package",
+      description: "We offer three powerful advertising options to grow your business.",
+      tips: [
+        "3+ Repeat Package: Get 50% savings + FREE bonus areas for 6 months. Best value for ongoing campaigns",
+        "Fixed Term: Perfect for one-time promotions, events, or testing new markets",
+        "Leafleting: Direct door-to-door delivery reaching every household in your chosen areas"
+      ],
+      action: {
+        text: "Need help choosing?",
+        variant: "outline"
+      }
+    },
+    2: {
+      title: "Select Your Target Areas & Schedule", 
+      description: "Choose up to 7 areas where your customers live and work. The more areas you select, the more FREE areas you get!",
+      tips: [
+        "BOGOF Deal: Select 2 paid areas → Get 2 FREE areas for 6 months",
+        "Select 3 paid areas → Get 3 FREE areas. Select 7 paid areas → Get ALL remaining areas FREE!",
+        "Choose areas close to your business for better response rates",
+        "Check circulation numbers to see total households reached",
+        "FREE areas are perfect for testing new markets risk-free"
+      ]
+    },
+    3: {
+      title: "Choose Your Advertisement Size",
+      description: "Select the ad size that best showcases your business. Each size is optimized for different marketing goals.",
+      tips: [
+        "Business Card: Cost-effective, perfect for contact details and simple offers",
+        "Quarter Page: Most popular choice - great balance of visibility and cost",
+        "Half Page: High impact, ideal for detailed product/service information",
+        "Full Page: Maximum impact, dominates the publication for major campaigns",
+        "Pricing updates instantly as you select different sizes"
+      ]
+    },
+    4: {
+      title: "Ready to Book Your Campaign?",
+      description: "You're booking a professional advertising campaign that includes ad design, targeted distribution, and ongoing support. Here are your next steps to get started.",
+      tips: [
+        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
+        "📞 CALL TO BOOK: Speak directly with our sales team at [phone number] for immediate booking and personalized campaign advice",
+        "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
+        "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
+        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority design queue placement",
+        "🎨 FREE DESIGN SERVICE: Our professional design team creates stunning ads at no extra cost - just provide your content and branding",
+        "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period"
+      ],
+      action: {
+        text: "Call Sales Team",
+        variant: "default"
+      }
     }
   },
-  2: {
-    title: "Select Your Target Areas & Schedule", 
-    description: "Choose up to 7 areas where your customers live and work. The more areas you select, the more FREE areas you get!",
-    tips: [
-      "BOGOF Deal: Select 2 paid areas → Get 2 FREE areas for 6 months",
-      "Select 3 paid areas → Get 3 FREE areas. Select 7 paid areas → Get ALL remaining areas FREE!",
-      "Choose areas close to your business for better response rates",
-      "Check circulation numbers to see total households reached",
-      "FREE areas are perfect for testing new markets risk-free"
-    ]
+  fixed: {
+    1: {
+      title: "Choose Your Advertising Package",
+      description: "We offer three powerful advertising options to grow your business.",
+      tips: [
+        "3+ Repeat Package: Get 50% savings + FREE bonus areas for 6 months. Best value for ongoing campaigns",
+        "Fixed Term: Perfect for one-time promotions, events, or testing new markets",
+        "Leafleting: Direct door-to-door delivery reaching every household in your chosen areas"
+      ],
+      action: {
+        text: "Need help choosing?",
+        variant: "outline"
+      }
+    },
+    2: {
+      title: "Select Your Target Areas & Schedule",
+      description: "Choose the areas where your customers live and work to maximize your campaign effectiveness.",
+      tips: [
+        "Fixed Term campaigns are perfect for promoting specific events, sales, or new product launches",
+        "Choose areas with your target demographic for maximum impact",
+        "Consider your business location - nearby areas often have higher response rates",
+        "Review circulation numbers to understand your potential reach",
+        "One-time campaigns are ideal for testing new markets before committing to longer terms"
+      ]
+    },
+    3: {
+      title: "Choose Your Advertisement Size",
+      description: "Select the ad size that best showcases your business. Each size is optimized for different marketing goals.",
+      tips: [
+        "Business Card: Cost-effective, perfect for contact details and simple offers",
+        "Quarter Page: Most popular choice - great balance of visibility and cost",
+        "Half Page: High impact, ideal for detailed product/service information",
+        "Full Page: Maximum impact, dominates the publication for major campaigns",
+        "Pricing updates instantly as you select different sizes"
+      ]
+    },
+    4: {
+      title: "Ready to Book Your Fixed Term Campaign?",
+      description: "You're booking a one-time advertising campaign with professional design and guaranteed distribution.",
+      tips: [
+        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
+        "📞 CALL TO BOOK: Speak directly with our sales team for immediate booking and campaign advice",
+        "🎯 WHAT YOU'RE BOOKING: A complete one-time advertising package with professional ad design and guaranteed distribution",
+        "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees",
+        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority design queue placement",
+        "🎨 FREE DESIGN SERVICE: Our professional design team creates your ad at no extra cost",
+        "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during distribution"
+      ],
+      action: {
+        text: "Call Sales Team",
+        variant: "default"
+      }
+    }
   },
-  3: {
-    title: "Choose Your Advertisement Size",
-    description: "Select the ad size that best showcases your business. Each size is optimized for different marketing goals.",
-    tips: [
-      "Business Card: Cost-effective, perfect for contact details and simple offers",
-      "Quarter Page: Most popular choice - great balance of visibility and cost",
-      "Half Page: High impact, ideal for detailed product/service information",
-      "Full Page: Maximum impact, dominates the publication for major campaigns",
-      "Pricing updates instantly as you select different sizes"
-    ]
-  },
-  4: {
-    title: "Ready to Book Your Campaign?",
-    description: "You're booking a professional advertising campaign that includes ad design, targeted distribution, and ongoing support. Here are your next steps to get started.",
-    tips: [
-      "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
-      "📞 CALL TO BOOK: Speak directly with our sales team at [phone number] for immediate booking and personalized campaign advice",
-      "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
-      "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
-      "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority design queue placement",
-      "🎨 FREE DESIGN SERVICE: Our professional design team creates stunning ads at no extra cost - just provide your content and branding",
-      "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period"
-    ],
-    action: {
-      text: "Call Sales Team",
-      variant: "default"
+  leafleting: {
+    1: {
+      title: "Choose Your Advertising Package",
+      description: "We offer three powerful advertising options to grow your business.",
+      tips: [
+        "3+ Repeat Package: Get 50% savings + FREE bonus areas for 6 months. Best value for ongoing campaigns",
+        "Fixed Term: Perfect for one-time promotions, events, or testing new markets",
+        "Leafleting: Direct door-to-door delivery reaching every household in your chosen areas"
+      ],
+      action: {
+        text: "Need help choosing?",
+        variant: "outline"
+      }
+    },
+    2: {
+      title: "Select Distribution Areas & Schedule",
+      description: "Choose the areas where you want your leaflets delivered door-to-door for maximum local impact.",
+      tips: [
+        "Leaflet campaigns deliver directly to every household - guaranteed 100% coverage",
+        "Select areas within your service radius for optimal response rates",
+        "Consider demographic data - choose areas that match your target customer profile",
+        "Local businesses see higher response rates from nearby residential areas",
+        "Multiple area campaigns can help you dominate entire neighborhoods"
+      ]
+    },
+    3: {
+      title: "Choose Your Leaflet Size & Format",
+      description: "Select the leaflet format that best presents your business information and special offers.",
+      tips: [
+        "A5 Single-sided: Cost-effective, perfect for simple offers and contact details",
+        "A5 Double-sided: More space for detailed information about your services",
+        "A5 Folded: Professional presentation, ideal for menus and service lists",
+        "A4 Four Sides: Maximum space for comprehensive business information",
+        "A4 Tri-fold: Premium format, perfect for professional services and detailed offerings",
+        "Postcard Format: Eye-catching, great for promotions and vouchers"
+      ]
+    },
+    4: {
+      title: "Ready to Book Your Leafleting Campaign?",
+      description: "You're booking a professional door-to-door leaflet distribution service with design support and guaranteed delivery.",
+      tips: [
+        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
+        "📞 CALL TO BOOK: Speak directly with our sales team for immediate booking and distribution advice",
+        "🎯 WHAT YOU'RE BOOKING: Professional leaflet design, printing, and guaranteed door-to-door delivery to every household",
+        "💰 INVESTMENT SHOWN: Your total includes design, printing, distribution, and VAT. No hidden costs",
+        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority in our distribution schedule",
+        "🎨 FREE DESIGN SERVICE: Our team creates professional leaflet designs at no extra cost",
+        "📊 GUARANTEED DELIVERY: Every leaflet is delivered by hand to every household in your selected areas"
+      ],
+      action: {
+        text: "Call Sales Team",
+        variant: "default"
+      }
     }
   }
+};
+
+// Helper function to get step content based on pricing model
+const getStepContent = (pricingModel: string, step: number): StepContent => {
+  const modelContent = stepContentByModel[pricingModel] || stepContentByModel.bogof;
+  return modelContent[step] || modelContent[1];
 };
 
 interface SalesAssistantPopupProps {
@@ -97,7 +215,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   const [isVisible, setIsVisible] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
-  const currentContent = stepContent[currentStep] || stepContent[1];
+  const currentContent = getStepContent(campaignData?.selectedModel || 'bogof', currentStep);
   const progress = ((currentStep - 1) / 3) * 100;
 
   // Reset scroll to top when step changes
