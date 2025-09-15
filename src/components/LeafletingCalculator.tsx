@@ -30,6 +30,10 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
     leafletSize: '',
     duration: '1' // Default to 1 issue (2 months)
   });
+
+  const [voucherCode, setVoucherCode] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
   
   const { toast } = useToast();
   
@@ -45,16 +49,101 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
     }));
   }, []);
 
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) {
+      toast({
+        title: "Invalid Voucher",
+        description: "Please enter a voucher code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVoucherLoading(true);
+
+    try {
+      const { data: voucher, error } = await supabase
+        .from('vouchers')
+        .select('*')
+        .eq('voucher_code', voucherCode.toUpperCase())
+        .eq('service_type', 'leafleting')
+        .eq('is_active', true)
+        .eq('is_used', false)
+        .single();
+
+      if (error || !voucher) {
+        toast({
+          title: "Invalid Voucher",
+          description: "Voucher code not found or expired.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check if voucher is expired
+      if (voucher.expires_at && new Date(voucher.expires_at) < new Date()) {
+        toast({
+          title: "Expired Voucher",
+          description: "This voucher code has expired.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setAppliedVoucher(voucher);
+      toast({
+        title: "Voucher Applied!",
+        description: `${voucher.voucher_type === 'percentage' ? voucher.discount_value + '% off' : '£' + voucher.discount_value + ' off'} applied to your order.`
+      });
+
+    } catch (error: any) {
+      console.error('Error applying voucher:', error);
+      toast({
+        title: "Error",
+        description: "Failed to apply voucher. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherCode('');
+    toast({
+      title: "Voucher Removed",
+      description: "Voucher discount has been removed."
+    });
+  };
+
   // Calculate pricing using Supabase data
   const pricingBreakdown = useMemo(() => {
     if (!leafletAreas?.length) return null;
     
-    return calculateLeafletingPrice(
+    const basePricing = calculateLeafletingPrice(
       formData.selectedAreas,
       leafletAreas,
       parseInt(formData.duration)
     );
-  }, [formData.selectedAreas, formData.duration, leafletAreas]);
+
+    if (!basePricing || !appliedVoucher) return basePricing;
+
+    // Apply voucher discount
+    let voucherDiscount = 0;
+    if (appliedVoucher.voucher_type === 'percentage') {
+      voucherDiscount = (basePricing.finalTotal * appliedVoucher.discount_value) / 100;
+    } else {
+      voucherDiscount = Math.min(appliedVoucher.discount_value, basePricing.finalTotal);
+    }
+
+    return {
+      ...basePricing,
+      voucherDiscount,
+      voucherCode: appliedVoucher.voucher_code,
+      finalTotal: basePricing.finalTotal - voucherDiscount
+    };
+  }, [formData.selectedAreas, formData.duration, leafletAreas, appliedVoucher]);
 
   const handleSubmitQuote = async () => {
     if (!formData.fullName || !formData.emailAddress || !formData.selectedAreas.length || !formData.leafletSize) {
@@ -319,6 +408,57 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                 </CardContent>
               </Card>
 
+              {/* Voucher Code */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Badge className="h-5 w-5" />
+                    Voucher Code
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {appliedVoucher ? (
+                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {appliedVoucher.voucher_code}
+                        </Badge>
+                        <span className="text-sm text-green-700">
+                          {appliedVoucher.voucher_type === 'percentage' 
+                            ? `${appliedVoucher.discount_value}% off` 
+                            : `£${appliedVoucher.discount_value} off`}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemoveVoucher}
+                        className="text-green-700 hover:text-green-900"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter voucher code"
+                        value={voucherCode}
+                        onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                        onKeyPress={(e) => e.key === 'Enter' && handleApplyVoucher()}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleApplyVoucher}
+                        disabled={voucherLoading || !voucherCode.trim()}
+                        className="whitespace-nowrap"
+                      >
+                        {voucherLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Publication Schedule */}
               {formData.selectedAreas.length > 0 && (
                 <Card>
@@ -391,32 +531,39 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
 
                       <Separator />
 
-                      {/* Pricing Breakdown */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Subtotal:</span>
-                          <span>{formatLeafletPrice(pricingBreakdown.subtotal)}</span>
-                        </div>
-                        
-                        {pricingBreakdown.volumeDiscountPercent > 0 && (
-                          <div className="flex justify-between text-green-600">
-                            <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                            <span>-{formatLeafletPrice(pricingBreakdown.volumeDiscount)}</span>
-                          </div>
-                        )}
+                       {/* Pricing Breakdown */}
+                       <div className="space-y-2">
+                         <div className="flex justify-between">
+                           <span>Subtotal:</span>
+                           <span>{formatLeafletPrice(pricingBreakdown.subtotal)}</span>
+                         </div>
+                         
+                         {pricingBreakdown.volumeDiscountPercent > 0 && (
+                           <div className="flex justify-between text-green-600">
+                             <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
+                             <span>-{formatLeafletPrice(pricingBreakdown.volumeDiscount)}</span>
+                           </div>
+                         )}
 
-                        <div className="flex justify-between">
-                          <span>Duration Multiplier:</span>
-                          <span>x{pricingBreakdown.durationMultiplier}</span>
-                        </div>
+                         {pricingBreakdown.voucherDiscount > 0 && (
+                           <div className="flex justify-between text-green-600">
+                             <span>Voucher Discount ({pricingBreakdown.voucherCode}):</span>
+                             <span>-{formatLeafletPrice(pricingBreakdown.voucherDiscount)}</span>
+                           </div>
+                         )}
 
-                        <Separator />
+                         <div className="flex justify-between">
+                           <span>Duration Multiplier:</span>
+                           <span>x{pricingBreakdown.durationMultiplier}</span>
+                         </div>
 
-                        <div className="flex justify-between font-bold text-lg">
-                          <span>Total:</span>
-                          <span className="text-primary">{formatLeafletPrice(pricingBreakdown.finalTotal)}</span>
-                        </div>
-                      </div>
+                         <Separator />
+
+                         <div className="flex justify-between font-bold text-lg">
+                           <span>Total:</span>
+                           <span className="text-primary">{formatLeafletPrice(pricingBreakdown.finalTotal)}</span>
+                         </div>
+                       </div>
 
                       {/* Stats */}
                       <div className="bg-muted p-3 rounded-lg space-y-1 text-sm">

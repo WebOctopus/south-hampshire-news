@@ -15,6 +15,8 @@ export interface LeafletingPricingBreakdown {
     circulation: number;
   }>;
   durationMultiplier: number;
+  voucherDiscount?: number;
+  voucherCode?: string;
 }
 
 /**
