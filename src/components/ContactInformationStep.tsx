@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -37,6 +39,7 @@ interface FormData {
   addressLine2: string;
   city: string;
   password: string;
+  voucherCode?: string;
 }
 
 export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
@@ -67,10 +70,13 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     addressLine2: "",
     city: "",
     password: "",
+    voucherCode: "",
   });
   
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+  const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
 
   const businessSectors = [
     "Accounting & Finance",
@@ -95,6 +101,74 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     "Transportation & Logistics",
     "Other"
   ];
+
+  const handleApplyVoucher = async () => {
+    if (!formData.voucherCode?.trim()) {
+      toast({
+        title: "Invalid Voucher",
+        description: "Please enter a voucher code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVoucherLoading(true);
+
+    try {
+      const { data: voucher, error } = await supabase
+        .from('vouchers')
+        .select('*')
+        .eq('voucher_code', formData.voucherCode.toUpperCase())
+        .eq('service_type', 'leafleting')
+        .eq('is_active', true)
+        .eq('is_used', false)
+        .single();
+
+      if (error || !voucher) {
+        toast({
+          title: "Invalid Voucher",
+          description: "Voucher code not found or expired.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check if voucher is expired
+      if (voucher.expires_at && new Date(voucher.expires_at) < new Date()) {
+        toast({
+          title: "Expired Voucher",
+          description: "This voucher code has expired.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setAppliedVoucher(voucher);
+      toast({
+        title: "Voucher Applied!",
+        description: `${voucher.voucher_type === 'percentage' ? voucher.discount_value + '% off' : '£' + voucher.discount_value + ' off'} applied to your order.`
+      });
+
+    } catch (error: any) {
+      console.error('Error applying voucher:', error);
+      toast({
+        title: "Error",
+        description: "Failed to apply voucher. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setFormData(prev => ({ ...prev, voucherCode: '' }));
+    toast({
+      title: "Voucher Removed",
+      description: "Voucher discount has been removed."
+    });
+  };
 
   // Enhanced postcode lookup function
   const handlePostcodeLookup = async () => {
@@ -395,6 +469,55 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                           disabled={submitting}
                         />
                       </div>
+
+                      {/* Voucher Code Section - Only for leafleting */}
+                      {pricingModel === 'leafleting' && (
+                        <div className="md:col-span-2">
+                          <Label htmlFor="voucher">Voucher Code</Label>
+                          {appliedVoucher ? (
+                            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                  {appliedVoucher.voucher_code}
+                                </Badge>
+                                <span className="text-sm text-green-700">
+                                  {appliedVoucher.voucher_type === 'percentage' 
+                                    ? `${appliedVoucher.discount_value}% off` 
+                                    : `£${appliedVoucher.discount_value} off`}
+                                </span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleRemoveVoucher}
+                                className="text-green-700 hover:text-green-900"
+                                disabled={submitting}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Input
+                                id="voucher"
+                                placeholder="Enter voucher code"
+                                value={formData.voucherCode || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, voucherCode: e.target.value.toUpperCase() }))}
+                                onKeyPress={(e) => e.key === 'Enter' && handleApplyVoucher()}
+                                disabled={submitting}
+                              />
+                              <Button
+                                variant="outline"
+                                onClick={handleApplyVoucher}
+                                disabled={voucherLoading || !formData.voucherCode?.trim() || submitting}
+                                className="whitespace-nowrap"
+                              >
+                                {voucherLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
                     {/* Company Address Section with Postcode Lookup */}
@@ -540,6 +663,55 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                           disabled={submitting}
                         />
                       </div>
+
+                      {/* Voucher Code Section - Only for leafleting */}
+                      {pricingModel === 'leafleting' && (
+                        <div className="md:col-span-2">
+                          <Label htmlFor="voucher">Voucher Code</Label>
+                          {appliedVoucher ? (
+                            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                  {appliedVoucher.voucher_code}
+                                </Badge>
+                                <span className="text-sm text-green-700">
+                                  {appliedVoucher.voucher_type === 'percentage' 
+                                    ? `${appliedVoucher.discount_value}% off` 
+                                    : `£${appliedVoucher.discount_value} off`}
+                                </span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleRemoveVoucher}
+                                className="text-green-700 hover:text-green-900"
+                                disabled={submitting}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Input
+                                id="voucher"
+                                placeholder="Enter voucher code"
+                                value={formData.voucherCode || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, voucherCode: e.target.value.toUpperCase() }))}
+                                onKeyPress={(e) => e.key === 'Enter' && handleApplyVoucher()}
+                                disabled={submitting}
+                              />
+                              <Button
+                                variant="outline"
+                                onClick={handleApplyVoucher}
+                                disabled={voucherLoading || !formData.voucherCode?.trim() || submitting}
+                                className="whitespace-nowrap"
+                              >
+                                {voucherLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
                     {/* Business Address Section with Postcode Lookup */}
