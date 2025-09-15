@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { X, Phone, MessageCircle, ChevronLeft, ChevronRight, User, MapPin, Ruler, CreditCard, Headphones } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePricingData } from '@/hooks/usePricingData';
+import { useLeafletData } from '@/hooks/useLeafletData';
 
 interface StepContent {
   title: string;
@@ -91,6 +92,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   totalSteps = 4 
 }) => {
   const { areas, adSizes } = usePricingData();
+  const { leafletAreas, leafletSizes } = useLeafletData();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -118,14 +120,22 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
 
   // Helper function to get area name by ID
   const getAreaName = (areaId: string) => {
-    const area = areas?.find(a => a.id === areaId);
+    // Use leaflet areas for leafleting services, regular areas for advertising
+    const effectiveAreas = campaignData?.selectedModel === 'leafleting' ? leafletAreas : areas;
+    const area = effectiveAreas?.find(a => a.id === areaId);
     return area ? area.name : `Area ${areaId}`;
   };
 
   // Helper function to get ad size name by ID
   const getAdSizeName = (adSizeId: string) => {
-    const adSize = adSizes?.find(s => s.id === adSizeId);
-    return adSize ? adSize.name : adSizeId;
+    // Use leaflet sizes for leafleting services, regular ad sizes for advertising
+    if (campaignData?.selectedModel === 'leafleting') {
+      const leafletSize = leafletSizes?.find(s => s.id === adSizeId);
+      return leafletSize ? leafletSize.label : adSizeId;
+    } else {
+      const adSize = adSizes?.find(s => s.id === adSizeId);
+      return adSize ? adSize.name : adSizeId;
+    }
   };
 
   const handleCallSales = () => {
