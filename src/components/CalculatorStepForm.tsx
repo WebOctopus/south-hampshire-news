@@ -4,6 +4,7 @@ import { useStepForm } from './StepForm';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import AreaAndScheduleStep from './AreaAndScheduleStep';
 import AdvertisementSizeStep from './AdvertisementSizeStep';
+import LeafletSizeStep from './LeafletSizeStep';
 
 interface CalculatorStepFormProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -15,6 +16,7 @@ interface CalculatorStepFormProps {
     selectedAdSize?: string;
     selectedDuration?: string;
     selectedMonths?: Record<string, string[]>;
+    selectedLeafletSize?: string;
   };
 }
 
@@ -31,6 +33,7 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({
   const [selectedAdSize, setSelectedAdSize] = useState<string>(initialData?.selectedAdSize || "");
   const [selectedDuration, setSelectedDuration] = useState<string>(initialData?.selectedDuration || "");
   const [selectedMonths, setSelectedMonths] = useState<Record<string, string[]>>(initialData?.selectedMonths || {});
+  const [selectedLeafletSize, setSelectedLeafletSize] = useState<string>(initialData?.selectedLeafletSize || "");
 
   // Call onDataChange whenever relevant data changes
   useEffect(() => {
@@ -42,9 +45,10 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({
         selectedAdSize,
         selectedDuration,
         selectedMonths,
+        selectedLeafletSize,
       });
     }
-  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedMonths, onDataChange]);
+  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedMonths, selectedLeafletSize, onDataChange]);
 
   return (
     <ErrorBoundary>
@@ -65,16 +69,25 @@ export const CalculatorStepForm: React.FC<CalculatorStepFormProps> = ({
         onNext={nextStep}
       />
       
-      <AdvertisementSizeStep
-        selectedAdSize={selectedAdSize}
-        onAdSizeChange={setSelectedAdSize}
-        pricingModel={pricingModel}
-        selectedAreas={selectedAreas}
-        bogofPaidAreas={bogofPaidAreas}
-        bogofFreeAreas={bogofFreeAreas}
-        selectedDuration={selectedDuration}
-        onNext={nextStep}
-      />
+      {/* Show LeafletSizeStep for leafleting service, AdvertisementSizeStep for others */}
+      {pricingModel === 'leafleting' ? (
+        <LeafletSizeStep
+          selectedLeafletSize={selectedLeafletSize}
+          onLeafletSizeChange={setSelectedLeafletSize}
+          onNext={nextStep}
+        />
+      ) : (
+        <AdvertisementSizeStep
+          selectedAdSize={selectedAdSize}
+          onAdSizeChange={setSelectedAdSize}
+          pricingModel={pricingModel}
+          selectedAreas={selectedAreas}
+          bogofPaidAreas={bogofPaidAreas}
+          bogofFreeAreas={bogofFreeAreas}
+          selectedDuration={selectedDuration}
+          onNext={nextStep}
+        />
+      )}
     </ErrorBoundary>
   );
 };
