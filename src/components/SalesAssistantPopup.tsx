@@ -406,10 +406,10 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                      </div>
                    )}
 
-                   {/* Advert Size */}
+                   {/* Size label (ad vs leaflet) */}
                    {campaignData.selectedSize && (
                      <div className="text-xs">
-                       <span className="text-muted-foreground">Advert Size:</span>{" "}
+                       <span className="text-muted-foreground">{campaignData.selectedModel === 'leafleting' ? 'Leaflet Size:' : 'Advert Size:'}</span>{" "}
                        <span className="font-medium">{getAdSizeName(campaignData.selectedSize)}</span>
                      </div>
                    )}
@@ -544,24 +544,22 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                      </div>
                    )}
                    
-                   {/* Basic Pricing for Step 2 */}
-                   {campaignData.pricingBreakdown && currentStep < 3 && (
-                     <div className="space-y-2 pt-2 border-t border-primary/10">
-                       {campaignData.totalCost && (
-                         <div className="bg-primary/10 rounded p-2 space-y-1">
-                           <div className="text-xs">
-                             <span className="text-muted-foreground">Pre-payment Required:</span>
-                           </div>
-                           <div className="text-sm font-bold text-primary">
-                             £{campaignData.totalCost.toFixed(2)} + VAT (£{(campaignData.totalCost * 1.2).toFixed(2)})
-                           </div>
-                           <div className="text-xs text-muted-foreground">
-                             per insertion reaching {campaignData.pricingBreakdown.totalCirculation?.toLocaleString() || 'selected'} homes
-                           </div>
-                         </div>
-                       )}
-                     </div>
-                   )}
+                    {/* Basic Pricing for Step 2 */}
+                    {campaignData.pricingBreakdown && currentStep < 3 && (
+                      <div className="space-y-2 pt-2 border-t border-primary/10">
+                        <div className="bg-primary/10 rounded p-2 space-y-1">
+                          <div className="text-xs">
+                            <span className="text-muted-foreground">Pre-payment Required:</span>
+                          </div>
+                          <div className="text-sm font-bold text-primary">
+                            £{(campaignData.pricingBreakdown.finalTotal || 0).toFixed(2)} + VAT (£{(((campaignData.pricingBreakdown.finalTotal || 0) * 1.2)).toFixed(2)})
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            per insertion reaching {campaignData.pricingBreakdown.totalCirculation?.toLocaleString() || 'selected'} homes
+                          </div>
+                        </div>
+                      </div>
+                    )}
                  </div>
                )}
 

@@ -47,7 +47,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   React.useEffect(() => {
     if (selectedPricingModel === 'leafleting' && 
         campaignData.selectedAreas.length > 0 && 
-        campaignData.selectedDuration && 
         leafletAreas?.length) {
       
       console.log('Calculating leafleting pricing...', {
