@@ -143,7 +143,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
       <div ref={formRef} className="w-full max-w-none mx-auto px-4">
         {/* Progress Indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-center space-x-4">
+          <div className="flex items-center justify-center space-x-4 px-6 xs:px-8 sm:px-0">
             {Array.from({ length: totalSteps }, (_, index) => (
               <div key={index} className="flex items-center">
                 <button
