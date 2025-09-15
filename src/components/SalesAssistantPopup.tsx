@@ -76,6 +76,7 @@ interface SalesAssistantPopupProps {
   currentStep: number;
   onNextStep?: () => void;
   onPrevStep?: () => void;
+  onBookNow?: () => void;
   totalSteps?: number;
 }
 
@@ -84,6 +85,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   currentStep, 
   onNextStep, 
   onPrevStep, 
+  onBookNow,
   totalSteps = 4 
 }) => {
   const { areas, adSizes } = usePricingData();
@@ -493,6 +495,18 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                     onClick={currentStep === 4 ? handleCallSales : undefined}
                   >
                     {currentContent.action.text}
+                  </Button>
+                )}
+                
+                {/* Book Now Button - Only show on step 4 */}
+                {currentStep === 4 && onBookNow && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="text-xs bg-green-600 hover:bg-green-700 text-white"
+                    onClick={onBookNow}
+                  >
+                    Book Now
                   </Button>
                 )}
                 <Button

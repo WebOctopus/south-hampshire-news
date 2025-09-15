@@ -625,6 +625,21 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 (window as any).salesAssistantPrevStep();
               }
             }}
+            onBookNow={() => {
+              // Navigate to the contact step if not already there
+              if (currentStep < 4) {
+                // Go to step 4 (contact information)
+                if ((window as any).salesAssistantGoToStep) {
+                  (window as any).salesAssistantGoToStep(4);
+                }
+              } else {
+                // If already on step 4, show message to fill contact form
+                toast({
+                  title: "Complete Contact Information",
+                  description: "Please fill out the contact form below to complete your booking.",
+                });
+              }
+            }}
             campaignData={{
               selectedModel: selectedPricingModel,
               selectedAreas: campaignData.selectedAreas,
