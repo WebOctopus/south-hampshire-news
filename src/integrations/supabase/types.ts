@@ -1163,6 +1163,57 @@ export type Database = {
         }
         Relationships: []
       }
+      vouchers: {
+        Row: {
+          created_at: string
+          created_from_booking_id: string | null
+          description: string | null
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          is_used: boolean
+          service_type: string
+          updated_at: string
+          used_at: string | null
+          user_id: string
+          voucher_code: string
+          voucher_type: string
+        }
+        Insert: {
+          created_at?: string
+          created_from_booking_id?: string | null
+          description?: string | null
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_used?: boolean
+          service_type?: string
+          updated_at?: string
+          used_at?: string | null
+          user_id: string
+          voucher_code: string
+          voucher_type?: string
+        }
+        Update: {
+          created_at?: string
+          created_from_booking_id?: string | null
+          description?: string | null
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_used?: boolean
+          service_type?: string
+          updated_at?: string
+          used_at?: string | null
+          user_id?: string
+          voucher_code?: string
+          voucher_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1170,6 +1221,10 @@ export type Database = {
     Functions: {
       assign_admin_role: {
         Args: { user_email: string }
+        Returns: string
+      }
+      generate_voucher_code: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_business_detail: {
