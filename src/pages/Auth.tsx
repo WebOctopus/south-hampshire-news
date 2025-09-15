@@ -26,9 +26,19 @@ const Auth = () => {
       try {
         console.log('Auth page: Checking existing session...');
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          console.log('Auth page: Existing session found, redirecting to dashboard...');
-          navigate('/dashboard');
+        if (session?.user) {
+          console.log('Auth page: Existing session found, checking role...');
+          
+          // Check if user is admin
+          const isAdmin = await checkUserRole(session.user.id);
+          
+          if (isAdmin) {
+            console.log('Auth page: Admin session found, redirecting to admin dashboard...');
+            navigate('/admin');
+          } else {
+            console.log('Auth page: Regular user session found, redirecting to dashboard...');
+            navigate('/dashboard');
+          }
         }
       } catch (error) {
         console.error('Auth page: Error checking auth:', error);
