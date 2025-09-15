@@ -514,16 +514,6 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                       Save Quote
                     </Button>
                   )}
-                  
-                  {/* Live Chat Icon */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="px-3"
-                    title="Live Chat"
-                  >
-                    <MessageCircle className="h-3 w-3" />
-                  </Button>
                 </div>
                 
                 {/* Bottom Row: Book Now Button - Full Width on Step 4 */}
