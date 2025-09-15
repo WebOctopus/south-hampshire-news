@@ -268,6 +268,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
       const fullName = `${contactData.firstName} ${contactData.lastName}`;
       
+      console.log('Starting booking process...', { contactData, campaignData, selectedPricingModel });
+      
       // First, try to sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: contactData.email,
@@ -284,14 +286,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       let userId = authData?.user?.id;
       let isNewUser = true;
+      
+      console.log('Auth signup result:', { authData, authError, userId });
 
       // If user already exists, try to sign them in with the provided password
       if (authError?.message === 'User already registered') {
         isNewUser = false;
+        console.log('User already exists, attempting sign in...');
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email: contactData.email,
           password: contactData.password,
         });
+        
+        console.log('Sign in result:', { signInData, signInError });
         
         if (signInError) {
           toast({
@@ -304,6 +311,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         
         userId = signInData?.user?.id;
       } else if (authError) {
+        console.error('Auth error:', authError);
         toast({
           title: "Sign Up Failed",
           description: authError.message || "Failed to create account.",
@@ -313,9 +321,26 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       }
 
       if (!userId) {
+        console.error('No user ID available');
         toast({
           title: "Authentication Failed",
           description: "Failed to create or authenticate user.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log('User authenticated successfully, userId:', userId);
+      
+      // Verify current session
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log('Current session:', sessionData);
+      
+      if (!sessionData.session) {
+        console.error('No active session after authentication');
+        toast({
+          title: "Authentication Error", 
+          description: "Session not established. Please try again.",
           variant: "destructive",
         });
         return;
@@ -330,42 +355,45 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         company: contactData.companyName || '',
         title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Booking`,
         pricing_model: selectedPricingModel,
-        ad_size_id: campaignData.selectedAdSize,
-        duration_id: campaignData.selectedDuration,
-        selected_area_ids: effectiveSelectedAreas,
-        bogof_paid_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : [],
-        bogof_free_area_ids: selectedPricingModel === 'bogof' ? campaignData.bogofFreeAreas : [],
-        monthly_price: campaignData.pricingBreakdown?.finalTotal || 0,
-        subtotal: campaignData.pricingBreakdown?.subtotal || 0,
-        final_total: campaignData.pricingBreakdown?.finalTotal || 0,
-        duration_multiplier: campaignData.pricingBreakdown?.durationMultiplier || 1,
-        total_circulation: campaignData.pricingBreakdown?.totalCirculation || 0,
-        volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent || 0,
-        duration_discount_percent: campaignData.pricingBreakdown?.durationDiscountPercent || 0,
-        pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+        ad_size_id: campaignData.selectedAdSize || null,
+        duration_id: campaignData.selectedDuration || null,
+        selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
+        bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
+        bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
+        monthly_price: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
+        final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+        total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
+        volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
+        duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
+        pricing_breakdown: campaignData.pricingBreakdown ? JSON.parse(JSON.stringify(campaignData.pricingBreakdown)) : {},
         selections: {
           pricingModel: selectedPricingModel,
           selectedAdSize: campaignData.selectedAdSize,
           selectedDuration: campaignData.selectedDuration,
-          selectedAreas: campaignData.selectedAreas,
-          bogofPaidAreas: campaignData.bogofPaidAreas,
-          bogofFreeAreas: campaignData.bogofFreeAreas,
-          ...campaignData
-        } as any,
+          selectedAreas: campaignData.selectedAreas || [],
+          bogofPaidAreas: campaignData.bogofPaidAreas || [],
+          bogofFreeAreas: campaignData.bogofFreeAreas || [],
+        },
         status: 'pending'
       };
+      
+      console.log('Booking payload:', JSON.stringify(bookingPayload, null, 2));
 
       const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .insert(bookingPayload)
         .select()
         .single();
+        
+      console.log('Booking insert result:', { bookingData, bookingError });
 
       if (bookingError) {
         console.error('Booking save error:', bookingError);
         toast({
           title: "Error Creating Booking",
-          description: "Failed to create booking. Please try again.",
+          description: `Failed to create booking: ${bookingError.message}. Please try again.`,
           variant: "destructive",
         });
         return;
