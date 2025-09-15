@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 
@@ -469,18 +469,21 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                           disabled={submitting}
                         />
                       </div>
+                    </div>
 
-                      {/* Voucher Code Section - Only for leafleting */}
-                      {pricingModel === 'leafleting' && (
-                        <div className="md:col-span-2">
-                          <Label htmlFor="voucher">Voucher Code</Label>
+                    {/* Voucher Code Section - Only for leafleting - Highlighted in Green */}
+                    {pricingModel === 'leafleting' && (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <Label htmlFor="voucher" className="text-green-800 font-medium">Voucher Code</Label>
+                          <p className="text-sm text-green-600 mb-3">Have a discount voucher? Enter it below to save on your leafleting campaign.</p>
                           {appliedVoucher ? (
-                            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-green-100 border border-green-300 rounded-lg">
                               <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                <Badge variant="secondary" className="bg-green-200 text-green-800">
                                   {appliedVoucher.voucher_code}
                                 </Badge>
-                                <span className="text-sm text-green-700">
+                                <span className="text-sm text-green-800 font-medium">
                                   {appliedVoucher.voucher_type === 'percentage' 
                                     ? `${appliedVoucher.discount_value}% off` 
                                     : `£${appliedVoucher.discount_value} off`}
@@ -490,7 +493,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleRemoveVoucher}
-                                className="text-green-700 hover:text-green-900"
+                                className="text-green-700 hover:text-green-900 hover:bg-green-200"
                                 disabled={submitting}
                               >
                                 Remove
@@ -505,20 +508,21 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                                 onChange={(e) => setFormData(prev => ({ ...prev, voucherCode: e.target.value.toUpperCase() }))}
                                 onKeyPress={(e) => e.key === 'Enter' && handleApplyVoucher()}
                                 disabled={submitting}
+                                className="border-green-300 focus:border-green-500 focus:ring-green-200"
                               />
                               <Button
-                                variant="outline"
+                                variant="default"
                                 onClick={handleApplyVoucher}
                                 disabled={voucherLoading || !formData.voucherCode?.trim() || submitting}
-                                className="whitespace-nowrap"
+                                className="whitespace-nowrap bg-green-600 hover:bg-green-700 text-white"
                               >
                                 {voucherLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
                               </Button>
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                     
                     {/* Company Address Section with Postcode Lookup */}
                     <div className="space-y-4">
@@ -663,18 +667,21 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                           disabled={submitting}
                         />
                       </div>
+                    </div>
 
-                      {/* Voucher Code Section - Only for leafleting */}
-                      {pricingModel === 'leafleting' && (
-                        <div className="md:col-span-2">
-                          <Label htmlFor="voucher">Voucher Code</Label>
+                    {/* Voucher Code Section - Only for leafleting - Highlighted in Green */}
+                    {pricingModel === 'leafleting' && (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <Label htmlFor="voucher" className="text-green-800 font-medium">Voucher Code</Label>
+                          <p className="text-sm text-green-600 mb-3">Have a discount voucher? Enter it below to save on your leafleting campaign.</p>
                           {appliedVoucher ? (
-                            <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-green-100 border border-green-300 rounded-lg">
                               <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                <Badge variant="secondary" className="bg-green-200 text-green-800">
                                   {appliedVoucher.voucher_code}
                                 </Badge>
-                                <span className="text-sm text-green-700">
+                                <span className="text-sm text-green-800 font-medium">
                                   {appliedVoucher.voucher_type === 'percentage' 
                                     ? `${appliedVoucher.discount_value}% off` 
                                     : `£${appliedVoucher.discount_value} off`}
@@ -684,7 +691,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleRemoveVoucher}
-                                className="text-green-700 hover:text-green-900"
+                                className="text-green-700 hover:text-green-900 hover:bg-green-200"
                                 disabled={submitting}
                               >
                                 Remove
@@ -699,20 +706,21 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                                 onChange={(e) => setFormData(prev => ({ ...prev, voucherCode: e.target.value.toUpperCase() }))}
                                 onKeyPress={(e) => e.key === 'Enter' && handleApplyVoucher()}
                                 disabled={submitting}
+                                className="border-green-300 focus:border-green-500 focus:ring-green-200"
                               />
                               <Button
-                                variant="outline"
+                                variant="default"
                                 onClick={handleApplyVoucher}
                                 disabled={voucherLoading || !formData.voucherCode?.trim() || submitting}
-                                className="whitespace-nowrap"
+                                className="whitespace-nowrap bg-green-600 hover:bg-green-700 text-white"
                               >
                                 {voucherLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
                               </Button>
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                     
                     {/* Business Address Section with Postcode Lookup */}
                     <div className="space-y-4">
