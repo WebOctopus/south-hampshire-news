@@ -1,4 +1,4 @@
-import { Building2, Calendar, FileText, BookOpen, Plus, List } from "lucide-react"
+import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +18,7 @@ interface DashboardSidebarProps {
   eventCount: number  
   quoteCount: number
   bookingCount: number
+  voucherCount?: number
   editingBusiness: any
   editingEvent: any
 }
@@ -29,6 +30,7 @@ export function DashboardSidebar({
   eventCount,
   quoteCount,
   bookingCount,
+  voucherCount = 0,
   editingBusiness,
   editingEvent
 }: DashboardSidebarProps) {
@@ -80,6 +82,12 @@ export function DashboardSidebar({
       title: `Bookings (${bookingCount})`,
       value: "bookings", 
       icon: BookOpen,
+      disabled: false
+    },
+    {
+      title: `Your Vouchers (${voucherCount})`,
+      value: "vouchers",
+      icon: Gift,
       disabled: false
     }
   ]

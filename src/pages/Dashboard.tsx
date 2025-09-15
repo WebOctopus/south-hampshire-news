@@ -28,6 +28,7 @@ import ROICalculator from '@/components/dashboard/ROICalculator';
 import CampaignTimeline from '@/components/dashboard/CampaignTimeline';
 import DeleteQuoteDialog from '@/components/dashboard/DeleteQuoteDialog';
 import BookingCard from '@/components/dashboard/BookingCard';
+import VouchersSection from '@/components/dashboard/VouchersSection';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 
 const Dashboard = () => {
@@ -48,6 +49,7 @@ const Dashboard = () => {
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('create');
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
+  const [voucherCount, setVoucherCount] = useState(0);
   
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
@@ -166,12 +168,23 @@ const Dashboard = () => {
     }
   };
 
+  const loadVoucherCount = async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from('vouchers')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+    setVoucherCount(count || 0);
+  };
+
   useEffect(() => {
     if (user) {
       loadBusinesses();
       loadEvents();
       loadQuotes();
       loadBookings();
+      loadVoucherCount();
       
       // Check if user came from calculator and set appropriate tab
       const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
@@ -197,6 +210,11 @@ const Dashboard = () => {
       if (justCreatedBooking === 'true') {
         setActiveTab('bookings');
         localStorage.removeItem('justCreatedBooking');
+        
+        // Reload voucher count after booking creation in case a voucher was generated
+        setTimeout(() => {
+          loadVoucherCount();
+        }, 1000);
       }
     }
   }, [user]);
@@ -1149,6 +1167,7 @@ const Dashboard = () => {
           eventCount={events.length}
           quoteCount={quotes.length}
           bookingCount={bookings.length}
+          voucherCount={voucherCount}
           editingBusiness={editingBusiness}
           editingEvent={editingEvent}
         />
@@ -1172,6 +1191,7 @@ const Dashboard = () => {
               {activeTab === 'events' && renderEventListings()}
               {activeTab === 'quotes' && renderQuotes()}
               {activeTab === 'bookings' && renderBookings()}
+              {activeTab === 'vouchers' && user && <VouchersSection user={user} />}
             </div>
           </div>
         </SidebarInset>

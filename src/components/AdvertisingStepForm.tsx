@@ -371,6 +371,53 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         return;
       }
 
+      // Create voucher for BOGOF (3+ Repeat Package) bookings
+      if (selectedPricingModel === 'bogof' && bookingData && userId) {
+        try {
+          // Generate voucher code
+          const { data: voucherCodeData, error: codeError } = await supabase
+            .rpc('generate_voucher_code');
+
+          if (codeError) {
+            console.error('Error generating voucher code:', codeError);
+          } else {
+            // Calculate expiry date (6 months from now)
+            const expiryDate = new Date();
+            expiryDate.setMonth(expiryDate.getMonth() + 6);
+
+            const voucherPayload = {
+              user_id: userId,
+              voucher_code: voucherCodeData,
+              voucher_type: 'percentage',
+              discount_value: 10,
+              service_type: 'leafleting',
+              expires_at: expiryDate.toISOString(),
+              created_from_booking_id: bookingData.id,
+              description: 'Thank you for booking our 3+ Repeat Package! Enjoy 10% off your next leafleting service.'
+            };
+
+            const { error: voucherError } = await supabase
+              .from('vouchers')
+              .insert(voucherPayload);
+
+            if (voucherError) {
+              console.error('Error creating voucher:', voucherError);
+            } else {
+              // Show success message about voucher
+              setTimeout(() => {
+                toast({
+                  title: "Bonus Voucher Earned! 🎉",
+                  description: "You've received a 10% leafleting service voucher! Check your dashboard to view it.",
+                  duration: 6000,
+                });
+              }, 2000);
+            }
+          }
+        } catch (error) {
+          console.error('Voucher creation failed:', error);
+        }
+      }
+
       // Send webhook to Go High-Level
       try {
         const { error: webhookError } = await supabase.functions.invoke('send-booking-webhook', {
