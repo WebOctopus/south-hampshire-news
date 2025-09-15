@@ -515,16 +515,7 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                     </Button>
                   )}
                   
-                  {/* Contact Icons */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="px-3"
-                    onClick={handleCallSales}
-                    title="Call Sales"
-                  >
-                    <Phone className="h-3 w-3" />
-                  </Button>
+                  {/* Live Chat Icon */}
                   <Button
                     variant="ghost"
                     size="sm"
