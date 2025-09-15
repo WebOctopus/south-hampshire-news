@@ -1157,6 +1157,52 @@ const Dashboard = () => {
     </Card>
   );
 
+  const renderProfileSettings = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Profile Settings</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="profile-email">Email</Label>
+            <Input 
+              id="profile-email" 
+              type="email" 
+              value={user?.email || ''} 
+              disabled 
+              className="bg-muted"
+            />
+          </div>
+          <div>
+            <Label htmlFor="profile-id">User ID</Label>
+            <Input 
+              id="profile-id" 
+              value={user?.id || ''} 
+              disabled 
+              className="bg-muted text-xs"
+            />
+          </div>
+        </div>
+        
+        <div className="pt-4 border-t">
+          <h4 className="font-medium mb-3">Account Actions</h4>
+          <div className="space-y-2">
+            <Button variant="outline" className="w-full justify-start">
+              Change Password
+            </Button>
+            <Button variant="outline" className="w-full justify-start">
+              Update Email Preferences
+            </Button>
+            <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
+              Delete Account
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex w-full">
@@ -1192,6 +1238,7 @@ const Dashboard = () => {
               {activeTab === 'quotes' && renderQuotes()}
               {activeTab === 'bookings' && renderBookings()}
               {activeTab === 'vouchers' && user && <VouchersSection user={user} />}
+              {activeTab === 'profile' && renderProfileSettings()}
             </div>
           </div>
         </SidebarInset>
