@@ -10,7 +10,8 @@ import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
-import { useLeafletCampaignDurations } from '@/hooks/useLeafletData';
+import { useLeafletCampaignDurations, useLeafletData } from '@/hooks/useLeafletData';
+import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const navigate = useNavigate();
   const { durations, subscriptionDurations } = usePricingData();
   const { data: leafletDurations } = useLeafletCampaignDurations();
+  const { leafletAreas } = useLeafletData();
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
   const [currentStep, setCurrentStep] = useState(1);
@@ -40,6 +42,42 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     pricingBreakdown: null as any
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Calculate leafleting pricing when relevant data changes
+  React.useEffect(() => {
+    if (selectedPricingModel === 'leafleting' && 
+        campaignData.selectedAreas.length > 0 && 
+        campaignData.selectedDuration && 
+        leafletAreas?.length) {
+      
+      console.log('Calculating leafleting pricing...', {
+        selectedAreas: campaignData.selectedAreas,
+        selectedDuration: campaignData.selectedDuration,
+        leafletAreas: leafletAreas.length
+      });
+
+      // Get duration multiplier from the selected leaflet duration
+      const selectedLeafletDurationData = leafletDurations?.find(d => d.id === campaignData.selectedDuration);
+      const durationMultiplier = selectedLeafletDurationData?.months || 1;
+      
+      console.log('Duration multiplier:', durationMultiplier, 'from duration:', selectedLeafletDurationData);
+      
+      const pricingBreakdown = calculateLeafletingPrice(
+        campaignData.selectedAreas,
+        leafletAreas,
+        durationMultiplier
+      );
+
+      console.log('Leafleting pricing calculated:', pricingBreakdown);
+
+      if (pricingBreakdown) {
+        setCampaignData(prev => ({
+          ...prev,
+          pricingBreakdown
+        }));
+      }
+    }
+  }, [selectedPricingModel, campaignData.selectedAreas, campaignData.selectedDuration, leafletAreas, leafletDurations]);
 
   // Debug: Track campaign data changes
   React.useEffect(() => {
