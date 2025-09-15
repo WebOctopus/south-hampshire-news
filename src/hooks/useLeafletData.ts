@@ -6,20 +6,12 @@ export interface LeafletArea {
   area_number: number;
   name: string;
   postcodes: string;
-  household_count: number;
   bimonthly_circulation: number;
-  price_per_thousand: number;
   price_with_vat: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
-  schedule?: Array<{
-    year: number;
-    month: string;
-    copy_deadline: string;
-    delivery_date: string;
-    print_deadline: string;
-  }>;
+  schedule?: any[];
 }
 
 export interface LeafletDuration {
@@ -28,6 +20,18 @@ export interface LeafletDuration {
   description: string;
   months: number;
   issues: number;
+  is_default: boolean;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface LeafletSize {
+  id: string;
+  label: string;
+  description?: string;
+  sort_order: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -49,12 +53,7 @@ export function useLeafletAreas() {
           throw error;
         }
         
-        const processedData = data?.map(item => ({
-          ...item,
-          schedule: item.schedule as LeafletArea['schedule']
-        })) as LeafletArea[];
-        
-        return processedData || [];
+        return (data || []) as LeafletArea[];
       } catch (error) {
         throw error;
       }
@@ -76,13 +75,41 @@ export function useLeafletCampaignDurations() {
           .from('leaflet_campaign_durations')
           .select('*')
           .eq('is_active', true)
-          .order('months');
+          .order('sort_order');
         
         if (error) {
           throw error;
         }
         
         return (data || []);
+      } catch (error) {
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, error) => {
+      return failureCount < 3;
+    }
+  });
+}
+
+// Hook to fetch leaflet sizes
+export function useLeafletSizes() {
+  return useQuery({
+    queryKey: ['leaflet-sizes'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('leaflet_sizes')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+        
+        if (error) {
+          throw error;
+        }
+        
+        return (data || []) as LeafletSize[];
       } catch (error) {
         throw error;
       }
@@ -110,17 +137,26 @@ export function useLeafletData() {
     refetch: refetchLeafletDurations 
   } = useLeafletCampaignDurations();
 
-  const isLoading = leafletAreasLoading || leafletDurationsLoading;
-  const isError = leafletAreasError || leafletDurationsError;
+  const { 
+    data: leafletSizes, 
+    isLoading: leafletSizesLoading, 
+    isError: leafletSizesError, 
+    refetch: refetchLeafletSizes 
+  } = useLeafletSizes();
+
+  const isLoading = leafletAreasLoading || leafletDurationsLoading || leafletSizesLoading;
+  const isError = leafletAreasError || leafletDurationsError || leafletSizesError;
 
   const refetch = () => {
     refetchLeafletAreas();
     refetchLeafletDurations();
+    refetchLeafletSizes();
   };
 
   return {
     leafletAreas,
     leafletDurations,
+    leafletSizes,
     isLoading,
     isError,
     refetch,

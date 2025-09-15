@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useLeafletAreas } from '@/hooks/useLeafletData';
+import { useLeafletAreas, useLeafletData } from '@/hooks/useLeafletData';
 import { calculateLeafletingPrice, formatLeafletPrice, calculateLeafletCPM } from '@/lib/leafletingCalculator';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
@@ -34,10 +34,7 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
   const { toast } = useToast();
   
   // Fetch leafleting data from Supabase
-  const { data: areas = [], isLoading: areasLoading, isError: areasError } = useLeafletAreas();
-  
-  const isLoading = areasLoading;
-  const isError = areasError;
+  const { leafletAreas, leafletDurations, leafletSizes, isLoading, isError } = useLeafletData();
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -50,14 +47,14 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
 
   // Calculate pricing using Supabase data
   const pricingBreakdown = useMemo(() => {
-    if (!areas.length) return null;
+    if (!leafletAreas?.length) return null;
     
     return calculateLeafletingPrice(
       formData.selectedAreas,
-      areas,
+      leafletAreas,
       parseInt(formData.duration)
     );
-  }, [formData.selectedAreas, formData.duration, areas]);
+  }, [formData.selectedAreas, formData.duration, leafletAreas]);
 
   const handleSubmitQuote = async () => {
     if (!formData.fullName || !formData.emailAddress || !formData.selectedAreas.length || !formData.leafletSize) {
@@ -226,7 +223,7 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto">
-                    {areas.map((area) => (
+                    {leafletAreas?.map((area) => (
                       <div key={area.id} className="flex items-center space-x-2 p-3 border rounded-lg">
                         <Checkbox
                           id={area.id}
@@ -236,10 +233,13 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                         <Label htmlFor={area.id} className="flex-1 cursor-pointer">
                           <div className="font-medium">Area {area.area_number}: {area.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {area.household_count.toLocaleString()} households
+                            {area.bimonthly_circulation.toLocaleString()} homes per campaign
                           </div>
                           <div className="text-sm font-medium text-primary">
-                            £{(area.price_per_thousand * (area.household_count / 1000)).toFixed(2)}
+                            £{area.price_with_vat.toFixed(2)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Postcodes: {area.postcodes}
                           </div>
                         </Label>
                       </div>
@@ -254,9 +254,30 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                   <CardTitle>Leaflet Size *</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center p-4 text-muted-foreground">
-                    Leaflet size selection coming soon
-                  </div>
+                  {leafletSizes && leafletSizes.length > 0 ? (
+                    <Select 
+                      value={formData.leafletSize} 
+                      onValueChange={(value) => setFormData({...formData, leafletSize: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select leaflet size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {leafletSizes.map((size) => (
+                          <SelectItem key={size.id} value={size.id}>
+                            {size.label}
+                            {size.description && (
+                              <div className="text-sm text-muted-foreground">{size.description}</div>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="text-center p-4 text-muted-foreground">
+                      No leaflet sizes available
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -269,16 +290,32 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <RadioGroup value={formData.duration} onValueChange={(value) => setFormData({...formData, duration: value})}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="1" id="duration-1" />
-                      <Label htmlFor="duration-1">1 Issue (2 months)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="3" id="duration-3" />
-                      <Label htmlFor="duration-3">3 Issues (6 months)</Label>
-                    </div>
-                  </RadioGroup>
+                  {leafletDurations && leafletDurations.length > 0 ? (
+                    <RadioGroup value={formData.duration} onValueChange={(value) => setFormData({...formData, duration: value})}>
+                      {leafletDurations.map((duration) => (
+                        <div key={duration.id} className="flex items-center space-x-2">
+                          <RadioGroupItem value={duration.issues.toString()} id={`duration-${duration.id}`} />
+                          <Label htmlFor={`duration-${duration.id}`}>
+                            {duration.name}
+                            {duration.description && (
+                              <div className="text-sm text-muted-foreground">{duration.description}</div>
+                            )}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  ) : (
+                    <RadioGroup value={formData.duration} onValueChange={(value) => setFormData({...formData, duration: value})}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="1" id="duration-1" />
+                        <Label htmlFor="duration-1">1 Issue (2 months)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="3" id="duration-3" />
+                        <Label htmlFor="duration-3">3 Issues (6 months)</Label>
+                      </div>
+                    </RadioGroup>
+                  )}
                 </CardContent>
               </Card>
 
@@ -293,8 +330,8 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {areas
-                        .filter(area => formData.selectedAreas.includes(area.id))
+                      {leafletAreas
+                        ?.filter(area => formData.selectedAreas.includes(area.id))
                         .map((area) => (
                           <div key={area.id} className="p-3 border rounded-lg">
                             <div className="font-medium mb-2">Area {area.area_number}: {area.name}</div>

@@ -338,15 +338,6 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="household_count">Household Count</Label>
-                          <Input
-                            id="household_count"
-                            name="household_count"
-                            type="number"
-                            defaultValue={editingArea?.household_count || ''}
-                          />
-                        </div>
-                        <div className="space-y-2">
                           <Label htmlFor="bimonthly_circulation">Circulation (Bi-monthly)</Label>
                           <Input
                             id="bimonthly_circulation"
@@ -355,9 +346,6 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                             defaultValue={editingArea?.bimonthly_circulation || ''}
                           />
                         </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="price_with_vat">Price (with VAT)</Label>
                           <Input
@@ -409,37 +397,35 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                   No distribution areas configured yet.
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Area #</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Postcodes</TableHead>
-                      <TableHead>Households</TableHead>
-                      <TableHead>Circulation</TableHead>
-                      <TableHead>Price (VAT inc.)</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {safeAreas.map((area) => (
-                      <TableRow key={area.id}>
-                        <TableCell className="font-medium">{area.area_number}</TableCell>
-                        <TableCell>{area.name}</TableCell>
-                        <TableCell>
-                          <div className="max-w-32 truncate" title={area.postcodes}>
-                            {area.postcodes}
-                          </div>
-                        </TableCell>
-                        <TableCell>{area.household_count?.toLocaleString() || 'N/A'}</TableCell>
-                        <TableCell>{area.bimonthly_circulation?.toLocaleString() || 'N/A'}</TableCell>
-                        <TableCell>£{area.price_with_vat}</TableCell>
-                        <TableCell>
-                          <Badge variant={area.is_active ? "default" : "secondary"}>
-                            {area.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Area #</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Postcodes</TableHead>
+                        <TableHead>Circulation</TableHead>
+                        <TableHead>Price (VAT inc.)</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {safeAreas.map((area) => (
+                        <TableRow key={area.id}>
+                          <TableCell className="font-medium">{area.area_number}</TableCell>
+                          <TableCell>{area.name}</TableCell>
+                          <TableCell>
+                            <div className="max-w-32 truncate" title={area.postcodes}>
+                              {area.postcodes}
+                            </div>
+                          </TableCell>
+                          <TableCell>{area.bimonthly_circulation?.toLocaleString() || 'N/A'}</TableCell>
+                          <TableCell>£{area.price_with_vat}</TableCell>
+                          <TableCell>
+                            <Badge variant={area.is_active ? "default" : "secondary"}>
+                              {area.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button
