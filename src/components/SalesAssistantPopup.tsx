@@ -461,86 +461,92 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
               )}
               </div>
               
-              {/* Action Buttons - Always visible at bottom */}
-              <div className="flex gap-2 pt-3 border-t border-muted/20 mt-3 flex-shrink-0">
-                {/* Step Navigation Buttons */}
-                {currentStep < totalSteps && onNextStep && (
+              {/* Action Buttons - Reorganized Layout */}
+              <div className="flex flex-col gap-2 pt-3 border-t border-muted/20 mt-3 flex-shrink-0">
+                {/* Top Row: Navigation and Action Buttons */}
+                <div className="flex gap-2">
+                  {/* Step Navigation - Back Button */}
+                  {currentStep > 1 && onPrevStep && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={onPrevStep}
+                    >
+                      <ChevronLeft className="h-3 w-3 mr-1" />
+                      Back
+                    </Button>
+                  )}
+                  
+                  {/* Step Navigation - Next Button (when not on last step) */}
+                  {currentStep < totalSteps && onNextStep && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={onNextStep}
+                    >
+                      Next Step
+                      <ChevronRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  )}
+                  
+                  {/* Call Sales Team Button (when no next step or on step 4) */}
+                  {(currentStep === totalSteps || !onNextStep) && currentContent.action && (
+                    <Button
+                      variant={currentContent.action.variant || "outline"}
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={currentStep === 4 ? handleCallSales : undefined}
+                    >
+                      {currentContent.action.text}
+                    </Button>
+                  )}
+                  
+                  {/* Save Quote Button - Only show on step 4 */}
+                  {currentStep === 4 && onSaveQuote && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs border-blue-500 text-blue-600 hover:bg-blue-50"
+                      onClick={onSaveQuote}
+                    >
+                      Save Quote
+                    </Button>
+                  )}
+                  
+                  {/* Contact Icons */}
                   <Button
-                    variant="default"
+                    variant="ghost"
                     size="sm"
-                    className="flex-1 text-xs"
-                    onClick={onNextStep}
+                    className="px-3"
+                    onClick={handleCallSales}
+                    title="Call Sales"
                   >
-                    Next Step
-                    <ChevronRight className="h-3 w-3 ml-1" />
+                    <Phone className="h-3 w-3" />
                   </Button>
-                )}
-                
-                {currentStep > 1 && onPrevStep && (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="px-4 text-xs"
-                    onClick={onPrevStep}
+                    className="px-3"
+                    title="Live Chat"
                   >
-                    <ChevronLeft className="h-3 w-3 mr-1" />
-                    Back
+                    <MessageCircle className="h-3 w-3" />
                   </Button>
-                )}
+                </div>
                 
-                {/* Contact/Action Buttons */}
-                {currentContent.action && (
-                  <Button
-                    variant={currentContent.action.variant || "outline"}
-                    size="sm"
-                    className="text-xs"
-                    onClick={currentStep === 4 ? handleCallSales : undefined}
-                  >
-                    {currentContent.action.text}
-                  </Button>
-                )}
-                
-                {/* Save Quote Button - Only show on step 4 */}
-                {currentStep === 4 && onSaveQuote && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs border-blue-500 text-blue-600 hover:bg-blue-50"
-                    onClick={onSaveQuote}
-                  >
-                    Save Quote
-                  </Button>
-                )}
-                
-                {/* Book Now Button - Only show on step 4 */}
+                {/* Bottom Row: Book Now Button - Full Width on Step 4 */}
                 {currentStep === 4 && onBookNow && (
                   <Button
                     variant="default"
                     size="sm"
-                    className="text-xs bg-green-600 hover:bg-green-700 text-white"
+                    className="w-full text-xs bg-green-600 hover:bg-green-700 text-white font-medium"
                     onClick={onBookNow}
                   >
                     Book Now
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="px-3"
-                  onClick={handleCallSales}
-                  title="Call Sales"
-                >
-                  <Phone className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="px-3"
-                  title="Live Chat"
-                >
-                  <MessageCircle className="h-3 w-3" />
-                </Button>
-               </div>
+              </div>
              </CardContent>
            </Card>
          </div>
