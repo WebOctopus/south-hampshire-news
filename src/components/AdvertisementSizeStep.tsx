@@ -7,6 +7,7 @@ import { Loader2, AlertCircle, Ruler, Eye, Palette } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { cn } from '@/lib/utils';
+import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 
 interface AdvertisementSizeStepProps {
   selectedAdSize: string;
@@ -19,6 +20,8 @@ interface AdvertisementSizeStepProps {
   onPricingChange?: (breakdown: any) => void;
   showSummary?: boolean;
   onNext: () => void;
+  campaignData?: any; // Add campaign data prop for mobile pricing summary
+  currentStep?: number; // Add current step for mobile pricing summary
 }
 
 export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
@@ -31,7 +34,9 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
   selectedDuration,
   onPricingChange,
   showSummary = false,
-  onNext
+  onNext,
+  campaignData,
+  currentStep = 3
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const [previewMode, setPreviewMode] = useState<'grid' | 'magazine'>('grid');
@@ -476,6 +481,14 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
 
       {/* Summary Section */}
       {showSummary && renderSummary()}
+
+      {/* Mobile Pricing Summary */}
+      {campaignData && (
+        <MobilePricingSummary 
+          campaignData={campaignData} 
+          currentStep={currentStep} 
+        />
+      )}
     </div>
   );
 };

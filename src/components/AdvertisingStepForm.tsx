@@ -650,6 +650,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     }}
     showSummary={true}
     onNext={() => {}}
+    campaignData={{
+      selectedModel: selectedPricingModel,
+      selectedAreas: campaignData.selectedAreas,
+      bogofPaidAreas: campaignData.bogofPaidAreas,
+      bogofFreeAreas: campaignData.bogofFreeAreas,
+      selectedSize: campaignData.selectedAdSize,
+      selectedDuration: campaignData.selectedDuration,
+      totalCost: campaignData.pricingBreakdown?.finalTotal,
+      pricingBreakdown: campaignData.pricingBreakdown
+    }}
+    currentStep={currentStep}
   />
 )}
               
@@ -723,6 +734,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     }}
     showSummary={true}
     onNext={() => {}}
+    campaignData={{
+      selectedModel: selectedPricingModel,
+      selectedAreas: campaignData.selectedAreas,
+      bogofPaidAreas: campaignData.bogofPaidAreas,
+      bogofFreeAreas: campaignData.bogofFreeAreas,
+      selectedSize: campaignData.selectedAdSize,
+      selectedDuration: campaignData.selectedDuration,
+      totalCost: campaignData.pricingBreakdown?.finalTotal,
+      pricingBreakdown: campaignData.pricingBreakdown
+    }}
+    currentStep={currentStep}
   />
 )}
             
