@@ -722,8 +722,11 @@ const AdminDashboard = () => {
     if (!editingUser) return;
 
     const formData = new FormData(e.target as HTMLFormElement);
+    const discountType = formData.get('discount_type') as string;
+    
     const agencyData = {
-      is_agency_member: formData.get('is_agency_member') === 'true',
+      discount_type: discountType,
+      is_agency_member: discountType === 'agency',
       agency_discount_percent: parseFloat(formData.get('agency_discount_percent') as string) || 0,
       agency_name: formData.get('agency_name') as string || '',
     };
@@ -774,17 +777,19 @@ const AdminDashboard = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="is_agency_member">Agency Status</Label>
+                <Label htmlFor="discount_type">User Status</Label>
                 <Select 
-                  name="is_agency_member" 
-                  defaultValue={editingUser?.is_agency_member ? 'true' : 'false'}
+                  name="discount_type" 
+                  defaultValue={editingUser?.discount_type || 'none'}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="false">Regular User</SelectItem>
-                    <SelectItem value="true">Agency Member</SelectItem>
+                    <SelectItem value="none">Regular User</SelectItem>
+                    <SelectItem value="agency">Agency Member</SelectItem>
+                    <SelectItem value="charity">Charity</SelectItem>
+                    <SelectItem value="discretionary">Discretionary</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -810,7 +815,7 @@ const AdminDashboard = () => {
                   placeholder="0"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Enter percentage (0-100). Only applies when user is an agency member.
+                  Enter percentage (0-100). Only applies when user has a discount status.
                 </p>
               </div>
 

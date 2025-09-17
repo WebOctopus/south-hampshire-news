@@ -751,6 +751,7 @@ export type Database = {
           agency_discount_percent: number | null
           agency_name: string | null
           created_at: string
+          discount_type: string | null
           display_name: string | null
           id: string
           is_agency_member: boolean | null
@@ -762,6 +763,7 @@ export type Database = {
           agency_discount_percent?: number | null
           agency_name?: string | null
           created_at?: string
+          discount_type?: string | null
           display_name?: string | null
           id?: string
           is_agency_member?: boolean | null
@@ -773,6 +775,7 @@ export type Database = {
           agency_discount_percent?: number | null
           agency_name?: string | null
           created_at?: string
+          discount_type?: string | null
           display_name?: string | null
           id?: string
           is_agency_member?: boolean | null
