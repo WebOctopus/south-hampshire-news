@@ -29,6 +29,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdvertisingStepForm from "@/components/AdvertisingStepForm";
+import { useAgencyDiscount } from "@/hooks/useAgencyDiscount";
 
 interface FormData {
   name: string;
@@ -82,6 +83,10 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
   // Use leafleting data hooks
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
   const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
+
+  // Use agency discount hook
+  const { data: agencyData } = useAgencyDiscount();
+  const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
 
   // Debug logging - remove in production
 
@@ -152,11 +157,13 @@ const effectiveSelectedAreas = useMemo(() => {
       adSizes,
       relevantDurations,
       subscriptionDurations,
-      volumeDiscounts
+      volumeDiscounts,
+      pricingModel === 'bogof' ? bogofFreeAreas : [], // Include free areas for circulation
+      agencyDiscountPercent
     );
     
     return result;
-  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations]);
+  }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations, bogofFreeAreas, agencyDiscountPercent]);
 
   
   React.useEffect(() => {

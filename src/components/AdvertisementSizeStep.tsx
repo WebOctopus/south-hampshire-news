@@ -40,7 +40,10 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
   currentStep = 3
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
+  const { data: agencyData } = useAgencyDiscount();
   const [previewMode, setPreviewMode] = useState<'grid' | 'magazine'>('grid');
+
+  const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
 
   // Calculate and notify pricing changes
   useEffect(() => {
@@ -308,7 +311,8 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
       pricingModel === 'bogof' ? subscriptionDurations || [] : durations || [],
       subscriptionDurations || [],
       volumeDiscounts || [],
-      pricingModel === 'bogof' ? bogofFreeAreas : [] // Include free areas for circulation
+      pricingModel === 'bogof' ? bogofFreeAreas : [], // Include free areas for circulation
+      agencyDiscountPercent
     );
 
     if (!pricingBreakdown) return null;

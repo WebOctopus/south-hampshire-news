@@ -12,6 +12,7 @@ import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator'
 import { calculateLeafletingPrice, formatLeafletPrice } from '@/lib/leafletingCalculator';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
+import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
 
 interface EditQuoteFormProps {
   quote: any;
@@ -27,6 +28,9 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
   const { data: leafletAreas, isLoading: leafletAreasLoading } = useLeafletAreas();
   const { data: leafletDurations, isLoading: leafletDurationsLoading } = useLeafletCampaignDurations();
+  const { data: agencyData } = useAgencyDiscount();
+
+  const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
   
   const [formData, setFormData] = useState({
     contact_name: quote.contact_name || '',
@@ -95,9 +99,10 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
       (effectiveDurations as any) || [],
       subscriptionDurations || [],
       [], // volume discounts array - we can add this later if needed
-      pricingModel === 'bogof' ? bogofFreeAreas : [] // Include free areas for circulation
+      pricingModel === 'bogof' ? bogofFreeAreas : [], // Include free areas for circulation
+      agencyDiscountPercent
     );
-  }, [selectedAdSize, selectedDuration, effectiveSelectedAreas, pricingModel, bogofPaidAreas, bogofFreeAreas, areas, adSizes, effectiveDurations, subscriptionDurations, leafletAreas, leafletDurations]);
+  }, [selectedAdSize, selectedDuration, effectiveSelectedAreas, pricingModel, bogofPaidAreas, bogofFreeAreas, areas, adSizes, effectiveDurations, subscriptionDurations, leafletAreas, leafletDurations, agencyDiscountPercent]);
 
   const handleAreaSelection = (areaId: string, checked: boolean) => {
     // Regular area selection for fixed/subscription/leafleting

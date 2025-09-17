@@ -8,6 +8,7 @@ import { Loader2, AlertCircle, Calendar, Clock } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
+import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
@@ -96,6 +97,9 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
+  const { data: agencyData } = useAgencyDiscount();
+
+  const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
 
   const getEffectiveSelectedAreas = () => {
     return pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas;
@@ -153,7 +157,8 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
       pricingModel === 'bogof' ? subscriptionDurations || [] : durations || [],
       subscriptionDurations || [],
       volumeDiscounts || [],
-      pricingModel === 'bogof' ? bogofFreeAreas : [] // Include free areas for circulation
+      pricingModel === 'bogof' ? bogofFreeAreas : [], // Include free areas for circulation
+      agencyDiscountPercent
     );
 
     if (!pricingBreakdown) return null;
