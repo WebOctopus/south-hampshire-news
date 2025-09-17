@@ -95,16 +95,12 @@ const AdminDashboard = () => {
 
   const loadUsers = async () => {
     const { data, error } = await supabase
-      .from('user_roles')
+      .from('profiles')
       .select(`
         *,
-        profiles!inner(
-          id,
-          user_id,
-          display_name,
-          is_agency_member,
-          agency_discount_percent,
-          agency_name
+        user_roles(
+          role,
+          created_at
         )
       `)
       .order('created_at', { ascending: false });
@@ -422,44 +418,50 @@ const AdminDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {users.map((userRole) => (
-                          <TableRow key={userRole.user_id}>
+                        {users.map((user) => (
+                          <TableRow key={user.user_id}>
                             <TableCell className="font-medium">
-                              {userRole.profiles?.display_name || 'No name'}
+                              {user.display_name || 'No name'}
                             </TableCell>
                             <TableCell className="font-mono text-xs">
-                              {userRole.user_id?.slice(0, 8)}...
+                              {user.user_id?.slice(0, 8)}...
+                            </TableCell>
+                            <TableCell>
+                              {user.user_roles && user.user_roles.length > 0 ? (
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  user.user_roles[0].role === 'admin' 
+                                    ? 'bg-purple-100 text-purple-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {user.user_roles[0].role}
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
+                                  user
+                                </span>
+                              )}
                             </TableCell>
                             <TableCell>
                               <span className={`px-2 py-1 rounded-full text-xs ${
-                                userRole.role === 'admin' 
-                                  ? 'bg-purple-100 text-purple-800' 
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {userRole.role}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                userRole.profiles?.is_agency_member 
+                                user.is_agency_member 
                                   ? 'bg-green-100 text-green-800' 
                                   : 'bg-gray-100 text-gray-800'
                               }`}>
-                                {userRole.profiles?.is_agency_member ? 'Agency Member' : 'Regular User'}
+                                {user.is_agency_member ? 'Agency Member' : 'Regular User'}
                               </span>
                             </TableCell>
                             <TableCell>
-                              {userRole.profiles?.agency_name || '-'}
+                              {user.agency_name || '-'}
                             </TableCell>
                             <TableCell>
-                              {userRole.profiles?.is_agency_member ? `${userRole.profiles?.agency_discount_percent || 0}%` : '-'}
+                              {user.is_agency_member ? `${user.agency_discount_percent || 0}%` : '-'}
                             </TableCell>
                             <TableCell>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  setEditingUser(userRole);
+                                  setEditingUser(user);
                                   setIsUserEditDialogOpen(true);
                                 }}
                               >
@@ -748,7 +750,7 @@ const AdminDashboard = () => {
             </DialogHeader>
             <form onSubmit={handleUserSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label>User: {editingUser?.profiles?.display_name || 'Unknown'}</Label>
+                <Label>User: {editingUser?.display_name || 'Unknown'}</Label>
                 <p className="text-sm text-muted-foreground font-mono">
                   {editingUser?.user_id}
                 </p>
@@ -758,7 +760,7 @@ const AdminDashboard = () => {
                 <Label htmlFor="is_agency_member">Agency Status</Label>
                 <Select 
                   name="is_agency_member" 
-                  defaultValue={editingUser?.profiles?.is_agency_member ? 'true' : 'false'}
+                  defaultValue={editingUser?.is_agency_member ? 'true' : 'false'}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -774,7 +776,7 @@ const AdminDashboard = () => {
                 <Label htmlFor="agency_name">Agency Name</Label>
                 <Input
                   name="agency_name"
-                  defaultValue={editingUser?.profiles?.agency_name || ''}
+                  defaultValue={editingUser?.agency_name || ''}
                   placeholder="Enter agency name (optional)"
                 />
               </div>
@@ -787,7 +789,7 @@ const AdminDashboard = () => {
                   min="0"
                   max="100"
                   step="0.01"
-                  defaultValue={editingUser?.profiles?.agency_discount_percent || 0}
+                  defaultValue={editingUser?.agency_discount_percent || 0}
                   placeholder="0"
                 />
                 <p className="text-xs text-muted-foreground">
