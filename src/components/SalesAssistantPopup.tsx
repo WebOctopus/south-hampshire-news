@@ -56,16 +56,17 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
       ]
     },
     4: {
-      title: "Ready to Book Your Campaign?",
-      description: "You're booking a professional advertising campaign that includes ad design, targeted distribution, and ongoing support. Here are your next steps to get started.",
+      title: "Well Done! You've Chosen Your Advert Size and Selected Your Areas",
+      description: "including the Free ones. Your quote and payment options is shown below",
       tips: [
-        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
-        "📞 CALL TO BOOK: Speak directly with our sales team at [phone number] for immediate booking and personalized campaign advice",
+        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking. Simply register with your email and revisit anytime! Please note that quotes are valid for 30 days so you may need requote.",
+        "🔄 GO BACK TO REVISE YOUR SELECTION: changing the advert size, reducing the number of areas will alter the monthly price. You can save every quote each time!",
+        "📞 CALL FOR HELP AND ADVICE: Speak directly with our sales team 023 80 266 388 for immediate booking and tailored campaign advice. This online booking service is appreciated by those who are used to buying media space, prefer online to speaking to a sales person or have an account with Discover and know what they want.",
         "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
         "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
-        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority design queue placement",
-        "🎨 FREE DESIGN SERVICE: Our professional design team creates stunning ads at no extra cost - just provide your content and branding",
-        "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period"
+        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority page position or call us for help and advice.",
+        "🎨 FREE DESIGN SERVICE: By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one.",
+        "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time."
       ],
       action: {
         text: "Call Sales Team",
@@ -110,16 +111,17 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
       ]
     },
     4: {
-      title: "Ready to Book Your Fixed Term Campaign?",
-      description: "You're booking a one-time advertising campaign with professional design and guaranteed distribution.",
+      title: "Well Done! You've Chosen Your Advert Size and Selected Your Areas",
+      description: "including the Free ones. Your quote and payment options is shown below",
       tips: [
-        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
-        "📞 CALL TO BOOK: Speak directly with our sales team for immediate booking and campaign advice",
-        "🎯 WHAT YOU'RE BOOKING: A complete one-time advertising package with professional ad design and guaranteed distribution",
-        "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees",
-        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority design queue placement",
-        "🎨 FREE DESIGN SERVICE: Our professional design team creates your ad at no extra cost",
-        "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during distribution"
+        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking. Simply register with your email and revisit anytime! Please note that quotes are valid for 30 days so you may need requote.",
+        "🔄 GO BACK TO REVISE YOUR SELECTION: changing the advert size, reducing the number of areas will alter the monthly price. You can save every quote each time!",
+        "📞 CALL FOR HELP AND ADVICE: Speak directly with our sales team 023 80 266 388 for immediate booking and tailored campaign advice. This online booking service is appreciated by those who are used to buying media space, prefer online to speaking to a sales person or have an account with Discover and know what they want.",
+        "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
+        "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
+        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority page position or call us for help and advice.",
+        "🎨 FREE DESIGN SERVICE: By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one.",
+        "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time."
       ],
       action: {
         text: "Call Sales Team",
@@ -165,16 +167,17 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
       ]
     },
     4: {
-      title: "Ready to Book Your Leafleting Campaign?",
-      description: "You're booking a professional door-to-door leaflet distribution service with design support and guaranteed delivery.",
+      title: "Well Done! You've Chosen Your Advert Size and Selected Your Areas",
+      description: "including the Free ones. Your quote and payment options is shown below",
       tips: [
-        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking",
-        "📞 CALL TO BOOK: Speak directly with our sales team for immediate booking and distribution advice",
-        "🎯 WHAT YOU'RE BOOKING: Professional leaflet design, printing, and guaranteed door-to-door delivery to every household",
-        "💰 INVESTMENT SHOWN: Your total includes design, printing, distribution, and VAT. No hidden costs",
-        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority in our distribution schedule",
-        "🎨 FREE DESIGN SERVICE: Our team creates professional leaflet designs at no extra cost",
-        "📊 GUARANTEED DELIVERY: Every leaflet is delivered by hand to every household in your selected areas"
+        "💾 SAVE QUOTE: Click 'Save Quote' to store your campaign details and pricing. You can return anytime to modify or complete your booking. Simply register with your email and revisit anytime! Please note that quotes are valid for 30 days so you may need requote.",
+        "🔄 GO BACK TO REVISE YOUR SELECTION: changing the advert size, reducing the number of areas will alter the monthly price. You can save every quote each time!",
+        "📞 CALL FOR HELP AND ADVICE: Speak directly with our sales team 023 80 266 388 for immediate booking and tailored campaign advice. This online booking service is appreciated by those who are used to buying media space, prefer online to speaking to a sales person or have an account with Discover and know what they want.",
+        "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
+        "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
+        "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority page position or call us for help and advice.",
+        "🎨 FREE DESIGN SERVICE: By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one.",
+        "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time."
       ],
       action: {
         text: "Call Sales Team",
