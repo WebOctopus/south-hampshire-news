@@ -492,15 +492,23 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                            <span className="font-medium">£{campaignData.pricingBreakdown.subtotal?.toFixed(2) || '0.00'}</span>
                          </div>
                          
-                         {/* Volume Discount */}
-                         {campaignData.pricingBreakdown.volumeDiscountPercent > 0 && (
-                           <div className="text-xs flex justify-between text-green-600">
-                             <span>Volume Discount ({campaignData.pricingBreakdown.volumeDiscountPercent}%):</span>
-                             <span>-£{campaignData.pricingBreakdown.volumeDiscount?.toFixed(2) || '0.00'}</span>
-                           </div>
-                         )}
-                         
-                         {/* Duration Multiplier */}
+                          {/* Volume Discount */}
+                          {campaignData.pricingBreakdown.volumeDiscountPercent > 0 && (
+                            <div className="text-xs flex justify-between text-green-600">
+                              <span>Volume Discount ({campaignData.pricingBreakdown.volumeDiscountPercent}%):</span>
+                              <span>-£{campaignData.pricingBreakdown.volumeDiscount?.toFixed(2) || '0.00'}</span>
+                            </div>
+                          )}
+
+                          {/* Agency Discount */}
+                          {campaignData.pricingBreakdown.agencyDiscountPercent > 0 && (
+                            <div className="text-xs flex justify-between text-green-600">
+                              <span>Agency Discount ({campaignData.pricingBreakdown.agencyDiscountPercent}%):</span>
+                              <span>-£{campaignData.pricingBreakdown.agencyDiscount?.toFixed(2) || '0.00'}</span>
+                            </div>
+                          )}
+                          
+                          {/* Duration Multiplier */}
                          {campaignData.pricingBreakdown.durationMultiplier > 1 && (
                            <div className="text-xs flex justify-between">
                              <span className="text-muted-foreground">Duration ({campaignData.pricingBreakdown.durationMultiplier} issues):</span>
