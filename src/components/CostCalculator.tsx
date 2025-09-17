@@ -88,8 +88,18 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     [selectedPricingModel, bogofPaidAreas, formData.selectedAreas]
   );
   
-  const pricingBreakdown = useMemo(() => 
-    calculateAdvertisingPrice(
+  const pricingBreakdown = useMemo(() => {
+    console.log('💰 Calculating pricing with agency discount:', agencyDiscountPercent);
+    console.log('📊 Pricing calculation inputs:', {
+      effectiveSelectedAreas,
+      adSize: formData.adSize,
+      duration: formData.duration,
+      isSubscription: selectedPricingModel === 'subscription' || selectedPricingModel === 'bogof',
+      bogofFreeAreas,
+      agencyDiscountPercent
+    });
+    
+    const result = calculateAdvertisingPrice(
       effectiveSelectedAreas,
       formData.adSize,
       formData.duration,
@@ -101,7 +111,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
       volumeDiscounts,
       bogofFreeAreas,
       agencyDiscountPercent
-    ),
+    );
+    
+    console.log('🎯 Pricing calculation result:', result);
+    return result;
+  },
     [effectiveSelectedAreas, formData.adSize, formData.duration, selectedPricingModel, areas, dbAdSizes, durations, subscriptionDurations, volumeDiscounts, bogofFreeAreas, agencyDiscountPercent]
   );
 
@@ -123,15 +137,30 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
       
       // Load user's agency discount if authenticated
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔍 Session check:', session?.user?.email);
+      
       if (session?.user) {
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('agency_discount_percent, is_agency_member')
+          .select('agency_discount_percent, is_agency_member, discount_type')
           .eq('user_id', session.user.id)
           .single();
         
-        if (profileData?.is_agency_member && profileData?.agency_discount_percent) {
+        console.log('👤 Profile data:', profileData);
+        console.log('❌ Profile error:', profileError);
+        
+        // Check for agency discount using multiple conditions
+        const hasAgencyDiscount = profileData && (
+          (profileData.is_agency_member && profileData.agency_discount_percent > 0) ||
+          (profileData.discount_type === 'agency' && profileData.agency_discount_percent > 0)
+        );
+        
+        if (hasAgencyDiscount) {
+          console.log('✅ Setting agency discount:', profileData.agency_discount_percent);
           setAgencyDiscountPercent(profileData.agency_discount_percent);
+        } else {
+          console.log('❌ No agency discount found');
+          setAgencyDiscountPercent(0);
         }
       }
       
@@ -244,6 +273,43 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   // Initial data load
   useEffect(() => {
     loadPricingData();
+  }, []);
+
+  // Refresh agency discount when auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Auth state changed:', event, session?.user?.email);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Reload user profile when they sign in
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('agency_discount_percent, is_agency_member, discount_type')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        console.log('🔄 Refreshed profile data:', profileData);
+        console.log('❌ Refresh profile error:', profileError);
+        
+        const hasAgencyDiscount = profileData && (
+          (profileData.is_agency_member && profileData.agency_discount_percent > 0) ||
+          (profileData.discount_type === 'agency' && profileData.agency_discount_percent > 0)
+        );
+        
+        if (hasAgencyDiscount) {
+          console.log('✅ Refreshed agency discount:', profileData.agency_discount_percent);
+          setAgencyDiscountPercent(profileData.agency_discount_percent);
+        } else {
+          console.log('❌ No agency discount found on refresh');
+          setAgencyDiscountPercent(0);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out, clearing agency discount');
+        setAgencyDiscountPercent(0);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Auto-set duration for BOGOF

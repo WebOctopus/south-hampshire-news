@@ -209,6 +209,13 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   onSaveQuote,
   totalSteps = 4 
 }) => {
+  console.log('🎯 Sales Assistant - All Campaign Data:', campaignData);
+  console.log('🔍 Sales Assistant - Agency Discount Check:', {
+    agencyDiscount: campaignData?.pricingBreakdown?.agencyDiscount,
+    agencyDiscountPercent: campaignData?.pricingBreakdown?.agencyDiscountPercent,
+    shouldShowAgencyDiscount: (campaignData?.pricingBreakdown?.agencyDiscountPercent || 0) > 0
+  });
+  
   const { areas, adSizes } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
   const [isCollapsed, setIsCollapsed] = useState(false);
