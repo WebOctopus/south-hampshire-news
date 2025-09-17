@@ -62,6 +62,7 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
   const [durations, setDurations] = useState<Duration[]>([]);
   const [subscriptionDurations, setSubscriptionDurations] = useState<Duration[]>([]);
   const [volumeDiscounts, setVolumeDiscounts] = useState<VolumeDiscount[]>([]);
+  const [agencyDiscountPercent, setAgencyDiscountPercent] = useState<number>(0);
   
   // Enhanced loading states
   const [isLoading, setIsLoading] = useState(true);
@@ -97,9 +98,11 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
       dbAdSizes,
       durations,
       subscriptionDurations,
-      volumeDiscounts
+      volumeDiscounts,
+      bogofFreeAreas,
+      agencyDiscountPercent
     ),
-    [effectiveSelectedAreas, formData.adSize, formData.duration, selectedPricingModel, areas, dbAdSizes, durations, subscriptionDurations, volumeDiscounts]
+    [effectiveSelectedAreas, formData.adSize, formData.duration, selectedPricingModel, areas, dbAdSizes, durations, subscriptionDurations, volumeDiscounts, bogofFreeAreas, agencyDiscountPercent]
   );
 
   const recommendedDurations = useMemo(() => 
@@ -118,7 +121,19 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
         setRetryCount(0);
       }
       
-      
+      // Load user's agency discount if authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('agency_discount_percent, is_agency_member')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (profileData?.is_agency_member && profileData?.agency_discount_percent) {
+          setAgencyDiscountPercent(profileData.agency_discount_percent);
+        }
+      }
       
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
@@ -823,12 +838,19 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
                        </div>
                      )}
                     
-                    {pricingBreakdown.volumeDiscountPercent > 0 && (
-                      <div className="flex justify-between text-community-green">
-                        <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%)</span>
-                        <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
-                      </div>
-                    )}
+                     {pricingBreakdown.volumeDiscountPercent > 0 && (
+                       <div className="flex justify-between text-community-green">
+                         <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%)</span>
+                         <span className="font-medium">-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
+                       </div>
+                     )}
+                     
+                     {pricingBreakdown.agencyDiscountPercent && pricingBreakdown.agencyDiscountPercent > 0 && (
+                       <div className="flex justify-between text-purple-600">
+                         <span>Agency Discount ({pricingBreakdown.agencyDiscountPercent}%)</span>
+                         <span className="font-medium">-{formatPrice(pricingBreakdown.agencyDiscount || 0)}</span>
+                       </div>
+                     )}
                     
                     <div className="flex justify-between">
                       <span>{selectedPricingModel === 'subscription' ? 'Total Issues' : 'Duration Multiplier'}</span>

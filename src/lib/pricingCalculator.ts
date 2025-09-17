@@ -42,6 +42,8 @@ export interface PricingBreakdown {
   durationMultiplier: number;
   finalTotal: number;
   totalCirculation: number;
+  agencyDiscount?: number;
+  agencyDiscountPercent?: number;
   areaBreakdown: Array<{
     area: DbArea;
     adSize: DbAdSize;
@@ -63,7 +65,8 @@ export function calculateAdvertisingPrice(
   durations: DbDuration[] = [],
   subscriptionDurations: DbDuration[] = [],
   volumeDiscounts: DbVolumeDiscount[] = [],
-  freeAreaIds: string[] = [] // Add free areas parameter for BOGOF circulation calculation
+  freeAreaIds: string[] = [], // Add free areas parameter for BOGOF circulation calculation
+  agencyDiscountPercent: number = 0 // Add agency discount parameter
 ): PricingBreakdown | null {
   // Validate inputs
   if (!selectedAreaIds.length || !adSizeId || !durationId || !areas.length || !adSizes.length) {
@@ -210,7 +213,12 @@ export function calculateAdvertisingPrice(
   // Apply duration multiplier and discount
   const durationMultiplier = selectedDuration.duration_value;
   const durationDiscountMultiplier = 1 - (selectedDuration.discount_percentage / 100);
-  const finalTotal = subtotalAfterVolumeDiscount * durationMultiplier * durationDiscountMultiplier;
+  let finalPriceBeforeAgency = subtotalAfterVolumeDiscount * durationMultiplier * durationDiscountMultiplier;
+
+  // Apply agency discount if applicable
+  const agencyDiscountMultiplier = 1 - (agencyDiscountPercent / 100);
+  const agencyDiscountAmount = finalPriceBeforeAgency * (agencyDiscountPercent / 100);
+  const finalTotal = finalPriceBeforeAgency * agencyDiscountMultiplier;
 
   // Calculate total circulation including free areas for BOGOF
   const selectedAreasForCirculation = areas.filter(area => selectedAreaIds.includes(area.id));
@@ -225,6 +233,8 @@ export function calculateAdvertisingPrice(
     durationMultiplier: durationMultiplier,
     finalTotal,
     totalCirculation,
+    agencyDiscount: agencyDiscountAmount,
+    agencyDiscountPercent,
     areaBreakdown
   };
 }
