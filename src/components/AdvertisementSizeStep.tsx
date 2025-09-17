@@ -8,6 +8,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { cn } from '@/lib/utils';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
+import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
 
 interface AdvertisementSizeStepProps {
   selectedAdSize: string;
@@ -71,7 +72,8 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
         pricingModel === 'bogof' ? subscriptionDurations : durations,
         subscriptionDurations,
         volumeDiscounts,
-        pricingModel === 'bogof' ? bogofFreeAreas : [] // Pass free areas for BOGOF circulation
+        pricingModel === 'bogof' ? bogofFreeAreas : [], // Pass free areas for BOGOF circulation
+        agencyDiscountPercent
       );
       
       console.log('AdvertisementSizeStep - Pricing calculation result:', pricingBreakdown);
