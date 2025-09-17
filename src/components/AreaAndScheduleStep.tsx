@@ -504,11 +504,11 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                           className="mt-0.5 md:mt-1 scale-75 md:scale-100"
                         />
                         <div className="flex-1 space-y-1 md:space-y-2 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <Label htmlFor={`paid-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight">
+                          <div className="space-y-1">
+                            <Label htmlFor={`paid-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight block">
                               {area.name}
                             </Label>
-                            <Badge variant="outline" className="text-[10px] md:text-xs whitespace-nowrap flex-shrink-0">
+                            <Badge variant="outline" className="text-[10px] md:text-xs whitespace-nowrap">
                               {(area as any).circulation?.toLocaleString() || 0} homes
                             </Badge>
                           </div>
@@ -560,11 +560,11 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                                 className="mt-0.5 md:mt-1 scale-75 md:scale-100"
                               />
                               <div className="flex-1 space-y-1 md:space-y-2 min-w-0">
-                                <div className="flex items-start justify-between gap-2">
-                                  <Label htmlFor={`free-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight">
+                                <div className="space-y-1">
+                                  <Label htmlFor={`free-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight block">
                                     {area.name}
                                   </Label>
-                                  <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                                  <div className="flex items-center gap-1 md:gap-2">
                                     <Badge variant="outline" className="text-[10px] md:text-xs whitespace-nowrap">
                                       {(area as any).circulation?.toLocaleString() || 0} homes
                                     </Badge>
@@ -604,8 +604,8 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                       className="mt-1"
                     />
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor={area.id} className="text-sm font-medium cursor-pointer">
+                      <div className="space-y-1">
+                        <Label htmlFor={area.id} className="text-sm font-medium cursor-pointer block">
                           {area.name}
                         </Label>
                         <Badge variant="outline" className="text-xs">
