@@ -27,6 +27,8 @@ const AdminDashboard = () => {
   const [stories, setStories] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState('overview');
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
+  const [isUserEditDialogOpen, setIsUserEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [storyForm, setStoryForm] = useState({
     title: '',
     content: '',
@@ -92,17 +94,30 @@ const AdminDashboard = () => {
   };
 
   const loadUsers = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('user_roles')
       .select(`
-        user_id,
-        role,
-        created_at
+        *,
+        profiles!inner(
+          id,
+          user_id,
+          display_name,
+          is_agency_member,
+          agency_discount_percent,
+          agency_name
+        )
       `)
       .order('created_at', { ascending: false });
-    
-    if (data) {
-      setUsers(data);
+
+    if (error) {
+      console.error('Error loading users:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load users",
+        variant: "destructive"
+      });
+    } else {
+      setUsers(data || []);
     }
   };
 
@@ -380,12 +395,12 @@ const AdminDashboard = () => {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">User Management</h2>
-              <p className="text-muted-foreground">Manage user roles and permissions.</p>
+              <p className="text-muted-foreground">Manage user roles, permissions, and agency memberships.</p>
             </div>
             
             <Card>
               <CardHeader>
-                <CardTitle>User Roles</CardTitle>
+                <CardTitle>User Roles & Agency Management</CardTitle>
               </CardHeader>
               <CardContent>
                 {users.length === 0 ? (
@@ -397,16 +412,23 @@ const AdminDashboard = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Display Name</TableHead>
                           <TableHead>User ID</TableHead>
                           <TableHead>Role</TableHead>
-                          <TableHead>Created</TableHead>
+                          <TableHead>Agency Status</TableHead>
+                          <TableHead>Agency Name</TableHead>
+                          <TableHead>Discount %</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {users.map((userRole) => (
                           <TableRow key={userRole.user_id}>
-                            <TableCell className="font-mono text-sm">
-                              {userRole.user_id}
+                            <TableCell className="font-medium">
+                              {userRole.profiles?.display_name || 'No name'}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {userRole.user_id?.slice(0, 8)}...
                             </TableCell>
                             <TableCell>
                               <span className={`px-2 py-1 rounded-full text-xs ${
@@ -418,7 +440,31 @@ const AdminDashboard = () => {
                               </span>
                             </TableCell>
                             <TableCell>
-                              {new Date(userRole.created_at).toLocaleDateString()}
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                userRole.profiles?.is_agency_member 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {userRole.profiles?.is_agency_member ? 'Agency Member' : 'Regular User'}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {userRole.profiles?.agency_name || '-'}
+                            </TableCell>
+                            <TableCell>
+                              {userRole.profiles?.is_agency_member ? `${userRole.profiles?.agency_discount_percent || 0}%` : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingUser(userRole);
+                                  setIsUserEditDialogOpen(true);
+                                }}
+                              >
+                                Edit
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -625,6 +671,47 @@ const AdminDashboard = () => {
     }
   };
 
+  const updateUserAgencyInfo = async (userId: string, agencyData: {
+    is_agency_member: boolean;
+    agency_discount_percent: number;
+    agency_name: string;
+  }) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update(agencyData)
+      .eq('user_id', userId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "User agency information updated successfully."
+      });
+      setIsUserEditDialogOpen(false);
+      setEditingUser(null);
+      loadUsers();
+    }
+  };
+
+  const handleUserSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    const agencyData = {
+      is_agency_member: formData.get('is_agency_member') === 'true',
+      agency_discount_percent: parseFloat(formData.get('agency_discount_percent') as string) || 0,
+      agency_name: formData.get('agency_name') as string || '',
+    };
+
+    updateUserAgencyInfo(editingUser.user_id, agencyData);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -652,6 +739,80 @@ const AdminDashboard = () => {
             {renderContent()}
           </main>
         </div>
+
+        {/* User Edit Dialog */}
+        <Dialog open={isUserEditDialogOpen} onOpenChange={setIsUserEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit User Agency Information</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleUserSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label>User: {editingUser?.profiles?.display_name || 'Unknown'}</Label>
+                <p className="text-sm text-muted-foreground font-mono">
+                  {editingUser?.user_id}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="is_agency_member">Agency Status</Label>
+                <Select 
+                  name="is_agency_member" 
+                  defaultValue={editingUser?.profiles?.is_agency_member ? 'true' : 'false'}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Regular User</SelectItem>
+                    <SelectItem value="true">Agency Member</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="agency_name">Agency Name</Label>
+                <Input
+                  name="agency_name"
+                  defaultValue={editingUser?.profiles?.agency_name || ''}
+                  placeholder="Enter agency name (optional)"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="agency_discount_percent">Discount Percentage</Label>
+                <Input
+                  name="agency_discount_percent"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  defaultValue={editingUser?.profiles?.agency_discount_percent || 0}
+                  placeholder="0"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter percentage (0-100). Only applies when user is an agency member.
+                </p>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button type="submit" className="flex-1">
+                  Update User
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsUserEditDialogOpen(false);
+                    setEditingUser(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </SidebarProvider>
   );

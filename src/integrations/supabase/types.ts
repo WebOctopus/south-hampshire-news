@@ -748,25 +748,34 @@ export type Database = {
       }
       profiles: {
         Row: {
+          agency_discount_percent: number | null
+          agency_name: string | null
           created_at: string
           display_name: string | null
           id: string
+          is_agency_member: boolean | null
           phone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          agency_discount_percent?: number | null
+          agency_name?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_agency_member?: boolean | null
           phone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          agency_discount_percent?: number | null
+          agency_name?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_agency_member?: boolean | null
           phone?: string | null
           updated_at?: string
           user_id?: string
