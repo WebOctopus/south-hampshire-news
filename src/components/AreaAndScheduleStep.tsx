@@ -466,18 +466,18 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         )}
 
         {pricingModel === 'bogof' ? (
-          <div className="grid grid-cols-2 gap-6 min-h-[400px] w-full">
+          <div className="grid grid-cols-2 gap-3 md:gap-6 min-h-[400px] w-full">
             {/* Paid Areas Section */}
-            <div className="space-y-4 min-w-0">
-              <div className="flex items-center gap-2">
-                <h4 className="font-medium">Paid Areas</h4>
-                <Badge variant="default">Required</Badge>
+            <div className="space-y-3 md:space-y-4 min-w-0">
+              <div className="flex items-center gap-1 md:gap-2">
+                <h4 className="font-medium text-sm md:text-base">Paid Areas</h4>
+                <Badge variant="default" className="text-xs">Required</Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 These are the areas you will pay for throughout your campaign. Maximum 7 areas ({bogofPaidAreas.length}/7).
               </p>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-2 md:gap-4">
                 {effectiveAreas
                   .filter(area => !bogofFreeAreas.includes(area.id))
                   .map((area) => (
@@ -491,8 +491,8 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                       handleBogofPaidAreaChange(area.id, !bogofPaidAreas.includes(area.id));
                     }}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start space-x-3">
+                    <CardContent className="p-2 md:p-4">
+                      <div className="flex items-start space-x-2 md:space-x-3">
                         <Checkbox
                           id={`paid-${area.id}`}
                           checked={bogofPaidAreas.includes(area.id)}
@@ -501,14 +501,14 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                             if (!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7) return;
                             handleBogofPaidAreaChange(area.id, checked as boolean);
                           }}
-                          className="mt-1"
+                          className="mt-0.5 md:mt-1 scale-75 md:scale-100"
                         />
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor={`paid-${area.id}`} className="text-sm font-medium cursor-pointer">
+                        <div className="flex-1 space-y-1 md:space-y-2 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <Label htmlFor={`paid-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight">
                               {area.name}
                             </Label>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-[10px] md:text-xs whitespace-nowrap flex-shrink-0">
                               {(area as any).circulation?.toLocaleString() || 0} homes
                             </Badge>
                           </div>
@@ -522,12 +522,12 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
             {/* Free Areas Section */}
             {bogofPaidAreas.length > 0 && (
-              <div className="space-y-4 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium">FREE Bonus Areas</h4>
-                  <Badge variant="secondary">6 Months Free</Badge>
+              <div className="space-y-3 md:space-y-4 min-w-0">
+                <div className="flex items-center gap-1 md:gap-2">
+                  <h4 className="font-medium text-sm md:text-base">FREE Bonus Areas</h4>
+                  <Badge variant="secondary" className="text-xs">6 Months Free</Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {bogofPaidAreas.length === 7 
                     ? 'All remaining areas automatically selected as FREE bonus areas!'
                     : `Select additional areas to receive for FREE for 6 months. 
@@ -535,7 +535,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                   }
                 </p>
                 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-2 md:gap-4">
                   {effectiveAreas
                     .filter(area => !bogofPaidAreas.includes(area.id))
                     .map((area) => {
@@ -550,26 +550,26 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                           } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                           onClick={() => !isDisabled && handleBogofFreeAreaChange(area.id, !isSelected)}
                         >
-                          <CardContent className="p-4">
-                            <div className="flex items-start space-x-3">
+                          <CardContent className="p-2 md:p-4">
+                            <div className="flex items-start space-x-2 md:space-x-3">
                               <Checkbox
                                 id={`free-${area.id}`}
                                 checked={isSelected}
                                 disabled={isDisabled}
                                 onCheckedChange={(checked) => handleBogofFreeAreaChange(area.id, checked as boolean)}
-                                className="mt-1"
+                                className="mt-0.5 md:mt-1 scale-75 md:scale-100"
                               />
-                              <div className="flex-1 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <Label htmlFor={`free-${area.id}`} className="text-sm font-medium cursor-pointer">
+                              <div className="flex-1 space-y-1 md:space-y-2 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <Label htmlFor={`free-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight">
                                     {area.name}
                                   </Label>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-xs">
+                                  <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                                    <Badge variant="outline" className="text-[10px] md:text-xs whitespace-nowrap">
                                       {(area as any).circulation?.toLocaleString() || 0} homes
                                     </Badge>
                                     {isSelected && (
-                                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                                      <Badge variant="secondary" className="text-[10px] md:text-xs bg-green-100 text-green-800">
                                         FREE
                                       </Badge>
                                     )}
