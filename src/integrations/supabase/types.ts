@@ -785,6 +785,7 @@ export type Database = {
       quote_requests: {
         Row: {
           ad_size_id: string | null
+          agency_discount_percent: number | null
           assigned_to: string | null
           bogof_free_area_ids: string[] | null
           bogof_paid_area_ids: string[] | null
@@ -814,6 +815,7 @@ export type Database = {
         }
         Insert: {
           ad_size_id?: string | null
+          agency_discount_percent?: number | null
           assigned_to?: string | null
           bogof_free_area_ids?: string[] | null
           bogof_paid_area_ids?: string[] | null
@@ -843,6 +845,7 @@ export type Database = {
         }
         Update: {
           ad_size_id?: string | null
+          agency_discount_percent?: number | null
           assigned_to?: string | null
           bogof_free_area_ids?: string[] | null
           bogof_paid_area_ids?: string[] | null
@@ -890,6 +893,7 @@ export type Database = {
       quotes: {
         Row: {
           ad_size_id: string | null
+          agency_discount_percent: number | null
           bogof_free_area_ids: string[] | null
           bogof_paid_area_ids: string[] | null
           company: string | null
@@ -917,6 +921,7 @@ export type Database = {
         }
         Insert: {
           ad_size_id?: string | null
+          agency_discount_percent?: number | null
           bogof_free_area_ids?: string[] | null
           bogof_paid_area_ids?: string[] | null
           company?: string | null
@@ -944,6 +949,7 @@ export type Database = {
         }
         Update: {
           ad_size_id?: string | null
+          agency_discount_percent?: number | null
           bogof_free_area_ids?: string[] | null
           bogof_paid_area_ids?: string[] | null
           company?: string | null

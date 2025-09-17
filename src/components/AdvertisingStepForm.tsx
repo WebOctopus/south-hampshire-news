@@ -233,6 +233,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         total_circulation: campaignData.pricingBreakdown?.totalCirculation || 0,
         volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent || 0,
         duration_discount_percent: campaignData.pricingBreakdown?.durationDiscountPercent || 0,
+        agency_discount_percent: campaignData.pricingBreakdown?.agencyDiscountPercent || 0,
         pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
         selections: {
           pricingModel: selectedPricingModel,
