@@ -693,18 +693,25 @@ const AdminDashboard = () => {
     agency_discount_percent: number;
     agency_name: string;
   }) => {
-    const { error } = await supabase
+    console.log('Updating user:', userId, 'with data:', agencyData);
+    
+    const { data, error } = await supabase
       .from('profiles')
       .update(agencyData)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select();
+
+    console.log('Update result:', { data, error });
 
     if (error) {
+      console.error('Database error:', error);
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive"
       });
     } else {
+      console.log('Update successful:', data);
       toast({
         title: "Success",
         description: "User agency information updated successfully."
@@ -725,6 +732,14 @@ const AdminDashboard = () => {
       agency_discount_percent: parseFloat(formData.get('agency_discount_percent') as string) || 0,
       agency_name: formData.get('agency_name') as string || '',
     };
+
+    console.log('Form submission - editing user:', editingUser);
+    console.log('Form data extracted:', agencyData);
+    console.log('Form data raw:', {
+      is_agency_member: formData.get('is_agency_member'),
+      agency_discount_percent: formData.get('agency_discount_percent'),
+      agency_name: formData.get('agency_name')
+    });
 
     updateUserAgencyInfo(editingUser.user_id, agencyData);
   };
