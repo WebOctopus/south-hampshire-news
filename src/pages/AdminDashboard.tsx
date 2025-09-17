@@ -94,26 +94,41 @@ const AdminDashboard = () => {
   };
 
   const loadUsers = async () => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select(`
-        *,
-        user_roles(
-          role,
-          created_at
-        )
-      `)
-      .order('created_at', { ascending: false });
+    try {
+      // First get all profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
+      if (profilesError) {
+        throw profilesError;
+      }
+
+      // Then get all user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role, created_at');
+
+      if (rolesError) {
+        console.error('Error loading user roles:', rolesError);
+        // Continue even if roles fail to load
+      }
+
+      // Combine the data
+      const combinedUsers = (profilesData || []).map(profile => ({
+        ...profile,
+        user_roles: (rolesData || []).filter(role => role.user_id === profile.user_id)
+      }));
+
+      setUsers(combinedUsers);
+    } catch (error) {
       console.error('Error loading users:', error);
       toast({
         title: "Error",
         description: "Failed to load users",
         variant: "destructive"
       });
-    } else {
-      setUsers(data || []);
     }
   };
 
