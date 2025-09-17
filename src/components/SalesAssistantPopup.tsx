@@ -542,12 +542,19 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                            per insertion reaching {campaignData.pricingBreakdown.totalCirculation?.toLocaleString() || 'selected'} homes
                          </div>
                          
-                         {/* Savings Display for BOGOF */}
-                         {campaignData.selectedModel === 'bogof' && campaignData.bogofFreeAreas?.length > 0 && (
-                           <div className="text-xs text-green-600 font-medium pt-1 border-t border-green-200">
-                             You're saving £{((campaignData.pricingBreakdown.finalTotal || 0) * 0.5).toFixed(2)} with FREE areas!
-                           </div>
-                         )}
+                          {/* Savings Display for BOGOF */}
+                          {campaignData.selectedModel === 'bogof' && campaignData.bogofFreeAreas?.length > 0 && (
+                            <div className="text-xs text-green-600 font-medium pt-1 border-t border-green-200">
+                              You're saving £{((campaignData.pricingBreakdown.finalTotal || 0) * 0.5).toFixed(2)} with FREE areas!
+                            </div>
+                          )}
+                          
+                          {/* Agency Savings Display */}
+                          {campaignData.pricingBreakdown.agencyDiscountPercent > 0 && (
+                            <div className="text-xs text-blue-600 font-medium pt-1 border-t border-blue-200">
+                              Agency Savings: £{campaignData.pricingBreakdown.agencyDiscount?.toFixed(2) || '0.00'} ({campaignData.pricingBreakdown.agencyDiscountPercent}% discount applied)
+                            </div>
+                          )}
                        </div>
                      </div>
                    )}
