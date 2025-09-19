@@ -5,6 +5,7 @@ import StepForm from '@/components/StepForm';
 import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
+import BookingSummaryStep from '@/components/BookingSummaryStep';
 import ContactInformationStep from '@/components/ContactInformationStep';
 import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +17,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import LeafletSizeStep from '@/components/LeafletSizeStep';
+import { cn } from '@/lib/utils';
 
 interface AdvertisingStepFormProps {
   children?: React.ReactNode;
@@ -39,7 +41,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     selectedAdSize: '',
     selectedDuration: '',
     selectedMonths: {} as Record<string, string[]>,
-    pricingBreakdown: null as any
+    pricingBreakdown: null as any,
+    selectedPaymentOption: '' as string
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -135,7 +138,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleStepTransition = (currentStep: number, nextStep: () => void) => {
-    // Intercept transition from advert size step (step 2) to contact (step 3) for Fixed Term
+    // Intercept transition from advert size step (step 2) to booking summary (step 3) for Fixed Term
     if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.pricingBreakdown) {
       setPendingNextStep(() => nextStep);
       setShowFixedTermConfirmation(true);
@@ -566,11 +569,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const stepLabels = {
-    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Contact Information', 'Save My Quote'],
+    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Review & Payment Options', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
-      // Intercept transition from advert size step (step 2) to contact (step 3) for Fixed Term
+      // Intercept transition from advert size step (step 2) to booking summary (step 3) for Fixed Term
       if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.pricingBreakdown) {
         setPendingNextStep(() => nextStep);
         setShowFixedTermConfirmation(true);
@@ -665,6 +668,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   />
 )}
               
+              <BookingSummaryStep
+                pricingModel={selectedPricingModel}
+                selectedAreas={campaignData.selectedAreas}
+                bogofPaidAreas={campaignData.bogofPaidAreas}
+                bogofFreeAreas={campaignData.bogofFreeAreas}
+                selectedAdSize={campaignData.selectedAdSize}
+                selectedDuration={campaignData.selectedDuration}
+                pricingBreakdown={campaignData.pricingBreakdown}
+                selectedPaymentOption={campaignData.selectedPaymentOption}
+                onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
+                onNext={() => {}}
+              />
+              
               <ContactInformationStep
                 pricingModel={selectedPricingModel}
                 selectedAreas={campaignData.selectedAreas}
@@ -676,7 +692,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 campaignData={campaignData}
                 onSaveQuote={handleContactInfoSave}
                 onBookNow={handleContactInfoBook}
-                currentStep={currentStep}
+                currentStep={5}
               />
             </StepForm>
           </DialogContent>
@@ -750,6 +766,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   />
 )}
             
+            <BookingSummaryStep
+              pricingModel={selectedPricingModel}
+              selectedAreas={campaignData.selectedAreas}
+              bogofPaidAreas={campaignData.bogofPaidAreas}
+              bogofFreeAreas={campaignData.bogofFreeAreas}
+              selectedAdSize={campaignData.selectedAdSize}
+              selectedDuration={campaignData.selectedDuration}
+              pricingBreakdown={campaignData.pricingBreakdown}
+              selectedPaymentOption={campaignData.selectedPaymentOption}
+              onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
+              onNext={() => {}}
+            />
+            
             <ContactInformationStep
               pricingModel={selectedPricingModel}
               selectedAreas={campaignData.selectedAreas}
@@ -761,16 +790,16 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               campaignData={campaignData}
               onSaveQuote={handleContactInfoSave}
               onBookNow={handleContactInfoBook}
-              currentStep={currentStep}
+              currentStep={5}
             />
             
             {/* Sales Assistant Popup - positioned absolutely */}
           </StepForm>
           
-          <div className="hidden md:block">
+          <div className={cn("hidden md:block", currentStep === 4 && "opacity-50 scale-75 transition-all")}>
             <SalesAssistantPopup 
               currentStep={currentStep}
-              totalSteps={4}
+              totalSteps={5}
               onNextStep={() => {
                 if ((window as any).salesAssistantNextStep) {
                   (window as any).salesAssistantNextStep();
@@ -782,17 +811,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 }
               }}
               onBookNow={() => {
-                // Check if we're on step 4 and have access to the contact form functions
-                if (currentStep === 4 && (window as any).handleContactFormBook) {
+                // Check if we're on step 5 (contact information) and have access to the contact form functions
+                if (currentStep === 5 && (window as any).handleContactFormBook) {
                   // Call the contact form's book function directly
                   (window as any).handleContactFormBook();
-                } else if (currentStep < 4) {
+                } else if (currentStep < 5) {
                   // Navigate to the contact step if not already there
                   if ((window as any).salesAssistantGoToStep) {
-                    (window as any).salesAssistantGoToStep(4);
+                    (window as any).salesAssistantGoToStep(5);
                   }
                 } else {
-                  // If already on step 4 but no form handler available, show message
+                  // If already on step 5 but no form handler available, show message
                   toast({
                     title: "Complete Contact Information",
                     description: "Please fill out the contact form below to complete your booking.",
@@ -800,17 +829,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 }
               }}
               onSaveQuote={() => {
-                // Check if we're on step 4 and have access to the contact form functions
-                if (currentStep === 4 && (window as any).handleContactFormSave) {
+                // Check if we're on step 5 (contact information) and have access to the contact form functions
+                if (currentStep === 5 && (window as any).handleContactFormSave) {
                   // Call the contact form's save function directly
                   (window as any).handleContactFormSave();
-                } else if (currentStep < 4) {
+                } else if (currentStep < 5) {
                   // Navigate to the contact step if not already there
                   if ((window as any).salesAssistantGoToStep) {
-                    (window as any).salesAssistantGoToStep(4);
+                    (window as any).salesAssistantGoToStep(5);
                   }
                 } else {
-                  // If already on step 4 but no form handler available, show message
+                  // If already on step 5 but no form handler available, show message
                   toast({
                     title: "Complete Contact Information",
                     description: "Please fill out the contact form below to save your quote.",

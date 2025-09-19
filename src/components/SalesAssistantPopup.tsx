@@ -56,6 +56,18 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
       ]
     },
     4: {
+      title: "Review Your Booking & Choose Payment",
+      description: "Your basket is ready! Review your selections and choose your preferred payment option.",
+      tips: [
+        "💰 3 Payment Options: Choose full payment (6 or 12 months) or monthly plan",
+        "💸 Save 10%: Pay for 12 months upfront for extra savings",
+        "📊 Monthly Plan: Spread costs over 6 months minimum",
+        "🎯 Amazing Value: See your cost per 1,000 homes reached",
+        "✅ What's Included: Professional design, guaranteed distribution, placement",
+        "🚀 Next Step: Contact information to complete your booking"
+      ]
+    },
+    5: {
       title: "Well Done! You've Chosen Your Advert Size and Selected Your Areas",
       description: "including the Free ones. Your quote and payment options is shown below",
       tips: [
@@ -654,8 +666,8 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                     </Button>
                   )}
                   
-                  {/* Save Quote Button - Only show on step 4 */}
-                  {currentStep === 4 && onSaveQuote && (
+                  {/* Save Quote Button - Only show on step 5 */}
+                  {currentStep === 5 && onSaveQuote && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -667,8 +679,8 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
                   )}
                 </div>
                 
-                {/* Bottom Row: Book Now Button - Full Width on Step 4 */}
-                {currentStep === 4 && onBookNow && (
+                {/* Bottom Row: Book Now Button - Full Width on Step 5 */}
+                {currentStep === 5 && onBookNow && (
                   <Button
                     variant="default"
                     size="sm"
