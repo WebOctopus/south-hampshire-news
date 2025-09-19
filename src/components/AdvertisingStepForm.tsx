@@ -796,71 +796,69 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             {/* Sales Assistant Popup - positioned absolutely */}
           </StepForm>
           
-          {/* Hide Sales Assistant on Step 4 (Booking Summary) to focus on the basket */}
-          {currentStep !== 4 && (
-            <div className="hidden md:block">
-              <SalesAssistantPopup 
-                currentStep={currentStep}
-                totalSteps={5}
-                onNextStep={() => {
-                  if ((window as any).salesAssistantNextStep) {
-                    (window as any).salesAssistantNextStep();
+          {/* Revert the hiding change - now show Sales Assistant on all steps including step 4 */}
+          <div className="hidden md:block">
+            <SalesAssistantPopup 
+              currentStep={currentStep}
+              totalSteps={5}
+              onNextStep={() => {
+                if ((window as any).salesAssistantNextStep) {
+                  (window as any).salesAssistantNextStep();
+                }
+              }}
+              onPrevStep={() => {
+                if ((window as any).salesAssistantPrevStep) {
+                  (window as any).salesAssistantPrevStep();
+                }
+              }}
+              onBookNow={() => {
+                // Check if we're on step 5 (contact information) and have access to the contact form functions
+                if (currentStep === 5 && (window as any).handleContactFormBook) {
+                  // Call the contact form's book function directly
+                  (window as any).handleContactFormBook();
+                } else if (currentStep < 5) {
+                  // Navigate to the contact step if not already there
+                  if ((window as any).salesAssistantGoToStep) {
+                    (window as any).salesAssistantGoToStep(5);
                   }
-                }}
-                onPrevStep={() => {
-                  if ((window as any).salesAssistantPrevStep) {
-                    (window as any).salesAssistantPrevStep();
+                } else {
+                  // If already on step 5 but no form handler available, show message
+                  toast({
+                    title: "Complete Contact Information",
+                    description: "Please fill out the contact form below to complete your booking.",
+                  });
+                }
+              }}
+              onSaveQuote={() => {
+                // Check if we're on step 5 (contact information) and have access to the contact form functions
+                if (currentStep === 5 && (window as any).handleContactFormSave) {
+                  // Call the contact form's save function directly
+                  (window as any).handleContactFormSave();
+                } else if (currentStep < 5) {
+                  // Navigate to the contact step if not already there
+                  if ((window as any).salesAssistantGoToStep) {
+                    (window as any).salesAssistantGoToStep(5);
                   }
-                }}
-                onBookNow={() => {
-                  // Check if we're on step 5 (contact information) and have access to the contact form functions
-                  if (currentStep === 5 && (window as any).handleContactFormBook) {
-                    // Call the contact form's book function directly
-                    (window as any).handleContactFormBook();
-                  } else if (currentStep < 5) {
-                    // Navigate to the contact step if not already there
-                    if ((window as any).salesAssistantGoToStep) {
-                      (window as any).salesAssistantGoToStep(5);
-                    }
-                  } else {
-                    // If already on step 5 but no form handler available, show message
-                    toast({
-                      title: "Complete Contact Information",
-                      description: "Please fill out the contact form below to complete your booking.",
-                    });
-                  }
-                }}
-                onSaveQuote={() => {
-                  // Check if we're on step 5 (contact information) and have access to the contact form functions
-                  if (currentStep === 5 && (window as any).handleContactFormSave) {
-                    // Call the contact form's save function directly
-                    (window as any).handleContactFormSave();
-                  } else if (currentStep < 5) {
-                    // Navigate to the contact step if not already there
-                    if ((window as any).salesAssistantGoToStep) {
-                      (window as any).salesAssistantGoToStep(5);
-                    }
-                  } else {
-                    // If already on step 5 but no form handler available, show message
-                    toast({
-                      title: "Complete Contact Information",
-                      description: "Please fill out the contact form below to save your quote.",
-                    });
-                  }
-                }}
-                campaignData={{
-                  selectedModel: selectedPricingModel,
-                  selectedAreas: campaignData.selectedAreas,
-                  bogofPaidAreas: campaignData.bogofPaidAreas,
-                  bogofFreeAreas: campaignData.bogofFreeAreas,
-                  selectedSize: campaignData.selectedAdSize,
-                  selectedDuration: campaignData.selectedDuration,
-                  totalCost: campaignData.pricingBreakdown?.finalTotal,
-                  pricingBreakdown: campaignData.pricingBreakdown
-                }}
-              />
-            </div>
-          )}
+                } else {
+                  // If already on step 5 but no form handler available, show message
+                  toast({
+                    title: "Complete Contact Information",
+                    description: "Please fill out the contact form below to save your quote.",
+                  });
+                }
+              }}
+              campaignData={{
+                selectedModel: selectedPricingModel,
+                selectedAreas: campaignData.selectedAreas,
+                bogofPaidAreas: campaignData.bogofPaidAreas,
+                bogofFreeAreas: campaignData.bogofFreeAreas,
+                selectedSize: campaignData.selectedAdSize,
+                selectedDuration: campaignData.selectedDuration,
+                totalCost: campaignData.pricingBreakdown?.finalTotal,
+                pricingBreakdown: campaignData.pricingBreakdown
+              }}
+            />
+          </div>
         </div>
       )}
 
