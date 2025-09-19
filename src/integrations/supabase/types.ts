@@ -662,6 +662,48 @@ export type Database = {
           },
         ]
       }
+      payment_options: {
+        Row: {
+          additional_fee_percentage: number
+          created_at: string
+          description: string | null
+          discount_percentage: number
+          display_name: string
+          id: string
+          is_active: boolean
+          minimum_payments: number | null
+          option_type: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          additional_fee_percentage?: number
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          display_name: string
+          id?: string
+          is_active?: boolean
+          minimum_payments?: number | null
+          option_type: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          additional_fee_percentage?: number
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          minimum_payments?: number | null
+          option_type?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pricing_areas: {
         Row: {
           base_price_multiplier: number

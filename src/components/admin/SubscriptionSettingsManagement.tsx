@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Plus, Edit, Trash2, Percent, Target, Gift } from 'lucide-react';
+import { Clock, Plus, Edit, Trash2, Percent, Target, Gift, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -49,6 +49,20 @@ interface SpecialDeal {
   updated_at: string;
 }
 
+interface PaymentOption {
+  id: string;
+  option_type: string;
+  display_name: string;
+  description: string;
+  discount_percentage: number;
+  minimum_payments: number;
+  additional_fee_percentage: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface SubscriptionSettingsManagementProps {
   onStatsUpdate: () => void;
 }
@@ -57,6 +71,7 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
   const [durations, setDurations] = useState<Duration[]>([]);
   const [volumeDiscounts, setVolumeDiscounts] = useState<VolumeDiscount[]>([]);
   const [specialDeals, setSpecialDeals] = useState<SpecialDeal[]>([]);
+  const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('durations');
 
@@ -64,11 +79,13 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false);
   const [isVolumeDialogOpen, setIsVolumeDialogOpen] = useState(false);
   const [isSpecialDealDialogOpen, setIsSpecialDealDialogOpen] = useState(false);
+  const [isPaymentOptionDialogOpen, setIsPaymentOptionDialogOpen] = useState(false);
 
   // Editing states
   const [editingDuration, setEditingDuration] = useState<Duration | null>(null);
   const [editingVolumeDiscount, setEditingVolumeDiscount] = useState<VolumeDiscount | null>(null);
   const [editingSpecialDeal, setEditingSpecialDeal] = useState<SpecialDeal | null>(null);
+  const [editingPaymentOption, setEditingPaymentOption] = useState<PaymentOption | null>(null);
 
   // Form states
   const [durationForm, setDurationForm] = useState({
@@ -98,6 +115,17 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
     is_active: true
   });
 
+  const [paymentOptionForm, setPaymentOptionForm] = useState({
+    option_type: '',
+    display_name: '',
+    description: '',
+    discount_percentage: 0,
+    minimum_payments: 6,
+    additional_fee_percentage: 0,
+    is_active: true,
+    sort_order: 0
+  });
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -109,15 +137,17 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
 
   const loadAllData = async () => {
     try {
-      const [durationsData, volumeDiscountsData, specialDealsData] = await Promise.all([
+      const [durationsData, volumeDiscountsData, specialDealsData, paymentOptionsData] = await Promise.all([
         supabase.from('pricing_durations').select('*').order('sort_order'),
         supabase.from('volume_discounts').select('*').order('min_areas'),
-        supabase.from('special_deals').select('*').order('created_at', { ascending: false })
+        supabase.from('special_deals').select('*').order('created_at', { ascending: false }),
+        supabase.from('payment_options').select('*').order('sort_order')
       ]);
 
       setDurations(durationsData.data || []);
       setVolumeDiscounts(volumeDiscountsData.data || []);
       setSpecialDeals(specialDealsData.data || []);
+      setPaymentOptions(paymentOptionsData.data || []);
       onStatsUpdate();
     } catch (error) {
       console.error('Error loading data:', error);
@@ -407,6 +437,100 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
     }
   };
 
+  // Payment option management functions
+  const resetPaymentOptionForm = () => {
+    setPaymentOptionForm({
+      option_type: '',
+      display_name: '',
+      description: '',
+      discount_percentage: 0,
+      minimum_payments: 6,
+      additional_fee_percentage: 0,
+      is_active: true,
+      sort_order: paymentOptions.length + 1
+    });
+    setEditingPaymentOption(null);
+  };
+
+  const openPaymentOptionDialog = (paymentOption?: PaymentOption) => {
+    if (paymentOption) {
+      setEditingPaymentOption(paymentOption);
+      setPaymentOptionForm({
+        option_type: paymentOption.option_type,
+        display_name: paymentOption.display_name,
+        description: paymentOption.description || '',
+        discount_percentage: paymentOption.discount_percentage,
+        minimum_payments: paymentOption.minimum_payments || 6,
+        additional_fee_percentage: paymentOption.additional_fee_percentage,
+        is_active: paymentOption.is_active,
+        sort_order: paymentOption.sort_order
+      });
+    } else {
+      resetPaymentOptionForm();
+    }
+    setIsPaymentOptionDialogOpen(true);
+  };
+
+  const handleSavePaymentOption = async () => {
+    try {
+      let error;
+      
+      if (editingPaymentOption) {
+        const { error: updateError } = await supabase
+          .from('payment_options')
+          .update(paymentOptionForm)
+          .eq('id', editingPaymentOption.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('payment_options')
+          .insert([paymentOptionForm]);
+        error = insertError;
+      }
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Payment option ${editingPaymentOption ? 'updated' : 'created'} successfully.`
+      });
+
+      setIsPaymentOptionDialogOpen(false);
+      resetPaymentOptionForm();
+      loadAllData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save payment option.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeletePaymentOption = async (paymentOptionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('payment_options')
+        .delete()
+        .eq('id', paymentOptionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Payment option deleted successfully."
+      });
+
+      loadAllData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete payment option.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -432,7 +556,7 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="durations" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Durations
@@ -444,6 +568,10 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
           <TabsTrigger value="deals" className="flex items-center gap-2">
             <Gift className="h-4 w-4" />
             Special Deals
+          </TabsTrigger>
+          <TabsTrigger value="payment" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Payment Options
           </TabsTrigger>
         </TabsList>
 
@@ -965,6 +1093,214 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => handleDeleteSpecialDeal(deal.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Payment Options Management */}
+        <TabsContent value="payment" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Payment Options ({paymentOptions.length})</span>
+                <Dialog open={isPaymentOptionDialogOpen} onOpenChange={setIsPaymentOptionDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => openPaymentOptionDialog()}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Payment Option
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingPaymentOption ? 'Edit Payment Option' : 'Add New Payment Option'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div>
+                        <Label htmlFor="option_type">Option Type *</Label>
+                        <Input
+                          id="option_type"
+                          value={paymentOptionForm.option_type}
+                          onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, option_type: e.target.value }))}
+                          placeholder="e.g., 6_months_full, 12_months_full, monthly"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="display_name">Display Name *</Label>
+                        <Input
+                          id="display_name"
+                          value={paymentOptionForm.display_name}
+                          onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, display_name: e.target.value }))}
+                          placeholder="e.g., Pay in full for 6 months"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Input
+                          id="description"
+                          value={paymentOptionForm.description}
+                          onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Optional description"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="discount_percentage">Discount (%)</Label>
+                          <Input
+                            id="discount_percentage"
+                            type="number"
+                            step="0.1"
+                            value={paymentOptionForm.discount_percentage}
+                            onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, discount_percentage: parseFloat(e.target.value) || 0 }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="additional_fee_percentage">Additional Fee (%)</Label>
+                          <Input
+                            id="additional_fee_percentage"
+                            type="number"
+                            step="0.1"
+                            value={paymentOptionForm.additional_fee_percentage}
+                            onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, additional_fee_percentage: parseFloat(e.target.value) || 0 }))}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="minimum_payments">Minimum Payments</Label>
+                          <Input
+                            id="minimum_payments"
+                            type="number"
+                            value={paymentOptionForm.minimum_payments || ''}
+                            onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, minimum_payments: e.target.value ? parseInt(e.target.value) : 0 }))}
+                            placeholder="Leave empty if not applicable"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="sort_order">Sort Order</Label>
+                          <Input
+                            id="sort_order"
+                            type="number"
+                            value={paymentOptionForm.sort_order}
+                            onChange={(e) => setPaymentOptionForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="payment_active"
+                          checked={paymentOptionForm.is_active}
+                          onCheckedChange={(checked) => setPaymentOptionForm(prev => ({ ...prev, is_active: checked }))}
+                        />
+                        <Label htmlFor="payment_active">Active</Label>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button onClick={handleSavePaymentOption} className="flex-1">
+                          {editingPaymentOption ? 'Update' : 'Create'} Payment Option
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsPaymentOptionDialogOpen(false)}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {paymentOptions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <CreditCard className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>No payment options found.</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Display Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Discount</TableHead>
+                      <TableHead>Min Payments</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paymentOptions.map((option) => (
+                      <TableRow key={option.id}>
+                        <TableCell className="font-medium">{option.display_name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {option.option_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {option.discount_percentage > 0 ? `${option.discount_percentage}%` : 
+                           option.additional_fee_percentage > 0 ? `+${option.additional_fee_percentage}%` :
+                           option.additional_fee_percentage < 0 ? `${option.additional_fee_percentage}%` : 'None'}
+                        </TableCell>
+                        <TableCell>
+                          {option.minimum_payments || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={option.is_active ? "default" : "secondary"}
+                            className={option.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                          >
+                            {option.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openPaymentOptionDialog(option)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Payment Option</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "{option.display_name}"? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeletePaymentOption(option.id)}
                                     className="bg-red-600 hover:bg-red-700"
                                   >
                                     Delete

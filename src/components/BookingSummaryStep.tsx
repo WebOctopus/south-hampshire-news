@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
+import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -34,6 +35,7 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
+  const { data: paymentOptions = [] } = usePaymentOptions();
 
   // Get display names
   const getAdSizeName = () => {
@@ -70,12 +72,30 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     }
   };
 
-  // Calculate pricing options
+  // Calculate pricing options based on admin-configured payment options
   const baseTotal = pricingBreakdown?.finalTotal || 0;
-  const fullPayment6Months = baseTotal;
-  const fullPayment12Months = baseTotal * 0.9; // 10% discount for 12 months
-  const monthlyPayment = baseTotal / 6; // Divide by 6 months minimum
   const cpmRate = pricingBreakdown?.cpm || 0;
+
+  const calculatePaymentAmount = (option: any) => {
+    let amount = baseTotal;
+    
+    // Apply discount
+    if (option.discount_percentage > 0) {
+      amount = amount * (1 - option.discount_percentage / 100);
+    }
+    
+    // Apply additional fee
+    if (option.additional_fee_percentage !== 0) {
+      amount = amount * (1 + option.additional_fee_percentage / 100);
+    }
+    
+    // For monthly payments, divide by minimum payments
+    if (option.minimum_payments && option.option_type === 'monthly') {
+      return amount / option.minimum_payments;
+    }
+    
+    return amount;
+  };
 
   const effectivePaidAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   const effectiveFreeAreas = pricingModel === 'bogof' ? bogofFreeAreas : [];
@@ -219,51 +239,40 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 onValueChange={onPaymentOptionChange}
                 className="space-y-4"
               >
-                {/* 6 Month Full Payment */}
-                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                  <RadioGroupItem value="6_months_full" id="6_months_full" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="6_months_full" className="font-medium cursor-pointer">
-                      Pay in full for 6 months
-                    </Label>
-                    <p className="text-lg font-bold text-primary">
-                      {formatPrice(fullPayment6Months)} + VAT
-                    </p>
-                  </div>
-                </div>
-
-                {/* 12 Month Full Payment */}
-                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                  <RadioGroupItem value="12_months_full" id="12_months_full" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="12_months_full" className="font-medium cursor-pointer">
-                      Pay in full for 12 months (save an extra 10%)
-                    </Label>
-                    <p className="text-lg font-bold text-primary">
-                      {formatPrice(fullPayment12Months)} + VAT
-                    </p>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                      Save {formatPrice(baseTotal - fullPayment12Months)}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Monthly Payment Plan */}
-                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                  <RadioGroupItem value="monthly" id="monthly" className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor="monthly" className="font-medium cursor-pointer">
-                      Monthly payment plan
-                    </Label>
-                    <p className="text-lg font-bold text-primary">
-                      {formatPrice(monthlyPayment)} + VAT
-                    </p>
-                    <div className="text-sm text-muted-foreground mt-1 space-y-1">
-                      <p>• Minimum number of payments = 6</p>
-                      <p>• Debit or credit card or direct debit for an extra 2% discount</p>
+                {paymentOptions.map((option) => {
+                  const amount = calculatePaymentAmount(option);
+                  const savings = option.discount_percentage > 0 ? baseTotal - amount : 0;
+                  
+                  return (
+                    <div key={option.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
+                      <RadioGroupItem value={option.option_type} id={option.option_type} className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor={option.option_type} className="font-medium cursor-pointer">
+                          {option.display_name}
+                        </Label>
+                        {option.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
+                        )}
+                        <p className="text-lg font-bold text-primary">
+                          {formatPrice(amount)} + VAT
+                        </p>
+                        {savings > 0 && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                            Save {formatPrice(savings)}
+                          </Badge>
+                        )}
+                        {option.minimum_payments && (
+                          <div className="text-sm text-muted-foreground mt-1 space-y-1">
+                            <p>• Minimum number of payments = {option.minimum_payments}</p>
+                            {option.additional_fee_percentage < 0 && (
+                              <p>• Direct debit discount: {Math.abs(option.additional_fee_percentage)}%</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })}
               </RadioGroup>
 
               {/* Amazing Value Section */}
