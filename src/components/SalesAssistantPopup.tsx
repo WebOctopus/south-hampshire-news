@@ -233,16 +233,16 @@ export const SalesAssistantPopup: React.FC<SalesAssistantPopupProps> = ({
   
   const { areas, adSizes } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
-  const [isCollapsed, setIsCollapsed] = useState(currentStep === 4); // Auto-collapse on step 4
+  const [isCollapsed, setIsCollapsed] = useState(currentStep === 4 || currentStep === 5); // Auto-collapse on step 4 and 5
   const [isVisible, setIsVisible] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const currentContent = getStepContent(campaignData?.selectedModel || 'bogof', currentStep);
   const progress = ((currentStep - 1) / 3) * 100;
 
-  // Auto-collapse on step 4, expand on other steps
+  // Auto-collapse on step 4 and 5, expand on other steps
   useEffect(() => {
-    setIsCollapsed(currentStep === 4);
+    setIsCollapsed(currentStep === 4 || currentStep === 5);
   }, [currentStep]);
 
   // Reset scroll to top when step changes
