@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Info, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
@@ -1296,11 +1296,24 @@ const effectiveSelectedAreas = useMemo(() => {
             </div>
           </div>
 
+          <div className="my-16">
+            <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+          </div>
+
           {/* FAQ Section */}
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-3xl font-heading font-bold text-community-navy mb-8 text-center">
-              Frequently Asked Questions
-            </h3>
+          <div className="bg-gradient-to-br from-muted/20 to-muted/10 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
+                <HelpCircle className="h-5 w-5 text-primary" />
+                <span className="text-primary font-medium">FAQ</span>
+              </div>
+              <h3 className="text-3xl font-heading font-bold text-community-navy mb-4">
+                Frequently Asked Questions
+              </h3>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Get answers to common questions about our advertising and distribution services
+              </p>
+            </div>
             
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="faq-1">
