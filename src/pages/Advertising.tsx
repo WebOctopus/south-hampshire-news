@@ -531,7 +531,7 @@ const effectiveSelectedAreas = useMemo(() => {
     label: "Bi-monthly Circulation",
     icon: Newspaper
   }, {
-    number: "12",
+    number: "14",
     label: "Local Editions to Choose From",
     icon: MapPin
   }, {
