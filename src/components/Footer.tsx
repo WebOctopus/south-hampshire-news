@@ -1,3 +1,5 @@
+import { Phone, Mail, MapPin } from "lucide-react";
+
 const Footer = () => {
   return (
     <footer id="contact" className="bg-community-navy text-white py-16">
@@ -49,7 +51,7 @@ const Footer = () => {
             <div className="space-y-4 font-body">
               <div className="flex items-start gap-3">
                 <div className="bg-community-green/20 rounded-full p-2 mt-1">
-                  <span className="text-community-green text-sm">📞</span>
+                  <Phone className="h-4 w-4 text-community-green" />
                 </div>
                 <div>
                   <p className="text-white font-semibold">023 8026 6388</p>
@@ -58,7 +60,7 @@ const Footer = () => {
               
               <div className="flex items-start gap-3">
                 <div className="bg-community-green/20 rounded-full p-2 mt-1">
-                  <span className="text-community-green text-sm">✉️</span>
+                  <Mail className="h-4 w-4 text-community-green" />
                 </div>
                 <div>
                   <p className="text-white font-semibold">discover@discovermagazines.co.uk</p>
@@ -67,7 +69,7 @@ const Footer = () => {
               
               <div className="flex items-start gap-3">
                 <div className="bg-community-green/20 rounded-full p-2 mt-1">
-                  <span className="text-community-green text-sm">📍</span>
+                  <MapPin className="h-4 w-4 text-community-green" />
                 </div>
                 <div>
                   <p className="text-white font-semibold">Eastleigh, Hampshire</p>
