@@ -241,33 +241,30 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                   const savings = option.discount_percentage > 0 ? baseTotal - amount : 0;
                   
                   return (
-                    <div key={option.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                      <RadioGroupItem value={option.option_type} id={option.option_type} className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor={option.option_type} className="font-medium cursor-pointer">
-                          {option.display_name}
-                        </Label>
-                        {option.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
-                        )}
-                        <p className="text-lg font-bold text-primary">
-                          {formatPrice(amount)} + VAT
-                        </p>
-                        {savings > 0 && (
-                          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                            Save {formatPrice(savings)}
-                          </Badge>
-                        )}
-                        {option.minimum_payments && (
-                          <div className="text-sm text-muted-foreground mt-1 space-y-1">
-                            <p>• Minimum number of payments = {option.minimum_payments}</p>
-                            {option.additional_fee_percentage < 0 && (
-                              <p>• Direct debit discount: {Math.abs(option.additional_fee_percentage)}%</p>
-                            )}
-                          </div>
-                        )}
+                      <div key={option.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
+                        <RadioGroupItem value={option.option_type} id={option.option_type} className="mt-1" />
+                        <div className="flex-1">
+                          <Label htmlFor={option.option_type} className="font-medium cursor-pointer">
+                            {option.option_type === 'monthly' ? 'Monthly Payment Plan' : option.display_name}
+                          </Label>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {option.option_type === 'monthly' ? 'Direct debit or debit/credit card' : option.description}
+                          </p>
+                          <p className="text-lg font-bold text-primary">
+                            {formatPrice(amount)} + VAT
+                          </p>
+                          {savings > 0 && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                              Save {formatPrice(savings)}
+                            </Badge>
+                          )}
+                          {option.minimum_payments && (
+                            <div className="text-sm text-muted-foreground mt-1 space-y-1">
+                              <p>• Minimum number of payments = {option.minimum_payments}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
                   );
                 })}
               </RadioGroup>
