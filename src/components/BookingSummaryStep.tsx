@@ -290,7 +290,13 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                             selectedAmount = selectedAmount * selectedOption.minimum_payments;
                           }
                           
-                          const costPer1000 = (selectedAmount / pricingBreakdown.totalCirculation) * 1000;
+                          // For 12-month options, double the circulation since campaign runs twice
+                          let circulation = pricingBreakdown.totalCirculation;
+                          if (selectedOption.display_name?.includes('12 Months') || selectedOption.option_type?.includes('12')) {
+                            circulation = circulation * 2;
+                          }
+                          
+                          const costPer1000 = (selectedAmount / circulation) * 1000;
                           return `Only ${formatPrice(costPer1000)} + VAT per 1,000 homes reached`;
                         }
                       }
