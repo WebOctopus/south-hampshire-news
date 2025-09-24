@@ -285,11 +285,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 </button>
                 
                 <button
-                  onClick={() => {
-                    // TODO: Implement save quote functionality
-                    console.log('Save Quote clicked');
-                  }}
-                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium py-3 px-6 rounded-md transition-colors"
+                  onClick={handleNext}
+                  disabled={!selectedPaymentOption}
+                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Save Quote
                 </button>
