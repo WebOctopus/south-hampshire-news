@@ -912,10 +912,10 @@ const effectiveSelectedAreas = useMemo(() => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Essential Facts & Figures
+              14 Local Editions
             </h2>
             <h3 className="text-2xl font-heading font-bold text-community-green mb-4">
-              RESULTS DRIVEN, DISPLAY ADVERTISING
+              Essential Facts & Figures
             </h3>
           </div>
 
