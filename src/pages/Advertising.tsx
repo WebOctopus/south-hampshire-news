@@ -539,8 +539,8 @@ const effectiveSelectedAreas = useMemo(() => {
     label: "Repeat Advertisers - It Works!",
     icon: Target
   }, {
-    number: "500,000",
-    label: "Leaflets Distributed Per Month",
+    number: "580,000",
+    label: "Leaflets Distributed Per Year",
     icon: Truck
   }];
 
