@@ -73,7 +73,7 @@ const Index = () => {
                 South Hampshire's Biggest, Little & Best Local Magazine
               </h2>
               <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                Explore our stunning collection of local editions covering all areas of South Hampshire
+                A collection of localised editions delivered to 142,000 letterboxes in SO & PO postcodes. Loved by residents since 2005 and continuing to serve businesses with a cost effective advertising platform.
               </p>
             </div>
 
