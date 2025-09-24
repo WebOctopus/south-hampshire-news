@@ -931,12 +931,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">1</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON SUBURBS</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON CITY SUBURBS</h3>
                         <p className="text-gray-600 text-xs">SO15 SO16 SO17</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">13,500</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">10,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -963,12 +963,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">2</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD & NORTH BADDESLEY</h3>
-                        <p className="text-gray-600 text-xs">SO53 SO52</p>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD</h3>
+                        <p className="text-gray-600 text-xs">SO53</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">13,500</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">11,300</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -976,8 +976,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        High-quality residential areas including Chandler's Ford, North Baddesley, 
-                        and surrounding villages with excellent local amenities.
+                        High-quality residential areas including Chandler's Ford and surrounding villages with excellent local amenities.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
                       <p className="text-xs text-community-green font-bold">YES</p>
@@ -995,12 +994,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">3</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">EASTLEIGH & VILLAGES</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">FAIR OAK, HORTON HEATH & EASTLEIGH</h3>
                         <p className="text-gray-600 text-xs">SO50</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">10,500</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">12,500</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1008,7 +1007,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Central Eastleigh, Fair Oak, Bishopstoke, and surrounding villages. 
+                        Fair Oak, Horton Heath, central Eastleigh, Bishopstoke, and surrounding villages. 
                         Mix of residential areas with good transport links.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
@@ -1027,12 +1026,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">4</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & SURROUNDS</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & BOTLEY</h3>
                         <p className="text-gray-600 text-xs">SO30</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">13,000</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">9,400</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1040,8 +1039,8 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Hedge End town center and surrounding residential areas. 
-                        Popular family area with excellent schools and amenities.
+                        Hedge End and Botley town centers and surrounding residential areas. 
+                        Popular family areas with excellent schools and amenities.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
                       <p className="text-xs text-community-green font-bold">YES</p>
@@ -1059,12 +1058,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">5</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & SURROUNDS</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & VILLAGES</h3>
                         <p className="text-gray-600 text-xs">SO31</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">13,000</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">12,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1072,7 +1071,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Locks Heath, Park Gate, Sarisbury Green, and Whiteley. 
+                        Locks Heath, Park Gate, Sarisbury Green, and Whiteley villages. 
                         Modern residential developments with strong community feel.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
@@ -1091,12 +1090,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">6</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & SURROUNDS</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & VILLAGES</h3>
                         <p className="text-gray-600 text-xs">PO13 PO14 PO15</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">14,000</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">12,100</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1104,7 +1103,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Fareham town center, Stubbington, Hill Head, and surrounding areas. 
+                        Fareham town center, Stubbington, Hill Head, and surrounding villages. 
                         Historic market town with modern shopping and business districts.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
@@ -1123,12 +1122,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">7</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">WICKHAM & BISHOP'S WALTHAM</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WICKHAM, B WALTHAM & MEON VALLEY VILLAGES</h3>
                         <p className="text-gray-600 text-xs">SO32 PO17</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">14,000</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">12,400</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1136,7 +1135,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Historic market towns of Wickham and Bishop's Waltham plus surrounding villages. 
+                        Historic market towns of Wickham and Bishop's Waltham plus Meon Valley villages. 
                         Affluent rural communities with strong local identity.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
@@ -1155,12 +1154,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">8</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">WINCHESTER & VILLAGES</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WINCHESTER & SURROUNDING VILLAGES</h3>
                         <p className="text-gray-600 text-xs">SO21 SO22 SO23</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">13,500</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">12,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1187,12 +1186,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">9</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">ROMSEY & TEST VALLEY</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">ROMSEY & N BADDESLEY</h3>
                         <p className="text-gray-600 text-xs">SO51 SO20</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">15,000</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">8,600</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1200,7 +1199,7 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Market town of Romsey, North Baddesley, and Test Valley villages. 
+                        Market town of Romsey and North Baddesley areas. 
                         Attractive market town with excellent shopping and dining.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
@@ -1219,12 +1218,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">10</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">WATERSIDE & TOTTON</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">TOTTON</h3>
                         <p className="text-gray-600 text-xs">SO40 SO45</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">14,000</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">7,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1232,8 +1231,8 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Totton, Hythe, Dibden, and New Forest waterside communities. 
-                        Mix of town center and scenic waterside residential areas.
+                        Totton town center and surrounding residential areas. 
+                        Growing town with strong community spirit and local amenities.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
                       <p className="text-xs text-community-green font-bold">YES</p>
@@ -1251,12 +1250,12 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">11</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">NEW FOREST TO LYMINGTON</h3>
-                        <p className="text-gray-600 text-xs">SO41 SO42 SO43 BH24 4</p>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">NEW FOREST & WATERSIDE</h3>
+                        <p className="text-gray-600 text-xs">SO41 SO42 SO43 BH24</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-community-green font-bold text-lg">13,500</div>
-                        <p className="text-xs text-gray-600">Circulation</p>
+                        <div className="text-community-green font-bold text-lg">10,640</div>
+                        <p className="text-xs text-gray-600">Homes</p>
                       </div>
                     </div>
                   </AccordionTrigger>
@@ -1264,8 +1263,104 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Lymington, New Milton, Milford on Sea, and New Forest villages. 
+                        Lymington, New Milton, Milford on Sea, Hythe, Dibden, and New Forest villages. 
                         Prestigious coastal and forest communities with high disposable income.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 12 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-12" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">12</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">SHOLING, ITCHEN & WOOLSTON</h3>
+                        <p className="text-gray-600 text-xs">SO19</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">7,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Sholing, Itchen, and Woolston residential areas. 
+                        Established communities with good transport links and local amenities.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 13 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-13" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">13</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">HAMBLE, NETLEY, BURSLEDON, BITTERNE PARK & WEST</h3>
+                        <p className="text-gray-600 text-xs">SO18 SO31</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">9,200</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>  
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Hamble, Netley, Bursledon, Bitterne Park and West areas. 
+                        Waterside communities with excellent transport links and amenities.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
+                      <p className="text-xs text-community-green font-bold">YES</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 14 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-14" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">14</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">STOCKBRIDGE, WELLOWS & TEST VALLEY VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">SO20</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">8,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Stockbridge, Wellows, and Test Valley villages. 
+                        Rural communities with strong heritage and scenic countryside locations.
                       </p>
                       <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
                       <p className="text-xs text-community-green font-bold">YES</p>
@@ -1277,9 +1372,9 @@ const effectiveSelectedAreas = useMemo(() => {
 
             {/* Map Section */}
             <div id="distribution-map" className="text-center">
-              <img src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" alt="Distribution Areas Map - 12 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas" className="w-full max-w-md mx-auto rounded-lg shadow-lg" />
+              <img src="/lovable-uploads/a0704f2b-f884-4e36-a186-dab5336a19a5.png" alt="Distribution Areas Map - 14 Areas across South Hampshire including Winchester, Southampton, Fareham, New Forest and surrounding areas" className="w-full max-w-md mx-auto rounded-lg shadow-lg" />
               <p className="text-sm text-gray-600 mt-4 font-medium">
-                12 Distribution Areas across South Hampshire
+                14 Distribution Areas across South Hampshire
               </p>
             </div>
           </div>
