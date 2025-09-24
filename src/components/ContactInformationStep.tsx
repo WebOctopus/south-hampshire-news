@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Info } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -84,6 +84,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
+  const [legalDocumentsOpen, setLegalDocumentsOpen] = useState(false);
 
   const businessSectors = [
     "Accounting & Finance",
@@ -829,48 +830,112 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                 </div>
                 
                 {/* Legal Documents Acceptance */}
-                <TooltipProvider>
-                  <div className="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <Checkbox
-                      id="legalDocuments"
-                      checked={formData.legalDocumentsAccepted}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ ...prev, legalDocumentsAccepted: !!checked }))
-                      }
-                      disabled={submitting}
-                    />
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <Label htmlFor="legalDocuments" className="text-sm font-medium cursor-pointer">
-                          I accept the legal documents *
-                        </Label>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-blue-600 cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            <div className="space-y-2">
-                              <p className="text-sm font-medium">Legal Documents Include:</p>
-                              <ul className="text-xs space-y-1">
-                                <li>• Terms & Conditions for advertising services</li>
-                                <li>• Service Agreement detailing campaign specifics</li>
-                                <li>• Data Protection Notice explaining how we handle your personal information</li>
-                                <li>• Privacy Policy outlining data collection and usage</li>
-                              </ul>
-                              <p className="text-xs text-muted-foreground mt-2">
-                                These documents will be available for download after booking completion.
+                <div className="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Checkbox
+                    id="legalDocuments"
+                    checked={formData.legalDocumentsAccepted}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, legalDocumentsAccepted: !!checked }))
+                    }
+                    disabled={submitting}
+                  />
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <Label htmlFor="legalDocuments" className="text-sm font-medium cursor-pointer">
+                        I accept the legal documents *
+                      </Label>
+                      <Dialog open={legalDocumentsOpen} onOpenChange={setLegalDocumentsOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 hover:text-blue-800">
+                            <Info className="h-4 w-4 mr-1" />
+                            View Documents
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Legal Documents</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-6 text-sm">
+                            
+                            {/* Terms & Conditions */}
+                            <div className="space-y-3">
+                              <h3 className="text-lg font-semibold text-foreground">Terms & Conditions</h3>
+                              <div className="space-y-2 text-muted-foreground">
+                                <p>By using our advertising services, you agree to the following terms:</p>
+                                <ul className="list-disc list-inside space-y-1 ml-4">
+                                  <li>Payment terms: Full payment required before campaign launch</li>
+                                  <li>Campaign specifications are final once approved</li>
+                                  <li>Cancellation policy: 48 hours notice required for cancellations</li>
+                                  <li>We reserve the right to refuse advertising content that violates our content policy</li>
+                                  <li>Delivery dates are estimates and may vary due to external factors</li>
+                                  <li>Refunds are subject to our refund policy terms</li>
+                                </ul>
+                              </div>
+                            </div>
+
+                            {/* Service Agreement */}
+                            <div className="space-y-3">
+                              <h3 className="text-lg font-semibold text-foreground">Service Agreement</h3>
+                              <div className="space-y-2 text-muted-foreground">
+                                <p>This agreement outlines the specific details of your advertising campaign:</p>
+                                <ul className="list-disc list-inside space-y-1 ml-4">
+                                  <li>Campaign duration and distribution schedule</li>
+                                  <li>Target areas and circulation numbers</li>
+                                  <li>Advertisement specifications and design requirements</li>
+                                  <li>Quality standards and printing specifications</li>
+                                  <li>Distribution methods and tracking procedures</li>
+                                  <li>Performance metrics and reporting standards</li>
+                                </ul>
+                              </div>
+                            </div>
+
+                            {/* Data Protection Notice */}
+                            <div className="space-y-3">
+                              <h3 className="text-lg font-semibold text-foreground">Data Protection Notice</h3>
+                              <div className="space-y-2 text-muted-foreground">
+                                <p>We are committed to protecting your personal information:</p>
+                                <ul className="list-disc list-inside space-y-1 ml-4">
+                                  <li>Personal data is collected only for service delivery purposes</li>
+                                  <li>Information is stored securely and encrypted</li>
+                                  <li>Data is not shared with third parties without consent</li>
+                                  <li>You have the right to access, modify, or delete your data</li>
+                                  <li>We comply with GDPR and UK data protection regulations</li>
+                                  <li>Data retention policy: Information kept for 7 years for accounting purposes</li>
+                                </ul>
+                              </div>
+                            </div>
+
+                            {/* Privacy Policy */}
+                            <div className="space-y-3">
+                              <h3 className="text-lg font-semibold text-foreground">Privacy Policy</h3>
+                              <div className="space-y-2 text-muted-foreground">
+                                <p>Our privacy policy explains how we collect and use your information:</p>
+                                <ul className="list-disc list-inside space-y-1 ml-4">
+                                  <li>Website cookies are used to improve user experience</li>
+                                  <li>Analytics data helps us improve our services</li>
+                                  <li>Marketing communications are opt-in only</li>
+                                  <li>Account information is used for service delivery and support</li>
+                                  <li>Payment information is processed by secure third-party providers</li>
+                                  <li>You can update privacy preferences in your account settings</li>
+                                </ul>
+                              </div>
+                            </div>
+
+                            <div className="border-t pt-4 mt-6">
+                              <p className="text-xs text-muted-foreground">
+                                Last updated: September 2024. These documents will be available for download in your account dashboard after booking completion.
                               </p>
                             </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      <p className="text-xs text-blue-700">
-                        By checking this box, you acknowledge that you have read and agree to our terms of service, 
-                        data protection policies, and service agreement.
-                      </p>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
+                    <p className="text-xs text-blue-700">
+                      By checking this box, you acknowledge that you have read and agree to our terms of service, 
+                      data protection policies, and service agreement.
+                    </p>
                   </div>
-                </TooltipProvider>
+                </div>
               </div>
             </form>
           </div>
