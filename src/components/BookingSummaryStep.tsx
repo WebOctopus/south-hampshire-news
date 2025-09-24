@@ -159,12 +159,12 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {effectivePaidAreas.map((areaId) => (
-                  <div key={areaId} className="flex items-center gap-2">
-                    <Badge variant="default" className="bg-primary">Paid</Badge>
-                    <span className="text-sm">{getAreaNumber(areaId)} - {getAreaName(areaId)}</span>
-                  </div>
-                ))}
+                 {effectivePaidAreas.map((areaId) => (
+                   <div key={areaId} className="flex items-center gap-2">
+                     <Badge variant="default" className="bg-primary">Paid</Badge>
+                     <span className="text-sm">{getAreaName(areaId)}</span>
+                   </div>
+                 ))}
               </div>
             </CardContent>
           </Card>
@@ -180,12 +180,12 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {effectiveFreeAreas.map((areaId) => (
-                    <div key={areaId} className="flex items-center gap-2">
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">Free</Badge>
-                      <span className="text-sm">{getAreaNumber(areaId)} - {getAreaName(areaId)}</span>
-                    </div>
-                  ))}
+                   {effectiveFreeAreas.map((areaId) => (
+                     <div key={areaId} className="flex items-center gap-2">
+                       <Badge variant="secondary" className="bg-green-100 text-green-800">Free</Badge>
+                       <span className="text-sm">{getAreaName(areaId)}</span>
+                     </div>
+                   ))}
                 </div>
               </CardContent>
             </Card>
