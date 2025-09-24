@@ -82,6 +82,11 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   const calculatePaymentAmount = (option: any) => {
     let amount = baseTotal;
     
+    // For 12-month options, double the base amount (assuming baseTotal is 6 months)
+    if (option.display_name?.includes('12 Months') || option.option_type?.includes('12')) {
+      amount = baseTotal * 2;
+    }
+    
     // Apply discount
     if (option.discount_percentage > 0) {
       amount = amount * (1 - option.discount_percentage / 100);
@@ -278,7 +283,13 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                       if (selectedPaymentOption && pricingBreakdown?.totalCirculation) {
                         const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOption);
                         if (selectedOption) {
-                          const selectedAmount = calculatePaymentAmount(selectedOption);
+                          let selectedAmount = calculatePaymentAmount(selectedOption);
+                          
+                          // For monthly payments, calculate annual cost for cost per 1,000
+                          if (selectedOption.option_type === 'monthly' && selectedOption.minimum_payments) {
+                            selectedAmount = selectedAmount * selectedOption.minimum_payments;
+                          }
+                          
                           const costPer1000 = (selectedAmount / pricingBreakdown.totalCirculation) * 1000;
                           return `Only ${formatPrice(costPer1000)} + VAT per 1,000 homes reached`;
                         }
