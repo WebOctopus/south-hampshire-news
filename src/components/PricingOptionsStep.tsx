@@ -53,9 +53,9 @@ const pricingOptions: PricingOption[] = [
   {
     id: 'bogof',
     title: '3+ Repeat Package',
-    subtitle: 'Subscription with monthly payment plan with better rates and additional benefits',
-    description: 'Double your advertising reach at no extra cost! Pay for areas, get equal number free.',
-    badge: 'Special Offer',
+    subtitle: 'Our unique 6 month package where we double your advertising reach at no extra cost!',
+    description: 'There\'s lots of extras included. Perfect way to test and trial different adverts, different areas and see what works best!',
+    badge: 'Star Buy',
     badgeVariant: 'default',
     icon: Star,
     popular: true,
