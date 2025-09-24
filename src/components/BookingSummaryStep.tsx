@@ -49,6 +49,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   };
 
   const getDurationName = () => {
+    if (pricingModel === 'bogof') {
+      return '6 months';
+    }
     const duration = durations?.find(d => d.id === selectedDuration);
     return duration?.name || 'Unknown Duration';
   };
