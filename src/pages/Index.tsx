@@ -70,7 +70,7 @@ const Index = () => {
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-4">
-                Discover Magazine Editions
+                South Hampshire's Biggest, Little & Best Local Magazine
               </h2>
               <p className="text-xl text-gray-300 max-w-2xl mx-auto">
                 Explore our stunning collection of local editions covering all areas of South Hampshire
