@@ -28,6 +28,7 @@ import ROICalculator from '@/components/dashboard/ROICalculator';
 import CampaignTimeline from '@/components/dashboard/CampaignTimeline';
 import DeleteQuoteDialog from '@/components/dashboard/DeleteQuoteDialog';
 import BookingCard from '@/components/dashboard/BookingCard';
+import { BookingDetailsDialog } from '@/components/dashboard/BookingDetailsDialog';
 import VouchersSection from '@/components/dashboard/VouchersSection';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 
@@ -47,6 +48,8 @@ const Dashboard = () => {
   const [quoteToDelete, setQuoteToDelete] = useState<any | null>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [bookingDetailsOpen, setBookingDetailsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('create');
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [voucherCount, setVoucherCount] = useState(0);
@@ -1149,6 +1152,10 @@ const Dashboard = () => {
                 booking={booking}
                 onDelete={() => handleDeleteBooking(booking.id)}
                 isDeleting={deletingBookingId === booking.id}
+                onViewDetails={(booking) => {
+                  setSelectedBooking(booking);
+                  setBookingDetailsOpen(true);
+                }}
               />
             ))}
           </div>
@@ -1377,6 +1384,12 @@ const Dashboard = () => {
       <PasswordSetupDialog
         open={showPasswordSetup}
         onClose={() => setShowPasswordSetup(false)}
+      />
+
+      <BookingDetailsDialog
+        booking={selectedBooking}
+        open={bookingDetailsOpen}
+        onOpenChange={setBookingDetailsOpen}
       />
     </SidebarProvider>
   );

@@ -6,7 +6,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +44,7 @@ interface FormData {
   city: string;
   password: string;
   voucherCode?: string;
+  legalDocumentsAccepted: boolean;
 }
 
 export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
@@ -74,6 +77,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     city: "",
     password: "",
     voucherCode: "",
+    legalDocumentsAccepted: false,
   });
   
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
@@ -271,6 +275,15 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
+    if (!formData.legalDocumentsAccepted) {
+      toast({
+        title: "Legal Documents Required", 
+        description: "Please accept the legal documents to proceed.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Company name is required for company type
     if (formData.businessType === 'company' && !formData.companyName) {
       toast({
@@ -307,6 +320,15 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       toast({
         title: "Missing Information", 
         description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.legalDocumentsAccepted) {
+      toast({
+        title: "Legal Documents Required", 
+        description: "Please accept the legal documents to proceed.",
         variant: "destructive",
       });
       return;
@@ -805,6 +827,50 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     We'll create your account automatically and sign you in. You can access your saved quotes anytime.
                   </p>
                 </div>
+                
+                {/* Legal Documents Acceptance */}
+                <TooltipProvider>
+                  <div className="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <Checkbox
+                      id="legalDocuments"
+                      checked={formData.legalDocumentsAccepted}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ ...prev, legalDocumentsAccepted: !!checked }))
+                      }
+                      disabled={submitting}
+                    />
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <Label htmlFor="legalDocuments" className="text-sm font-medium cursor-pointer">
+                          I accept the legal documents *
+                        </Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-blue-600 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium">Legal Documents Include:</p>
+                              <ul className="text-xs space-y-1">
+                                <li>• Terms & Conditions for advertising services</li>
+                                <li>• Service Agreement detailing campaign specifics</li>
+                                <li>• Data Protection Notice explaining how we handle your personal information</li>
+                                <li>• Privacy Policy outlining data collection and usage</li>
+                              </ul>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                These documents will be available for download after booking completion.
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <p className="text-xs text-blue-700">
+                        By checking this box, you acknowledge that you have read and agree to our terms of service, 
+                        data protection policies, and service agreement.
+                      </p>
+                    </div>
+                  </div>
+                </TooltipProvider>
               </div>
             </form>
           </div>

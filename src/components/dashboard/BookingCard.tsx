@@ -21,9 +21,10 @@ interface BookingCardProps {
   };
   onDelete?: (booking: any) => void;
   isDeleting?: boolean;
+  onViewDetails?: (booking: any) => void;
 }
 
-export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting }) => {
+export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -55,7 +56,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full cursor-pointer hover:shadow-md transition-shadow" onClick={() => onViewDetails?.(booking)}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1">
@@ -73,7 +74,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onDelete(booking)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(booking);
+              }}
               disabled={isDeleting}
               className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-2"
             >
