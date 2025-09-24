@@ -171,9 +171,6 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Your Selected FREE Areas</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  These are the free areas that you'll get for the next 3 Issues/6 Months to run concurrently with the above "Paid For" areas
-                </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
