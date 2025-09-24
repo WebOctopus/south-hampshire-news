@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/pricingCalculator';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+import { useStepForm } from '@/components/StepForm';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -18,7 +19,7 @@ interface BookingSummaryStepProps {
   pricingBreakdown: any;
   selectedPaymentOption?: string;
   onPaymentOptionChange: (option: string) => void;
-  onNext: () => void;
+  onNext?: () => void;
 }
 
 export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
@@ -36,6 +37,7 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
   const { data: paymentOptions = [] } = usePaymentOptions();
+  const { nextStep } = useStepForm();
 
   // Get display names
   const getAdSizeName = () => {
@@ -112,7 +114,7 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     if (!selectedPaymentOption) {
       return; // Validation handled by form
     }
-    onNext();
+    nextStep();
   };
 
   return (
