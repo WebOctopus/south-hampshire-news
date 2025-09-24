@@ -458,9 +458,8 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
           <Alert>
             <Users className="h-4 w-4" />
             <AlertDescription>
-              <strong>3+ Repeat Package Special Offer:</strong> For every area you pay for, 
-              you can select additional areas to receive for FREE for 6 months. 
-              Select your paid areas first, then choose your free bonus areas.
+              <strong>3+ Repeat Package:</strong> For every "paid for" area, choose a "free for 3 issues" area. 
+              Select your paid areas first, then choose your free areas.
             </AlertDescription>
           </Alert>
         )}
