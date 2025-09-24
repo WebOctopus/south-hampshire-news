@@ -153,9 +153,6 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Selected "Paid For" Areas</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                These are the booked areas for the next {pricingModel === 'bogof' ? '3 Issues' : 'campaign period'}
-              </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
