@@ -323,13 +323,24 @@ const Support = () => {
           </Card>
         </section>
 
-        <Separator className="my-12" />
+        <div className="my-16">
+          <Separator />
+        </div>
 
         {/* FAQ Section */}
-        <section>
-          <h2 className="text-3xl font-heading font-bold text-foreground mb-8 text-center">
-            Frequently Asked Questions
-          </h2>
+        <section className="bg-gradient-to-br from-muted/20 to-muted/10 rounded-2xl p-8 md:p-12">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
+              <HelpCircle className="h-5 w-5 text-primary" />
+              <span className="text-primary font-medium">FAQ</span>
+            </div>
+            <h2 className="text-3xl font-heading font-bold text-foreground mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Find quick answers to the most common questions about Discover Magazine
+            </p>
+          </div>
           
           {faqs.map((category, categoryIndex) => (
             <Card key={categoryIndex} className="mb-6">
