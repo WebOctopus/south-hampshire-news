@@ -274,7 +274,17 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 <div className="text-center">
                   <h4 className="font-bold text-lg mb-2">🎯 Amazing Value!</h4>
                   <p className="text-xl font-bold text-primary">
-                    Only {formatPrice(cpmRate)} + VAT per 1,000 homes reached
+                    {(() => {
+                      if (selectedPaymentOption && pricingBreakdown?.totalCirculation) {
+                        const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOption);
+                        if (selectedOption) {
+                          const selectedAmount = calculatePaymentAmount(selectedOption);
+                          const costPer1000 = (selectedAmount / pricingBreakdown.totalCirculation) * 1000;
+                          return `Only ${formatPrice(costPer1000)} + VAT per 1,000 homes reached`;
+                        }
+                      }
+                      return `Only ${formatPrice(cpmRate)} + VAT per 1,000 homes reached`;
+                    })()}
                   </p>
                 </div>
               </div>
