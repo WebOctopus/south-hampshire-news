@@ -20,7 +20,7 @@ const HeroSection = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-3xl lg:text-5xl font-heading font-bold text-white mb-6">
-            Letterbox delivered to <span className="text-community-green">158,000 homes</span>
+            Letterbox delivered to <span className="text-community-green">142,000 homes</span>
             <span className="block">across SO & PO postcodes</span>
           </h1>
 

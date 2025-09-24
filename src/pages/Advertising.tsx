@@ -527,7 +527,7 @@ const effectiveSelectedAreas = useMemo(() => {
     label: "Estd 2005 - Celebrating 20 Years!",
     icon: Award
   }, {
-    number: "158,000",
+    number: "142,000",
     label: "Bi-monthly Circulation",
     icon: Newspaper
   }, {
@@ -1307,7 +1307,7 @@ const effectiveSelectedAreas = useMemo(() => {
               <AccordionItem value="faq-1">
                 <AccordionTrigger>What areas do you cover?</AccordionTrigger>
                 <AccordionContent>
-                  We cover 12 distinct areas across South Hampshire, reaching over 158,000 homes with our magazine distribution and leafleting services.
+                  We cover 12 distinct areas across South Hampshire, reaching over 142,000 homes with our magazine distribution and leafleting services.
                 </AccordionContent>
               </AccordionItem>
               
@@ -1369,7 +1369,7 @@ const effectiveSelectedAreas = useMemo(() => {
               £999 ALL AREAS PACKAGE
             </h2>
             <p className="text-2xl md:text-3xl mb-4 font-bold">
-              Reach 158,000 Homes Across All 12 Areas
+              Reach 142,000 Homes Across All 12 Areas
             </p>
             <p className="text-xl mb-8 opacity-90">
               Save over £500 with our exclusive package deal
@@ -1379,7 +1379,7 @@ const effectiveSelectedAreas = useMemo(() => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
               <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">158,000</div>
+                <div className="text-4xl font-bold mb-2">142,000</div>
                 <div className="text-lg">Total Homes Reached</div>
               </CardContent>
             </Card>
@@ -1470,7 +1470,7 @@ const effectiveSelectedAreas = useMemo(() => {
               ADVERTISING ENQUIRY FORM
             </h2>
             <p className="text-xl text-gray-600">
-              South Hampshire Advertising Services: reach up to 158,000 homes in SO & PO Postcodes
+              South Hampshire Advertising Services: reach up to 142,000 homes in SO & PO Postcodes
             </p>
           </div>
 

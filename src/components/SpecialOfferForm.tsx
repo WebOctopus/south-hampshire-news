@@ -382,7 +382,7 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
                 </div>
                 <div className="flex justify-between">
                   <span>Total Circulation:</span>
-                  <span className="font-medium">158,000 homes</span>
+                  <span className="font-medium">142,000 homes</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Campaign Duration:</span>

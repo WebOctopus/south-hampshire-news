@@ -35,7 +35,7 @@ const Support = () => {
     {
       icon: <Truck className="h-8 w-8 text-community-green" />,
       title: "Letterbox Delivery",
-      description: "Our magazine is delivered directly to 158,000 homes across SO & PO postcodes through our trusted distribution network."
+      description: "Our magazine is delivered directly to 142,000 homes across SO & PO postcodes through our trusted distribution network."
     },
     {
       icon: <MapPin className="h-8 w-8 text-community-green" />,
@@ -55,7 +55,7 @@ const Support = () => {
       questions: [
         {
           question: "What is Discover Magazine?",
-          answer: "Discover Magazine is a community publication that covers local news, events, business directory, and competitions across South Hampshire. We deliver to 158,000 homes across SO & PO postcodes."
+          answer: "Discover Magazine is a community publication that covers local news, events, business directory, and competitions across South Hampshire. We deliver to 142,000 homes across SO & PO postcodes."
         },
         {
           question: "How often is the magazine published?",
@@ -275,7 +275,7 @@ const Support = () => {
                         <MapPin className="h-3 w-3 mr-1" />
                         Coverage
                       </Badge>
-                      <span className="text-sm">158,000 homes across SO & PO postcodes</span>
+                      <span className="text-sm">142,000 homes across SO & PO postcodes</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge variant="secondary" className="bg-community-green/10 text-community-green">
