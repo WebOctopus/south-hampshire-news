@@ -192,7 +192,7 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <Label className="text-sm font-medium text-muted-foreground">Total Circulation of your Areas</Label>
+                <Label className="text-sm font-medium text-muted-foreground">Total Number of Homes Reached</Label>
                 <p className="text-2xl font-bold text-primary">
                   {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
                 </p>
