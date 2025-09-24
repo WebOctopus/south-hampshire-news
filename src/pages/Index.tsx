@@ -11,8 +11,10 @@ import Footer from '../components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const navigate = useNavigate();
   const magazineCovers = [
     {
       src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
@@ -116,8 +118,11 @@ const Index = () => {
             {/* Call to Action */}
             <div className="text-center mt-12">
               <div className="inline-flex flex-col sm:flex-row gap-4">
-                <Button className="bg-community-green hover:bg-community-green/90 text-white px-8 py-3 font-bold rounded-full border border-community-green/20 hover:shadow-lg hover:shadow-community-green/30 transition-all duration-300">
-                  EXPLORE ALL EDITIONS
+                <Button 
+                  className="bg-community-green hover:bg-community-green/90 text-white px-8 py-3 font-bold rounded-full border border-community-green/20 hover:shadow-lg hover:shadow-community-green/30 transition-all duration-300"
+                  onClick={() => navigate('/advertising')}
+                >
+                  ADVERTISING INFO
                 </Button>
                 <Button asChild variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
                   <a href="/advertising#distribution-map">VIEW DISTRIBUTION MAP</a>
