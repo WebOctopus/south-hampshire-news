@@ -350,6 +350,36 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
               </div>
             </CardContent>
           </Card>
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-1 gap-3">
+            <button
+              onClick={handleNext}
+              disabled={!selectedPaymentOption}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Buy Now
+            </button>
+            
+            <button
+              onClick={() => {
+                // TODO: Implement save quote functionality
+                console.log('Save Quote clicked');
+              }}
+              className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium py-3 px-6 rounded-md transition-colors"
+            >
+              Save Quote
+            </button>
+            
+            <button
+              onClick={() => {
+                window.open('tel:01234567890', '_self');
+              }}
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/80 font-medium py-3 px-6 rounded-md transition-colors"
+            >
+              Call Discover Team
+            </button>
+          </div>
         </div>
       </div>
     </div>
