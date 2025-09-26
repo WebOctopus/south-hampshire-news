@@ -8,6 +8,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useStepForm } from '@/components/StepForm';
+import { getAvailableIssueOptions } from '@/lib/issueSchedule';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -19,6 +20,8 @@ interface BookingSummaryStepProps {
   pricingBreakdown: any;
   selectedPaymentOption?: string;
   onPaymentOptionChange: (option: string) => void;
+  selectedStartingIssue?: string;
+  onStartingIssueChange?: (option: string) => void;
   onNext?: () => void;
 }
 
@@ -32,12 +35,24 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   pricingBreakdown,
   selectedPaymentOption,
   onPaymentOptionChange,
+  selectedStartingIssue,
+  onStartingIssueChange,
   onNext
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
   const { data: paymentOptions = [] } = usePaymentOptions();
   const { nextStep } = useStepForm();
+
+  // Calculate available starting issue options
+  const effectiveAreas = pricingModel === 'leafleting' ? leafletAreas : areas;
+  const effectiveSelectedAreas = pricingModel === 'bogof' ? 
+    [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas;
+  const selectedAreaData = effectiveAreas?.filter(area => 
+    effectiveSelectedAreas.includes(area.id)
+  ) || [];
+  
+  const availableIssueOptions = getAvailableIssueOptions(selectedAreaData);
 
   // Get display names
   const getAdSizeName = () => {
@@ -154,7 +169,26 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
               
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Starting Issue</Label>
-                <p className="font-medium">Next available issue</p>
+                {availableIssueOptions.length > 0 ? (
+                  <div className="mt-2">
+                    <RadioGroup 
+                      value={selectedStartingIssue || availableIssueOptions[0]?.value} 
+                      onValueChange={onStartingIssueChange}
+                      className="space-y-2"
+                    >
+                      {availableIssueOptions.map((option) => (
+                        <div key={option.value} className="flex items-center space-x-2">
+                          <RadioGroupItem value={option.value} id={option.value} />
+                          <Label htmlFor={option.value} className="text-sm font-medium cursor-pointer">
+                            {option.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                ) : (
+                  <p className="font-medium">Next available issue</p>
+                )}
               </div>
             </CardContent>
           </Card>

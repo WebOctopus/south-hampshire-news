@@ -42,7 +42,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     selectedDuration: '',
     selectedMonths: {} as Record<string, string[]>,
     pricingBreakdown: null as any,
-    selectedPaymentOption: '' as string
+    selectedPaymentOption: '' as string,
+    selectedStartingIssue: '' as string
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -678,6 +679,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingBreakdown={campaignData.pricingBreakdown}
                 selectedPaymentOption={campaignData.selectedPaymentOption}
                 onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
+                selectedStartingIssue={campaignData.selectedStartingIssue}
+                onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
               />
               
               <ContactInformationStep
@@ -775,6 +778,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               pricingBreakdown={campaignData.pricingBreakdown}
               selectedPaymentOption={campaignData.selectedPaymentOption}
               onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
+              selectedStartingIssue={campaignData.selectedStartingIssue}
+              onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
             />
             
             <ContactInformationStep
