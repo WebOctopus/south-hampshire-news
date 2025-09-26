@@ -1058,8 +1058,8 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">5</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & VILLAGES</h3>
-                        <p className="text-gray-600 text-xs">SO31</p>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & WHITELEY</h3>
+                        <p className="text-gray-600 text-xs">SO31 PO15</p>
                       </div>
                       <div className="text-right">
                         <div className="text-community-green font-bold text-lg">12,000</div>
@@ -1091,7 +1091,7 @@ const effectiveSelectedAreas = useMemo(() => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & VILLAGES</h3>
-                        <p className="text-gray-600 text-xs">PO13 PO14 PO15</p>
+                        <p className="text-gray-600 text-xs">PO12, PO13, PO14, PO15, PO16</p>
                       </div>
                       <div className="text-right">
                         <div className="text-community-green font-bold text-lg">12,100</div>
@@ -1186,8 +1186,8 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">9</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">ROMSEY & N BADDESLEY</h3>
-                        <p className="text-gray-600 text-xs">SO51 SO20</p>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">ROMSEY & NORTH BADDESLEY</h3>
+                        <p className="text-gray-600 text-xs">SO51 SO52</p>
                       </div>
                       <div className="text-right">
                         <div className="text-community-green font-bold text-lg">8,600</div>
@@ -1219,7 +1219,7 @@ const effectiveSelectedAreas = useMemo(() => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold text-community-navy text-sm leading-tight">TOTTON</h3>
-                        <p className="text-gray-600 text-xs">SO40 SO45</p>
+                        <p className="text-gray-600 text-xs">SO40</p>
                       </div>
                       <div className="text-right">
                         <div className="text-community-green font-bold text-lg">7,000</div>
@@ -1251,7 +1251,7 @@ const effectiveSelectedAreas = useMemo(() => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold text-community-navy text-sm leading-tight">NEW FOREST & WATERSIDE</h3>
-                        <p className="text-gray-600 text-xs">SO41 SO42 SO43 BH24</p>
+                        <p className="text-gray-600 text-xs">SO40, SO41, SO42, SO43, SO45</p>
                       </div>
                       <div className="text-right">
                         <div className="text-community-green font-bold text-lg">10,640</div>
@@ -1314,7 +1314,7 @@ const effectiveSelectedAreas = useMemo(() => {
                         <span className="text-lg font-bold text-white">13</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-community-navy text-sm leading-tight">HAMBLE, NETLEY, BURSLEDON, BITTERNE PARK & WEST</h3>
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">HAMBLE, NETLEY, BURSLEDON & WEST END</h3>
                         <p className="text-gray-600 text-xs">SO18 SO31</p>
                       </div>
                       <div className="text-right">
@@ -1347,7 +1347,7 @@ const effectiveSelectedAreas = useMemo(() => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold text-community-navy text-sm leading-tight">STOCKBRIDGE, WELLOWS & TEST VALLEY VILLAGES</h3>
-                        <p className="text-gray-600 text-xs">SO20</p>
+                        <p className="text-gray-600 text-xs">SO51, SO20</p>
                       </div>
                       <div className="text-right">
                         <div className="text-community-green font-bold text-lg">8,000</div>
