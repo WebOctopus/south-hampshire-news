@@ -1403,6 +1403,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_booking_access: {
+        Args: { booking_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
