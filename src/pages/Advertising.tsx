@@ -944,11 +944,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        ABC1 homes in the more affluent residential suburban streets inc Chilworth, 
-                        Upper Shirley, Rownhams, Bassett and Highfield. Excluding student areas & flats
+                        ABC1 homes in the more affluent residential suburban streets of Southampton including Chilworth, Upper Shirley, Rownhams, Nursling Bassett Green, Regents Park, Highfield. Sector 7 of SO16 is delivered to by Royal Mail. Excluding HMO, student areas & flats.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 7,100 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -976,10 +975,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        High-quality residential areas including Chandler's Ford and surrounding villages with excellent local amenities.
+                        Affluent residential suburb between Southampton and Winchester. Includes Valley Park, Knightwood, Hiltingbury, Chalvington, Toynbee, Peverells Wood, Scantabout, Hocombe.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">Yes 11,300 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1007,11 +1006,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Fair Oak, Horton Heath, central Eastleigh, Bishopstoke, and surrounding villages. 
-                        Mix of residential areas with good transport links.
+                        Majority of this circulation covers Bishopstoke, Fair Oak, Horton Heath, Lakeside plus the more affluent residential streets of Eastleigh. Properties are either detached or semi-detached, townhouses but excluding flats, council owned areas and terraced houses.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">Yes 12,500 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1039,11 +1037,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Hedge End and Botley town centers and surrounding residential areas. 
-                        Popular family areas with excellent schools and amenities.
+                        A community east of Southampton, Hedge End and Botley is primarily residential with a retail park and village high streets. A mixture of new build estates, bungalows, older detached and semi-detached homes.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 9,400 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1071,11 +1068,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Locks Heath, Park Gate, Sarisbury Green, and Whiteley villages. 
-                        Modern residential developments with strong community feel.
+                        This area includes the residential communities of Locks Heath, Park Gate, Sarisbury Green, Warsash and the new build estate of Whiteley. The suburban area straddles the M27 and lies equidistant from Southampton and Fareham.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">Yes 12,000 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1103,11 +1099,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Fareham town center, Stubbington, Hill Head, and surrounding villages. 
-                        Historic market town with modern shopping and business districts.
+                        West of Portsmouth lie the town of Fareham plus a collection of villages; Stubbington, Lee-on-the-Solent, Titchfield. Discover is delivered to selected above average affluent homes in the west side of Fareham
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 12,100 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1135,11 +1130,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Historic market towns of Wickham and Bishop's Waltham plus Meon Valley villages. 
-                        Affluent rural communities with strong local identity.
+                        Often referred to as Meon Valley. Delivered is by Royal Mail and every property in the postcode SO32 includes two sectors 1 and 2 which include the market town of Bishop's Waltham, Waltham Chase, Swanmore, Durley, Upham, Boorley Green. Also included is PO17 which includes Wickham, Shedfield, Shirrell Heath. Every property in these postcodes receive Discover. Often, Discover is the only local magazine delivered to these rural properties, farms, and semi rural homes
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Services</h4>
+                      <p className="text-xs text-red-600 font-bold">No</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1167,11 +1161,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Historic Winchester city center, Weeke, Stanmore, and surrounding villages. 
-                        Cathedral city with mix of heritage and modern residential areas.
+                        The residential suburbs of this affluent, historic city of Winchester include Fulflood, Tegwood, Badger Farm, Olivers Battery, St Cross, Sleepers Hill, Pitt, Kings Worthy, Abbots Barton, Headbourne Worthy, surrounding villages is city center, Weeke, Harestock. The postcode of SO21 is a "ring" around Winchester peppered with villages including Littleton, Sparsholt, Hursley, Otterbourne, Twyford, Colden Common. EXCLUDED are Stanmore, Winnall, Bar End, Hyde, council estates, city centre.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 8,000</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1199,11 +1192,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Market town of Romsey and North Baddesley areas. 
-                        Attractive market town with excellent shopping and dining.
+                        The residential areas of market town of Romsey including Abbotswood plus the 3,000 strong suburban community between Romsey and Chandler's Ford of North Baddesley.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 8,600 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1231,11 +1223,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Totton town center and surrounding residential areas. 
-                        Growing town with strong community spirit and local amenities.
+                        Just west of Southampton this fairly new suburb is a mix of new build estates and bungalows. Included is West Totton, Testwood, Hangers Farm, Testbourne, Rushington, Hammonds Green. The council estate of Calmore and Eling is excluded.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 7,000 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1263,11 +1254,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Lymington, New Milton, Milford on Sea, Hythe, Dibden, and New Forest villages. 
-                        Prestigious coastal and forest communities with high disposable income.
+                        The New Forest postcodes are delivered to by Royal Mail so every property, many rural, remote and high value properties in SO42, SO43 and parts of SO41 receive Discover. Towns included are Lyndhurst, Brockenhurst, Beaulieu, Minstead, Ashurst, Boldre, Bramshaw. The Waterside area runs along the west bank of Southampton Water; Marchwood, Hythe, Dibden and Dibden Purlieu are residential suburbs served by the small town of Hythe.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES Waterside 4,000 homes only</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1295,11 +1285,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Sholing, Itchen, and Woolston residential areas. 
-                        Established communities with good transport links and local amenities.
+                        This area is a compact residental suburbe east of Southampton reached by the Itchen Bridge or south from M27. Selected properties in Sholing, Itchen, Peartree and Woolston.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 7,000 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1327,11 +1316,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Hamble, Netley, Bursledon, Bitterne Park and West areas. 
-                        Waterside communities with excellent transport links and amenities.
+                        Neighbouring Area 12 and south of M27 including West End (near Hedge End), Chalk Hill, parts of Bitterne, Bursledon down to the quaint and popular harbour village of Hamble and nearby Netley. Excluded: Townhill
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 9,200 homes</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -1359,11 +1347,10 @@ const effectiveSelectedAreas = useMemo(() => {
                     <div className="bg-gray-50 rounded-lg p-4 mt-2">
                       <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
                       <p className="text-xs text-gray-700 mb-3">
-                        Stockbridge, Wellows, and Test Valley villages. 
-                        Rural communities with strong heritage and scenic countryside locations.
+                        Delivered by Royal Mail postcode sectors of SO51 which are rural, semi rural and includes the affluent, traditional villages of Stockbridge plus Kings Somborne, Braishfield, Ampfield, Sherfield English, The Wellows in fact every property in these postcodes. Discover is often the only local magazine delivered to their property.
                       </p>
-                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Distribution</h4>
-                      <p className="text-xs text-community-green font-bold">YES</p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-red-600 font-bold">No</p>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
