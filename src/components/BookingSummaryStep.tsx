@@ -277,7 +277,18 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 onValueChange={onPaymentOptionChange}
                 className="space-y-4"
               >
-                {paymentOptions.map((option) => {
+                {paymentOptions
+                  .sort((a, b) => {
+                    // Custom sorting: monthly first, then 6 months, then 12 months
+                    const getOrder = (option: any) => {
+                      if (option.option_type === 'monthly') return 1;
+                      if (option.display_name?.includes('6 Months')) return 2;
+                      if (option.display_name?.includes('12 Months')) return 3;
+                      return 4; // fallback for any other options
+                    };
+                    return getOrder(a) - getOrder(b);
+                  })
+                  .map((option) => {
                   const amount = calculatePaymentAmount(option);
                   const savings = option.discount_percentage > 0 ? baseTotal - amount : 0;
                   
