@@ -59,6 +59,48 @@ export type Database = {
         }
         Relationships: []
       }
+      alerts: {
+        Row: {
+          alert_type: string
+          badge_color: string | null
+          badge_text: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          message: string
+          priority: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          badge_color?: string | null
+          badge_text?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          message: string
+          priority?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          badge_color?: string | null
+          badge_text?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          message?: string
+          priority?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           ad_size_id: string | null

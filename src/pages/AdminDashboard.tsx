@@ -14,6 +14,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CostCalculatorManagement from '@/components/admin/CostCalculatorManagement';
+import AlertsManagement from '@/components/admin/AlertsManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
@@ -682,6 +683,9 @@ const AdminDashboard = () => {
 
       case 'calculator':
         return <CostCalculatorManagement />;
+
+      case 'alerts':
+        return <AlertsManagement />;
 
       default:
         return <div>Section not found</div>;

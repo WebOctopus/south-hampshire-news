@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/accordion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import AdvertisingAlerts from '@/components/AdvertisingAlerts';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -212,7 +213,42 @@ const Navigation = () => {
                           <div className="md:col-span-1 lg:col-span-2 bg-muted/30 p-6 rounded-r-lg">
                             <div className="space-y-4">
                               {section.title === 'Advertising' ? (
+                                <AdvertisingAlerts />
+                              ) : section.title === 'Events' ? (
                                 <>
+                                  <div className="text-sm font-semibold text-foreground">Upcoming Events</div>
+                                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                                    <h4 className="text-sm font-medium text-foreground mb-2">What's happening?</h4>
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                      Discover local events and activities happening in your community.
+                                    </p>
+                                    <Link 
+                                      to="/whats-on" 
+                                      className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                                    >
+                                      Browse events →
+                                    </Link>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-sm font-semibold text-foreground">Latest News</div>
+                                  <div className="bg-white rounded-lg p-4 shadow-sm border">
+                                    <h4 className="text-sm font-medium text-foreground mb-2">Community Update!</h4>
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                      Stay updated with the latest community stories and local events in South Hampshire.
+                                    </p>
+                                    <Link 
+                                      to="/stories" 
+                                      className="inline-flex items-center text-sm font-medium text-community-green hover:text-green-600 transition-colors"
+                                    >
+                                      Read more →
+                                    </Link>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
                                   <div className="text-sm font-semibold text-foreground">Important Information</div>
                                   <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-4 shadow-md">
                                     <h4 className="text-base font-bold text-red-700 mb-2 flex items-center">
@@ -269,7 +305,6 @@ const Navigation = () => {
                                       Read more →
                                     </Link>
                                   </div>
-                                </>
                               )}
                             </div>
                           </div>

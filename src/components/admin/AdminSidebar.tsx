@@ -7,7 +7,8 @@ import {
   Settings,
   BarChart3,
   Shield,
-  Home
+  Home,
+  AlertTriangle
 } from "lucide-react"
 
 import {
@@ -43,6 +44,11 @@ const menuItems = [
     title: "Stories",
     icon: FileText,
     section: "stories"
+  },
+  {
+    title: "Alerts",
+    icon: AlertTriangle,
+    section: "alerts"
   },
   {
     title: "Cost Calculator",
