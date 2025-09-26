@@ -30,7 +30,7 @@ const getBadgeColorClass = (color: string) => {
 
 const AdvertisingAlerts = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [premiumSlotsOpen, setPremiumSlotsOpen] = useState(false);
+  const [premiumSlotsOpen, setPremiumSlotsOpen] = useState(true); // Open by default
 
   useEffect(() => {
     const loadAlerts = async () => {
@@ -127,16 +127,6 @@ const AdvertisingAlerts = () => {
           </CollapsibleContent>
         </Collapsible>
       )}
-
-      <div className="bg-white rounded-lg p-4 shadow-sm border">
-        <h4 className="font-semibold text-foreground mb-2">Advertise with us</h4>
-        <p className="text-sm text-muted-foreground mb-3">
-          Reach 14 areas across South Hampshire with our advertising packages.
-        </p>
-        <a href="/advertising" className="text-sm font-medium text-primary hover:underline">
-          View offers →
-        </a>
-      </div>
     </>
   );
 };
