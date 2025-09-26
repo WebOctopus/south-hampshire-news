@@ -130,7 +130,7 @@ const Navigation = () => {
   const advertisingDropdownItems = [
     { name: 'View Advertising Options', href: '/advertising', description: 'Explore our advertising packages and rates', icon: Megaphone },
     { name: 'Cost Calculator', href: '/advertising#calculator', description: 'Calculate your advertising costs instantly', icon: Calculator },
-    { name: 'Distribution Areas', href: '/advertising#areas', description: 'See our 12 areas across South Hampshire', icon: MapPin },
+    { name: 'Distribution Areas', href: '/advertising#areas', description: 'See our 14 areas across South Hampshire', icon: MapPin },
     { name: 'Special Offers', href: '/advertising#offers', description: 'Current promotional deals and packages', icon: Gift },
   ];
 
@@ -228,7 +228,7 @@ const Navigation = () => {
                                   <div className="bg-white rounded-lg p-4 shadow-sm border">
                                     <h4 className="text-sm font-medium text-foreground mb-2">Advertise with us</h4>
                                     <p className="text-sm text-muted-foreground mb-3">
-                                      Reach 12 areas across South Hampshire with our advertising packages.
+                                      Reach 14 areas across South Hampshire with our advertising packages.
                                     </p>
                                     <Link 
                                       to="/advertising#offers" 

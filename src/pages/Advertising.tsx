@@ -1389,7 +1389,7 @@ const effectiveSelectedAreas = useMemo(() => {
               <AccordionItem value="faq-1">
                 <AccordionTrigger>What areas do you cover?</AccordionTrigger>
                 <AccordionContent>
-                  We cover 12 distinct areas across South Hampshire, reaching over 142,000 homes with our magazine distribution and leafleting services.
+                  We cover 14 distinct areas across South Hampshire, reaching over 142,000 homes with our magazine distribution and leafleting services.
                 </AccordionContent>
               </AccordionItem>
               
@@ -1451,7 +1451,7 @@ const effectiveSelectedAreas = useMemo(() => {
               £999 ALL AREAS PACKAGE
             </h2>
             <p className="text-2xl md:text-3xl mb-4 font-bold">
-              Reach 142,000 Homes Across All 12 Areas
+              Reach 142,000 Homes Across All 14 Areas
             </p>
             <p className="text-xl mb-8 opacity-90">
               Save over £500 with our exclusive package deal
@@ -1467,7 +1467,7 @@ const effectiveSelectedAreas = useMemo(() => {
             </Card>
             <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
               <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">12</div>
+                <div className="text-4xl font-bold mb-2">14</div>
                 <div className="text-lg">Distribution Areas</div>
               </CardContent>
             </Card>

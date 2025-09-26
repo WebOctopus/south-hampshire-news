@@ -39,8 +39,8 @@ const Support = () => {
     },
     {
       icon: <MapPin className="h-8 w-8 text-community-green" />,
-      title: "12 Coverage Areas",
-      description: "We cover 12 distinct areas across South Hampshire, ensuring relevant local content for each community."
+      title: "14 Coverage Areas",
+      description: "We cover 14 distinct areas across South Hampshire, ensuring relevant local content for each community."
     },
     {
       icon: <Users className="h-8 w-8 text-community-green" />,
@@ -63,7 +63,7 @@ const Support = () => {
         },
         {
           question: "Which areas do you cover?",
-          answer: "We cover 12 areas across South Hampshire including Winchester & Surrounds, Itchen Valley, Meon Valley & Whiteley, New Forest & Waterside, Southampton West & Totton, Test Valley & Romsey, Winchester & Alresford, and Chandler's Ford & Eastleigh."
+          answer: "We cover 14 areas across South Hampshire including Winchester & Surrounds, Itchen Valley, Meon Valley & Whiteley, New Forest & Waterside, Southampton West & Totton, Test Valley & Romsey, Winchester & Alresford, and Chandler's Ford & Eastleigh."
         },
         {
           question: "How can I get a copy of the magazine?",
@@ -282,7 +282,7 @@ const Support = () => {
                         <Building className="h-3 w-3 mr-1" />
                         Areas
                       </Badge>
-                      <span className="text-sm">12 distinct areas across South Hampshire</span>
+                      <span className="text-sm">14 distinct areas across South Hampshire</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge variant="secondary" className="bg-community-green/10 text-community-green">

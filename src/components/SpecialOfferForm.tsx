@@ -378,7 +378,7 @@ const SpecialOfferForm = ({ children }: SpecialOfferFormProps) => {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Coverage:</span>
-                  <span className="font-medium">All 12 Distribution Areas</span>
+                  <span className="font-medium">All 14 Distribution Areas</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total Circulation:</span>
