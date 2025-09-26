@@ -1329,6 +1329,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_active_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          alert_type: string
+          badge_color: string
+          badge_text: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          message: string
+          priority: number
+          title: string
+        }[]
+      }
       get_business_detail: {
         Args: { business_id: string }
         Returns: {
