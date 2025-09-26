@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
+import AdvertisingAlerts from "@/components/AdvertisingAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import AdvertisingStepForm from "@/components/AdvertisingStepForm";
 import { useAgencyDiscount } from "@/hooks/useAgencyDiscount";
@@ -1368,6 +1369,11 @@ const effectiveSelectedAreas = useMemo(() => {
               <p className="text-sm text-gray-600 mt-4 font-medium">
                 14 Distribution Areas across South Hampshire
               </p>
+            </div>
+
+            {/* Alerts Section */}
+            <div className="max-w-4xl mx-auto mt-12 space-y-4">
+              <AdvertisingAlerts />
             </div>
           </div>
 
