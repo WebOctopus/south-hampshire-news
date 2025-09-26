@@ -27,7 +27,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'body': ['Inter', 'sans-serif'],
+				'body': ['Arima Madurai', 'serif'],
 				'heading': ['Oswald', 'sans-serif'],
 			},
 			colors: {
