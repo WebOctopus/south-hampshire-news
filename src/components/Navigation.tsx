@@ -155,7 +155,7 @@ const Navigation = () => {
               <img 
                 src="/lovable-uploads/discover-logo-2.png" 
                 alt="Discover Magazines Logo" 
-                className="h-12 w-auto"
+                className="h-16 w-auto py-2"
               />
             </Link>
           </div>
