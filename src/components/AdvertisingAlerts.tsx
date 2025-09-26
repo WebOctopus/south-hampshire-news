@@ -40,7 +40,6 @@ const AdvertisingAlerts = () => {
           .from('alerts')
           .select('*')
           .eq('is_active', true)
-          .or('expires_at.is.null,expires_at.gte.' + new Date().toISOString())
           .order('priority', { ascending: true });
 
         console.log('AdvertisingAlerts: Query result:', { data, error });
