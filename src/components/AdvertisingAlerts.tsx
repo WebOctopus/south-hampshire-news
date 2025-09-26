@@ -35,6 +35,7 @@ const AdvertisingAlerts = () => {
   useEffect(() => {
     const loadAlerts = async () => {
       try {
+        console.log('AdvertisingAlerts: Loading alerts...');
         const { data, error } = await supabase
           .from('alerts')
           .select('*')
@@ -42,11 +43,13 @@ const AdvertisingAlerts = () => {
           .or('expires_at.is.null,expires_at.gte.' + new Date().toISOString())
           .order('priority', { ascending: true });
 
+        console.log('AdvertisingAlerts: Query result:', { data, error });
         if (error) throw error;
         setAlerts((data || []).map(item => ({
           ...item,
           alert_type: item.alert_type as 'deadline' | 'premium_slot'
         })));
+        console.log('AdvertisingAlerts: Alerts set to:', (data || []));
       } catch (error) {
         console.error('Error loading alerts:', error);
       }
@@ -58,12 +61,21 @@ const AdvertisingAlerts = () => {
   const deadlineAlerts = alerts.filter(alert => alert.alert_type === 'deadline');
   const premiumSlotAlerts = alerts.filter(alert => alert.alert_type === 'premium_slot');
 
+  console.log('AdvertisingAlerts: Rendering with alerts:', alerts);
+  console.log('AdvertisingAlerts: Deadline alerts:', deadlineAlerts);
+  console.log('AdvertisingAlerts: Premium slot alerts:', premiumSlotAlerts);
+
   return (
     <>
       <div className="text-sm font-semibold text-foreground">Important Information</div>
       
+      {/* Debug info */}
+      <div className="text-xs text-gray-500 mb-2">
+        Loading {alerts.length} alerts (Debug: {deadlineAlerts.length} deadline, {premiumSlotAlerts.length} premium)
+      </div>
+      
       {/* Deadline Alerts */}
-      {deadlineAlerts.map((alert) => (
+      {deadlineAlerts.length > 0 ? deadlineAlerts.map((alert) => (
         <div key={alert.id} className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-4 shadow-md">
           <h4 className="text-base font-bold text-red-700 mb-2 flex items-center justify-between">
             <span>⚠️ {alert.title}</span>
@@ -81,7 +93,11 @@ const AdvertisingAlerts = () => {
             ))}
           </div>
         </div>
-      ))}
+      )) : (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700">
+          No deadline alerts found
+        </div>
+      )}
 
       {/* Premium Slot Alerts */}
       {premiumSlotAlerts.length > 0 && (
