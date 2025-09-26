@@ -1363,7 +1363,7 @@ const effectiveSelectedAreas = useMemo(() => {
               <img 
                 src={editionsMap}
                 alt="Distribution Areas Map - 14 Areas across South Hampshire showing numbered regions including Winchester, Southampton, Fareham, New Forest and surrounding areas" 
-                className="w-full max-w-md mx-auto rounded-lg shadow-lg" 
+                className="w-full max-w-2xl mx-auto rounded-lg shadow-lg" 
               />
               <p className="text-sm text-gray-600 mt-4 font-medium">
                 14 Distribution Areas across South Hampshire
