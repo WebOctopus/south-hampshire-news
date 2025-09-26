@@ -98,7 +98,7 @@ const AdvertisingAlerts = () => {
                     {alert.title}
                   </h5>
                   {alert.badge_text && (
-                    <Badge className={getBadgeColorClass(alert.badge_color)} size="sm">
+                    <Badge className={getBadgeColorClass(alert.badge_color)}>
                       {alert.badge_text}
                     </Badge>
                   )}
