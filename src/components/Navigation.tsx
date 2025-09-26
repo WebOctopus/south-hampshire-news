@@ -153,7 +153,7 @@ const Navigation = () => {
           <div className="flex-shrink-0">
             <Link to="/">
               <img 
-                src="/lovable-uploads/cc241b5d-25f5-4df1-bf08-5b9569b299a1.png" 
+                src="/lovable-uploads/discover-logo.png" 
                 alt="Discover Magazines Logo" 
                 className="h-8 w-auto"
               />
