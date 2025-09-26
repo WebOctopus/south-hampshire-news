@@ -28,7 +28,7 @@ export default {
 		extend: {
 			fontFamily: {
 				'body': ['Arima Madurai', 'serif'],
-				'heading': ['Oswald', 'sans-serif'],
+				'heading': ['Teko', 'sans-serif'],
 			},
 			colors: {
 				'community-green': '#10b981',
