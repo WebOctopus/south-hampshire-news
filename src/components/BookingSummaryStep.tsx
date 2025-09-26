@@ -321,36 +321,6 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 })}
               </RadioGroup>
 
-              {/* Action Buttons */}
-              <div className="mt-6 space-y-4">
-                <h4 className="font-semibold text-lg text-center">What to Do Next</h4>
-                
-                <button
-                  onClick={() => {
-                    window.open('tel:01234567890', '_self');
-                  }}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/80 font-medium py-3 px-6 rounded-md transition-colors"
-                >
-                  Call Discover Team
-                </button>
-                
-                <button
-                  onClick={handleNext}
-                  disabled={!selectedPaymentOption}
-                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Save Quote
-                </button>
-                
-                <button
-                  onClick={handleNext}
-                  disabled={!selectedPaymentOption}
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Book Now
-                </button>
-              </div>
-
               {/* Amazing Value Section */}
               <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border">
                 <div className="text-center">
@@ -381,6 +351,36 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                     })()}
                   </p>
                 </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 space-y-4">
+                <h4 className="font-semibold text-lg text-center">What to Do Next</h4>
+                
+                <button
+                  onClick={() => {
+                    window.open('tel:01234567890', '_self');
+                  }}
+                  className="w-full bg-accent text-accent-foreground hover:bg-accent/80 font-medium py-3 px-6 rounded-md transition-colors"
+                >
+                  Call Discover Team
+                </button>
+                
+                <button
+                  onClick={handleNext}
+                  disabled={!selectedPaymentOption}
+                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save Quote
+                </button>
+                
+                <button
+                  onClick={handleNext}
+                  disabled={!selectedPaymentOption}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium py-3 px-6 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Book Now
+                </button>
               </div>
 
               {/* What You're Booking */}
