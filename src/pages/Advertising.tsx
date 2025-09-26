@@ -1359,21 +1359,24 @@ const effectiveSelectedAreas = useMemo(() => {
               </Accordion>
             </div>
 
-            {/* Map Section */}
-            <div id="distribution-map" className="text-center">
-              <img 
-                src={editionsMap}
-                alt="Distribution Areas Map - 14 Areas across South Hampshire showing numbered regions including Winchester, Southampton, Fareham, New Forest and surrounding areas" 
-                className="w-full max-w-2xl mx-auto rounded-lg shadow-lg" 
-              />
-              <p className="text-sm text-gray-600 mt-4 font-medium">
-                14 Distribution Areas across South Hampshire
-              </p>
-            </div>
+            {/* Map and Alerts Section */}
+            <div className="space-y-8">
+              {/* Map */}
+              <div id="distribution-map" className="text-center">
+                <img 
+                  src={editionsMap}
+                  alt="Distribution Areas Map - 14 Areas across South Hampshire showing numbered regions including Winchester, Southampton, Fareham, New Forest and surrounding areas" 
+                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg" 
+                />
+                <p className="text-sm text-gray-600 mt-4 font-medium">
+                  14 Distribution Areas across South Hampshire
+                </p>
+              </div>
 
-            {/* Alerts Section */}
-            <div className="max-w-4xl mx-auto mt-12 space-y-4">
-              <AdvertisingAlerts />
+              {/* Alerts */}
+              <div className="space-y-4">
+                <AdvertisingAlerts />
+              </div>
             </div>
           </div>
 
