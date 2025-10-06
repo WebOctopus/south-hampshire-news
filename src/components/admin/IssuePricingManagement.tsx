@@ -147,9 +147,9 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
       <div className="flex items-center gap-2 mb-6">
         <Receipt className="h-6 w-6 text-primary" />
         <div>
-          <h2 className="text-xl font-heading font-bold">Issue-Based Pricing Management</h2>
+          <h2 className="text-xl font-heading font-bold">Area-Count Pricing Management</h2>
           <p className="text-sm text-muted-foreground">
-            Configure pricing for each ad size based on number of issues published
+            Configure pricing for each ad size based on number of areas selected
           </p>
         </div>
       </div>
@@ -159,10 +159,10 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Configure Pricing by Issue Count
+            Configure Pricing by Area Count
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Set specific pricing for each ad size based on the number of issues. Click to expand each section.
+            Set specific pricing for each ad size based on the number of areas selected. Click to expand each section.
           </p>
         </CardHeader>
         <CardContent>
@@ -209,8 +209,8 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
                           <Table className="text-sm">
                             <TableHeader>
                               <TableRow>
-                                <TableHead className="w-20">Issues</TableHead>
-                                <TableHead>Per Issue (£)</TableHead>
+                                <TableHead className="w-20">Areas</TableHead>
+                                <TableHead>Price (£)</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -255,8 +255,8 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
                           <Table className="text-sm">
                             <TableHeader>
                               <TableRow>
-                                <TableHead className="w-20">Issues</TableHead>
-                                <TableHead>Per Issue (£)</TableHead>
+                                <TableHead className="w-20">Areas</TableHead>
+                                <TableHead>Price (£)</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
