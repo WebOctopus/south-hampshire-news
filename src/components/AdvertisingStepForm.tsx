@@ -106,7 +106,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleFixedTermContinue = () => {
-    // Switch to BOGOF and transfer selections
+    // Switch to BOGOF and transfer selections, then go back to location selection (step 2)
     setSelectedPricingModel('bogof');
     setCampaignData(prev => ({
       ...prev,
@@ -116,6 +116,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     
     setShowFixedTermConfirmation(false);
     setPendingNextStep(null);
+    
+    // Navigate back to step 2 (location selection) where they can pick free areas
+    setCurrentStep(2);
     
     toast({
       title: "Switched to 3+ Repeat Package!",
@@ -123,20 +126,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     });
   };
 
-  const handleSwitchToSubscription = () => {
-    // Switch to BOGOF and transfer selections
-    setSelectedPricingModel('bogof');
-    setCampaignData(prev => ({
-      ...prev,
-      bogofPaidAreas: prev.selectedAreas, // Transfer current selections as paid areas
-      bogofFreeAreas: [] // Reset free areas so user can select them
-    }));
-    
+  const handleContinueWithFixedTerm = () => {
+    // Stay in fixed term mode and proceed to booking summary
     setShowFixedTermConfirmation(false);
+    
+    // Call the pending next step to proceed to booking summary
+    if (pendingNextStep) {
+      pendingNextStep();
+    }
     setPendingNextStep(null);
+    
     toast({
-      title: "Switched to 3+ Repeat Package",
-      description: "Your selections have been transferred. Now select your FREE areas!",
+      title: "Continuing with Fixed Term",
+      description: "Review your booking details below.",
     });
   };
 
@@ -941,10 +943,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             </Button>
             <Button
               variant="outline"
-              onClick={handleSwitchToSubscription}
+              onClick={handleContinueWithFixedTerm}
               className="border-blue-500 text-blue-600 hover:bg-blue-50 px-6"
             >
-              NO, SWITCH TO SUBSCRIPTION, PLEASE
+              No, continue with fixed term
             </Button>
           </div>
         </DialogContent>
