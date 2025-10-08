@@ -7,6 +7,7 @@ import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
 import BookingSummaryStep from '@/components/BookingSummaryStep';
 import { LeafletBasketSummary } from '@/components/LeafletBasketSummary';
+import { FixedTermBasketSummary } from '@/components/FixedTermBasketSummary';
 import ContactInformationStep from '@/components/ContactInformationStep';
 import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
 import { useToast } from '@/hooks/use-toast';
@@ -785,6 +786,13 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedLeafletSize={campaignData.selectedAdSize}
                 selectedDuration={campaignData.selectedDuration}
                 selectedMonths={campaignData.selectedMonths}
+                pricingBreakdown={campaignData.pricingBreakdown}
+              />
+            ) : selectedPricingModel === 'fixed' ? (
+              <FixedTermBasketSummary
+                selectedAreas={campaignData.selectedAreas}
+                selectedAdSize={campaignData.selectedAdSize}
+                selectedDuration={campaignData.selectedDuration}
                 pricingBreakdown={campaignData.pricingBreakdown}
               />
             ) : (
