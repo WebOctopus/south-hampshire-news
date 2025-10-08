@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Alert {
@@ -44,8 +44,10 @@ export const useActiveAlerts = () => {
   useEffect(() => {
     console.log('useActiveAlerts: Setting up real-time subscription...');
     
+    // Generate unique channel name to avoid conflicts
+    const channelName = `alerts-changes-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel('alerts-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -62,6 +64,7 @@ export const useActiveAlerts = () => {
 
     return () => {
       console.log('useActiveAlerts: Cleaning up real-time subscription...');
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
