@@ -6,6 +6,7 @@ import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
 import BookingSummaryStep from '@/components/BookingSummaryStep';
+import { LeafletBasketSummary } from '@/components/LeafletBasketSummary';
 import ContactInformationStep from '@/components/ContactInformationStep';
 import { SalesAssistantPopup } from '@/components/SalesAssistantPopup';
 import { useToast } from '@/hooks/use-toast';
@@ -669,19 +670,29 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   />
 )}
               
-              <BookingSummaryStep
-                pricingModel={selectedPricingModel}
-                selectedAreas={campaignData.selectedAreas}
-                bogofPaidAreas={campaignData.bogofPaidAreas}
-                bogofFreeAreas={campaignData.bogofFreeAreas}
-                selectedAdSize={campaignData.selectedAdSize}
-                selectedDuration={campaignData.selectedDuration}
-                pricingBreakdown={campaignData.pricingBreakdown}
-                selectedPaymentOption={campaignData.selectedPaymentOption}
-                onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
-                selectedStartingIssue={campaignData.selectedStartingIssue}
-                onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
-              />
+              {selectedPricingModel === 'leafleting' ? (
+                <LeafletBasketSummary
+                  selectedAreas={campaignData.selectedAreas}
+                  selectedLeafletSize={campaignData.selectedAdSize}
+                  selectedDuration={campaignData.selectedDuration}
+                  selectedMonths={campaignData.selectedMonths}
+                  pricingBreakdown={campaignData.pricingBreakdown}
+                />
+              ) : (
+                <BookingSummaryStep
+                  pricingModel={selectedPricingModel}
+                  selectedAreas={campaignData.selectedAreas}
+                  bogofPaidAreas={campaignData.bogofPaidAreas}
+                  bogofFreeAreas={campaignData.bogofFreeAreas}
+                  selectedAdSize={campaignData.selectedAdSize}
+                  selectedDuration={campaignData.selectedDuration}
+                  pricingBreakdown={campaignData.pricingBreakdown}
+                  selectedPaymentOption={campaignData.selectedPaymentOption}
+                  onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
+                  selectedStartingIssue={campaignData.selectedStartingIssue}
+                  onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
+                />
+              )}
               
               <ContactInformationStep
                 pricingModel={selectedPricingModel}
@@ -768,19 +779,29 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   />
 )}
             
-            <BookingSummaryStep
-              pricingModel={selectedPricingModel}
-              selectedAreas={campaignData.selectedAreas}
-              bogofPaidAreas={campaignData.bogofPaidAreas}
-              bogofFreeAreas={campaignData.bogofFreeAreas}
-              selectedAdSize={campaignData.selectedAdSize}
-              selectedDuration={campaignData.selectedDuration}
-              pricingBreakdown={campaignData.pricingBreakdown}
-              selectedPaymentOption={campaignData.selectedPaymentOption}
-              onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
-              selectedStartingIssue={campaignData.selectedStartingIssue}
-              onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
-            />
+            {selectedPricingModel === 'leafleting' ? (
+              <LeafletBasketSummary
+                selectedAreas={campaignData.selectedAreas}
+                selectedLeafletSize={campaignData.selectedAdSize}
+                selectedDuration={campaignData.selectedDuration}
+                selectedMonths={campaignData.selectedMonths}
+                pricingBreakdown={campaignData.pricingBreakdown}
+              />
+            ) : (
+              <BookingSummaryStep
+                pricingModel={selectedPricingModel}
+                selectedAreas={campaignData.selectedAreas}
+                bogofPaidAreas={campaignData.bogofPaidAreas}
+                bogofFreeAreas={campaignData.bogofFreeAreas}
+                selectedAdSize={campaignData.selectedAdSize}
+                selectedDuration={campaignData.selectedDuration}
+                pricingBreakdown={campaignData.pricingBreakdown}
+                selectedPaymentOption={campaignData.selectedPaymentOption}
+                onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
+                selectedStartingIssue={campaignData.selectedStartingIssue}
+                onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
+              />
+            )}
             
             <ContactInformationStep
               pricingModel={selectedPricingModel}
