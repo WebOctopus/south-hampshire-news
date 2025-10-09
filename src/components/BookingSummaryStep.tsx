@@ -114,9 +114,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
       amount = amount * (1 + option.additional_fee_percentage / 100);
     }
     
-    // For monthly payments, divide by minimum payments * 2 (12-month plan instead of 6-month)
+    // For monthly payments, divide by minimum payments
     if (option.minimum_payments && option.option_type === 'monthly') {
-      return amount / (option.minimum_payments * 2);
+      return amount / option.minimum_payments;
     }
     
     return amount;
