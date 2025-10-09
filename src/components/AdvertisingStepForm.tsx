@@ -61,9 +61,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         leafletAreas: leafletAreas.length
       });
 
-      // Get duration multiplier from the selected leaflet duration
+      // Get duration multiplier from the selected leaflet duration (using issues, not months)
       const selectedLeafletDurationData = leafletDurations?.find(d => d.id === campaignData.selectedDuration);
-      const durationMultiplier = selectedLeafletDurationData?.months || 1;
+      const durationMultiplier = selectedLeafletDurationData?.issues || 1;
       
       console.log('Duration multiplier:', durationMultiplier, 'from duration:', selectedLeafletDurationData);
       

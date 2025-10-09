@@ -41,9 +41,9 @@ export function calculateLeafletingPrice(
   // Calculate base subtotal
   const subtotal = selectedAreas.reduce((total, area) => total + area.price_with_vat, 0);
   
-  // Calculate volume discount based on number of areas (10% for 2+ areas)
-  const volumeDiscountPercent = selectedAreas.length >= 2 ? 10 : 0;
-  const volumeDiscount = subtotal * (volumeDiscountPercent / 100);
+  // No volume discount for leafleting
+  const volumeDiscountPercent = 0;
+  const volumeDiscount = 0;
   
   // Calculate total circulation
   const totalCirculation = selectedAreas.reduce((total, area) => total + area.bimonthly_circulation, 0);

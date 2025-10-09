@@ -73,7 +73,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
     if (pricingModel === 'leafleting') {
       if (!selectedDuration || !leafletDurations) return null;
       const selectedLeafletDurationData = leafletDurations.find(d => d.id === selectedDuration);
-      const durationMultiplier = selectedLeafletDurationData?.months || 1;
+      const durationMultiplier = selectedLeafletDurationData?.issues || 1;
       return calculateLeafletingPrice(effectiveSelectedAreas, leafletAreas || [], durationMultiplier);
     }
 

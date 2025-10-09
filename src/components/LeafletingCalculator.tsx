@@ -119,12 +119,16 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
 
   // Calculate pricing using Supabase data
   const pricingBreakdown = useMemo(() => {
-    if (!leafletAreas?.length) return null;
+    if (!leafletAreas?.length || !leafletDurations?.length) return null;
+    
+    // Get the selected duration data to find the issues count
+    const selectedDurationData = leafletDurations.find(d => d.id === formData.duration);
+    const durationMultiplier = selectedDurationData?.issues || 1;
     
     const basePricing = calculateLeafletingPrice(
       formData.selectedAreas,
       leafletAreas,
-      parseInt(formData.duration)
+      durationMultiplier
     );
 
     if (!basePricing || !appliedVoucher) return basePricing;
