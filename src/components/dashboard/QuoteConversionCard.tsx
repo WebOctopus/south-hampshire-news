@@ -11,9 +11,10 @@ interface QuoteConversionCardProps {
   onView: (quote: any) => void;
   onDelete?: (quote: any) => void;
   isDeleting?: boolean;
+  onBookNow?: (quote: any) => void;
 }
 
-export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, isDeleting }: QuoteConversionCardProps) {
+export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, isDeleting, onBookNow }: QuoteConversionCardProps) {
   // Add null safety check
   if (!quote) {
     return null;
@@ -151,6 +152,7 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
           )}
           <Button 
             size="sm"
+            onClick={() => onBookNow && onBookNow(quote)}
             className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center"
           >
             <CheckCircle className="h-4 w-4 mr-1" />

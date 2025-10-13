@@ -526,6 +526,64 @@ const Dashboard = () => {
     setQuoteToDelete(quote);
   };
 
+  const handleBookNow = async (quote: any) => {
+    if (!user) return;
+
+    setSubmitting(true);
+    try {
+      // Create booking from quote data
+      const bookingData = {
+        user_id: user.id,
+        contact_name: quote.contact_name,
+        email: quote.email,
+        company: quote.company,
+        phone: quote.phone,
+        title: quote.title,
+        pricing_model: quote.pricing_model,
+        ad_size_id: quote.ad_size_id,
+        duration_id: quote.duration_id,
+        selected_area_ids: quote.selected_area_ids || [],
+        bogof_paid_area_ids: quote.bogof_paid_area_ids || [],
+        bogof_free_area_ids: quote.bogof_free_area_ids || [],
+        monthly_price: quote.monthly_price,
+        subtotal: quote.subtotal,
+        final_total: quote.final_total,
+        duration_multiplier: quote.duration_multiplier,
+        total_circulation: quote.total_circulation,
+        volume_discount_percent: quote.volume_discount_percent,
+        duration_discount_percent: quote.duration_discount_percent,
+        pricing_breakdown: quote.pricing_breakdown,
+        selections: quote.selections,
+        status: 'pending',
+        notes: quote.notes,
+        webhook_payload: {}
+      };
+
+      const { error } = await supabase
+        .from('bookings')
+        .insert([bookingData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Booking Created!",
+        description: "Your campaign has been booked successfully. We'll be in touch soon!",
+      });
+
+      // Reload bookings and switch to bookings tab
+      await loadBookings();
+      setActiveTab('bookings');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create booking",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1046,6 +1104,9 @@ const Dashboard = () => {
                 quote={quotes[0] || null}
                 onEdit={setEditingQuote}
                 onView={setViewingQuote}
+                onDelete={handleDeleteQuoteClick}
+                onBookNow={handleBookNow}
+                isDeleting={deletingQuoteId === quotes[0]?.id}
               />
               <UrgencyAlerts />
       </div>
