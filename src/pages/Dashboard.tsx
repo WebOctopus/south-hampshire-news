@@ -559,19 +559,27 @@ const Dashboard = () => {
         webhook_payload: {}
       };
 
-      const { error } = await supabase
+      const { error: bookingError } = await supabase
         .from('bookings')
         .insert([bookingData]);
 
-      if (error) throw error;
+      if (bookingError) throw bookingError;
+
+      // Delete the quote after successfully creating the booking
+      const { error: deleteError } = await supabase
+        .from('quotes')
+        .delete()
+        .eq('id', quote.id);
+
+      if (deleteError) throw deleteError;
 
       toast({
         title: "Booking Created!",
         description: "Your campaign has been booked successfully. We'll be in touch soon!",
       });
 
-      // Reload bookings and switch to bookings tab
-      await loadBookings();
+      // Reload both quotes and bookings, then switch to bookings tab
+      await Promise.all([loadQuotes(), loadBookings()]);
       setActiveTab('bookings');
     } catch (error: any) {
       toast({
