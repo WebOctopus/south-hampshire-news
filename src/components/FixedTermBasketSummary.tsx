@@ -84,16 +84,20 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
               <CardTitle className="text-xl">Booking Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Advert Size</Label>
+                  <p className="font-medium">{getAdSizeName()}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
+                  <p className="font-medium">{getDurationName()}</p>
+                </div>
+              </div>
+              
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
                 <p className="font-medium">Fixed Term</p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">Advert Size</Label>
-                <p className="font-medium">{getAdSizeName()}</p>
               </div>
 
               <Separator />
@@ -106,29 +110,8 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
               <Separator />
 
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Number of Areas</Label>
-                <p className="font-medium">{numberOfAreas}</p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">Selected Areas</Label>
-                <div className="space-y-1 mt-2">
-                  {selectedAreas.map((areaId, index) => (
-                    <div key={areaId} className="text-sm">
-                      {getAreaName(areaId)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
                 <Label className="text-sm font-medium text-muted-foreground">Number of Issues in Each Area</Label>
                 <p className="font-medium">{numberOfIssues}</p>
-                <p className="text-xs text-muted-foreground mt-1">Duration: {getDurationName()}</p>
               </div>
 
               <Separator />
@@ -139,6 +122,23 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                 <p className="text-xs text-muted-foreground mt-1">
                   ({numberOfAreas} areas × {numberOfIssues} issues)
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Selected Areas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Selected "Paid For" Areas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                 {selectedAreas.map((areaId) => (
+                   <div key={areaId} className="flex items-center gap-2">
+                     <Badge variant="default" className="bg-primary">Paid</Badge>
+                     <span className="text-sm">{getAreaName(areaId)}</span>
+                   </div>
+                 ))}
               </div>
             </CardContent>
           </Card>
