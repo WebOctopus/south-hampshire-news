@@ -436,7 +436,16 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                 <div>Total areas: {bogofPaidAreas.length + bogofFreeAreas.length}</div>
               </>
             ) : (
-              <div>Selected areas: {effectiveSelectedAreas.length}</div>
+              <div>
+                <div className="font-medium mb-2">Selected areas: {effectiveSelectedAreas.length}</div>
+                <ul className="space-y-1 ml-4">
+                  {effectiveAreas
+                    .filter(area => effectiveSelectedAreas.includes(area.id))
+                    .map(area => (
+                      <li key={area.id}>• {area.name}</li>
+                    ))}
+                </ul>
+              </div>
             )}
             <div className="mt-1">
               Total circulation: {effectiveAreas
