@@ -1117,7 +1117,7 @@ const Dashboard = () => {
         </CardContent>
       </Card>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="space-y-6">
         <ROICalculator 
           totalCirculation={50000}
           totalInvestment={quotes[0]?.total_cost || 1000}
