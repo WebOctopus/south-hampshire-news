@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -265,7 +265,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     }
   };
 
-  const handleSaveQuote = async () => {
+  const handleSaveQuote = useCallback(async () => {
     // Validation - companySector is no longer required
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
       toast({
@@ -313,9 +313,9 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [formData, onSaveQuote, toast]);
 
-  const handleBookNow = async () => {
+  const handleBookNow = useCallback(async () => {
     // Same validation as save quote
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
       toast({
@@ -366,7 +366,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [formData, onBookNow, onSaveQuote, toast]);
 
   // Expose the functions to parent component
   React.useEffect(() => {
