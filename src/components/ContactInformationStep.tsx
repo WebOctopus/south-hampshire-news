@@ -31,7 +31,7 @@ interface ContactInformationStepProps {
 }
 
 interface FormData {
-  businessType: 'sole_trader' | 'company';
+  businessType: 'limited_company' | 'sole_trader' | 'non_profit' | 'partnership';
   firstName: string;
   lastName: string;
   companyName: string;
@@ -64,7 +64,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    businessType: 'company',
+    businessType: 'limited_company',
     firstName: "",
     lastName: "",
     companyName: "",
@@ -285,11 +285,11 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    // Company name is required for company type
-    if (formData.businessType === 'company' && !formData.companyName) {
+    // Company name is required for all business types except sole trader
+    if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
         title: "Missing Information", 
-        description: "Company name is required for business type 'Company'.",
+        description: "Company/Organisation name is required.",
         variant: "destructive",
       });
       return;
@@ -335,11 +335,11 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    // Company name is required for company type
-    if (formData.businessType === 'company' && !formData.companyName) {
+    // Company name is required for all business types except sole trader
+    if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
         title: "Missing Information", 
-        description: "Company name is required for business type 'Company'.",
+        description: "Company/Organisation name is required.",
         variant: "destructive",
       });
       return;
@@ -397,28 +397,36 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   <Label>Business Type *</Label>
                   <RadioGroup
                     value={formData.businessType}
-                    onValueChange={(value: 'sole_trader' | 'company') => 
+                    onValueChange={(value: 'limited_company' | 'sole_trader' | 'non_profit' | 'partnership') => 
                       setFormData(prev => ({ ...prev, businessType: value }))
                     }
                     className="flex flex-col space-y-2"
                     disabled={submitting}
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="company" id="company" />
-                      <Label htmlFor="company">Company</Label>
+                      <RadioGroupItem value="limited_company" id="limited_company" />
+                      <Label htmlFor="limited_company">Limited Company</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="sole_trader" id="sole_trader" />
                       <Label htmlFor="sole_trader">Sole Trader</Label>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="non_profit" id="non_profit" />
+                      <Label htmlFor="non_profit">Non Profit Organisation</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="partnership" id="partnership" />
+                      <Label htmlFor="partnership">Partnership eg LLP</Label>
+                    </div>
                   </RadioGroup>
                 </div>
                 
                 {/* Conditional form fields based on business type */}
-                {formData.businessType === 'company' ? (
-                  // Company Form
+                {formData.businessType !== 'sole_trader' ? (
+                  // Company/Non-Profit/Partnership Form
                   <div className="space-y-4">
-                    <h4 className="text-md font-medium">Company Details</h4>
+                    <h4 className="text-md font-medium">Organisation Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="firstName">First Name *</Label>
@@ -443,13 +451,13 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                         />
                       </div>
                       <div>
-                        <Label htmlFor="companyName">Company Name *</Label>
+                        <Label htmlFor="companyName">Company/Organisation Name *</Label>
                         <Input
                           id="companyName"
                           name="companyName"
                           value={formData.companyName}
                           onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                          placeholder="Enter your company name"
+                          placeholder="Enter your company/organisation name"
                           disabled={submitting}
                         />
                       </div>
