@@ -159,8 +159,10 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                   <p className="font-medium">{getAdSizeName()}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
-                  <p className="font-medium">{getDurationName()}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    {pricingModel === 'bogof' ? 'Minimum Duration: 3 issues per area = 6 months' : 'Duration'}
+                  </Label>
+                  <p className="font-medium">{pricingModel === 'bogof' ? '' : getDurationName()}</p>
                 </div>
               </div>
               
