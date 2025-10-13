@@ -170,7 +170,6 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
                   <p className="font-medium">3+ Repeat Package including Buy One Get One Free</p>
-                  <p className="text-sm text-muted-foreground">3 issues/6 months</p>
                 </div>
               )}
               
