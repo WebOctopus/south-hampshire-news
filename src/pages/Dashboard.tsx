@@ -1050,86 +1050,81 @@ const Dashboard = () => {
               <UrgencyAlerts />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Saved Quotes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {quotes.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>You don't have any saved quotes yet.</p>
-                  <p className="mt-2">Visit our advertising calculator to create your first quote!</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date Created</TableHead>
-                        <TableHead>Campaign Type</TableHead>
-                        <TableHead>Total Cost</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {quotes.map((quote) => (
-                        <TableRow key={quote.id}>
-                          <TableCell>
-                            {new Date(quote.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="capitalize">
-                            {quote.campaign_type?.replace('_', ' ') || 'N/A'}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {formatPrice(quote.total_cost)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setViewingQuote(quote)}
-                              >
-                                View
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingQuote(quote)}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteQuoteClick(quote)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="space-y-6">
-            <ROICalculator 
-              totalCirculation={50000}
-              totalInvestment={quotes[0]?.total_cost || 1000}
-            />
-            <CampaignTimeline quote={quotes[0] || null} />
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Saved Quotes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {quotes.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>You don't have any saved quotes yet.</p>
+              <p className="mt-2">Visit our advertising calculator to create your first quote!</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date Created</TableHead>
+                    <TableHead>Campaign Type</TableHead>
+                    <TableHead>Total Cost</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {quotes.map((quote) => (
+                    <TableRow key={quote.id}>
+                      <TableCell>
+                        {new Date(quote.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="capitalize">
+                        {quote.campaign_type?.replace('_', ' ') || 'N/A'}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {formatPrice(quote.total_cost)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setViewingQuote(quote)}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingQuote(quote)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteQuoteClick(quote)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       
-      <SuccessStories />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <ROICalculator 
+          totalCirculation={50000}
+          totalInvestment={quotes[0]?.total_cost || 1000}
+        />
+        <CampaignTimeline quote={quotes[0] || null} />
+        <SuccessStories />
+      </div>
     </div>
   );
 
