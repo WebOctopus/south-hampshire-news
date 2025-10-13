@@ -48,7 +48,7 @@ const pricingOptions: PricingOption[] = [
       { label: 'Monthly Payment Plan', value: false },
       { label: 'Cancellation Notice', value: 'Not applicable' },
     ],
-    cta: 'Book Now',
+    cta: 'SELECT',
   },
   {
     id: 'bogof',
@@ -71,7 +71,7 @@ const pricingOptions: PricingOption[] = [
       { label: 'Monthly Payment Plan', value: true, highlight: true },
       { label: 'Cancellation Notice', value: '30 days' },
     ],
-    cta: 'Book Now',
+    cta: 'SELECT',
   },
   {
     id: 'leafleting',
@@ -95,7 +95,7 @@ const pricingOptions: PricingOption[] = [
       { label: 'Monthly Payment Plan', value: false },
       { label: 'Cancellation Notice', value: 'Not applicable' },
     ],
-    cta: 'Book Now',
+    cta: 'SELECT',
   },
 ];
 
