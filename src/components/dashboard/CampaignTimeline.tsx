@@ -7,6 +7,11 @@ interface CampaignTimelineProps {
 }
 
 export default function CampaignTimeline({ quote }: CampaignTimelineProps) {
+  // Add null safety check
+  if (!quote) {
+    return null;
+  }
+
   const getTimelineSteps = () => {
     const baseSteps = [
       {
