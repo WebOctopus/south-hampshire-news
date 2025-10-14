@@ -239,8 +239,11 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                   <h4 className="font-bold text-lg mb-2">🎯 Amazing Value!</h4>
                   <p className="text-xl font-bold text-primary">
                     {(() => {
-                      if (pricingBreakdown?.totalCirculation) {
-                        const costPer1000 = (baseTotal / pricingBreakdown.totalCirculation) * 1000;
+                      if (pricingBreakdown?.totalCirculation && pricingBreakdown?.durationMultiplier) {
+                        // Calculate cost per issue (bi-monthly)
+                        const costPerIssue = baseTotal / pricingBreakdown.durationMultiplier;
+                        // Calculate CPM for bi-monthly period
+                        const costPer1000 = (costPerIssue / pricingBreakdown.totalCirculation) * 1000;
                         return `Only ${formatPrice(costPer1000)} + VAT per 1,000 homes reached`;
                       }
                       return 'Calculating...';
