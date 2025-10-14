@@ -99,8 +99,13 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   const calculatePaymentAmount = (option: any) => {
     let amount = baseTotal;
     
-    // For 3+ package (BOGOF) monthly payments, show 12-month total (half of 6-month base)
+    // For 3+ package (BOGOF) monthly payments, show 6-month total (half of base)
     if (pricingModel === 'bogof' && option.option_type === 'monthly') {
+      amount = baseTotal / 2;
+    }
+    
+    // For 3+ package (BOGOF) 6-month full payment, calculate as monthly * 6
+    if (pricingModel === 'bogof' && option.display_name?.includes('6 Months')) {
       amount = baseTotal / 2;
     }
     
