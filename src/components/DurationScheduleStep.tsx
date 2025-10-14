@@ -446,15 +446,19 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
           <SelectContent>
             {relevantDurations.map((duration) => (
               <SelectItem key={duration.id} value={duration.id}>
-                <div className="flex justify-between items-center w-full">
+                {pricingModel === 'fixed' ? (
                   <span>{duration.name}</span>
-                  <span className="ml-4 text-muted-foreground">
-                    {pricingModel === 'leafleting' 
-                      ? `${(duration as any).months || 1} month${((duration as any).months || 1) > 1 ? 's' : ''}`
-                      : (duration as any).description
-                    }
-                  </span>
-                </div>
+                ) : (
+                  <div className="flex justify-between items-center w-full">
+                    <span>{duration.name}</span>
+                    <span className="ml-4 text-muted-foreground">
+                      {pricingModel === 'leafleting' 
+                        ? `${(duration as any).months || 1} month${((duration as any).months || 1) > 1 ? 's' : ''}`
+                        : (duration as any).description
+                      }
+                    </span>
+                  </div>
+                )}
               </SelectItem>
             ))}
           </SelectContent>
