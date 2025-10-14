@@ -204,6 +204,21 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
 
               {/* Pricing Summary */}
               <div className="space-y-3 pt-4 border-t">
+                {/* Show discount breakdown if combo discount is applied */}
+                {pricingBreakdown?.comboDiscountPercent > 0 && (
+                  <>
+                    <div className="flex justify-between items-center text-sm">
+                      <span>Subtotal:</span>
+                      <span className="font-medium">{formatPrice(pricingBreakdown.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>Combo Discount ({pricingBreakdown.comboDiscountPercent}%):</span>
+                      <span className="font-medium">-{formatPrice(pricingBreakdown.comboDiscount)}</span>
+                    </div>
+                    <div className="h-px bg-border my-2" />
+                  </>
+                )}
+                
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total Cost:</span>
                   <span className="text-2xl font-bold text-primary">{formatPrice(baseTotal)}</span>
