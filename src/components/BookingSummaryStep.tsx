@@ -109,8 +109,13 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
       amount = baseTotal / 2;
     }
     
-    // For 12-month options, double the base amount (assuming baseTotal is 6 months)
-    if (option.display_name?.includes('12 Months') || option.option_type?.includes('12')) {
+    // For 3+ package (BOGOF) 12-month full payment, calculate as (monthly * 12) - 10%
+    if (pricingModel === 'bogof' && (option.display_name?.includes('12 Months') || option.option_type?.includes('12'))) {
+      amount = (baseTotal / 2) * 0.9; // 12 months with 10% discount
+    }
+    
+    // For non-BOGOF 12-month options, double the base amount
+    if (pricingModel !== 'bogof' && (option.display_name?.includes('12 Months') || option.option_type?.includes('12'))) {
       amount = baseTotal * 2;
     }
     
