@@ -371,23 +371,13 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                   <h4 className="font-bold text-lg mb-2">🎯 Amazing Value!</h4>
                   <p className="text-xl font-bold text-primary">
                     {(() => {
-                      if (selectedPaymentOption && pricingBreakdown?.totalCirculation) {
-                        const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOption);
-                        if (selectedOption) {
-                          let selectedAmount = calculatePaymentAmount(selectedOption);
-                          
-                          // For monthly payments, calculate annual cost for cost per 1,000
-                          if (selectedOption.option_type === 'monthly' && selectedOption.minimum_payments) {
-                            selectedAmount = selectedAmount * selectedOption.minimum_payments;
-                          }
-                          
-                          // For 12-month options, double the circulation since campaign runs twice
-                          let circulation = pricingBreakdown.totalCirculation;
-                          if (selectedOption.display_name?.includes('12 Months') || selectedOption.option_type?.includes('12')) {
-                            circulation = circulation * 2;
-                          }
-                          
-                          const costPer1000 = (selectedAmount / circulation) * 1000;
+                      if (pricingBreakdown?.totalCirculation) {
+                        // Get the monthly payment amount
+                        const monthlyOption = paymentOptions.find(opt => opt.option_type === 'monthly');
+                        if (monthlyOption) {
+                          const monthlyAmount = calculatePaymentAmount(monthlyOption);
+                          // Formula: (monthly × 2) / total homes × 1000
+                          const costPer1000 = ((monthlyAmount * 2) / pricingBreakdown.totalCirculation) * 1000;
                           return `Only ${formatPrice(costPer1000)} + VAT per 1,000 homes reached`;
                         }
                       }
