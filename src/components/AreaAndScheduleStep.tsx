@@ -672,7 +672,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             <SelectContent>
               {relevantDurations.map((duration) => (
                 <SelectItem key={duration.id} value={duration.id}>
-                  {duration.name} - {(duration as any).duration_value || (duration as any).months} months
+                  {duration.name}
                 </SelectItem>
               ))}
             </SelectContent>
