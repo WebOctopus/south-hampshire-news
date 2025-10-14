@@ -375,12 +375,15 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
               </Card>
 
               {/* Duration */}
-              <Card>
+              <Card className="border-primary/50 shadow-md bg-primary/5">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Campaign Duration
+                    <Calendar className="h-5 w-5 text-primary" />
+                    Campaign Duration *
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Please select how long you'd like your campaign to run
+                  </p>
                 </CardHeader>
                 <CardContent>
                   {leafletDurations && leafletDurations.length > 0 ? (
