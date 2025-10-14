@@ -124,11 +124,13 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
     // Get the selected duration data to find the issues count
     const selectedDurationData = leafletDurations.find(d => d.id === formData.duration);
     const durationMultiplier = selectedDurationData?.issues || 1;
+    const issuesCount = selectedDurationData?.issues || 1;
     
     const basePricing = calculateLeafletingPrice(
       formData.selectedAreas,
       leafletAreas,
-      durationMultiplier
+      durationMultiplier,
+      issuesCount
     );
 
     if (!basePricing || !appliedVoucher) return basePricing;
@@ -549,6 +551,13 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                            <div className="flex justify-between text-green-600">
                              <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
                              <span>-{formatLeafletPrice(pricingBreakdown.volumeDiscount)}</span>
+                           </div>
+                         )}
+
+                         {pricingBreakdown.comboDiscountPercent > 0 && (
+                           <div className="flex justify-between text-green-600">
+                             <span>Combo Discount ({pricingBreakdown.comboDiscountPercent}%):</span>
+                             <span>-{formatLeafletPrice(pricingBreakdown.comboDiscount)}</span>
                            </div>
                          )}
 

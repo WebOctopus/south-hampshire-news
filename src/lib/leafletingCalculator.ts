@@ -6,6 +6,8 @@ export interface LeafletingPricingBreakdown {
   subtotal: number;
   volumeDiscount: number;
   volumeDiscountPercent: number;
+  comboDiscount: number;
+  comboDiscountPercent: number;
   finalTotal: number;
   totalCirculation: number;
   areaBreakdown: Array<{
@@ -25,7 +27,8 @@ export interface LeafletingPricingBreakdown {
 export function calculateLeafletingPrice(
   selectedAreaIds: string[],
   leafletAreas: LeafletArea[] = [],
-  durationMultiplier: number = 1
+  durationMultiplier: number = 1,
+  issuesCount: number = 1
 ): LeafletingPricingBreakdown | null {
   if (selectedAreaIds.length === 0 || leafletAreas.length === 0) {
     return null;
@@ -45,11 +48,16 @@ export function calculateLeafletingPrice(
   const volumeDiscountPercent = 0;
   const volumeDiscount = 0;
   
+  // Calculate combo discount (10% if total items >= 4)
+  const totalItems = selectedAreaIds.length + issuesCount;
+  const comboDiscountPercent = totalItems >= 4 ? 10 : 0;
+  const comboDiscount = (subtotal * comboDiscountPercent) / 100;
+  
   // Calculate total circulation
   const totalCirculation = selectedAreas.reduce((total, area) => total + area.bimonthly_circulation, 0);
   
-  // Calculate final total with duration multiplier
-  const finalTotal = (subtotal - volumeDiscount) * durationMultiplier;
+  // Calculate final total with duration multiplier and combo discount
+  const finalTotal = ((subtotal - volumeDiscount - comboDiscount) * durationMultiplier);
   
   // Build area breakdown
   const areaBreakdown = selectedAreas.map(area => ({
@@ -63,6 +71,8 @@ export function calculateLeafletingPrice(
     subtotal,
     volumeDiscount,
     volumeDiscountPercent,
+    comboDiscount,
+    comboDiscountPercent,
     finalTotal,
     totalCirculation,
     areaBreakdown,

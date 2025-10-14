@@ -134,12 +134,14 @@ const effectiveSelectedAreas = useMemo(() => {
 
       // Get duration multiplier from the selected leaflet duration
       const selectedLeafletDurationData = leafletDurations?.find(d => d.id === selectedDuration);
-      const durationMultiplier = selectedLeafletDurationData?.months || 1;
+      const durationMultiplier = selectedLeafletDurationData?.issues || 1;
+      const issuesCount = selectedLeafletDurationData?.issues || 1;
       
       return calculateLeafletingPrice(
         effectiveSelectedAreas,
         leafletAreas || [],
-        durationMultiplier
+        durationMultiplier,
+        issuesCount
       );
     }
 
