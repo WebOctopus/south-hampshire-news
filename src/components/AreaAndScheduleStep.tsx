@@ -672,7 +672,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             <SelectContent>
               {relevantDurations.map((duration) => (
                 <SelectItem key={duration.id} value={duration.id}>
-                  {duration.name}
+                  {duration.name} of advertising
                 </SelectItem>
               ))}
             </SelectContent>
