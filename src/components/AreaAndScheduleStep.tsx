@@ -638,7 +638,8 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         )}
 
         {/* Selection Summary */}
-        {effectiveSelectedAreas.length > 0 && (
+        {((pricingModel === 'bogof' && (bogofPaidAreas.length > 0 || bogofFreeAreas.length > 0)) || 
+          (pricingModel !== 'bogof' && selectedAreas.length > 0)) && (
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
             <h4 className="font-medium mb-2">Selection Summary</h4>
             <div className="text-sm text-muted-foreground">
@@ -649,7 +650,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                   <div>Total areas: {bogofPaidAreas.length + bogofFreeAreas.length}</div>
                 </>
               ) : (
-                <div>Selected areas: {effectiveSelectedAreas.length}</div>
+                <div>Selected areas: {selectedAreas.length}</div>
               )}
             </div>
           </div>
