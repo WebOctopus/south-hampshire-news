@@ -110,10 +110,18 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const handleFixedTermContinue = () => {
     // Switch to BOGOF and navigate back to step 1 (pricing options / Free Plus section)
     setSelectedPricingModel('bogof');
+    
+    // Reset campaign data for FreePlus flow - clear everything except transferred areas
     setCampaignData(prev => ({
-      ...prev,
+      selectedAreas: [], // Clear this as bogof uses bogofPaidAreas/bogofFreeAreas
       bogofPaidAreas: prev.selectedAreas, // Transfer current selections as paid areas
-      bogofFreeAreas: [] // Reset free areas so user can select them
+      bogofFreeAreas: [], // Reset free areas so user can select them
+      selectedAdSize: '', // Clear so user selects appropriate size for subscription
+      selectedDuration: '', // Clear so user selects subscription duration
+      selectedMonths: {}, // Clear month selections (fixed term specific)
+      pricingBreakdown: null, // Reset pricing - will be recalculated for subscription
+      selectedPaymentOption: '', // Clear payment option - user must select for subscription
+      selectedStartingIssue: '' // Clear starting issue
     }));
     
     setShowFixedTermConfirmation(false);
