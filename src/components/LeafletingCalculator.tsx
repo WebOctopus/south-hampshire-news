@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { formatDateUK } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLeafletAreas, useLeafletData } from '@/hooks/useLeafletData';
 import { calculateLeafletingPrice, formatLeafletPrice, calculateLeafletCPM } from '@/lib/leafletingCalculator';
@@ -487,7 +488,7 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                                   <div key={index} className="grid grid-cols-3 gap-4 p-2 bg-muted rounded">
                                     <div>
                                       <span className="font-medium">Copy Deadline:</span>
-                                      <div className="text-muted-foreground">{schedule.copyDeadline || 'TBA'}</div>
+                                      <div className="text-muted-foreground">{schedule.copyDeadline ? formatDateUK(schedule.copyDeadline) : 'TBA'}</div>
                                     </div>
                                     <div>
                                       <span className="font-medium">Print Deadline:</span>

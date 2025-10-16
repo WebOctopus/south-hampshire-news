@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Loader2, AlertCircle, MapPin, Calendar, Clock, Users } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
+import { formatDateUK } from '@/lib/utils';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 
@@ -406,7 +407,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                           </div>
                           {monthData.copy_deadline && (
                             <div className="text-xs text-muted-foreground">
-                              Copy deadline: {monthData.copy_deadline}
+                              Copy deadline: {formatDateUK(monthData.copy_deadline)}
                             </div>
                           )}
                         </div>

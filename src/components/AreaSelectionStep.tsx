@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, AlertCircle, MapPin, Users } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletAreas } from '@/hooks/useLeafletData';
+import { formatDateUK } from '@/lib/utils';
 
 interface AreaSelectionStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -288,7 +289,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                         </div>
                         {(area as any).copy_deadline && (
                           <div className="text-xs text-muted-foreground">
-                            Copy deadline: {(area as any).copy_deadline}
+                            Copy deadline: {formatDateUK((area as any).copy_deadline)}
                           </div>
                         )}
                       </div>
@@ -358,7 +359,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                             </div>
                             {(area as any).copy_deadline && (
                               <div className="text-xs text-muted-foreground">
-                                Copy deadline: {(area as any).copy_deadline}
+                                Copy deadline: {formatDateUK((area as any).copy_deadline)}
                               </div>
                             )}
                           </div>
@@ -412,7 +413,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                     ) : (
                       (area as any).copy_deadline && (
                         <div className="text-xs text-muted-foreground">
-                          Copy deadline: {(area as any).copy_deadline}
+                          Copy deadline: {formatDateUK((area as any).copy_deadline)}
                         </div>
                       )
                     )}

@@ -8,6 +8,7 @@ import { Loader2, AlertCircle, Calendar, Clock } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
+import { formatDateUK } from '@/lib/utils';
 import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
 
 // Helper function to format month display
@@ -378,7 +379,7 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
                           </div>
                           {monthData.copy_deadline && (
                             <div className="text-xs text-muted-foreground">
-                              Copy deadline: {monthData.copy_deadline}
+                              Copy deadline: {formatDateUK(monthData.copy_deadline)}
                             </div>
                           )}
                         </div>
