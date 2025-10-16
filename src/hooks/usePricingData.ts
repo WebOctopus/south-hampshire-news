@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface DbArea {
   id: string;
   name: string;
+  area_number: number;
   postcodes: string;
   circulation: number;
   sort_order: number;

@@ -797,6 +797,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedAreas={campaignData.selectedAreas}
                 selectedAdSize={campaignData.selectedAdSize}
                 selectedDuration={campaignData.selectedDuration}
+                selectedMonths={campaignData.selectedMonths}
                 pricingBreakdown={campaignData.pricingBreakdown}
               />
             ) : (

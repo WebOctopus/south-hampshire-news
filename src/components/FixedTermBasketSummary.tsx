@@ -11,6 +11,7 @@ interface FixedTermBasketSummaryProps {
   selectedAreas: string[];
   selectedAdSize: string;
   selectedDuration: string;
+  selectedMonths: Record<string, string[]>;
   pricingBreakdown: any;
   onNext?: () => void;
 }
@@ -19,6 +20,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   selectedAreas,
   selectedAdSize,
   selectedDuration,
+  selectedMonths,
   pricingBreakdown,
   onNext
 }) => {
@@ -34,6 +36,23 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   const getAreaName = (areaId: string) => {
     const area = areas?.find(area => area.id === areaId);
     return area?.name || 'Unknown Area';
+  };
+
+  const getAreaNumber = (areaId: string) => {
+    const area = areas?.find(area => area.id === areaId);
+    return (area as any)?.area_number || '';
+  };
+
+  const formatSelectedMonths = (areaId: string) => {
+    const months = selectedMonths[areaId] || [];
+    return months.map(month => {
+      // Convert "2025-12" to "Dec '25"
+      const [year, monthNum] = month.split('-');
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthName = monthNames[parseInt(monthNum) - 1];
+      const shortYear = year.slice(2);
+      return `${monthName} '${shortYear}`;
+    }).join(', ');
   };
 
   const getRateCardPrice = () => {
@@ -132,11 +151,20 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
               <CardTitle className="text-lg">Selected "Paid For" Areas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <div className="space-y-3">
                  {selectedAreas.map((areaId) => (
-                   <div key={areaId} className="flex items-center gap-2">
-                     <Badge variant="default" className="bg-primary">Paid</Badge>
-                     <span className="text-sm">{getAreaName(areaId)}</span>
+                   <div key={areaId} className="space-y-1">
+                     <div className="flex items-center gap-2">
+                       <Badge variant="default" className="bg-primary">Paid</Badge>
+                       <span className="text-sm font-medium">
+                         {getAreaNumber(areaId)} - {getAreaName(areaId)}
+                       </span>
+                     </div>
+                     {selectedMonths[areaId] && selectedMonths[areaId].length > 0 && (
+                       <div className="text-xs text-muted-foreground ml-16">
+                         Selected issues: {formatSelectedMonths(areaId)}
+                       </div>
+                     )}
                    </div>
                  ))}
               </div>
