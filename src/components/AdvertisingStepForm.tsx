@@ -128,7 +128,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     setPendingNextStep(null);
     
     // Navigate directly to step 2 (Area selection for 3+ Repeat Package)
-    setCurrentStep(2);
+    (window as any).salesAssistantGoToStep?.(2);
     
     toast({
       title: "Switched to 3+ Repeat Package!",
@@ -590,8 +590,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
-      // Intercept transition from advert size step (step 2) to booking summary (step 3) for Fixed Term
-      if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.pricingBreakdown) {
+      // Intercept transition from area selection (step 2) to ad size (step 3) for Fixed Term
+      // Show FreePlus offer when user has selected 3 or more areas - every time they meet this condition
+      if (currentStep === 1 && selectedPricingModel === 'fixed' && campaignData.selectedAreas.length >= 3) {
         setPendingNextStep(() => nextStep);
         setShowFixedTermConfirmation(true);
         return; // Don't proceed to next step yet
