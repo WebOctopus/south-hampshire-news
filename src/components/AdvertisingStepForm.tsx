@@ -127,12 +127,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     setShowFixedTermConfirmation(false);
     setPendingNextStep(null);
     
-    // Navigate back to step 1 (Free Plus section)
-    setCurrentStep(1);
+    // Navigate directly to step 2 (Area selection for 3+ Repeat Package)
+    setCurrentStep(2);
     
     toast({
       title: "Switched to 3+ Repeat Package!",
-      description: "Select the Free Plus option to continue with your BOGOF booking.",
+      description: "Your selected areas have been saved. Now select your FREE bonus areas to continue.",
     });
   };
 
