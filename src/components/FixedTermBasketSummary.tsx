@@ -44,6 +44,9 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   };
 
   const formatSelectedMonths = (areaId: string) => {
+    if (!selectedMonths || !selectedMonths[areaId]) {
+      return '';
+    }
     const months = selectedMonths[areaId] || [];
     return months.map(month => {
       // Convert "2025-12" to "Dec '25"
@@ -152,21 +155,27 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                 {selectedAreas.map((areaId) => (
-                   <div key={areaId} className="space-y-1">
-                     <div className="flex items-center gap-2">
-                       <Badge variant="default" className="bg-primary">Paid</Badge>
-                       <span className="text-sm font-medium">
-                         {getAreaNumber(areaId)} - {getAreaName(areaId)}
-                       </span>
-                     </div>
-                     {selectedMonths[areaId] && selectedMonths[areaId].length > 0 && (
-                       <div className="text-xs text-muted-foreground ml-16">
-                         Selected issues: {formatSelectedMonths(areaId)}
+                 {selectedAreas.map((areaId) => {
+                   const areaNumber = getAreaNumber(areaId);
+                   const areaName = getAreaName(areaId);
+                   const formattedMonths = formatSelectedMonths(areaId);
+                   
+                   return (
+                     <div key={areaId} className="space-y-1">
+                       <div className="flex items-center gap-2">
+                         <Badge variant="default" className="bg-primary">Paid</Badge>
+                         <span className="text-sm font-medium">
+                           {areaNumber ? `${areaNumber} - ` : ''}{areaName}
+                         </span>
                        </div>
-                     )}
-                   </div>
-                 ))}
+                       {formattedMonths && (
+                         <div className="text-xs text-muted-foreground ml-16">
+                           Selected issues: {formattedMonths}
+                         </div>
+                       )}
+                     </div>
+                   );
+                 })}
               </div>
             </CardContent>
           </Card>

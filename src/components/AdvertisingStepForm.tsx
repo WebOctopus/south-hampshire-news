@@ -145,8 +145,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleStepTransition = (currentStep: number, nextStep: () => void) => {
-    // Intercept transition from advert size step (step 2) to booking summary (step 3) for Fixed Term
+    // Intercept transition from advert size step (step 3 in UI) to booking summary (step 4 in UI) for Fixed Term
     if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.pricingBreakdown) {
+      // Show dialog asking if they want to switch to BOGOF instead
       setPendingNextStep(() => nextStep);
       setShowFixedTermConfirmation(true);
       return; // Don't proceed to next step yet
