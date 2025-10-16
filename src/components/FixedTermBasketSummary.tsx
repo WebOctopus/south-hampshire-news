@@ -2,12 +2,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useStepForm } from '@/components/StepForm';
 import { Separator } from '@/components/ui/separator';
-import { getAvailableIssueOptions } from '@/lib/issueSchedule';
 
 interface FixedTermBasketSummaryProps {
   selectedAreas: string[];
@@ -15,8 +13,6 @@ interface FixedTermBasketSummaryProps {
   selectedDuration: string;
   selectedMonths: Record<string, string[]>;
   pricingBreakdown: any;
-  selectedStartingIssue?: string;
-  onStartingIssueChange?: (option: string) => void;
   onNext?: () => void;
 }
 
@@ -26,18 +22,10 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   selectedDuration,
   selectedMonths,
   pricingBreakdown,
-  selectedStartingIssue,
-  onStartingIssueChange,
   onNext
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { nextStep } = useStepForm();
-
-  // Calculate available starting issue options from area schedules
-  const selectedAreaData = areas?.filter(area => 
-    selectedAreas.includes(area.id)
-  ) || [];
-  const availableIssueOptions = getAvailableIssueOptions(selectedAreaData);
 
   // Get display names
   const getAdSizeName = () => {
@@ -132,32 +120,6 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
                 <p className="font-medium">Fixed Term</p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">Starting Issue</Label>
-                {availableIssueOptions.length > 0 ? (
-                  <div className="mt-2">
-                    <RadioGroup 
-                      value={selectedStartingIssue || availableIssueOptions[0]?.value} 
-                      onValueChange={onStartingIssueChange}
-                      className="space-y-2"
-                    >
-                      {availableIssueOptions.map((option) => (
-                        <div key={option.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={option.value} id={`fixed-${option.value}`} />
-                          <Label htmlFor={`fixed-${option.value}`} className="text-sm font-medium cursor-pointer">
-                            {option.label}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-                ) : (
-                  <p className="font-medium">Next available issue</p>
-                )}
               </div>
 
               <Separator />

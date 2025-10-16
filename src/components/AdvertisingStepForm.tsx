@@ -581,15 +581,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
-      // Validate campaign duration for fixed term when transitioning from area selection (step 1)
-      if (currentStep === 1 && selectedPricingModel === 'fixed' && 
-          campaignData.selectedAreas.length > 0 && !campaignData.selectedDuration) {
-        // Trigger validation error in AreaAndScheduleStep
-        const event = new CustomEvent('validateDuration');
-        window.dispatchEvent(event);
-        return; // Don't proceed to next step
-      }
-      
       // Intercept transition from advert size step (step 2) to booking summary (step 3) for Fixed Term
       if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.pricingBreakdown) {
         setPendingNextStep(() => nextStep);
@@ -810,10 +801,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedDuration={campaignData.selectedDuration}
                 selectedMonths={campaignData.selectedMonths}
                 pricingBreakdown={campaignData.pricingBreakdown}
-                selectedStartingIssue={campaignData.selectedStartingIssue}
-                onStartingIssueChange={(value) => {
-                  setCampaignData(prev => ({ ...prev, selectedStartingIssue: value }));
-                }}
               />
             ) : (
               <BookingSummaryStep
