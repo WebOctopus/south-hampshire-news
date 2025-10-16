@@ -670,11 +670,23 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
               <SelectValue placeholder="Select campaign duration" />
             </SelectTrigger>
             <SelectContent>
-              {relevantDurations.map((duration) => (
-                <SelectItem key={duration.id} value={duration.id}>
-                  {duration.name} of advertising
-                </SelectItem>
-              ))}
+              {relevantDurations.map((duration) => {
+                // For leafleting, show "X Issue(s) - X delivery slot(s) per area selected"
+                if (pricingModel === 'leafleting') {
+                  const issues = (duration as any).issues || 1;
+                  return (
+                    <SelectItem key={duration.id} value={duration.id}>
+                      {issues} {issues === 1 ? 'Issue' : 'Issues'} – {issues} delivery {issues === 1 ? 'slot' : 'slots'} per area selected
+                    </SelectItem>
+                  );
+                }
+                // For advertising, keep the existing format
+                return (
+                  <SelectItem key={duration.id} value={duration.id}>
+                    {duration.name} of advertising
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
