@@ -217,10 +217,6 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
           );
         })}
       </div>
-
-      <div className="text-center text-sm text-muted-foreground">
-        <p>* Terms and conditions apply. Contact our sales team for full details on BOGOF offers.</p>
-      </div>
     </div>
   );
 };
