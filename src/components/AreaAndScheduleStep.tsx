@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -100,6 +100,16 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
   const { areas, durations, subscriptionDurations, isLoading, isError } = usePricingData();
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
   const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
+  
+  const [showDurationError, setShowDurationError] = useState(false);
+  const durationSectionRef = useRef<HTMLDivElement>(null);
+
+  // Clear error when duration is selected
+  useEffect(() => {
+    if (selectedDuration) {
+      setShowDurationError(false);
+    }
+  }, [selectedDuration]);
 
   const getEffectiveData = () => {
     if (pricingModel === 'leafleting') {
@@ -133,6 +143,22 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
   const { areas: effectiveAreas, isLoading: effectiveAreasLoading, isError: effectiveAreasError } = getEffectiveData();
   const effectiveSelectedAreas = pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas;
+
+  // Listen for validation event from parent
+  useEffect(() => {
+    const handleValidation = () => {
+      if (pricingModel === 'fixed' && effectiveSelectedAreas.length > 0 && !selectedDuration) {
+        setShowDurationError(true);
+        // Scroll to duration section with a slight delay to ensure it's rendered
+        setTimeout(() => {
+          durationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+    };
+
+    window.addEventListener('validateDuration', handleValidation);
+    return () => window.removeEventListener('validateDuration', handleValidation);
+  }, [pricingModel, effectiveSelectedAreas.length, selectedDuration]);
 
   const getRelevantDurations = () => {
     if (pricingModel === 'leafleting') return leafletDurations || [];
@@ -659,11 +685,20 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
       {/* Duration Selection - Hidden for BOGOF as it's fixed to 6 months */}
       {effectiveSelectedAreas.length > 0 && pricingModel !== 'bogof' && (
-        <div className="space-y-4">
+        <div ref={durationSectionRef} className="space-y-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Clock className="h-5 w-5" />
             Campaign Duration
           </h3>
+          
+          {showDurationError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Please select a campaign duration before continuing.
+              </AlertDescription>
+            </Alert>
+          )}
           
           <Select value={selectedDuration} onValueChange={onDurationChange}>
             <SelectTrigger className="w-full">
