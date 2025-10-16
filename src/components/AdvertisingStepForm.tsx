@@ -914,18 +914,18 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       {/* Fixed Term Confirmation Dialog */}
       <Dialog open={showFixedTermConfirmation} onOpenChange={setShowFixedTermConfirmation}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
+          <DialogHeader className="space-y-3 sm:space-y-4">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-center leading-tight px-2">
               Are you sure you want to book Fixed Term?
             </DialogTitle>
-            <DialogDescription className="text-center space-y-2">
-              <p className="text-lg font-semibold">
+            <DialogDescription className="text-center space-y-3 sm:space-y-4 px-2">
+              <p className="text-base sm:text-lg font-semibold leading-snug">
                 3+ Repeat Package is available to New Advertisers – Save £££, Buy One Get One Free
               </p>
-              <p>
+              <p className="text-sm sm:text-base leading-relaxed">
                 If you booked this campaign on our 3+ Repeat Package you would pay{" "}
-                <span className="font-bold text-green-600">
+                <span className="font-bold text-green-600 whitespace-nowrap">
                   {(() => {
                     // Calculate FreePlus pricing based on user's selections
                     const sixMonthDuration = subscriptionDurations?.find(d => d.duration_value === 6);
@@ -960,39 +960,39 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 my-6">
-            <ul className="space-y-2">
+          <div className="space-y-3 sm:space-y-4 my-4 sm:my-6 px-2">
+            <ul className="space-y-2 sm:space-y-3">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="font-medium">BUY ONE AREA GET ONE FREE - FOR 3 ISSUES— double the number of homes you reach!</span>
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mt-1 flex-shrink-0" />
+                <span className="font-medium text-sm sm:text-base leading-snug">BUY ONE AREA GET ONE FREE - FOR 3 ISSUES— double the number of homes you reach!</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="font-medium">FREE EDITORIAL</span>
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mt-1 flex-shrink-0" />
+                <span className="font-medium text-sm sm:text-base">FREE EDITORIAL</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="font-medium">FREE PREMIUM POSITION UPGRADE (only available on full page)</span>
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mt-1 flex-shrink-0" />
+                <span className="font-medium text-sm sm:text-base leading-snug">FREE PREMIUM POSITION UPGRADE (only available on full page)</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span className="font-medium">FREE ADVERT DESIGN</span>
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mt-1 flex-shrink-0" />
+                <span className="font-medium text-sm sm:text-base">FREE ADVERT DESIGN</span>
               </li>
             </ul>
           </div>
 
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2 pb-2">
             <Button
               variant="default"
               onClick={handleFixedTermContinue}
-              className="bg-green-600 hover:bg-green-700 text-white px-8"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 sm:px-8 w-full sm:w-auto text-sm sm:text-base"
             >
               YES, CONTINUE
             </Button>
             <Button
               variant="outline"
               onClick={handleContinueWithFixedTerm}
-              className="border-blue-500 text-blue-600 hover:bg-blue-50 px-6"
+              className="border-blue-500 text-blue-600 hover:bg-blue-50 px-4 sm:px-6 w-full sm:w-auto text-sm sm:text-base"
             >
               No, continue with fixed term
             </Button>
