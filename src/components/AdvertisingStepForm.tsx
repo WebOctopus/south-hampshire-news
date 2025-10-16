@@ -153,9 +153,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleStepTransition = (currentStep: number, nextStep: () => void) => {
-    // Intercept transition from advert size step (step 3 in UI) to booking summary (step 4 in UI) for Fixed Term
-    // Only show the FreePlus offer if user has selected 3 or more areas
-    if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.selectedAreas.length >= 3 && campaignData.pricingBreakdown) {
+    // Intercept transition from area selection (step 2) to ad size (step 3) for Fixed Term
+    // Show FreePlus offer when user has selected 3 or more areas - every time they meet this condition
+    if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.selectedAreas.length >= 3) {
       // Show dialog asking if they want to switch to BOGOF instead
       setPendingNextStep(() => nextStep);
       setShowFixedTermConfirmation(true);
