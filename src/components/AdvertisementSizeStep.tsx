@@ -390,6 +390,36 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
               {pricingBreakdown.totalCirculation.toLocaleString()} homes
             </div>
             
+            {(() => {
+              const rateCardPricePerInsert = (Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}) as typeof adSizes).find(size => size.id === selectedAdSize)?.base_price_per_area || 0;
+              const numberOfInserts = (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).length * (durations?.find(d => d.id === selectedDuration)?.duration_value || 0);
+              const rateCardTotal = numberOfInserts * rateCardPricePerInsert;
+              
+              return pricingModel === 'fixed' ? (
+                <div className="mt-4 pt-4 border-t space-y-2">
+                  <div>
+                    <span className="font-medium">Rate card of insert = </span>
+                    {formatPrice(rateCardPricePerInsert)} each + vat
+                  </div>
+                  
+                  <div>
+                    <span className="font-medium">Number of inserts in this campaign = </span>
+                    {numberOfInserts}
+                  </div>
+                  
+                  <div>
+                    <span className="font-medium">Rate card cost = </span>
+                    {numberOfInserts} x {formatPrice(rateCardPricePerInsert)} = {formatPrice(rateCardTotal)}
+                  </div>
+                  
+                  <div className="pt-2 border-t">
+                    <span className="font-medium">Actual Campaign Cost </span>
+                    {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)})
+                  </div>
+                </div>
+              ) : null;
+            })()}
+            
           </div>
         </div>
       </div>
