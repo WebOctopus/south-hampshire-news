@@ -23,6 +23,7 @@ interface AdvertisementSizeStepProps {
   onNext: () => void;
   campaignData?: any; // Add campaign data prop for mobile pricing summary
   currentStep?: number; // Add current step for mobile pricing summary
+  selectedMonths?: Record<string, string[]>; // Selected issue months per area (fixed term)
 }
 
 export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
@@ -37,7 +38,8 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
   showSummary = false,
   onNext,
   campaignData,
-  currentStep = 3
+  currentStep = 3,
+  selectedMonths
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const { data: agencyData } = useAgencyDiscount();
@@ -360,13 +362,25 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
             ) : (
               <>
                 <div className="mb-2"><span className="font-medium">Where:</span></div>
-                {selectedAreas.map((areaId, index) => {
+                {selectedAreas.map((areaId) => {
                   const area = areas?.find(a => a.id === areaId);
-                  return area ? (
-                    <div key={areaId} className="ml-2">
-                      Area {index + 1} {area.name}
+                  if (!area) return null;
+                  const months = (selectedMonths && selectedMonths[areaId]) ? selectedMonths[areaId] : [];
+                  const formattedMonths = months.map((m) => {
+                    if (!m || !m.includes('-')) return m;
+                    const [year, monthNum] = m.split('-');
+                    const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    const name = names[parseInt(monthNum) - 1];
+                    return `${name} '${year.slice(2)}`;
+                  }).join(', ');
+                  return (
+                    <div key={areaId} className="ml-2 space-y-1">
+                      <div>{area.name}</div>
+                      {formattedMonths && (
+                        <div className="text-xs text-muted-foreground ml-4">Selected issues: {formattedMonths}</div>
+                      )}
                     </div>
-                  ) : null;
+                  );
                 })}
               </>
             )}
@@ -376,10 +390,6 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
               {pricingBreakdown.totalCirculation.toLocaleString()} homes
             </div>
             
-            <div className="mt-3 pt-3 border-t">
-              <span className="font-medium">Pre-payment Required = </span>
-              {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)}) per insertion in {(pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).length} area{(pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).length > 1 ? 's' : ''} reaching {pricingBreakdown.totalCirculation.toLocaleString()} homes
-            </div>
           </div>
         </div>
       </div>
