@@ -394,10 +394,7 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                         <div key={duration.id} className="flex items-center space-x-2">
                           <RadioGroupItem value={duration.issues.toString()} id={`duration-${duration.id}`} />
                           <Label htmlFor={`duration-${duration.id}`}>
-                            {duration.name}
-                            {duration.description && (
-                              <div className="text-sm text-muted-foreground">{duration.description}</div>
-                            )}
+                            {duration.issues} {duration.issues === 1 ? 'Issue' : 'Issues'} – {duration.issues} delivery {duration.issues === 1 ? 'slot' : 'slots'} per area selected
                           </Label>
                         </div>
                       ))}
