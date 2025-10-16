@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletCampaignDurations, useLeafletData } from '@/hooks/useLeafletData';
 import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
+import { calculateAdvertisingPrice } from '@/lib/pricingCalculator';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ interface AdvertisingStepFormProps {
 export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ children, asDialog = false }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { durations, subscriptionDurations } = usePricingData();
+  const { durations, subscriptionDurations, areas, adSizes, volumeDiscounts } = usePricingData();
   const { data: leafletDurations } = useLeafletCampaignDurations();
   const { leafletAreas } = useLeafletData();
   
@@ -592,13 +593,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     onStepTransition: (currentStep: number, nextStep: () => void) => {
       // Intercept transition from area selection (step 2) to ad size (step 3) for Fixed Term
       // Show FreePlus offer when user has selected 3 or more areas - every time they meet this condition
-      console.log('onStepTransition check', {
-        currentStepIndex: currentStep, // 0-indexed from StepForm
-        selectedPricingModel,
-        selectedAreasCount: campaignData.selectedAreas?.length,
-      });
       if (currentStep === 1 && selectedPricingModel === 'fixed' && (campaignData.selectedAreas?.length || 0) >= 3) {
-        console.log('Showing Fixed Term -> FreePlus confirmation dialog');
         setPendingNextStep(() => nextStep);
         setShowFixedTermConfirmation(true);
         return; // Don't proceed to next step yet
@@ -924,12 +919,44 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             <DialogTitle className="text-2xl font-bold text-center">
               Are you sure you want to book Fixed Term?
             </DialogTitle>
-            <DialogDescription className="text-center">
-              If you booked this selection on our 3+ Repeat Package you would pay{" "}
-              <span className="font-bold text-green-600">
-                £{campaignData.pricingBreakdown?.finalTotal ? Math.round(campaignData.pricingBreakdown.finalTotal * 0.85) : 144} + vat (£{campaignData.pricingBreakdown?.finalTotal ? Math.round(campaignData.pricingBreakdown.finalTotal * 0.85 * 1.2) : 172.80})
-              </span>{" "}
-              per month for minimum of six months INCLUDING
+            <DialogDescription className="text-center space-y-2">
+              <p className="text-lg font-semibold">
+                3+ Repeat Package is available to New Advertisers – Save £££, Buy One Get One Free
+              </p>
+              <p>
+                If you booked this campaign on our 3+ Repeat Package you would pay{" "}
+                <span className="font-bold text-green-600">
+                  {(() => {
+                    // Calculate FreePlus pricing based on user's selections
+                    const sixMonthDuration = subscriptionDurations?.find(d => d.duration_value === 6);
+                    if (!sixMonthDuration || !campaignData.selectedAdSize || !campaignData.selectedAreas.length || !areas || !adSizes || !volumeDiscounts) {
+                      return '£207';
+                    }
+                    
+                    const freePlusPricing = calculateAdvertisingPrice(
+                      campaignData.selectedAreas,
+                      campaignData.selectedAdSize,
+                      sixMonthDuration.id,
+                      true, // isSubscription
+                      areas,
+                      adSizes,
+                      durations || [],
+                      subscriptionDurations || [],
+                      volumeDiscounts,
+                      campaignData.selectedAreas, // free areas = same as paid areas
+                      0 // no agency discount
+                    );
+                    
+                    if (!freePlusPricing) return '£207';
+                    
+                    const monthlyPrice = Math.round(freePlusPricing.finalTotal / 6);
+                    const monthlyPriceWithVAT = Math.round(monthlyPrice * 1.2);
+                    
+                    return `£${monthlyPrice} + VAT (£${monthlyPriceWithVAT})`;
+                  })()}
+                </span>{" "}
+                per month for six months INCLUDING
+              </p>
             </DialogDescription>
           </DialogHeader>
           
@@ -937,19 +964,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>2 x EXTRA AREAS—FREE FOR 3 ISSUES—double the number of homes you reach!</span>
+                <span className="font-medium">BUY ONE AREA GET ONE FREE - FOR 3 ISSUES— double the number of homes you reach!</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>FREE EDITORIAL</span>
+                <span className="font-medium">FREE EDITORIAL</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>FREE PREMIUM POSITION UPGRADE</span>
+                <span className="font-medium">FREE PREMIUM POSITION UPGRADE (only available on full page)</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>FREE ADVERT DESIGN</span>
+                <span className="font-medium">FREE ADVERT DESIGN</span>
               </li>
             </ul>
           </div>
