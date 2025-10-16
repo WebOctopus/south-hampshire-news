@@ -108,7 +108,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleFixedTermContinue = () => {
-    // Switch to BOGOF and transfer selections, then go back to location selection (step 2)
+    // Switch to BOGOF and navigate back to step 1 (pricing options / Free Plus section)
     setSelectedPricingModel('bogof');
     setCampaignData(prev => ({
       ...prev,
@@ -119,12 +119,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     setShowFixedTermConfirmation(false);
     setPendingNextStep(null);
     
-    // Navigate back to step 2 (location selection) where they can pick free areas
-    setCurrentStep(2);
+    // Navigate back to step 1 (Free Plus section)
+    setCurrentStep(1);
     
     toast({
       title: "Switched to 3+ Repeat Package!",
-      description: "Your selections have been transferred. Now select your FREE areas!",
+      description: "Select the Free Plus option to continue with your BOGOF booking.",
     });
   };
 
