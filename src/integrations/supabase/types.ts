@@ -114,9 +114,11 @@ export type Database = {
           duration_multiplier: number | null
           email: string
           final_total: number | null
+          gocardless_mandate_id: string | null
           id: string
           monthly_price: number
           notes: string | null
+          payment_status: string | null
           phone: string | null
           pricing_breakdown: Json
           pricing_model: string
@@ -145,9 +147,11 @@ export type Database = {
           duration_multiplier?: number | null
           email: string
           final_total?: number | null
+          gocardless_mandate_id?: string | null
           id?: string
           monthly_price?: number
           notes?: string | null
+          payment_status?: string | null
           phone?: string | null
           pricing_breakdown?: Json
           pricing_model: string
@@ -176,9 +180,11 @@ export type Database = {
           duration_multiplier?: number | null
           email?: string
           final_total?: number | null
+          gocardless_mandate_id?: string | null
           id?: string
           monthly_price?: number
           notes?: string | null
+          payment_status?: string | null
           phone?: string | null
           pricing_breakdown?: Json
           pricing_model?: string
@@ -473,6 +479,174 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      gocardless_customers: {
+        Row: {
+          created_at: string | null
+          gocardless_customer_id: string
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          gocardless_customer_id: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          gocardless_customer_id?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gocardless_mandates: {
+        Row: {
+          booking_id: string | null
+          created_at: string | null
+          gocardless_customer_id: string
+          gocardless_mandate_id: string
+          id: string
+          scheme: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string | null
+          gocardless_customer_id: string
+          gocardless_mandate_id: string
+          id?: string
+          scheme: string
+          status: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string | null
+          gocardless_customer_id?: string
+          gocardless_mandate_id?: string
+          id?: string
+          scheme?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gocardless_mandates_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gocardless_payments: {
+        Row: {
+          amount: number
+          booking_id: string
+          charge_date: string | null
+          created_at: string | null
+          currency: string | null
+          gocardless_mandate_id: string
+          gocardless_payment_id: string
+          id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          charge_date?: string | null
+          created_at?: string | null
+          currency?: string | null
+          gocardless_mandate_id: string
+          gocardless_payment_id: string
+          id?: string
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          charge_date?: string | null
+          created_at?: string | null
+          currency?: string | null
+          gocardless_mandate_id?: string
+          gocardless_payment_id?: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gocardless_payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gocardless_subscriptions: {
+        Row: {
+          amount: number
+          booking_id: string
+          created_at: string | null
+          currency: string | null
+          end_date: string | null
+          gocardless_mandate_id: string
+          gocardless_subscription_id: string
+          id: string
+          interval_unit: string
+          start_date: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          gocardless_mandate_id: string
+          gocardless_subscription_id: string
+          id?: string
+          interval_unit: string
+          start_date?: string | null
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          created_at?: string | null
+          currency?: string | null
+          end_date?: string | null
+          gocardless_mandate_id?: string
+          gocardless_subscription_id?: string
+          id?: string
+          interval_unit?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gocardless_subscriptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leaflet_areas: {
         Row: {

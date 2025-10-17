@@ -435,6 +435,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           selectedAreas: campaignData.selectedAreas || [],
           bogofPaidAreas: campaignData.bogofPaidAreas || [],
           bogofFreeAreas: campaignData.bogofFreeAreas || [],
+          payment_option_id: campaignData.selectedPaymentOption || null,
         },
         status: 'pending'
       };
@@ -562,17 +563,61 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       }
       localStorage.setItem('justCreatedBooking', 'true');
       
-      toast({
-        title: isNewUser ? "Account Created & Booking Submitted!" : "Booking Submitted Successfully!",
-        description: isNewUser 
-          ? "Welcome! Your account has been created and your booking is being processed. Redirecting to your dashboard..." 
-          : "Your booking has been submitted and is being processed. Redirecting to your dashboard...",
-      });
+      // Initiate GoCardless payment setup
+      try {
+        const { data: mandateData, error: mandateError } = await supabase.functions.invoke('create-gocardless-mandate', {
+          body: {
+            bookingId: bookingData.id,
+            customerEmail: contactData.email,
+            customerName: fullName,
+            customerAddress: {
+              addressLine1: contactData.address,
+              addressLine2: contactData.addressLine2,
+              city: contactData.city,
+              postcode: contactData.postcode,
+            },
+          },
+        });
 
-      // Wait for authentication to complete and then navigate
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+        if (mandateError || !mandateData) {
+          console.error('Error creating mandate:', mandateError);
+          toast({
+            title: "Booking Created",
+            description: "Your booking has been created but there was an issue setting up payment. Please contact support.",
+            variant: "default",
+          });
+          
+          // Still redirect to dashboard
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 1500);
+          return;
+        }
+
+        console.log('GoCardless mandate created:', mandateData);
+        
+        toast({
+          title: isNewUser ? "Account Created!" : "Booking Created!",
+          description: "Redirecting you to set up your Direct Debit payment...",
+        });
+
+        // Redirect to GoCardless
+        setTimeout(() => {
+          window.location.href = mandateData.redirectUrl;
+        }, 1500);
+        
+      } catch (error: any) {
+        console.error('Error setting up payment:', error);
+        toast({
+          title: "Booking Created",
+          description: "Your booking has been created but there was an issue setting up payment. Please contact support.",
+          variant: "default",
+        });
+        
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      }
       
     } catch (error: any) {
       console.error('Error in handleContactInfoBook:', error);

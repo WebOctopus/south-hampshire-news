@@ -55,3 +55,6 @@ ip_version = "ipv6"
 
 [functions.send-booking-webhook]
 verify_jwt = false
+
+[functions.gocardless-webhook]
+verify_jwt = false

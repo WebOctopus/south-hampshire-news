@@ -18,6 +18,7 @@ import Story from "./pages/Story";
 import StoriesArchive from "./pages/StoriesArchive";
 import BusinessDetail from "./pages/BusinessDetail";
 import Support from "./pages/Support";
+import PaymentSetup from "./pages/PaymentSetup";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
@@ -50,6 +51,7 @@ const App = () => (
             <AddEvent />
           </ProtectedRoute>
         } />
+        <Route path="/payment-setup" element={<PaymentSetup />} />
         
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
