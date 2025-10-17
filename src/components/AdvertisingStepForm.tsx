@@ -571,61 +571,15 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       }
       localStorage.setItem('justCreatedBooking', 'true');
       
-      // Initiate GoCardless payment setup
-      try {
-        const { data: mandateData, error: mandateError } = await supabase.functions.invoke('create-gocardless-mandate', {
-          body: {
-            bookingId: bookingData.id,
-            customerEmail: contactData.email,
-            customerName: fullName,
-            customerAddress: {
-              addressLine1: contactData.address,
-              addressLine2: contactData.addressLine2,
-              city: contactData.city,
-              postcode: contactData.postcode,
-            },
-          },
-        });
+      toast({
+        title: isNewUser ? "Account Created!" : "Booking Created!",
+        description: "Redirecting you to your dashboard where you can set up payment...",
+      });
 
-        if (mandateError || !mandateData) {
-          console.error('Error creating mandate:', mandateError);
-          toast({
-            title: "Booking Created",
-            description: "Your booking has been created but there was an issue setting up payment. Please contact support.",
-            variant: "default",
-          });
-          
-          // Still redirect to dashboard
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 1500);
-          return;
-        }
-
-        console.log('GoCardless mandate created:', mandateData);
-        
-        toast({
-          title: isNewUser ? "Account Created!" : "Booking Created!",
-          description: "Redirecting you to set up your Direct Debit payment...",
-        });
-
-        // Redirect to GoCardless
-        setTimeout(() => {
-          window.location.href = mandateData.redirectUrl;
-        }, 1500);
-        
-      } catch (error: any) {
-        console.error('Error setting up payment:', error);
-        toast({
-          title: "Booking Created",
-          description: "Your booking has been created but there was an issue setting up payment. Please contact support.",
-          variant: "default",
-        });
-        
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
-      }
+      // Redirect to dashboard instead of directly to GoCardless
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
       
     } catch (error: any) {
       console.error('Error in handleContactInfoBook:', error);
