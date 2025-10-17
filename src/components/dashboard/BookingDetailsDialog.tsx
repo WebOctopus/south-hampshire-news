@@ -293,6 +293,38 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     </p>
                   </div>
                 </div>
+
+                {/* Paid Locations */}
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Paid Locations</p>
+                    <p className="text-sm text-muted-foreground">
+                      {(() => {
+                        const paidAreas = booking.pricing_model === 'bogof' 
+                          ? booking.bogof_paid_area_ids?.length || 0
+                          : booking.selected_area_ids?.length || 0;
+                        return `${paidAreas} area${paidAreas !== 1 ? 's' : ''}`;
+                      })()}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Free Locations (only for BOGOF) */}
+                {booking.pricing_model === 'bogof' && (
+                  <div className="flex items-center space-x-3">
+                    <MapPin className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="text-sm font-medium">Free Locations</p>
+                      <p className="text-sm text-muted-foreground">
+                        {(() => {
+                          const freeAreas = booking.bogof_free_area_ids?.length || 0;
+                          return `${freeAreas} area${freeAreas !== 1 ? 's' : ''}`;
+                        })()}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {booking.notes && (
