@@ -263,6 +263,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           selectedAreas: Array.isArray(campaignData.selectedAreas) ? campaignData.selectedAreas : [],
           bogofPaidAreas: Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
           bogofFreeAreas: Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
+          address: contactData.address || '',
+          addressLine2: contactData.addressLine2 || '',
+          city: contactData.city || '',
+          postcode: contactData.postcode || '',
           ...campaignData
         } as any
       };
@@ -436,6 +440,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           bogofPaidAreas: campaignData.bogofPaidAreas || [],
           bogofFreeAreas: campaignData.bogofFreeAreas || [],
           payment_option_id: campaignData.selectedPaymentOption || null,
+          address: contactData.address || '',
+          addressLine2: contactData.addressLine2 || '',
+          city: contactData.city || '',
+          postcode: contactData.postcode || '',
         },
         status: 'pending'
       };

@@ -101,10 +101,10 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
         customerEmail: booking.email,
         customerName: booking.contact_name,
         customerAddress: {
-          addressLine1: booking.selections?.address || '',
+          addressLine1: booking.selections?.address || booking.contact_name || 'Address pending',
           addressLine2: booking.selections?.addressLine2 || '',
-          city: booking.selections?.city || '',
-          postcode: booking.selections?.postcode || '',
+          city: booking.selections?.city || 'City pending',
+          postcode: booking.selections?.postcode || 'POSTCODE',
         },
       });
 

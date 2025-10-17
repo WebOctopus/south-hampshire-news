@@ -43,8 +43,8 @@ serve(async (req: Request) => {
     const { bookingId, customerEmail, customerName, customerAddress }: CreateMandateRequest = await req.json();
     
     const GOCARDLESS_API_KEY = Deno.env.get('GOCARDLESS_API_KEY');
-    // Use sandbox for testing (switch to live URL for production)
-    const GOCARDLESS_API_URL = 'https://api-sandbox.gocardless.com';
+    // Using live API - make sure you have a live API key configured
+    const GOCARDLESS_API_URL = 'https://api.gocardless.com';
     
     console.log('Creating GoCardless mandate for booking:', bookingId);
 
