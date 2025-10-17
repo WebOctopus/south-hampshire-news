@@ -9,7 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { CalendarDays, MapPin, Users, FileText, Download } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { CalendarDays, MapPin, Users, FileText, Download, CreditCard, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+import { useGoCardless } from '@/hooks/useGoCardless';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookingDetailsDialogProps {
   booking: any;
@@ -22,6 +30,136 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   open,
   onOpenChange,
 }) => {
+  const { toast } = useToast();
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(null);
+  const { data: paymentOptions = [] } = usePaymentOptions();
+  const { createMandate } = useGoCardless();
+
+  // Query mandate status
+  const { data: mandate, refetch: refetchMandate } = useQuery({
+    queryKey: ['gocardless-mandate', booking?.id],
+    queryFn: async () => {
+      if (!booking?.id) return null;
+      const { data, error } = await supabase
+        .from('gocardless_mandates')
+        .select('*')
+        .eq('booking_id', booking.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!booking?.id && open,
+  });
+
+  // Query payment status
+  const { data: payments } = useQuery({
+    queryKey: ['gocardless-payments', booking?.id],
+    queryFn: async () => {
+      if (!booking?.id) return [];
+      const { data, error } = await supabase
+        .from('gocardless_payments')
+        .select('*')
+        .eq('booking_id', booking.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!booking?.id && open,
+  });
+
+  // Query subscription status
+  const { data: subscriptions } = useQuery({
+    queryKey: ['gocardless-subscriptions', booking?.id],
+    queryFn: async () => {
+      if (!booking?.id) return [];
+      const { data, error } = await supabase
+        .from('gocardless_subscriptions')
+        .select('*')
+        .eq('booking_id', booking.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!booking?.id && open,
+  });
+
+  const handleSetupPayment = async () => {
+    if (!selectedPaymentOption || !booking) {
+      toast({
+        title: 'Please select a payment option',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const result = await createMandate.mutateAsync({
+        bookingId: booking.id,
+        customerEmail: booking.email,
+        customerName: booking.contact_name,
+        customerAddress: {
+          addressLine1: booking.selections?.address || '',
+          addressLine2: booking.selections?.addressLine2 || '',
+          city: booking.selections?.city || '',
+          postcode: booking.selections?.postcode || '',
+        },
+      });
+
+      if (result.redirectUrl) {
+        // Store selected payment option before redirect
+        await supabase
+          .from('bookings')
+          .update({
+            selections: {
+              ...booking.selections,
+              payment_option_id: selectedPaymentOption,
+            },
+          })
+          .eq('id', booking.id);
+
+        // Redirect to GoCardless
+        window.location.href = result.redirectUrl;
+      }
+    } catch (error) {
+      console.error('Error setting up payment:', error);
+    }
+  };
+
+  const getPaymentStatus = () => {
+    if (payments && payments.length > 0) {
+      const latestPayment = payments[0];
+      return {
+        type: 'payment',
+        status: latestPayment.status,
+        amount: latestPayment.amount,
+        chargeDate: latestPayment.charge_date,
+      };
+    }
+    
+    if (subscriptions && subscriptions.length > 0) {
+      const latestSubscription = subscriptions[0];
+      return {
+        type: 'subscription',
+        status: latestSubscription.status,
+        amount: latestSubscription.amount,
+      };
+    }
+
+    if (mandate) {
+      return {
+        type: 'mandate',
+        status: mandate.status,
+      };
+    }
+
+    return null;
+  };
+
+  const paymentStatus = getPaymentStatus();
+
   if (!booking) return null;
 
   const getStatusColor = (status: string) => {
@@ -237,6 +375,196 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
               </CardContent>
             </Card>
           )}
+
+          {/* Payment Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <CreditCard className="h-5 w-5" />
+                <span>Payment</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {paymentStatus ? (
+                <div>
+                  {/* Show Payment Status */}
+                  {paymentStatus.type === 'payment' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          {paymentStatus.status === 'confirmed' || paymentStatus.status === 'paid_out' ? (
+                            <CheckCircle className="h-6 w-6 text-green-600" />
+                          ) : paymentStatus.status === 'failed' || paymentStatus.status === 'cancelled' ? (
+                            <AlertCircle className="h-6 w-6 text-red-600" />
+                          ) : (
+                            <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                          )}
+                          <div>
+                            <p className="font-medium">
+                              {paymentStatus.status === 'confirmed' || paymentStatus.status === 'paid_out' 
+                                ? 'Payment Confirmed' 
+                                : paymentStatus.status === 'failed' 
+                                ? 'Payment Failed' 
+                                : 'Payment Pending'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatPrice(paymentStatus.amount)}
+                              {paymentStatus.chargeDate && ` • Due: ${formatDate(paymentStatus.chargeDate)}`}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className={
+                          paymentStatus.status === 'confirmed' || paymentStatus.status === 'paid_out'
+                            ? 'bg-green-100 text-green-800'
+                            : paymentStatus.status === 'failed' || paymentStatus.status === 'cancelled'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }>
+                          {paymentStatus.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                      
+                      {(paymentStatus.status === 'failed' || paymentStatus.status === 'cancelled') && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <p className="text-sm text-red-800">
+                            <strong>Payment Issue:</strong> Your payment was not successful. 
+                            Please contact our support team to resolve this issue.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {paymentStatus.type === 'subscription' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          {paymentStatus.status === 'active' ? (
+                            <CheckCircle className="h-6 w-6 text-green-600" />
+                          ) : (
+                            <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                          )}
+                          <div>
+                            <p className="font-medium">
+                              {paymentStatus.status === 'active' 
+                                ? 'Monthly Subscription Active' 
+                                : 'Subscription Pending'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatPrice(paymentStatus.amount)} per month
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className={
+                          paymentStatus.status === 'active'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }>
+                          {paymentStatus.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentStatus.type === 'mandate' && !payments?.length && !subscriptions?.length && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                          <div>
+                            <p className="font-medium text-blue-900">Direct Debit Setup Complete</p>
+                            <p className="text-sm text-blue-700">
+                              Your payment will be created shortly
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Show Payment Options */}
+                  <p className="text-sm text-muted-foreground">
+                    Choose your preferred payment method to complete your booking:
+                  </p>
+
+                  <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
+                    {paymentOptions.map((option) => {
+                      const finalAmount = booking.final_total || booking.monthly_price;
+                      const discount = (finalAmount * option.discount_percentage) / 100;
+                      const fee = (finalAmount * option.additional_fee_percentage) / 100;
+                      const totalAmount = finalAmount - discount + fee;
+
+                      return (
+                        <div
+                          key={option.id}
+                          className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                            selectedPaymentOption === option.id
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          onClick={() => setSelectedPaymentOption(option.id)}
+                        >
+                          <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
+                          <div className="flex-1">
+                            <Label htmlFor={option.id} className="cursor-pointer">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-medium">{option.display_name}</span>
+                                <span className="font-bold text-lg">
+                                  {formatPrice(totalAmount)}
+                                  {option.option_type === 'direct_debit' && <span className="text-sm text-muted-foreground">/month</span>}
+                                </span>
+                              </div>
+                              {option.description && (
+                                <p className="text-sm text-muted-foreground mb-2">{option.description}</p>
+                              )}
+                              {option.discount_percentage > 0 && (
+                                <p className="text-sm text-green-600">
+                                  Save {formatPrice(discount)} ({option.discount_percentage}% discount)
+                                </p>
+                              )}
+                              {option.additional_fee_percentage > 0 && (
+                                <p className="text-sm text-muted-foreground">
+                                  +{formatPrice(fee)} processing fee
+                                </p>
+                              )}
+                            </Label>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+
+                  <Button
+                    onClick={handleSetupPayment}
+                    disabled={!selectedPaymentOption || createMandate.isPending}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {createMandate.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Setting up payment...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Set Up Direct Debit Payment
+                      </>
+                    )}
+                  </Button>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Secure Payment:</strong> Your payment will be processed securely via GoCardless Direct Debit. 
+                      You'll be redirected to set up your Direct Debit mandate before payment is collected.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Legal Documents */}
           <Card>

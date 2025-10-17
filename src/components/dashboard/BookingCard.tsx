@@ -11,6 +11,7 @@ interface BookingCardProps {
     title: string;
     pricing_model: string;
     status: string;
+    payment_status?: string;
     final_total: number;
     monthly_price: number;
     total_circulation: number;
@@ -33,6 +34,38 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
       case 'confirmed': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
       case 'webhook_failed': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getPaymentStatusColor = (status?: string) => {
+    if (!status) return 'bg-gray-100 text-gray-800 border-gray-200';
+    switch (status) {
+      case 'paid':
+      case 'subscription_active':
+      case 'mandate_active':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'payment_pending':
+      case 'subscription_pending':
+      case 'mandate_created':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'failed':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    }
+  };
+
+  const getPaymentStatusLabel = (status?: string) => {
+    if (!status || status === 'pending') return 'Payment Required';
+    switch (status) {
+      case 'paid': return 'Paid';
+      case 'subscription_active': return 'Subscription Active';
+      case 'mandate_active': return 'Direct Debit Setup';
+      case 'payment_pending': return 'Payment Processing';
+      case 'subscription_pending': return 'Setting Up';
+      case 'mandate_created': return 'DD Setup Complete';
+      case 'failed': return 'Payment Failed';
+      default: return status.replace(/_/g, ' ');
     }
   };
 
@@ -64,6 +97,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
             <div className="flex items-center gap-2">
               <Badge variant="outline" className={getStatusColor(booking.status)}>
                 {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).replace('_', ' ')}
+              </Badge>
+              <Badge variant="outline" className={getPaymentStatusColor(booking.payment_status)}>
+                {getPaymentStatusLabel(booking.payment_status)}
               </Badge>
               <Badge variant="secondary">
                 {getPricingModelDisplay(booking.pricing_model)}
