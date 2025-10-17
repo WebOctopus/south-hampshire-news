@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { calculatePaymentAmount } from '@/lib/paymentCalculations';
 
 interface BookingDetailsDialogProps {
   booking: any;
@@ -491,10 +492,15 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
 
                   <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
                     {paymentOptions.map((option) => {
-                      const finalAmount = booking.final_total || booking.monthly_price;
-                      const discount = (finalAmount * option.discount_percentage) / 100;
-                      const fee = (finalAmount * option.additional_fee_percentage) / 100;
-                      const totalAmount = finalAmount - discount + fee;
+                      // Use the same calculation logic as the booking summary
+                      const baseTotal = booking.final_total || booking.monthly_price;
+                      const pricingModel = booking.pricing_model || 'fixed';
+                      const totalAmount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions);
+                      
+                      // Calculate savings for display
+                      const discount = option.discount_percentage > 0 
+                        ? (baseTotal * option.discount_percentage) / 100 
+                        : 0;
 
                       return (
                         <div
@@ -519,14 +525,14 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                               {option.description && (
                                 <p className="text-sm text-muted-foreground mb-2">{option.description}</p>
                               )}
-                              {option.discount_percentage > 0 && (
+                              {option.discount_percentage > 0 && discount > 0 && (
                                 <p className="text-sm text-green-600">
                                   Save {formatPrice(discount)} ({option.discount_percentage}% discount)
                                 </p>
                               )}
-                              {option.additional_fee_percentage > 0 && (
+                              {option.minimum_payments && option.option_type === 'monthly' && (
                                 <p className="text-sm text-muted-foreground">
-                                  +{formatPrice(fee)} processing fee
+                                  • Minimum number of payments = {option.minimum_payments}
                                 </p>
                               )}
                             </Label>
