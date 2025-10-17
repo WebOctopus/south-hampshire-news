@@ -36,7 +36,8 @@ serve(async (req: Request) => {
     const { redirectFlowId, bookingId }: CompleteRedirectRequest = await req.json();
     
     const GOCARDLESS_API_KEY = Deno.env.get('GOCARDLESS_API_KEY');
-    const GOCARDLESS_API_URL = 'https://api.gocardless.com';
+    // Use sandbox for testing (switch to live URL for production)
+    const GOCARDLESS_API_URL = 'https://api-sandbox.gocardless.com';
     
     console.log('Completing GoCardless redirect flow:', redirectFlowId);
 
