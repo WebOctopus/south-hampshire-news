@@ -52,57 +52,6 @@ serve(async (req: Request) => {
 
     console.log('Creating GoCardless mandate for booking:', bookingId, 'sandbox:', isSandbox);
 
-    // Check if customer already exists
-    let customerId: string;
-    const { data: existingCustomer } = await supabase
-      .from('gocardless_customers')
-      .select('gocardless_customer_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (existingCustomer?.gocardless_customer_id) {
-      customerId = existingCustomer.gocardless_customer_id;
-      console.log('Using existing customer:', customerId);
-    } else {
-      // Create new GoCardless customer
-      const customerResponse = await fetch(`${GOCARDLESS_API_URL}/customers`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GOCARDLESS_API_KEY}`,
-          'GoCardless-Version': '2015-07-06',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customers: {
-            email: customerEmail,
-            given_name: customerName.split(' ')[0] || customerName,
-            family_name: customerName.split(' ').slice(1).join(' ') || customerName,
-            address_line1: customerAddress.addressLine1,
-            address_line2: customerAddress.addressLine2,
-            city: customerAddress.city,
-            postal_code: customerAddress.postcode,
-            country_code: 'GB',
-          }
-        })
-      });
-
-      if (!customerResponse.ok) {
-        const error = await customerResponse.text();
-        console.error('GoCardless customer creation error:', error);
-        throw new Error(`Failed to create customer: ${error}`);
-      }
-
-      const customerData = await customerResponse.json();
-      customerId = customerData.customers.id;
-      console.log('Created new customer:', customerId);
-
-      // Save customer to database
-      await supabase.from('gocardless_customers').insert({
-        user_id: user.id,
-        gocardless_customer_id: customerId,
-      });
-    }
-
     // Create redirect flow for mandate setup
     const sessionToken = `${user.id}-${bookingId}`; // must be consistent when completing
     const redirectFlowResponse = await fetch(`${GOCARDLESS_API_URL}/redirect_flows`, {
@@ -152,7 +101,6 @@ serve(async (req: Request) => {
       JSON.stringify({
         redirectUrl,
         redirectFlowId,
-        customerId,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
