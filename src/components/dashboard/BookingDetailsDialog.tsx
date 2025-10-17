@@ -306,77 +306,6 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
             </CardContent>
           </Card>
 
-          {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium">Contact Name</p>
-                  <p className="text-sm text-muted-foreground">{booking.contact_name}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">{booking.email}</p>
-                </div>
-                {booking.phone && (
-                  <div>
-                    <p className="text-sm font-medium">Phone</p>
-                    <p className="text-sm text-muted-foreground">{booking.phone}</p>
-                  </div>
-                )}
-                {booking.company && (
-                  <div>
-                    <p className="text-sm font-medium">Company</p>
-                    <p className="text-sm text-muted-foreground">{booking.company}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pricing Breakdown */}
-          {booking.pricing_breakdown && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Pricing Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">Subtotal</span>
-                    <span className="text-sm font-medium">
-                      {formatPrice(booking.subtotal || booking.monthly_price)}
-                    </span>
-                  </div>
-                  {booking.duration_discount_percent && (
-                    <div className="flex justify-between text-green-600">
-                      <span className="text-sm">Duration Discount ({booking.duration_discount_percent}%)</span>
-                      <span className="text-sm">
-                        -{formatPrice((booking.subtotal * booking.duration_discount_percent) / 100)}
-                      </span>
-                    </div>
-                  )}
-                  {booking.volume_discount_percent && (
-                    <div className="flex justify-between text-green-600">
-                      <span className="text-sm">Volume Discount ({booking.volume_discount_percent}%)</span>
-                      <span className="text-sm">
-                        -{formatPrice((booking.subtotal * booking.volume_discount_percent) / 100)}
-                      </span>
-                    </div>
-                  )}
-                  <Separator />
-                  <div className="flex justify-between font-medium">
-                    <span>Total</span>
-                    <span>{formatPrice(booking.final_total || booking.monthly_price)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Payment Section */}
           <Card>
             <CardHeader>
@@ -491,7 +420,18 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                   </p>
 
                   <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
-                    {paymentOptions.map((option) => {
+                    {[...paymentOptions]
+                      .sort((a, b) => {
+                        // Sort order: monthly first, then 6 months, then 12 months
+                        const getOrder = (option: typeof a) => {
+                          if (option.option_type === 'monthly') return 1;
+                          if (option.display_name?.includes('6 Months')) return 2;
+                          if (option.display_name?.includes('12 Months')) return 3;
+                          return 4;
+                        };
+                        return getOrder(a) - getOrder(b);
+                      })
+                      .map((option) => {
                       // Use the same calculation logic as the booking summary
                       const baseTotal = booking.final_total || booking.monthly_price;
                       const pricingModel = booking.pricing_model || 'fixed';
@@ -571,6 +511,77 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
               )}
             </CardContent>
           </Card>
+
+          {/* Contact Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium">Contact Name</p>
+                  <p className="text-sm text-muted-foreground">{booking.contact_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Email</p>
+                  <p className="text-sm text-muted-foreground">{booking.email}</p>
+                </div>
+                {booking.phone && (
+                  <div>
+                    <p className="text-sm font-medium">Phone</p>
+                    <p className="text-sm text-muted-foreground">{booking.phone}</p>
+                  </div>
+                )}
+                {booking.company && (
+                  <div>
+                    <p className="text-sm font-medium">Company</p>
+                    <p className="text-sm text-muted-foreground">{booking.company}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pricing Breakdown */}
+          {booking.pricing_breakdown && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Pricing Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Subtotal</span>
+                    <span className="text-sm font-medium">
+                      {formatPrice(booking.subtotal || booking.monthly_price)}
+                    </span>
+                  </div>
+                  {booking.duration_discount_percent && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="text-sm">Duration Discount ({booking.duration_discount_percent}%)</span>
+                      <span className="text-sm">
+                        -{formatPrice((booking.subtotal * booking.duration_discount_percent) / 100)}
+                      </span>
+                    </div>
+                  )}
+                  {booking.volume_discount_percent && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="text-sm">Volume Discount ({booking.volume_discount_percent}%)</span>
+                      <span className="text-sm">
+                        -{formatPrice((booking.subtotal * booking.volume_discount_percent) / 100)}
+                      </span>
+                    </div>
+                  )}
+                  <Separator />
+                  <div className="flex justify-between font-medium">
+                    <span>Total</span>
+                    <span>{formatPrice(booking.final_total || booking.monthly_price)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Legal Documents */}
           <Card>
