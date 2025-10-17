@@ -20,7 +20,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { formatPrice } from '@/lib/pricingCalculator';
 import EditQuoteForm from '@/components/EditQuoteForm';
 import PasswordSetupDialog from '@/components/PasswordSetupDialog';
-import { GoCardlessTest } from '@/components/GoCardlessTest';
 import WelcomeHeader from '@/components/dashboard/WelcomeHeader';
 import QuoteConversionCard from '@/components/dashboard/QuoteConversionCard';
 import SuccessStories from '@/components/dashboard/SuccessStories';
@@ -1456,11 +1455,6 @@ const Dashboard = () => {
         open={bookingDetailsOpen}
         onOpenChange={setBookingDetailsOpen}
       />
-
-      {/* Temporary GoCardless Test - Remove after debugging */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <GoCardlessTest />
-      </div>
     </SidebarProvider>
   );
 };
