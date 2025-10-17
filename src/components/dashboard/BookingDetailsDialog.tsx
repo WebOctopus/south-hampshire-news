@@ -87,6 +87,32 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
     enabled: !!booking?.id && open,
   });
 
+  // Query area names for display
+  const { data: pricingAreas } = useQuery({
+    queryKey: ['pricing-areas-for-booking', booking?.id],
+    queryFn: async () => {
+      if (!booking) return [];
+      
+      // Get all area IDs that need to be fetched
+      const allAreaIds = [
+        ...(booking.selected_area_ids || []),
+        ...(booking.bogof_paid_area_ids || []),
+        ...(booking.bogof_free_area_ids || [])
+      ].filter(Boolean);
+
+      if (allAreaIds.length === 0) return [];
+
+      const { data, error } = await supabase
+        .from('pricing_areas')
+        .select('id, name')
+        .in('id', allAreaIds);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!booking && open,
+  });
+
   const handleSetupPayment = async () => {
     if (!selectedPaymentOption || !booking) {
       toast({
@@ -295,16 +321,25 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                 </div>
 
                 {/* Paid Locations */}
-                <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <div>
+                <div className="flex items-start space-x-3">
+                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">Paid Locations</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {(() => {
-                        const paidAreas = booking.pricing_model === 'bogof' 
-                          ? booking.bogof_paid_area_ids?.length || 0
-                          : booking.selected_area_ids?.length || 0;
-                        return `${paidAreas} area${paidAreas !== 1 ? 's' : ''}`;
+                        const paidAreaIds = booking.pricing_model === 'bogof' 
+                          ? booking.bogof_paid_area_ids || []
+                          : booking.selected_area_ids || [];
+                        
+                        if (!pricingAreas || paidAreaIds.length === 0) {
+                          return 'No areas selected';
+                        }
+
+                        const names = paidAreaIds
+                          .map((id: string) => pricingAreas.find((a: any) => a.id === id)?.name)
+                          .filter(Boolean);
+                        
+                        return names.join(', ') || 'Loading...';
                       })()}
                     </p>
                   </div>
@@ -312,14 +347,23 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
 
                 {/* Free Locations (only for BOGOF) */}
                 {booking.pricing_model === 'bogof' && (
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-green-600" />
-                    <div>
+                  <div className="flex items-start space-x-3">
+                    <MapPin className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">Free Locations</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {(() => {
-                          const freeAreas = booking.bogof_free_area_ids?.length || 0;
-                          return `${freeAreas} area${freeAreas !== 1 ? 's' : ''}`;
+                          const freeAreaIds = booking.bogof_free_area_ids || [];
+                          
+                          if (!pricingAreas || freeAreaIds.length === 0) {
+                            return 'No areas selected';
+                          }
+
+                          const names = freeAreaIds
+                            .map((id: string) => pricingAreas.find((a: any) => a.id === id)?.name)
+                            .filter(Boolean);
+                          
+                          return names.join(', ') || 'Loading...';
                         })()}
                       </p>
                     </div>
