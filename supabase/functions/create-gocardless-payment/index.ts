@@ -37,13 +37,15 @@ serve(async (req: Request) => {
     }
 
     const { bookingId, mandateId, paymentType, amount, paymentOptionId }: CreatePaymentRequest = await req.json();
-    
-    const GOCARDLESS_API_KEY = Deno.env.get('GOCARDLESS_API_KEY');
-    // Using live API - make sure you have a live API key configured
-    const GOCARDLESS_API_URL = 'https://api.gocardless.com';
-    
-    console.log(`Creating ${paymentType} payment for booking:`, bookingId);
 
+    const GOCARDLESS_API_KEY = Deno.env.get('GOCARDLESS_API_KEY');
+    if (!GOCARDLESS_API_KEY) throw new Error('Missing GoCardless API key');
+    const isSandbox = GOCARDLESS_API_KEY.startsWith('sandbox_');
+    const GOCARDLESS_API_URL = isSandbox
+      ? 'https://api-sandbox.gocardless.com'
+      : 'https://api.gocardless.com';
+
+    console.log(`Creating ${paymentType} payment for booking:`, bookingId, 'sandbox:', isSandbox);
     // Get payment option details
     const { data: paymentOption } = await supabase
       .from('payment_options')

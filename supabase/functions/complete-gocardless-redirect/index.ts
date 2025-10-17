@@ -34,12 +34,15 @@ serve(async (req: Request) => {
     }
 
     const { redirectFlowId, bookingId }: CompleteRedirectRequest = await req.json();
-    
+
     const GOCARDLESS_API_KEY = Deno.env.get('GOCARDLESS_API_KEY');
-    // Using live API - make sure you have a live API key configured
-    const GOCARDLESS_API_URL = 'https://api.gocardless.com';
-    
-    console.log('Completing GoCardless redirect flow:', redirectFlowId);
+    if (!GOCARDLESS_API_KEY) throw new Error('Missing GoCardless API key');
+    const isSandbox = GOCARDLESS_API_KEY.startsWith('sandbox_');
+    const GOCARDLESS_API_URL = isSandbox
+      ? 'https://api-sandbox.gocardless.com'
+      : 'https://api.gocardless.com';
+
+    console.log('Completing GoCardless redirect flow:', redirectFlowId, 'sandbox:', isSandbox);
 
     // Complete the redirect flow to get the mandate
     const response = await fetch(`${GOCARDLESS_API_URL}/redirect_flows/${redirectFlowId}/actions/complete`, {
@@ -51,7 +54,7 @@ serve(async (req: Request) => {
       },
       body: JSON.stringify({
         data: {
-          session_token: `${user.id}-${bookingId}-${Date.now()}`,
+          session_token: `${user.id}-${bookingId}`,
         }
       })
     });

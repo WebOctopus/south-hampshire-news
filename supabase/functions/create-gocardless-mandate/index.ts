@@ -41,12 +41,15 @@ serve(async (req: Request) => {
     }
 
     const { bookingId, customerEmail, customerName, customerAddress }: CreateMandateRequest = await req.json();
-    
+
     const GOCARDLESS_API_KEY = Deno.env.get('GOCARDLESS_API_KEY');
-    // Using live API - make sure you have a live API key configured
-    const GOCARDLESS_API_URL = 'https://api.gocardless.com';
-    
-    console.log('Creating GoCardless mandate for booking:', bookingId);
+    if (!GOCARDLESS_API_KEY) throw new Error('Missing GoCardless API key');
+    const isSandbox = GOCARDLESS_API_KEY.startsWith('sandbox_');
+    const GOCARDLESS_API_URL = isSandbox
+      ? 'https://api-sandbox.gocardless.com'
+      : 'https://api.gocardless.com';
+
+    console.log('Creating GoCardless mandate for booking:', bookingId, 'sandbox:', isSandbox);
 
     // Check if customer already exists
     let customerId: string;
@@ -54,9 +57,9 @@ serve(async (req: Request) => {
       .from('gocardless_customers')
       .select('gocardless_customer_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (existingCustomer) {
+    if (existingCustomer?.gocardless_customer_id) {
       customerId = existingCustomer.gocardless_customer_id;
       console.log('Using existing customer:', customerId);
     } else {
@@ -71,8 +74,8 @@ serve(async (req: Request) => {
         body: JSON.stringify({
           customers: {
             email: customerEmail,
-            given_name: customerName.split(' ')[0],
-            family_name: customerName.split(' ').slice(1).join(' ') || customerName.split(' ')[0],
+            given_name: customerName.split(' ')[0] || customerName,
+            family_name: customerName.split(' ').slice(1).join(' ') || customerName,
             address_line1: customerAddress.addressLine1,
             address_line2: customerAddress.addressLine2,
             city: customerAddress.city,
@@ -100,6 +103,7 @@ serve(async (req: Request) => {
     }
 
     // Create redirect flow for mandate setup
+    const sessionToken = `${user.id}-${bookingId}`; // must be consistent when completing
     const redirectFlowResponse = await fetch(`${GOCARDLESS_API_URL}/redirect_flows`, {
       method: 'POST',
       headers: {
@@ -110,12 +114,12 @@ serve(async (req: Request) => {
       body: JSON.stringify({
         redirect_flows: {
           description: 'Advertising Campaign Payment',
-          session_token: `${user.id}-${bookingId}-${Date.now()}`,
+          session_token: sessionToken,
           success_redirect_url: `${req.headers.get('origin')}/payment-setup?booking_id=${bookingId}`,
           prefilled_customer: {
             email: customerEmail,
-            given_name: customerName.split(' ')[0],
-            family_name: customerName.split(' ').slice(1).join(' ') || customerName.split(' ')[0],
+            given_name: customerName.split(' ')[0] || customerName,
+            family_name: customerName.split(' ').slice(1).join(' ') || customerName,
             address_line1: customerAddress.addressLine1,
             address_line2: customerAddress.addressLine2,
             city: customerAddress.city,
