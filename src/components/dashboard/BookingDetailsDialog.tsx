@@ -543,46 +543,6 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
             </CardContent>
           </Card>
 
-          {/* Pricing Breakdown */}
-          {booking.pricing_breakdown && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Pricing Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm">Subtotal</span>
-                    <span className="text-sm font-medium">
-                      {formatPrice(booking.subtotal || booking.monthly_price)}
-                    </span>
-                  </div>
-                  {booking.duration_discount_percent && (
-                    <div className="flex justify-between text-green-600">
-                      <span className="text-sm">Duration Discount ({booking.duration_discount_percent}%)</span>
-                      <span className="text-sm">
-                        -{formatPrice((booking.subtotal * booking.duration_discount_percent) / 100)}
-                      </span>
-                    </div>
-                  )}
-                  {booking.volume_discount_percent && (
-                    <div className="flex justify-between text-green-600">
-                      <span className="text-sm">Volume Discount ({booking.volume_discount_percent}%)</span>
-                      <span className="text-sm">
-                        -{formatPrice((booking.subtotal * booking.volume_discount_percent) / 100)}
-                      </span>
-                    </div>
-                  )}
-                  <Separator />
-                  <div className="flex justify-between font-medium">
-                    <span>Total</span>
-                    <span>{formatPrice(booking.final_total || booking.monthly_price)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Legal Documents */}
           <Card>
             <CardHeader>
