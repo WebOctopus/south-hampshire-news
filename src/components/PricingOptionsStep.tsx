@@ -194,12 +194,6 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
               </CardHeader>
 
               <CardContent className="space-y-6">
-                <div className="space-y-1">
-                  {option.features.map((feature, index) => (
-                    <FeatureRow key={index} feature={feature} />
-                  ))}
-                </div>
-
                 <Button
                   onClick={() => handleSelectOption(option.id)}
                   className={cn(
@@ -212,6 +206,12 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
                 >
                   {option.cta}
                 </Button>
+
+                <div className="space-y-1">
+                  {option.features.map((feature, index) => (
+                    <FeatureRow key={index} feature={feature} />
+                  ))}
+                </div>
               </CardContent>
             </Card>
           );
