@@ -1004,6 +1004,60 @@ export type Database = {
         }
         Relationships: []
       }
+      product_packages: {
+        Row: {
+          badge_text: string | null
+          badge_variant: string | null
+          created_at: string
+          cta_text: string
+          description: string
+          features: Json
+          icon: string
+          id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          package_id: string
+          sort_order: number | null
+          subtitle: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          badge_text?: string | null
+          badge_variant?: string | null
+          created_at?: string
+          cta_text?: string
+          description: string
+          features?: Json
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          package_id: string
+          sort_order?: number | null
+          subtitle: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          badge_text?: string | null
+          badge_variant?: string | null
+          created_at?: string
+          cta_text?: string
+          description?: string
+          features?: Json
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          package_id?: string
+          sort_order?: number | null
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           agency_discount_percent: number | null

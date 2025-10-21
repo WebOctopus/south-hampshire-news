@@ -2,104 +2,17 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Star, Target, MapPin } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStepForm } from './StepForm';
-
-interface PricingOption {
-  id: 'fixed' | 'bogof' | 'leafleting';
-  title: string;
-  subtitle: string;
-  description: string;
-  badge?: string;
-  badgeVariant?: 'default' | 'secondary' | 'destructive' | 'outline';
-  icon: React.ComponentType<{ className?: string }>;
-  features: Array<{
-    label: string;
-    value: string | boolean;
-    highlight?: boolean;
-  }>;
-  cta: string;
-  popular?: boolean;
-}
+import { useProductPackages, type ProductPackageFeature } from '@/hooks/useProductPackages';
+import { getIcon } from '@/lib/iconMap';
 
 interface PricingOptionsStepProps {
   onSelectOption: (option: 'fixed' | 'bogof' | 'leafleting') => void;
 }
 
-const pricingOptions: PricingOption[] = [
-  {
-    id: 'fixed',
-    title: 'Fixed Term',
-    subtitle: 'Pay as you go with no contract',
-    description: 'Perfect for businesses wanting flexibility with limited discounts and ad sizes.',
-    icon: Target,
-    features: [
-      { label: 'Number of Inserts', value: '1, 2 or 3' },
-      { label: 'Ad Hoc Option', value: true },
-      { label: 'Consecutive Run', value: true },
-      { label: 'Discount Available', value: 'Only on multi-area bookings' },
-      { label: 'Advert Sizes', value: '1/2, 2/3 & full pages only' },
-      { label: 'Free Ad Design', value: false },
-      { label: 'Free Editorial', value: false },
-      { label: 'Premium Position Upgrades', value: false },
-      { label: 'Discount on Leaflet Bookings', value: false },
-      { label: 'Pre-payment Required', value: true },
-      { label: 'Monthly Payment Plan', value: false },
-      { label: 'Cancellation Notice', value: 'Not applicable' },
-    ],
-    cta: 'SELECT',
-  },
-  {
-    id: 'bogof',
-    title: '3+ Repeat Package',
-    subtitle: 'Our unique 6 month package where we double your advertising reach at no extra cost!',
-    description: 'There\'s lots of extras included. Perfect way to test and trial different adverts, different areas and see what works best!',
-    badge: 'Star Buy',
-    badgeVariant: 'default',
-    icon: Star,
-    popular: true,
-    features: [
-      { label: 'Duration', value: '6 months (3 issues)', highlight: true },
-      { label: 'Buy One Get One Free', value: true, highlight: true },
-      { label: 'Consecutive Run', value: true },
-      { label: 'Discount Available', value: true },
-      { label: 'Available with all advert sizes', value: true, highlight: true },
-      { label: 'Free Ad Design', value: true, highlight: true },
-      { label: 'Premium Position Upgrades', value: true },
-      { label: 'Discount on Leaflet Bookings', value: true },
-      { label: 'Monthly Payment Plan', value: true, highlight: true },
-      { label: 'Cancellation Notice', value: '30 days' },
-    ],
-    cta: 'SELECT',
-  },
-  {
-    id: 'leafleting',
-    title: 'Leafleting Service',
-    subtitle: 'Design, Print & Delivery',
-    description: 'Complete leaflet distribution service reaching up to 116,000 homes.',
-    icon: MapPin,
-    features: [
-      { label: 'Coverage', value: 'Up to 116,000 homes', highlight: true },
-      { label: 'Number of Inserts', value: '1 or more' },
-      { label: 'Double Up for Free', value: false },
-      { label: 'Ad Hoc Option', value: true },
-      { label: 'Consecutive Run', value: true },
-      { label: 'Discount Available', value: 'Up to 15%' },
-      { label: 'Leaflet Size', value: 'A5 max', highlight: true },
-      { label: 'Free Ad Design', value: false },
-      { label: 'Free Editorial', value: false },
-      { label: 'Premium Position Upgrades', value: 'N/A' },
-      { label: 'Discount on Leaflet Bookings', value: 'N/A' },
-      { label: 'Pre-payment Required', value: true },
-      { label: 'Monthly Payment Plan', value: false },
-      { label: 'Cancellation Notice', value: 'Not applicable' },
-    ],
-    cta: 'SELECT',
-  },
-];
-
-const FeatureRow: React.FC<{ feature: PricingOption['features'][0] }> = ({ feature }) => {
+const FeatureRow: React.FC<{ feature: ProductPackageFeature }> = ({ feature }) => {
   const isBoolean = typeof feature.value === 'boolean';
   
   return (
@@ -137,11 +50,28 @@ const FeatureRow: React.FC<{ feature: PricingOption['features'][0] }> = ({ featu
 
 export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelectOption }) => {
   const { nextStep } = useStepForm();
+  const { data: packages, isLoading, isError } = useProductPackages();
 
   const handleSelectOption = (option: 'fixed' | 'bogof' | 'leafleting') => {
     onSelectOption(option);
     nextStep();
   };
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Loading packages...</p>
+      </div>
+    );
+  }
+
+  if (isError || !packages || packages.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-destructive">Unable to load pricing options. Please try again later.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -155,31 +85,31 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {pricingOptions.map((option) => {
-          const Icon = option.icon;
+        {packages.map((option) => {
+          const Icon = getIcon(option.icon);
           
           return (
             <Card 
               key={option.id}
               className={cn(
                 "relative overflow-hidden transition-all duration-200 hover:shadow-elegant",
-                option.popular && "border-primary shadow-lg scale-105"
+                option.is_popular && "border-primary shadow-lg scale-105"
               )}
             >
-              {option.popular && (
+              {option.is_popular && (
                 <div className="absolute top-0 left-0 right-0 bg-gradient-primary text-primary-foreground text-center py-2 text-sm font-medium">
                   Most Popular Choice
                 </div>
               )}
               
-              <CardHeader className={cn("space-y-4", option.popular && "pt-12")}>
+              <CardHeader className={cn("space-y-4", option.is_popular && "pt-12")}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
-                  {option.badge && (
-                    <Badge variant={option.badgeVariant || 'default'} className="text-xs">
-                      {option.badge}
+                  {option.badge_text && (
+                    <Badge variant={option.badge_variant as any} className="text-xs">
+                      {option.badge_text}
                     </Badge>
                   )}
                 </div>
@@ -195,16 +125,16 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
 
               <CardContent className="space-y-6">
                 <Button
-                  onClick={() => handleSelectOption(option.id)}
+                  onClick={() => handleSelectOption(option.package_id as 'fixed' | 'bogof' | 'leafleting')}
                   className={cn(
                     "w-full",
-                    option.popular 
+                    option.is_popular 
                       ? "bg-primary hover:bg-primary/90 shadow-glow" 
                       : "variant-outline hover:bg-primary hover:text-primary-foreground"
                   )}
                   size="lg"
                 >
-                  {option.cta}
+                  {option.cta_text}
                 </Button>
 
                 <div className="space-y-1">

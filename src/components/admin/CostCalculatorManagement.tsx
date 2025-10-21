@@ -3,13 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, MapPin, DollarSign, Clock, FileText } from 'lucide-react';
+import { Calculator, MapPin, DollarSign, Clock, FileText, Package } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePricingInvalidation } from '@/hooks/usePricingMutations';
 import LocationsManagement from './LocationsManagement';
 import AdvertSizesPricingManagement from './AdvertSizesPricingManagement';
 import SubscriptionSettingsManagement from './SubscriptionSettingsManagement';
 import LeafletingManagement from './LeafletingManagement';
+import ProductDesignerManagement from './ProductDesignerManagement';
 
 const CostCalculatorManagement = () => {
   const [activeTab, setActiveTab] = useState('locations');
@@ -119,7 +120,7 @@ const CostCalculatorManagement = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="locations" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 Locations
@@ -135,6 +136,10 @@ const CostCalculatorManagement = () => {
               <TabsTrigger value="leaflets" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Leaflets
+              </TabsTrigger>
+              <TabsTrigger value="products" className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                Product Designer
               </TabsTrigger>
             </TabsList>
 
@@ -152,6 +157,10 @@ const CostCalculatorManagement = () => {
 
             <TabsContent value="leaflets" className="mt-6">
               <LeafletingManagement onStatsUpdate={loadStats} />
+            </TabsContent>
+
+            <TabsContent value="products" className="mt-6">
+              <ProductDesignerManagement />
             </TabsContent>
           </Tabs>
         </CardContent>
