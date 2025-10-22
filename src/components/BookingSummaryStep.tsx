@@ -110,9 +110,13 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   };
 
 // Calculate pricing options based on admin-configured payment options
-// The baseTotal already includes the design fee (added in AdvertisingStepForm useEffect)
+// The baseTotal already includes the design fee in finalTotal
 const baseTotal = pricingBreakdown?.finalTotal || 0;
 const cpmRate = pricingBreakdown?.cpm || 0;
+
+// Show design fee as add-on in breakdown while keeping total inclusive
+const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (designFee || 0) : 0);
+const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (designFeeToShow > 0 ? Math.max(0, baseTotal - designFeeToShow) : baseTotal);
 
   const effectivePaidAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   const effectiveFreeAreas = pricingModel === 'bogof' ? bogofFreeAreas : [];
@@ -274,18 +278,22 @@ const cpmRate = pricingBreakdown?.cpm || 0;
 
         {/* Right Column - Payment Options */}
         <div className="space-y-6">
-          {/* Pricing Breakdown Card - Show simple total including design fee */}
+          {/* Pricing Breakdown Card - Show campaign + add-on, total inclusive */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Cost Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">
-                  Campaign Cost{needsDesign && designFee > 0 ? ' (inc. Design Service)' : ''}
-                </span>
-                <span className="font-medium">{formatPrice(baseTotal)}</span>
+                <span className="text-sm text-muted-foreground">Campaign Cost</span>
+                <span className="font-medium">{formatPrice(campaignCostExclDesign)}</span>
               </div>
+              {designFeeToShow > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Artwork Design Service</span>
+                  <span className="font-medium">{formatPrice(designFeeToShow)}</span>
+                </div>
+              )}
               <div className="border-t pt-2">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">Total (Excl. VAT)</span>
