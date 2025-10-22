@@ -61,6 +61,7 @@ export type Database = {
           base_price_per_area: number
           base_price_per_month: number
           created_at: string
+          design_fee: number
           dimensions: string
           fixed_pricing_per_issue: Json | null
           id: string
@@ -75,6 +76,7 @@ export type Database = {
           base_price_per_area?: number
           base_price_per_month?: number
           created_at?: string
+          design_fee?: number
           dimensions: string
           fixed_pricing_per_issue?: Json | null
           id?: string
@@ -89,6 +91,7 @@ export type Database = {
           base_price_per_area?: number
           base_price_per_month?: number
           created_at?: string
+          design_fee?: number
           dimensions?: string
           fixed_pricing_per_issue?: Json | null
           id?: string
@@ -777,6 +780,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          design_fee: number
           id: string
           is_active: boolean
           label: string
@@ -786,6 +790,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          design_fee?: number
           id?: string
           is_active?: boolean
           label: string
@@ -795,6 +800,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          design_fee?: number
           id?: string
           is_active?: boolean
           label?: string

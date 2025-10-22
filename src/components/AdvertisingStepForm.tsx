@@ -5,6 +5,7 @@ import StepForm from '@/components/StepForm';
 import PricingOptionsStep from '@/components/PricingOptionsStep';
 import AreaAndScheduleStep from '@/components/AreaAndScheduleStep';
 import AdvertisementSizeStep from '@/components/AdvertisementSizeStep';
+import DesignFeeStep from '@/components/DesignFeeStep';
 import BookingSummaryStep from '@/components/BookingSummaryStep';
 import { LeafletBasketSummary } from '@/components/LeafletBasketSummary';
 import { FixedTermBasketSummary } from '@/components/FixedTermBasketSummary';
@@ -46,7 +47,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     selectedMonths: {} as Record<string, string[]>,
     pricingBreakdown: null as any,
     selectedPaymentOption: '' as string,
-    selectedStartingIssues: {} as Record<string, string>
+    selectedStartingIssues: {} as Record<string, string>,
+    needsDesign: false,
+    designFee: 0
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -96,6 +99,45 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       console.log('AdvertisingStepForm - No pricing breakdown yet');
     }
   }, [campaignData]);
+
+  // Update design fee when ad size changes
+  React.useEffect(() => {
+    if (campaignData.selectedAdSize) {
+      const selectedSize = adSizes?.find(size => size.id === campaignData.selectedAdSize);
+      const designFee = (selectedSize as any)?.design_fee || 0;
+      setCampaignData(prev => ({ ...prev, designFee }));
+    }
+  }, [campaignData.selectedAdSize, adSizes]);
+
+  // Update pricing breakdown to include design fee when needed
+  React.useEffect(() => {
+    if (campaignData.pricingBreakdown && campaignData.needsDesign && campaignData.designFee > 0) {
+      const designFeeAmount = campaignData.designFee;
+      setCampaignData(prev => ({
+        ...prev,
+        pricingBreakdown: {
+          ...prev.pricingBreakdown,
+          designFee: designFeeAmount,
+          subtotal: (prev.pricingBreakdown?.subtotal || 0),
+          subtotalBeforeDesign: prev.pricingBreakdown?.subtotalBeforeDesign || prev.pricingBreakdown?.subtotal || 0,
+          finalTotal: (prev.pricingBreakdown?.subtotalBeforeDesign || prev.pricingBreakdown?.subtotal || 0) + designFeeAmount
+        }
+      }));
+    } else if (campaignData.pricingBreakdown && (!campaignData.needsDesign || campaignData.designFee === 0)) {
+      // Remove design fee if not needed
+      const subtotalBeforeDesign = campaignData.pricingBreakdown.subtotalBeforeDesign || campaignData.pricingBreakdown.subtotal;
+      if (campaignData.pricingBreakdown.designFee) {
+        setCampaignData(prev => ({
+          ...prev,
+          pricingBreakdown: {
+            ...prev.pricingBreakdown,
+            designFee: 0,
+            finalTotal: subtotalBeforeDesign
+          }
+        }));
+      }
+    }
+  }, [campaignData.needsDesign, campaignData.designFee]);
   const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
   const [pendingNextStep, setPendingNextStep] = useState<(() => void) | null>(null);
 
@@ -122,7 +164,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       selectedMonths: {}, // Clear month selections (fixed term specific)
       pricingBreakdown: null, // Reset pricing - will be recalculated for subscription
       selectedPaymentOption: '', // Clear payment option - user must select for subscription
-      selectedStartingIssues: {} // Clear starting issues
+      selectedStartingIssues: {}, // Clear starting issues
+      needsDesign: prev.needsDesign, // Keep design choice
+      designFee: prev.designFee // Keep design fee
     }));
     
     setShowFixedTermConfirmation(false);
@@ -631,8 +675,23 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       pricingBreakdown: campaignData.pricingBreakdown
     }}
     currentStep={currentStep}
+    selectedMonths={campaignData.selectedMonths}
   />
 )}
+              
+              <DesignFeeStep
+                needsDesign={campaignData.needsDesign}
+                onDesignChoiceChange={(needsDesign) => setCampaignData(prev => ({ ...prev, needsDesign }))}
+                designFee={campaignData.designFee}
+                pricingModel={selectedPricingModel}
+              />
+              
+              <DesignFeeStep
+                needsDesign={campaignData.needsDesign}
+                onDesignChoiceChange={(needsDesign) => setCampaignData(prev => ({ ...prev, needsDesign }))}
+                designFee={campaignData.designFee}
+                pricingModel={selectedPricingModel}
+              />
               
               {selectedPricingModel === 'leafleting' ? (
                 <LeafletBasketSummary
