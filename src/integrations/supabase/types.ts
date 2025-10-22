@@ -150,6 +150,7 @@ export type Database = {
           company: string | null
           contact_name: string
           created_at: string
+          device_fingerprint: string | null
           duration_discount_percent: number | null
           duration_id: string | null
           duration_multiplier: number | null
@@ -157,6 +158,7 @@ export type Database = {
           final_total: number | null
           gocardless_mandate_id: string | null
           id: string
+          ip_address_hash: string | null
           monthly_price: number
           notes: string | null
           payment_status: string | null
@@ -183,6 +185,7 @@ export type Database = {
           company?: string | null
           contact_name: string
           created_at?: string
+          device_fingerprint?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
@@ -190,6 +193,7 @@ export type Database = {
           final_total?: number | null
           gocardless_mandate_id?: string | null
           id?: string
+          ip_address_hash?: string | null
           monthly_price?: number
           notes?: string | null
           payment_status?: string | null
@@ -216,6 +220,7 @@ export type Database = {
           company?: string | null
           contact_name?: string
           created_at?: string
+          device_fingerprint?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
@@ -223,6 +228,7 @@ export type Database = {
           final_total?: number | null
           gocardless_mandate_id?: string | null
           id?: string
+          ip_address_hash?: string | null
           monthly_price?: number
           notes?: string | null
           payment_status?: string | null
@@ -1590,16 +1596,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      assign_admin_role: {
-        Args: { user_email: string }
-        Returns: string
-      }
-      generate_voucher_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      assign_admin_role: { Args: { user_email: string }; Returns: string }
+      generate_voucher_code: { Args: never; Returns: string }
       get_active_alerts: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           alert_type: string
           badge_color: string

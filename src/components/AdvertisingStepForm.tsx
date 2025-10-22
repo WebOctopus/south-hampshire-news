@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from '@/components/ui/button';
 import LeafletSizeStep from '@/components/LeafletSizeStep';
 import { cn } from '@/lib/utils';
+import { getFraudDetectionData } from '@/hooks/useBogofEligibility';
 
 interface AdvertisingStepFormProps {
   children?: React.ReactNode;
@@ -232,6 +233,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         return;
       }
 
+      // Collect fraud detection data for BOGOF tracking
+      const fraudData = await getFraudDetectionData();
+      console.log('Fraud detection data collected for quote');
+
       // Save to quotes table (user's saved quotes)
       const quotePayload = {
         user_id: userId,
@@ -409,6 +414,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         return;
       }
 
+      // Collect fraud detection data for BOGOF tracking
+      const fraudData = await getFraudDetectionData();
+      console.log('Fraud detection data:', fraudData);
+
       // Create booking record
       const bookingPayload = {
         user_id: userId,
@@ -444,6 +453,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           city: contactData.city || '',
           postcode: contactData.postcode || '',
         },
+        ip_address_hash: fraudData.ipHash,
+        device_fingerprint: fraudData.deviceFingerprint,
         status: 'pending'
       };
       

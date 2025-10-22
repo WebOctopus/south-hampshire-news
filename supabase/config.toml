@@ -58,3 +58,6 @@ verify_jwt = false
 
 [functions.gocardless-webhook]
 verify_jwt = false
+
+[functions.validate-bogof-eligibility]
+verify_jwt = false
