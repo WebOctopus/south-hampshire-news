@@ -7,6 +7,7 @@ import { useLeafletData } from '@/hooks/useLeafletData';
 import { useStepForm } from '@/components/StepForm';
 import { AlertCircle } from 'lucide-react';
 import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface LeafletBasketSummaryProps {
   selectedAreas: string[];
@@ -15,6 +16,7 @@ interface LeafletBasketSummaryProps {
   selectedMonths: Record<string, string[]>;
   pricingBreakdown: any;
   onNext?: () => void;
+  onMonthsChange?: (months: Record<string, string[]>) => void;
 }
 
 // Helper function to format month display
@@ -74,7 +76,8 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
   selectedDuration,
   selectedMonths,
   pricingBreakdown,
-  onNext
+  onNext,
+  onMonthsChange
 }) => {
   const { leafletAreas, leafletSizes, leafletDurations } = useLeafletData();
   const { nextStep } = useStepForm();
@@ -161,18 +164,48 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
               </div>
               
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Starting Issues</Label>
-                <div className="space-y-2 mt-1">
-                  {startingIssues.length > 0 ? (
-                    startingIssues.map((issue: any, index: number) => (
-                      <div key={index} className="text-sm">
-                        <p className="font-medium">{issue.areaNames}</p>
-                        <p className="text-muted-foreground">{issue.startingMonth}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Not selected</p>
-                  )}
+                <Label className="text-sm font-medium text-muted-foreground">Starting Issue Per Area</Label>
+                <div className="space-y-3 mt-2">
+                  {(() => {
+                    const selectedAreaData = leafletAreas?.filter(a => selectedAreas.includes(a.id)) || [];
+                    const groups = getAreaGroupedSchedules(selectedAreaData);
+                    if (!groups.length) return (
+                      <p className="text-sm text-muted-foreground">Not selected</p>
+                    );
+                    return groups.map((group, idx) => {
+                      const firstAreaId = group.areas[0]?.id;
+                      const value = selectedMonths[firstAreaId]?.[0] || '';
+                      return (
+                        <div key={idx} className="border rounded-lg p-4">
+                          <p className="font-medium mb-2">{group.areaNames}</p>
+                          <RadioGroup
+                            value={value}
+                            onValueChange={(month) => {
+                              if (!month) return;
+                              const next = { ...selectedMonths } as Record<string, string[]>;
+                              group.areas.forEach((area: any) => {
+                                next[area.id] = [month];
+                              });
+                              // If parent provided a handler, update upstream
+                              // Otherwise this is just visual
+                              if (typeof onNext === 'function' && !onMonthsChange) {
+                                // no-op, keep compatibility
+                              }
+                              onMonthsChange?.(next);
+                            }}
+                            className="space-y-2"
+                          >
+                            {group.scheduleOptions.map((opt, i) => (
+                              <div key={i} className="flex items-center space-x-2">
+                                <RadioGroupItem id={`lb-${idx}-${i}`} value={opt.month} />
+                                <Label htmlFor={`lb-${idx}-${i}`} className="cursor-pointer">{opt.label}</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </CardContent>
