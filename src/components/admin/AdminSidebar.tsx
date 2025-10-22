@@ -8,7 +8,8 @@ import {
   BarChart3,
   Shield,
   Home,
-  AlertTriangle
+  AlertTriangle,
+  Image
 } from "lucide-react"
 
 import {
@@ -54,6 +55,11 @@ const menuItems = [
     title: "Cost Calculator",
     icon: Calculator,
     section: "calculator"
+  },
+  {
+    title: "Ad Preview Images",
+    icon: Image,
+    section: "ad-preview-images"
   }
 ]
 

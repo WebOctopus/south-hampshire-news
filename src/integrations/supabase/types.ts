@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_preview_images: {
+        Row: {
+          ad_size_id: string
+          created_at: string
+          id: string
+          image_name: string
+          image_url: string
+          is_active: boolean
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          ad_size_id: string
+          created_at?: string
+          id?: string
+          image_name: string
+          image_url: string
+          is_active?: boolean
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          ad_size_id?: string
+          created_at?: string
+          id?: string
+          image_name?: string
+          image_url?: string
+          is_active?: boolean
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_preview_images_ad_size_id_fkey"
+            columns: ["ad_size_id"]
+            isOneToOne: false
+            referencedRelation: "ad_sizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ad_sizes: {
         Row: {
           available_for: Json | null

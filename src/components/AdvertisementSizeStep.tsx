@@ -9,6 +9,7 @@ import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator'
 import { cn } from '@/lib/utils';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
+import { useAdPreviewImages } from '@/hooks/useAdPreviewImages';
 
 interface AdvertisementSizeStepProps {
   selectedAdSize: string;
@@ -43,6 +44,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const { data: agencyData } = useAgencyDiscount();
+  const { getPreviewImageForSize, getPublicUrl } = useAdPreviewImages();
   const [previewMode, setPreviewMode] = useState<'grid' | 'magazine'>('grid');
 
   const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
@@ -211,11 +213,25 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
                           selectedSize.name.includes('1/8') ? '60px' : '100px',
                 }}
               >
-                <div className="text-center p-2">
-                  <p className="text-xs font-bold text-primary">YOUR AD</p>
-                  <p className="text-xs text-primary/80">{selectedSize.name}</p>
-                  <p className="text-xs text-primary/60">{selectedSize.dimensions}</p>
-                </div>
+                {(() => {
+                  const previewImage = getPreviewImageForSize(selectedSize.id);
+                  if (previewImage) {
+                    return (
+                      <img
+                        src={getPublicUrl(previewImage.image_url)}
+                        alt={selectedSize.name}
+                        className="w-full h-full object-cover rounded"
+                      />
+                    );
+                  }
+                  return (
+                    <div className="text-center p-2">
+                      <p className="text-xs font-bold text-primary">YOUR AD</p>
+                      <p className="text-xs text-primary/80">{selectedSize.name}</p>
+                      <p className="text-xs text-primary/60">{selectedSize.dimensions}</p>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
             
