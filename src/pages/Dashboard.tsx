@@ -193,6 +193,7 @@ const Dashboard = () => {
       const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
       const justSavedQuote = localStorage.getItem('justSavedQuote');
       const justCreatedBooking = localStorage.getItem('justCreatedBooking');
+      const showVoucherNotification = localStorage.getItem('showVoucherNotification');
       
       if (isNewUserFromCalculator === 'true' || justSavedQuote === 'true') {
         setActiveTab('quotes');
@@ -218,6 +219,20 @@ const Dashboard = () => {
         setTimeout(() => {
           loadVoucherCount();
         }, 1000);
+      }
+
+      if (showVoucherNotification === 'true') {
+        setActiveTab('bookings');
+        localStorage.removeItem('showVoucherNotification');
+        
+        setTimeout(() => {
+          toast({
+            title: "Bonus Voucher Earned! 🎉",
+            description: "You've received a 10% leafleting service voucher! Check your booking below to redeem it.",
+            duration: 8000,
+          });
+          loadVoucherCount();
+        }, 1500);
       }
     }
   }, [user]);

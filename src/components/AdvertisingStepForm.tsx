@@ -467,78 +467,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         return;
       }
 
-      // Create voucher for BOGOF (3+ Repeat Package) bookings
-      if (selectedPricingModel === 'bogof' && bookingData && userId) {
-        console.log('Creating voucher for BOGOF booking...', {
-          bookingId: bookingData.id,
-          userId: userId
-        });
-        
-        try {
-          // Generate voucher code
-          const { data: voucherCodeData, error: codeError } = await supabase
-            .rpc('generate_voucher_code');
-
-          if (codeError) {
-            console.error('Error generating voucher code:', codeError);
-            toast({
-              title: "Booking Created",
-              description: "Your booking was created successfully, but there was an issue creating your voucher. Please contact support.",
-              variant: "destructive",
-            });
-          } else {
-            console.log('Voucher code generated:', voucherCodeData);
-            
-            // Calculate expiry date (6 months from now)
-            const expiryDate = new Date();
-            expiryDate.setMonth(expiryDate.getMonth() + 6);
-
-            const voucherPayload = {
-              user_id: userId,
-              voucher_code: voucherCodeData,
-              voucher_type: 'percentage',
-              discount_value: 10,
-              service_type: 'leafleting',
-              expires_at: expiryDate.toISOString(),
-              created_from_booking_id: bookingData.id,
-              description: 'Thank you for booking our 3+ Repeat Package! Enjoy 10% off your next leafleting service.'
-            };
-
-            console.log('Creating voucher with payload:', voucherPayload);
-
-            const { data: voucherData, error: voucherError } = await supabase
-              .from('vouchers')
-              .insert(voucherPayload)
-              .select();
-
-            if (voucherError) {
-              console.error('Error creating voucher:', voucherError);
-              toast({
-                title: "Booking Created",
-                description: "Your booking was created successfully, but there was an issue creating your voucher. Please contact support.",
-                variant: "destructive",
-              });
-            } else {
-              console.log('Voucher created successfully:', voucherData);
-              // Show success message about voucher
-              setTimeout(() => {
-                toast({
-                  title: "Bonus Voucher Earned! 🎉",
-                  description: "You've received a 10% leafleting service voucher! Check your dashboard to view it.",
-                  duration: 6000,
-                });
-              }, 2000);
-            }
-          }
-        } catch (error) {
-          console.error('Unexpected error during voucher creation:', error);
-          toast({
-            title: "Booking Created", 
-            description: "Your booking was created successfully, but there was an issue creating your voucher. Please contact support.",
-            variant: "destructive",
-          });
-        }
-      }
+      // Note: Vouchers for BOGOF bookings will be created after payment is completed
+      // This prevents vouchers from being generated for unpaid bookings
 
       // Send webhook to Go High-Level
       try {

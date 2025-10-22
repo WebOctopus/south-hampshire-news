@@ -103,17 +103,66 @@ const PaymentSetup = () => {
           if (paymentError) throw paymentError;
         }
 
-        setStatus('success');
-        setMessage('Payment setup complete! Redirecting to your dashboard...');
-        
-        toast({
-          title: 'Payment Setup Complete',
-          description: 'Your Direct Debit has been set up successfully.',
-        });
+          // Update booking payment status
+          await supabase.from('bookings').update({
+            payment_status: 'paid',
+            status: 'submitted',
+          }).eq('id', bookingId);
 
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
+          // Generate voucher if it's a BOGOF (3+ Repeat Package) booking
+          if (booking.pricing_model === 'bogof') {
+            console.log('Generating voucher for BOGOF booking after payment...');
+            
+            try {
+              // Generate voucher code
+              const { data: voucherCodeData, error: codeError } = await supabase
+                .rpc('generate_voucher_code');
+
+              if (!codeError && voucherCodeData) {
+                // Calculate expiry date (6 months from now)
+                const expiryDate = new Date();
+                expiryDate.setMonth(expiryDate.getMonth() + 6);
+
+                const voucherPayload = {
+                  user_id: booking.user_id,
+                  voucher_code: voucherCodeData,
+                  voucher_type: 'percentage',
+                  discount_value: 10,
+                  service_type: 'leafleting',
+                  description: '10% discount on leafleting services - Earned from 3+ Repeat Package booking',
+                  expires_at: expiryDate.toISOString(),
+                  created_from_booking_id: bookingId,
+                };
+
+                const { error: voucherError } = await supabase
+                  .from('vouchers')
+                  .insert(voucherPayload);
+
+                if (!voucherError) {
+                  console.log('Voucher created successfully after payment');
+                }
+              }
+            } catch (error) {
+              console.error('Error creating voucher:', error);
+            }
+          }
+
+          setStatus('success');
+          setMessage('Payment setup complete! Redirecting to your dashboard...');
+          
+          // Set flag to show voucher notification
+          if (booking.pricing_model === 'bogof') {
+            localStorage.setItem('showVoucherNotification', 'true');
+          }
+
+          toast({
+            title: 'Payment Setup Complete',
+            description: 'Your Direct Debit has been set up successfully.',
+          });
+
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
 
       } catch (error: any) {
         console.error('Error setting up payment:', error);

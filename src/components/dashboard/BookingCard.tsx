@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Clock, DollarSign, Package, Trash2, CreditCard, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Clock, DollarSign, Package, Trash2, CreditCard, AlertCircle, Gift, CheckCircle2 } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface BookingCardProps {
   booking: {
@@ -27,7 +29,32 @@ interface BookingCardProps {
 }
 
 export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails }) => {
+  const navigate = useNavigate();
   const isPaymentRequired = !booking.payment_status || booking.payment_status === 'pending';
+  const isPaid = booking.payment_status === 'paid' || booking.payment_status === 'subscription_active' || booking.payment_status === 'mandate_active';
+  const [hasVoucher, setHasVoucher] = useState(false);
+  const [voucherCode, setVoucherCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if this booking generated a voucher
+    const checkVoucher = async () => {
+      if (booking.pricing_model === 'bogof' && isPaid) {
+        const { data, error } = await supabase
+          .from('vouchers')
+          .select('voucher_code, is_used')
+          .eq('created_from_booking_id', booking.id)
+          .eq('is_active', true)
+          .single();
+
+        if (!error && data && !data.is_used) {
+          setHasVoucher(true);
+          setVoucherCode(data.voucher_code);
+        }
+      }
+    };
+
+    checkVoucher();
+  }, [booking.id, booking.pricing_model, isPaid]);
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -96,6 +123,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
       className={`h-full relative overflow-hidden transition-all duration-300 ${
         isPaymentRequired 
           ? 'border-2 border-amber-400 shadow-lg hover:shadow-xl bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30' 
+          : isPaid
+          ? 'border-2 border-emerald-400 shadow-md hover:shadow-lg bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30 cursor-pointer'
           : 'hover:shadow-md cursor-pointer'
       }`}
       onClick={() => onViewDetails?.(booking)}
@@ -103,6 +132,11 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
       {/* Animated gradient border for unpaid bookings */}
       {isPaymentRequired && (
         <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 opacity-20 animate-pulse pointer-events-none" />
+      )}
+      
+      {/* Success glow for paid bookings */}
+      {isPaid && (
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-400 opacity-10 pointer-events-none" />
       )}
       
       <CardHeader className="pb-3 relative">
@@ -113,6 +147,11 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
               {isPaymentRequired && (
                 <div className="flex items-center gap-1 text-amber-600 animate-pulse">
                   <AlertCircle className="w-4 h-4" />
+                </div>
+              )}
+              {isPaid && (
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <CheckCircle2 className="w-5 h-5 fill-emerald-600 text-white" />
                 </div>
               )}
             </div>
@@ -216,6 +255,32 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
             <CreditCard className="w-4 h-4 mr-2" />
             Complete Payment Now
           </Button>
+        )}
+
+        {/* Paid Status & Voucher CTA */}
+        {isPaid && (
+          <div className="space-y-3">
+            <Alert className="border-emerald-400 bg-emerald-50/80 backdrop-blur-sm">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <AlertDescription className="text-emerald-900 font-medium">
+                Payment confirmed! Your campaign is booked and will be processed.
+              </AlertDescription>
+            </Alert>
+
+            {hasVoucher && (
+              <Button 
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                size="lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/advertising?type=leafleting');
+                }}
+              >
+                <Gift className="w-4 h-4 mr-2" />
+                Redeem Your 10% Leaflet Voucher
+              </Button>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
