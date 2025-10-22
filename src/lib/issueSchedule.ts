@@ -107,18 +107,54 @@ export function formatMonthForDisplay(monthStr: string): string {
 
 /**
  * Get all available issue options for a given set of area schedules
+ * Returns up to 6 future months as starting options
  */
 export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
-  const options: IssueOption[] = [];
-
-  const nextAvailable = getNextAvailableIssue(areaSchedules);
-  if (nextAvailable) {
-    options.push(nextAvailable);
+  if (!areaSchedules || areaSchedules.length === 0) {
+    return [];
   }
 
-  const startingMonthNext = getStartingMonthToNextIssue(areaSchedules);
-  if (startingMonthNext) {
-    options.push(startingMonthNext);
+  const currentDate = new Date();
+  const currentMonth = startOfMonth(currentDate);
+
+  // Get all unique months from all area schedules
+  const allMonths = new Set<string>();
+  areaSchedules.forEach(area => {
+    if (area.schedule) {
+      area.schedule.forEach((monthData: any) => {
+        allMonths.add(monthData.month);
+      });
+    }
+  });
+
+  // Sort months chronologically
+  const sortedMonths = Array.from(allMonths).sort();
+
+  // Get up to 6 future months as starting options
+  const options: IssueOption[] = [];
+  let addedCount = 0;
+  const maxOptions = 6;
+
+  for (const monthStr of sortedMonths) {
+    if (addedCount >= maxOptions) break;
+
+    try {
+      // Parse month string (assuming format like "2024-01")
+      const monthDate = parse(monthStr, 'yyyy-MM', new Date());
+      
+      // If this month is current month or in the future, add it as an option
+      if (!isBefore(monthDate, currentMonth)) {
+        const displayMonth = formatMonthForDisplay(monthStr);
+        options.push({
+          value: monthStr,
+          label: addedCount === 0 ? `Next Available Issue - ${displayMonth}` : displayMonth,
+          month: monthStr
+        });
+        addedCount++;
+      }
+    } catch (error) {
+      console.error('Error parsing month:', monthStr, error);
+    }
   }
 
   return options;
