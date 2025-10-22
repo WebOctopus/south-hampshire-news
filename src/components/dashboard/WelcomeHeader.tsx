@@ -7,9 +7,17 @@ import { formatPrice } from '@/lib/pricingCalculator';
 interface WelcomeHeaderProps {
   user: User | null;
   quotes: any[];
+  bookings?: any[];
 }
 
-export default function WelcomeHeader({ user, quotes }: WelcomeHeaderProps) {
+export default function WelcomeHeader({ user, quotes, bookings = [] }: WelcomeHeaderProps) {
+  // TEMPORARY: Preview mode - same as in BookingCard
+  const PREVIEW_AS_PAID = true;
+  
+  const hasPaidBookings = PREVIEW_AS_PAID 
+    ? bookings.length > 0 
+    : bookings.some(b => b.payment_status === 'paid' || b.payment_status === 'subscription_active' || b.payment_status === 'mandate_active');
+  
   const totalReach = quotes.reduce((sum, quote) => sum + (quote.total_circulation || 0), 0);
   const totalInvestment = quotes.reduce((sum, quote) => sum + (quote.final_total || 0), 0);
   const activeQuotes = quotes.filter(quote => quote.pricing_model).length;
@@ -23,11 +31,16 @@ export default function WelcomeHeader({ user, quotes }: WelcomeHeaderProps) {
           Welcome back, {displayName}! 👋
         </h1>
         <p className="text-xl text-muted-foreground mb-4">
-          You're one step away from reaching {totalReach.toLocaleString()} homes in your area!
+          {hasPaidBookings 
+            ? "Your advertising campaigns are now active and reaching your target audience!"
+            : `You're one step away from reaching ${totalReach.toLocaleString()} homes in your area!`
+          }
         </p>
-        <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-lg">
-          Book Your Campaign Today
-        </Button>
+        {!hasPaidBookings && (
+          <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-lg">
+            Book Your Campaign Today
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -1365,7 +1365,7 @@ const Dashboard = () => {
           
           <div className="flex-1 overflow-auto">
             <div className="max-w-7xl mx-auto p-6 space-y-6">
-              <WelcomeHeader user={user} quotes={quotes} />
+              <WelcomeHeader user={user} quotes={quotes} bookings={bookings} />
               
               {activeTab === 'create' && renderCreateBusinessForm()}
               {activeTab === 'listings' && renderBusinessListings()}
