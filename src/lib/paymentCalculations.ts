@@ -8,18 +8,21 @@ export const calculatePaymentAmount = (
   baseTotal: number,
   option: PaymentOption,
   pricingModel: string,
-  paymentOptions: PaymentOption[]
+  paymentOptions: PaymentOption[],
+  designFee: number = 0
 ): number => {
-  let amount = baseTotal;
+  // Separate the design fee from the base total for proper calculation
+  const campaignCost = baseTotal - designFee;
+  let amount = campaignCost;
 
   // Helper: compute the displayed Monthly Payment Plan amount
   const getMonthlyAmount = () => {
     const monthlyOpt = paymentOptions.find((opt: any) => opt.option_type === 'monthly');
     if (!monthlyOpt) return undefined;
-    let m = baseTotal;
+    let m = campaignCost;
     if (pricingModel === 'bogof') {
-      // In 3+ package, baseTotal represents the 6-month total
-      m = baseTotal / 2; // monthly plan is based on 12 months total (half of 6-month deal)
+      // In 3+ package, campaignCost represents the 6-month total
+      m = campaignCost / 2; // monthly plan is based on 12 months total (half of 6-month deal)
     }
     // Apply monthly option adjustments
     if (monthlyOpt.discount_percentage > 0) {
@@ -30,6 +33,10 @@ export const calculatePaymentAmount = (
     }
     if (monthlyOpt.minimum_payments) {
       m = m / monthlyOpt.minimum_payments;
+    }
+    // Add design fee split across monthly payments
+    if (designFee > 0 && monthlyOpt.minimum_payments) {
+      m += designFee / monthlyOpt.minimum_payments;
     }
     return m;
   };
@@ -44,20 +51,24 @@ export const calculatePaymentAmount = (
   if (pricingModel === 'bogof') {
     const monthly = getMonthlyAmount();
     if (monthly !== undefined) {
-      // 6 Months full payment = monthly x 6
+      // 6 Months full payment = (monthly x 6) - design fee split, then add full design fee
       if (option.display_name?.includes('6 Months')) {
-        return monthly * 6;
+        const monthlyPayments = paymentOptions.find(opt => opt.option_type === 'monthly')?.minimum_payments || 12;
+        const monthlyWithoutDesign = monthly - (designFee / monthlyPayments);
+        return (monthlyWithoutDesign * 6) + designFee;
       }
-      // 12 Months full payment = (monthly x 12) - 10%
+      // 12 Months full payment = ((monthly x 12) - design fee split) x 0.9, then add full design fee
       if (option.display_name?.includes('12 Months') || option.option_type?.includes('12')) {
-        return monthly * 12 * 0.9;
+        const monthlyPayments = paymentOptions.find(opt => opt.option_type === 'monthly')?.minimum_payments || 12;
+        const monthlyWithoutDesign = monthly - (designFee / monthlyPayments);
+        return (monthlyWithoutDesign * 12 * 0.9) + designFee;
       }
     }
   }
 
   // For non-BOGOF 12-month options, double the base amount
   if (pricingModel !== 'bogof' && (option.display_name?.includes('12 Months') || option.option_type?.includes('12'))) {
-    amount = baseTotal * 2;
+    amount = campaignCost * 2;
   }
 
   // Apply discount
@@ -70,12 +81,14 @@ export const calculatePaymentAmount = (
     amount = amount * (1 + option.additional_fee_percentage / 100);
   }
 
-  // For monthly payments (fallback), divide by minimum payments
+  // For monthly payments (fallback), divide by minimum payments and add design fee per month
   if (option.minimum_payments && option.option_type === 'monthly') {
-    return amount / option.minimum_payments;
+    const monthlyAmount = amount / option.minimum_payments;
+    return monthlyAmount + (designFee / option.minimum_payments);
   }
 
-  return amount;
+  // For full payment options, add the full design fee
+  return amount + designFee;
 };
 
 /**

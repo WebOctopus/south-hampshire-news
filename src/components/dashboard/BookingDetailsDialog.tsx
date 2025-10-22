@@ -511,7 +511,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       // Use the same calculation logic as the booking summary
                       const baseTotal = booking.final_total || booking.monthly_price;
                       const pricingModel = booking.pricing_model || 'fixed';
-                      const totalAmount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions);
+                      const designFee = booking.pricing_breakdown?.designFee || 0;
+                      const totalAmount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
                       
                       // Calculate savings for display
                       const discount = option.discount_percentage > 0 

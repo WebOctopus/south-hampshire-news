@@ -325,7 +325,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                     return getOrder(a) - getOrder(b);
                   })
                   .map((option) => {
-                  const amount = calcPaymentAmount(baseTotal, option, pricingModel, paymentOptions);
+                  const amount = calcPaymentAmount(
+                    baseTotal,
+                    option,
+                    pricingModel,
+                    paymentOptions,
+                    designFeeToShow
+                  );
                   const savings = option.discount_percentage > 0 ? baseTotal - amount : 0;
                   
                   return (
@@ -367,7 +373,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                         // Get the monthly payment amount
                         const monthlyOption = paymentOptions.find(opt => opt.option_type === 'monthly');
                         if (monthlyOption) {
-                          const monthlyAmount = calcPaymentAmount(baseTotal, monthlyOption, pricingModel, paymentOptions);
+                          const monthlyAmount = calcPaymentAmount(
+                            baseTotal,
+                            monthlyOption,
+                            pricingModel,
+                            paymentOptions,
+                            designFeeToShow
+                          );
                           // Formula: (monthly × 2) / total homes × 1000
                           const costPer1000 = ((monthlyAmount * 2) / pricingBreakdown.totalCirculation) * 1000;
                           return `Only ${formatPrice(costPer1000)} + VAT per 1,000 homes reached`;
