@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, Upload, Trash2, Eye, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Loader2, Upload, Trash2, Eye, Image as ImageIcon, AlertCircle, Pencil } from 'lucide-react';
 import { useAdPreviewImages } from '@/hooks/useAdPreviewImages';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useToast } from '@/hooks/use-toast';
@@ -24,9 +24,10 @@ export default function AdPreviewImageManagement() {
     getPublicUrl,
   } = useAdPreviewImages();
 
-  const [selectedSizeId, setSelectedSizeId] = useState<string>('');
+  const [editingSize, setEditingSize] = useState<any>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,36 +60,53 @@ export default function AdPreviewImageManagement() {
     setPreviewUrl(URL.createObjectURL(file));
   };
 
+  const handleEditClick = (size: any) => {
+    setEditingSize(size);
+    setSelectedFile(null);
+    setPreviewUrl('');
+    setShowEditDialog(true);
+  };
+
   const handleUpload = () => {
-    if (!selectedFile || !selectedSizeId) {
+    if (!selectedFile || !editingSize) {
       toast({
         title: "Missing Information",
-        description: "Please select both an ad size and an image file",
+        description: "Please select an image file",
         variant: "destructive",
       });
       return;
     }
 
-    const adSize = adSizes?.find(size => size.id === selectedSizeId);
-    const imageName = `${adSize?.name || 'Preview'} - ${selectedFile.name}`;
+    const imageName = `${editingSize.name || 'Preview'} - ${selectedFile.name}`;
 
     uploadImage(
       {
         file: selectedFile,
-        adSizeId: selectedSizeId,
+        adSizeId: editingSize.id,
         imageName,
       },
       {
         onSuccess: () => {
           setSelectedFile(null);
           setPreviewUrl('');
-          setSelectedSizeId('');
+          setEditingSize(null);
+          setShowEditDialog(false);
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
           }
         },
       }
     );
+  };
+
+  const handleCloseEditDialog = () => {
+    setShowEditDialog(false);
+    setSelectedFile(null);
+    setPreviewUrl('');
+    setEditingSize(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleDelete = (image: any) => {
@@ -120,110 +138,16 @@ export default function AdPreviewImageManagement() {
       <div>
         <h2 className="text-2xl font-bold mb-2">Ad Preview Image Management</h2>
         <p className="text-muted-foreground">
-          Upload custom advertisement images for each ad size to show in the Magazine Preview section.
+          Manage custom advertisement images for each ad size shown in the Magazine Preview section.
         </p>
       </div>
-
-      {/* Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload New Preview Image</CardTitle>
-          <CardDescription>
-            Select an ad size and upload an image to be displayed in the customer preview
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              For best results, use high-quality images. Maximum file size: 5MB. Supported formats: JPG, PNG, WebP
-            </AlertDescription>
-          </Alert>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Select Ad Size</label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                value={selectedSizeId}
-                onChange={(e) => setSelectedSizeId(e.target.value)}
-              >
-                <option value="">Choose an ad size...</option>
-                {adSizes?.filter(size => size.is_active).map((size) => (
-                  <option key={size.id} value={size.id}>
-                    {size.name} ({size.dimensions})
-                    {getImageForSize(size.id) ? ' - Has image' : ' - No image'}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Select Image File</label>
-              <Input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="cursor-pointer"
-              />
-            </div>
-          </div>
-
-          {previewUrl && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Preview</label>
-              <div className="border rounded-lg p-4 bg-muted/50">
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="max-h-64 mx-auto object-contain"
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <Button
-              onClick={handleUpload}
-              disabled={!selectedFile || !selectedSizeId || isUploading}
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Image
-                </>
-              )}
-            </Button>
-            {selectedFile && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSelectedFile(null);
-                  setPreviewUrl('');
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                }}
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Existing Images Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Existing Preview Images</CardTitle>
+          <CardTitle>Preview Images by Ad Size</CardTitle>
           <CardDescription>
-            Manage uploaded preview images for each ad size
+            Click the edit button to upload or replace preview images for each ad size
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -274,25 +198,30 @@ export default function AdPreviewImageManagement() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {image ? (
+                      <div className="flex gap-2">
                         <Button
-                          variant="destructive"
+                          variant="outline"
                           size="sm"
-                          onClick={() => handleDelete(image)}
-                          disabled={isDeleting}
+                          onClick={() => handleEditClick(size)}
                         >
-                          {isDeleting ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
-                            </>
-                          )}
+                          <Pencil className="h-4 w-4 mr-1" />
+                          {image ? 'Edit' : 'Upload'}
                         </Button>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">-</span>
-                      )}
+                        {image && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(image)}
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -308,6 +237,95 @@ export default function AdPreviewImageManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit/Upload Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={handleCloseEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {getImageForSize(editingSize?.id) ? 'Edit' : 'Upload'} Preview Image - {editingSize?.name}
+            </DialogTitle>
+            <DialogDescription>
+              {editingSize?.dimensions} - Upload a high-quality image to preview in the Magazine Preview section
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Maximum file size: 5MB. Supported formats: JPG, PNG, WebP
+              </AlertDescription>
+            </Alert>
+
+            {/* Current Image Preview */}
+            {getImageForSize(editingSize?.id) && !selectedFile && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Current Image</label>
+                <div className="border rounded-lg p-4 bg-muted/50">
+                  <img
+                    src={getPublicUrl(getImageForSize(editingSize?.id)?.image_url)}
+                    alt="Current preview"
+                    className="max-h-64 mx-auto object-contain"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {getImageForSize(editingSize?.id) ? 'Replace with New Image' : 'Select Image File'}
+              </label>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="cursor-pointer"
+              />
+            </div>
+
+            {previewUrl && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">New Image Preview</label>
+                <div className="border rounded-lg p-4 bg-muted/50">
+                  <img
+                    src={previewUrl}
+                    alt="New preview"
+                    className="max-h-64 mx-auto object-contain"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={handleCloseEditDialog}
+                disabled={isUploading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpload}
+                disabled={!selectedFile || isUploading}
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    {getImageForSize(editingSize?.id) ? 'Replace Image' : 'Upload Image'}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Preview Dialog */}
       <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
