@@ -1197,36 +1197,80 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderBookings = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Your Bookings</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {bookings.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>You don't have any bookings yet.</p>
-            <p className="mt-2">Book an advertising campaign to see it here!</p>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {bookings.map((booking) => (
-              <BookingCard
-                key={booking.id}
-                booking={booking}
-                onDelete={() => handleDeleteBooking(booking.id)}
-                isDeleting={deletingBookingId === booking.id}
-                onViewDetails={(booking) => {
-                  setSelectedBooking(booking);
-                  setBookingDetailsOpen(true);
-                }}
-              />
-            ))}
+  const renderBookings = () => {
+    const unpaidBookings = bookings.filter(b => !b.payment_status || b.payment_status === 'pending');
+    
+    return (
+      <div className="space-y-6">
+        {/* Payment Required Banner */}
+        {unpaidBookings.length > 0 && (
+          <div className="relative overflow-hidden rounded-lg border-2 border-amber-400 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 p-6 shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-400/20 via-orange-400/20 to-amber-400/20 animate-pulse" />
+            <div className="relative flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-amber-900 mb-2">
+                  Payment Required for {unpaidBookings.length} Booking{unpaidBookings.length > 1 ? 's' : ''}
+                </h3>
+                <p className="text-amber-800 mb-4">
+                  Complete your payment to secure your advertising campaign and start reaching your audience. Click on any unpaid booking below to choose your payment option.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {unpaidBookings.map((booking) => (
+                    <Button
+                      key={booking.id}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/80 hover:bg-white border-amber-300 text-amber-900 font-medium"
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        setBookingDetailsOpen(true);
+                      }}
+                    >
+                      Pay {booking.title}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
-      </CardContent>
-    </Card>
-  );
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Bookings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {bookings.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>You don't have any bookings yet.</p>
+                <p className="mt-2">Book an advertising campaign to see it here!</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {bookings.map((booking) => (
+                  <BookingCard
+                    key={booking.id}
+                    booking={booking}
+                    onDelete={() => handleDeleteBooking(booking.id)}
+                    isDeleting={deletingBookingId === booking.id}
+                    onViewDetails={(booking) => {
+                      setSelectedBooking(booking);
+                      setBookingDetailsOpen(true);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   const renderProfileSettings = () => (
     <Card>
