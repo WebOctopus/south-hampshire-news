@@ -111,35 +111,56 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
   // Update pricing breakdown to include design fee when needed
   React.useEffect(() => {
-    if (campaignData.pricingBreakdown && campaignData.needsDesign && campaignData.designFee > 0) {
+    const pb = campaignData.pricingBreakdown;
+    if (!pb) return;
+
+    if (campaignData.needsDesign && campaignData.designFee > 0) {
       const designFeeAmount = campaignData.designFee;
-      setCampaignData(prev => ({
-        ...prev,
-        pricingBreakdown: {
-          ...prev.pricingBreakdown,
-          designFee: designFeeAmount,
-          // Store the original finalTotal before adding design fee (preserves all discounts & multipliers)
-          finalTotalBeforeDesign: prev.pricingBreakdown?.finalTotalBeforeDesign || prev.pricingBreakdown?.finalTotal || 0,
-          // Add design fee to the fully-calculated finalTotal (which includes all discounts)
-          finalTotal: (prev.pricingBreakdown?.finalTotalBeforeDesign || prev.pricingBreakdown?.finalTotal || 0) + designFeeAmount
+      setCampaignData(prev => {
+        const current = prev.pricingBreakdown;
+        if (!current) return prev;
+        // Determine the base (without design) safely
+        const baseWithoutDesign =
+          typeof current.finalTotalBeforeDesign === 'number'
+            ? current.finalTotalBeforeDesign
+            : current.finalTotal; // calculator's total excludes design
+
+        const newFinalTotal = baseWithoutDesign + designFeeAmount;
+
+        // If already correct, no state churn
+        if (current.finalTotal === newFinalTotal && current.designFee === designFeeAmount) {
+          return prev;
         }
-      }));
-    } else if (campaignData.pricingBreakdown && (!campaignData.needsDesign || campaignData.designFee === 0)) {
-      // Remove design fee if not needed by reverting to the original finalTotal
-      const finalTotalBeforeDesign = campaignData.pricingBreakdown.finalTotalBeforeDesign || campaignData.pricingBreakdown.finalTotal;
-      if (campaignData.pricingBreakdown.designFee) {
-        setCampaignData(prev => ({
+
+        return {
           ...prev,
           pricingBreakdown: {
-            ...prev.pricingBreakdown,
+            ...current,
+            designFee: designFeeAmount,
+            finalTotalBeforeDesign: baseWithoutDesign,
+            finalTotal: newFinalTotal,
+          },
+        };
+      });
+    } else if (pb && (!campaignData.needsDesign || campaignData.designFee === 0)) {
+      // Remove design fee if not needed by reverting to the original finalTotal
+      setCampaignData(prev => {
+        const current = prev.pricingBreakdown;
+        if (!current) return prev;
+        if (!current.designFee && !current.finalTotalBeforeDesign) return prev;
+        const restored = current.finalTotalBeforeDesign ?? current.finalTotal;
+        return {
+          ...prev,
+          pricingBreakdown: {
+            ...current,
             designFee: 0,
-            finalTotal: finalTotalBeforeDesign,
-            finalTotalBeforeDesign: undefined
-          }
-        }));
-      }
+            finalTotal: restored,
+            finalTotalBeforeDesign: undefined,
+          },
+        };
+      });
     }
-  }, [campaignData.needsDesign, campaignData.designFee]);
+  }, [campaignData.needsDesign, campaignData.designFee, campaignData.pricingBreakdown]);
   const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
   const [pendingNextStep, setPendingNextStep] = useState<(() => void) | null>(null);
 
