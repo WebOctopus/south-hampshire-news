@@ -350,11 +350,11 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 
                 <button
                   onClick={() => {
-                    window.open('tel:01234567890', '_self');
+                    window.open('tel:02380266388', '_self');
                   }}
                   className="w-full bg-accent text-accent-foreground hover:bg-accent/80 font-medium py-3 px-6 rounded-md transition-colors"
                 >
-                  Call Discover Team
+                  Call Discover Team for Advice 023 8026 6388
                 </button>
                 
                 <button
