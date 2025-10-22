@@ -578,7 +578,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const stepLabels = {
-    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Artwork Design Options', 'Quote & Payment Options', 'Contact Information', 'Save My Quote'],
+    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Quote & Payment Options', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
@@ -718,10 +718,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedAdSize={campaignData.selectedAdSize}
                 selectedDuration={campaignData.selectedDuration}
                 pricingBreakdown={campaignData.pricingBreakdown}
-              campaignData={campaignData}
-              onSaveQuote={handleContactInfoSave}
-              onBookNow={handleContactInfoBook}
-              currentStep={6}
+                campaignData={campaignData}
+                onSaveQuote={handleContactInfoSave}
+                onBookNow={handleContactInfoBook}
+                currentStep={5}
               />
             </StepForm>
           </DialogContent>
@@ -767,41 +767,43 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     onNext={() => {}}
   />
 ) : (
-  <AdvertisementSizeStep
-    selectedAdSize={campaignData.selectedAdSize}
-    onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
-    pricingModel={selectedPricingModel}
-    selectedAreas={campaignData.selectedAreas}
-    bogofPaidAreas={campaignData.bogofPaidAreas}
-    bogofFreeAreas={campaignData.bogofFreeAreas}
-    selectedDuration={campaignData.selectedDuration}
-    onPricingChange={(breakdown) => {
-      console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
-      setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
-    }}
-    showSummary={true}
-    onNext={() => {}}
-    campaignData={{
-      selectedModel: selectedPricingModel,
-      selectedAreas: campaignData.selectedAreas,
-      bogofPaidAreas: campaignData.bogofPaidAreas,
-      bogofFreeAreas: campaignData.bogofFreeAreas,
-      selectedSize: campaignData.selectedAdSize,
-      selectedDuration: campaignData.selectedDuration,
-      totalCost: campaignData.pricingBreakdown?.finalTotal,
-      pricingBreakdown: campaignData.pricingBreakdown
-    }}
-    currentStep={currentStep}
-    selectedMonths={campaignData.selectedMonths}
-  />
+  <>
+    <AdvertisementSizeStep
+      selectedAdSize={campaignData.selectedAdSize}
+      onAdSizeChange={(adSize) => setCampaignData(prev => ({ ...prev, selectedAdSize: adSize }))}
+      pricingModel={selectedPricingModel}
+      selectedAreas={campaignData.selectedAreas}
+      bogofPaidAreas={campaignData.bogofPaidAreas}
+      bogofFreeAreas={campaignData.bogofFreeAreas}
+      selectedDuration={campaignData.selectedDuration}
+      onPricingChange={(breakdown) => {
+        console.log('AdvertisingStepForm - Pricing breakdown received:', breakdown);
+        setCampaignData(prev => ({ ...prev, pricingBreakdown: breakdown }));
+      }}
+      showSummary={true}
+      onNext={() => {}}
+      campaignData={{
+        selectedModel: selectedPricingModel,
+        selectedAreas: campaignData.selectedAreas,
+        bogofPaidAreas: campaignData.bogofPaidAreas,
+        bogofFreeAreas: campaignData.bogofFreeAreas,
+        selectedSize: campaignData.selectedAdSize,
+        selectedDuration: campaignData.selectedDuration,
+        totalCost: campaignData.pricingBreakdown?.finalTotal,
+        pricingBreakdown: campaignData.pricingBreakdown
+      }}
+      currentStep={currentStep}
+      selectedMonths={campaignData.selectedMonths}
+    />
+    
+    <DesignFeeStep
+      needsDesign={campaignData.needsDesign}
+      onDesignChoiceChange={(needsDesign) => setCampaignData(prev => ({ ...prev, needsDesign }))}
+      designFee={campaignData.designFee}
+      pricingModel={selectedPricingModel}
+    />
+  </>
 )}
-            
-            <DesignFeeStep
-              needsDesign={campaignData.needsDesign}
-              onDesignChoiceChange={(needsDesign) => setCampaignData(prev => ({ ...prev, needsDesign }))}
-              designFee={campaignData.designFee}
-              pricingModel={selectedPricingModel}
-            />
             
             {selectedPricingModel === 'leafleting' ? (
               <LeafletBasketSummary
@@ -846,7 +848,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               campaignData={campaignData}
               onSaveQuote={handleContactInfoSave}
               onBookNow={handleContactInfoBook}
-              currentStep={6}
+              currentStep={5}
             />
           </StepForm>
         </div>
