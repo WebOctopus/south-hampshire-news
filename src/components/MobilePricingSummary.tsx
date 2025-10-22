@@ -126,20 +126,10 @@ export const MobilePricingSummary: React.FC<MobilePricingSummaryProps> = ({
           {/* Pricing */}
           {campaignData.pricingBreakdown?.finalTotal && (
             <div className="bg-primary/10 rounded p-3 space-y-2">
-              {campaignData.pricingBreakdown?.designFee && campaignData.pricingBreakdown.designFee > 0 && (
-                <div className="text-xs space-y-1 pb-2 border-b border-primary/20">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Campaign Cost:</span>
-                    <span className="font-medium">£{(campaignData.pricingBreakdown.finalTotalBeforeDesign || 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Artwork Design:</span>
-                    <span className="font-medium">£{campaignData.pricingBreakdown.designFee.toFixed(2)}</span>
-                  </div>
-                </div>
-              )}
               <div className="text-xs">
-                <span className="text-muted-foreground">Pre-payment Required:</span>
+                <span className="text-muted-foreground">
+                  Pre-payment Required{campaignData.pricingBreakdown?.designFee && campaignData.pricingBreakdown.designFee > 0 ? ' (inc. Design Service)' : ''}:
+                </span>
               </div>
               <div className="text-sm font-bold text-primary">
                 £{(campaignData.pricingBreakdown.finalTotal || 0).toFixed(2)} + VAT 

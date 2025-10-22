@@ -203,16 +203,11 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Cost of This Booking</span>
-                  <span className="font-medium">{formatPrice(pricingBreakdown?.finalTotalBeforeDesign || finalTotal)}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Cost of This Booking{pricingBreakdown?.designFee && pricingBreakdown.designFee > 0 ? ' (inc. Design Service)' : ''}
+                  </span>
+                  <span className="font-medium">{formatPrice(finalTotal)}</span>
                 </div>
-
-                {pricingBreakdown?.designFee && pricingBreakdown.designFee > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Artwork Design Service</span>
-                    <span className="font-medium">{formatPrice(pricingBreakdown.designFee)}</span>
-                  </div>
-                )}
 
                 {saving > 0 && (
                   <>
