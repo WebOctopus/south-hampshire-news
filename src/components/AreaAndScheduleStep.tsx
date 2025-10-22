@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Loader2, AlertCircle, MapPin, Calendar, Clock, Users } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { formatDateUK } from '@/lib/utils';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
+import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
@@ -344,11 +346,71 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
       );
     }
 
+    // For leafleting, group areas by schedule and show radio buttons for starting month
+    if (pricingModel === 'leafleting') {
+      const selectedAreaData = effectiveAreas?.filter(area => 
+        effectiveSelectedAreas.includes(area.id)
+      ) || [];
+      
+      const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
+      
+      return (
+        <div className="space-y-6">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+            <p className="text-sm font-medium text-primary">
+              📅 Select starting issue for each area group
+            </p>
+          </div>
+          
+          <h4 className="font-semibold text-lg">Starting Issue Per Area</h4>
+          
+          {areaGroupedSchedules.map((group, groupIndex) => {
+            const firstAreaId = group.areas[0]?.id;
+            const selectedStartingMonth = selectedMonths[firstAreaId]?.[0] || '';
+            
+            return (
+              <Card key={groupIndex} className="border-2">
+                <CardContent className="p-6">
+                  <h5 className="font-medium text-base mb-2">
+                    {group.areaNames}
+                  </h5>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Select starting issue for this area
+                  </p>
+                  
+                  <RadioGroup
+                    value={selectedStartingMonth}
+                    onValueChange={(month) => {
+                      const newSelectedMonths = { ...selectedMonths };
+                      group.areas.forEach(area => {
+                        newSelectedMonths[area.id] = [month];
+                      });
+                      onMonthsChange(newSelectedMonths);
+                    }}
+                    className="space-y-3"
+                  >
+                    {group.scheduleOptions.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.month} id={`${groupIndex}-option-${index}`} />
+                        <Label htmlFor={`${groupIndex}-option-${index}`} className="cursor-pointer">
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6">
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
           <p className="text-sm font-medium text-primary">
-            📅 Select the months you want your {pricingModel === 'leafleting' ? 'leafleting' : 'advertising'} to run for each selected area
+            📅 Select the months you want your advertising to run for each selected area
           </p>
         </div>
         
