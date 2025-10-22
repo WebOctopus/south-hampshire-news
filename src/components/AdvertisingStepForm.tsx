@@ -578,7 +578,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const stepLabels = {
-    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Quote & Payment Options', 'Contact Information', 'Save My Quote'],
+    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Artwork Design Options', 'Quote & Payment Options', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
@@ -686,13 +686,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingModel={selectedPricingModel}
               />
               
-              <DesignFeeStep
-                needsDesign={campaignData.needsDesign}
-                onDesignChoiceChange={(needsDesign) => setCampaignData(prev => ({ ...prev, needsDesign }))}
-                designFee={campaignData.designFee}
-                pricingModel={selectedPricingModel}
-              />
-              
               {selectedPricingModel === 'leafleting' ? (
                 <LeafletBasketSummary
                   selectedAreas={campaignData.selectedAreas}
@@ -725,10 +718,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedAdSize={campaignData.selectedAdSize}
                 selectedDuration={campaignData.selectedDuration}
                 pricingBreakdown={campaignData.pricingBreakdown}
-                campaignData={campaignData}
-                onSaveQuote={handleContactInfoSave}
-                onBookNow={handleContactInfoBook}
-                currentStep={5}
+              campaignData={campaignData}
+              onSaveQuote={handleContactInfoSave}
+              onBookNow={handleContactInfoBook}
+              currentStep={6}
               />
             </StepForm>
           </DialogContent>
@@ -803,6 +796,13 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   />
 )}
             
+            <DesignFeeStep
+              needsDesign={campaignData.needsDesign}
+              onDesignChoiceChange={(needsDesign) => setCampaignData(prev => ({ ...prev, needsDesign }))}
+              designFee={campaignData.designFee}
+              pricingModel={selectedPricingModel}
+            />
+            
             {selectedPricingModel === 'leafleting' ? (
               <LeafletBasketSummary
                 selectedAreas={campaignData.selectedAreas}
@@ -846,7 +846,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               campaignData={campaignData}
               onSaveQuote={handleContactInfoSave}
               onBookNow={handleContactInfoBook}
-              currentStep={5}
+              currentStep={6}
             />
           </StepForm>
         </div>
