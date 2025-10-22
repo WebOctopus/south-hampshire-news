@@ -41,6 +41,7 @@ export interface PricingBreakdown {
   volumeDiscountPercent: number;
   durationMultiplier: number;
   finalTotal: number;
+  finalTotalBeforeDesign?: number;
   totalCirculation: number;
   agencyDiscount?: number;
   agencyDiscountPercent?: number;

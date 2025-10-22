@@ -118,21 +118,23 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         pricingBreakdown: {
           ...prev.pricingBreakdown,
           designFee: designFeeAmount,
-          subtotal: (prev.pricingBreakdown?.subtotal || 0),
-          subtotalBeforeDesign: prev.pricingBreakdown?.subtotalBeforeDesign || prev.pricingBreakdown?.subtotal || 0,
-          finalTotal: (prev.pricingBreakdown?.subtotalBeforeDesign || prev.pricingBreakdown?.subtotal || 0) + designFeeAmount
+          // Store the original finalTotal before adding design fee (preserves all discounts & multipliers)
+          finalTotalBeforeDesign: prev.pricingBreakdown?.finalTotalBeforeDesign || prev.pricingBreakdown?.finalTotal || 0,
+          // Add design fee to the fully-calculated finalTotal (which includes all discounts)
+          finalTotal: (prev.pricingBreakdown?.finalTotalBeforeDesign || prev.pricingBreakdown?.finalTotal || 0) + designFeeAmount
         }
       }));
     } else if (campaignData.pricingBreakdown && (!campaignData.needsDesign || campaignData.designFee === 0)) {
-      // Remove design fee if not needed
-      const subtotalBeforeDesign = campaignData.pricingBreakdown.subtotalBeforeDesign || campaignData.pricingBreakdown.subtotal;
+      // Remove design fee if not needed by reverting to the original finalTotal
+      const finalTotalBeforeDesign = campaignData.pricingBreakdown.finalTotalBeforeDesign || campaignData.pricingBreakdown.finalTotal;
       if (campaignData.pricingBreakdown.designFee) {
         setCampaignData(prev => ({
           ...prev,
           pricingBreakdown: {
             ...prev.pricingBreakdown,
             designFee: 0,
-            finalTotal: subtotalBeforeDesign
+            finalTotal: finalTotalBeforeDesign,
+            finalTotalBeforeDesign: undefined
           }
         }));
       }
