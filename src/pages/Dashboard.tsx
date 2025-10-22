@@ -1213,7 +1213,12 @@ const Dashboard = () => {
   );
 
   const renderBookings = () => {
-    const unpaidBookings = bookings.filter(b => !b.payment_status || b.payment_status === 'pending');
+    // TEMPORARY: Preview mode - same as in BookingCard
+    const PREVIEW_AS_PAID = true;
+    
+    const unpaidBookings = PREVIEW_AS_PAID 
+      ? [] 
+      : bookings.filter(b => !b.payment_status || b.payment_status === 'pending');
     
     return (
       <div className="space-y-6">
