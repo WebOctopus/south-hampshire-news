@@ -145,13 +145,18 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
           <Badge variant="outline" className="text-xs">
             From £{(() => {
               if (pricingModel === 'bogof') {
-                if (typeof size.subscription_pricing_per_issue === 'number') {
-                  return size.subscription_pricing_per_issue;
-                }
                 if (typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue) {
-                  // Extract the price for the first duration (key "1")
+                  // Get the best price: subscription rate for 14 areas divided by 14
+                  const fourteenAreasPrice = size.subscription_pricing_per_issue["14"] || size.subscription_pricing_per_issue[14];
+                  if (fourteenAreasPrice) {
+                    return (fourteenAreasPrice / 14).toFixed(2);
+                  }
+                  // Fallback to first price if 14 areas not available
                   const firstPrice = size.subscription_pricing_per_issue["1"] || size.subscription_pricing_per_issue[1];
                   if (firstPrice) return firstPrice;
+                }
+                if (typeof size.subscription_pricing_per_issue === 'number') {
+                  return size.subscription_pricing_per_issue;
                 }
                 return size.base_price_per_area || 0;
               }
