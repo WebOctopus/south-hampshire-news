@@ -143,24 +143,25 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
           (pricingModel !== 'bogof' && size.base_price_per_area)
         ) && (
           <Badge variant="outline" className="text-xs">
-            From £{(() => {
+            {(() => {
               if (pricingModel === 'bogof') {
                 if (typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue) {
                   // Get the best price: subscription rate for 14 areas divided by 14
                   const fourteenAreasPrice = size.subscription_pricing_per_issue["14"] || size.subscription_pricing_per_issue[14];
-                  if (fourteenAreasPrice) {
-                    return (fourteenAreasPrice / 14).toFixed(2);
-                  }
-                  // Fallback to first price if 14 areas not available
                   const firstPrice = size.subscription_pricing_per_issue["1"] || size.subscription_pricing_per_issue[1];
-                  if (firstPrice) return firstPrice;
+                  
+                  if (fourteenAreasPrice && firstPrice) {
+                    const bestPrice = (fourteenAreasPrice / 14).toFixed(2);
+                    return `From £${bestPrice} - £${firstPrice} + VAT`;
+                  }
+                  if (firstPrice) return `From £${firstPrice} + VAT`;
                 }
                 if (typeof size.subscription_pricing_per_issue === 'number') {
-                  return size.subscription_pricing_per_issue;
+                  return `From £${size.subscription_pricing_per_issue} + VAT`;
                 }
-                return size.base_price_per_area || 0;
+                return `From £${size.base_price_per_area || 0} + VAT`;
               }
-              return size.base_price_per_area || 0;
+              return `From £${size.base_price_per_area || 0} + VAT`;
             })()}
           </Badge>
         )}
