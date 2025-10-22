@@ -6,6 +6,7 @@ import { formatPrice } from '@/lib/pricingCalculator';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { useStepForm } from '@/components/StepForm';
 import { AlertCircle } from 'lucide-react';
+import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
 
 interface LeafletBasketSummaryProps {
   selectedAreas: string[];
@@ -94,23 +95,37 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     return `Area ${area?.area_number} - ${area?.name}` || 'Unknown Area';
   };
 
-  // Get the starting issue from the first selected month
-  const getStartingIssue = () => {
+  // Get the starting issues grouped by area
+  const getStartingIssues = () => {
     if (!selectedMonths || Object.keys(selectedMonths).length === 0) {
-      return 'Not selected';
+      return [];
     }
     
-    // Get the first area's selected months
-    const firstAreaId = Object.keys(selectedMonths)[0];
-    const firstAreaMonths = selectedMonths[firstAreaId];
+    // Get selected area data
+    const selectedAreaData = leafletAreas?.filter(area => 
+      selectedAreas.includes(area.id)
+    ) || [];
     
-    if (!firstAreaMonths || firstAreaMonths.length === 0) {
-      return 'Not selected';
-    }
+    // Group areas by schedule
+    const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
     
-    // Return the first selected month formatted
-    return formatMonthDisplay(firstAreaMonths[0]);
+    // Build starting issues display
+    return areaGroupedSchedules.map(group => {
+      const firstAreaId = group.areas[0]?.id;
+      const firstAreaMonths = selectedMonths[firstAreaId];
+      
+      if (!firstAreaMonths || firstAreaMonths.length === 0) {
+        return null;
+      }
+      
+      return {
+        areaNames: group.areaNames,
+        startingMonth: formatMonthDisplay(firstAreaMonths[0])
+      };
+    }).filter(Boolean);
   };
+
+  const startingIssues = getStartingIssues();
 
   const baseTotal = pricingBreakdown?.finalTotal || 0;
 
@@ -146,8 +161,19 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
               </div>
               
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Starting Issue</Label>
-                <p className="font-medium">{getStartingIssue()}</p>
+                <Label className="text-sm font-medium text-muted-foreground">Starting Issues</Label>
+                <div className="space-y-2 mt-1">
+                  {startingIssues.length > 0 ? (
+                    startingIssues.map((issue: any, index: number) => (
+                      <div key={index} className="text-sm">
+                        <p className="font-medium">{issue.areaNames}</p>
+                        <p className="text-muted-foreground">{issue.startingMonth}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Not selected</p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -258,11 +284,11 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                 
                 <button
                   onClick={() => {
-                    window.open('tel:01234567890', '_self');
+                    window.open('tel:02380266388', '_self');
                   }}
                   className="w-full bg-accent text-accent-foreground hover:bg-accent/80 font-medium py-3 px-6 rounded-md transition-colors"
                 >
-                  Call Discover Team
+                  Call Discover Team for Advice 023 8026 6388
                 </button>
                 
                 <button
