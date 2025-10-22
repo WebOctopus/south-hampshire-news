@@ -447,7 +447,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
             onClick={() => setPreviewMode('grid')}
             className="rounded-md"
           >
-            Size Comparison
+            Advert Sizes
           </Button>
           <Button
             variant={previewMode === 'magazine' ? 'default' : 'ghost'}
