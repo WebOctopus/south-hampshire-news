@@ -709,6 +709,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
                   selectedStartingIssues={campaignData.selectedStartingIssues}
                   onStartingIssuesChange={(issues) => setCampaignData(prev => ({ ...prev, selectedStartingIssues: issues }))}
+                  needsDesign={campaignData.needsDesign}
+                  designFee={campaignData.designFee}
                 />
               )}
               
@@ -836,6 +838,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
                 selectedStartingIssues={campaignData.selectedStartingIssues}
                 onStartingIssuesChange={(issues) => setCampaignData(prev => ({ ...prev, selectedStartingIssues: issues }))}
+                needsDesign={campaignData.needsDesign}
+                designFee={campaignData.designFee}
               />
             )}
             

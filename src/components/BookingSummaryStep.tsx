@@ -24,6 +24,9 @@ interface BookingSummaryStepProps {
   selectedStartingIssues?: Record<string, string>;
   onStartingIssuesChange?: (issues: Record<string, string>) => void;
   onNext?: () => void;
+  // New props to ensure design fee shows in cost breakdown even if breakdown missing it
+  needsDesign?: boolean;
+  designFee?: number;
 }
 
 export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
@@ -38,7 +41,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   onPaymentOptionChange,
   selectedStartingIssues = {},
   onStartingIssuesChange,
-  onNext
+  onNext,
+  needsDesign = false,
+  designFee = 0
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
@@ -104,9 +109,14 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     }
   };
 
-  // Calculate pricing options based on admin-configured payment options
-  const baseTotal = pricingBreakdown?.finalTotal || 0;
-  const cpmRate = pricingBreakdown?.cpm || 0;
+// Calculate pricing options based on admin-configured payment options
+const baseTotal = pricingBreakdown?.finalTotal || 0;
+const cpmRate = pricingBreakdown?.cpm || 0;
+
+// Robust design fee handling: use breakdown value, or fallback to props when selected
+const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (designFee || 0) : 0);
+// Campaign cost excluding design fee: prefer explicit breakdown, else subtract fallback
+const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (designFeeToShow > 0 ? Math.max(0, baseTotal - designFeeToShow) : baseTotal);
 
   const effectivePaidAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   const effectiveFreeAreas = pricingModel === 'bogof' ? bogofFreeAreas : [];
@@ -276,12 +286,12 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Campaign Cost</span>
-                <span className="font-medium">{formatPrice(pricingBreakdown?.finalTotalBeforeDesign || baseTotal)}</span>
+                <span className="font-medium">{formatPrice(campaignCostExclDesign)}</span>
               </div>
-              {pricingBreakdown?.designFee && pricingBreakdown.designFee > 0 && (
+              {designFeeToShow > 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Artwork Design Service</span>
-                  <span className="font-medium">{formatPrice(pricingBreakdown.designFee)}</span>
+                  <span className="font-medium">{formatPrice(designFeeToShow)}</span>
                 </div>
               )}
               <div className="border-t pt-2">
