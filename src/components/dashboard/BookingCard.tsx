@@ -30,15 +30,22 @@ interface BookingCardProps {
 
 export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails }) => {
   const navigate = useNavigate();
-  const isPaymentRequired = !booking.payment_status || booking.payment_status === 'pending';
-  const isPaid = booking.payment_status === 'paid' || booking.payment_status === 'subscription_active' || booking.payment_status === 'mandate_active';
+  
+  // TEMPORARY: Preview mode - treat all bookings as paid for visual testing
+  // Remove this line when ready for production
+  const PREVIEW_AS_PAID = true;
+  
+  const isPaymentRequired = PREVIEW_AS_PAID ? false : (!booking.payment_status || booking.payment_status === 'pending');
+  const isPaid = PREVIEW_AS_PAID ? true : (booking.payment_status === 'paid' || booking.payment_status === 'subscription_active' || booking.payment_status === 'mandate_active');
   const [hasVoucher, setHasVoucher] = useState(false);
   const [voucherCode, setVoucherCode] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if this booking generated a voucher
     const checkVoucher = async () => {
+      // For BOGOF bookings, always show voucher in preview mode
       if (booking.pricing_model === 'bogof' && isPaid) {
+        // Check actual voucher in database
         const { data, error } = await supabase
           .from('vouchers')
           .select('voucher_code, is_used')
@@ -49,6 +56,10 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
         if (!error && data && !data.is_used) {
           setHasVoucher(true);
           setVoucherCode(data.voucher_code);
+        } else if (PREVIEW_AS_PAID) {
+          // Show voucher button in preview mode even without real voucher
+          setHasVoucher(true);
+          setVoucherCode('PREVIEW10');
         }
       }
     };
