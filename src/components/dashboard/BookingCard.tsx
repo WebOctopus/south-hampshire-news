@@ -6,7 +6,6 @@ import { Calendar, MapPin, Clock, DollarSign, Package, Trash2, CreditCard, Alert
 import { formatPrice } from '@/lib/pricingCalculator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
 interface BookingCardProps {
   booking: {
@@ -26,10 +25,10 @@ interface BookingCardProps {
   onDelete?: (booking: any) => void;
   isDeleting?: boolean;
   onViewDetails?: (booking: any) => void;
+  onNavigateToVouchers?: () => void;
 }
 
-export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails }) => {
-  const navigate = useNavigate();
+export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails, onNavigateToVouchers }) => {
   
   // TEMPORARY: Preview mode - treat all bookings as paid for visual testing
   // Remove this line when ready for production
@@ -284,7 +283,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
                 size="lg"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate('/advertising?type=leafleting');
+                  if (onNavigateToVouchers) {
+                    onNavigateToVouchers();
+                  }
                 }}
               >
                 <Gift className="w-4 h-4 mr-2" />

@@ -1277,6 +1277,7 @@ const Dashboard = () => {
                       setSelectedBooking(booking);
                       setBookingDetailsOpen(true);
                     }}
+                    onNavigateToVouchers={() => setActiveTab('vouchers')}
                   />
                 ))}
               </div>
