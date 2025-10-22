@@ -593,7 +593,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const stepLabels = {
-    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Review & Payment Options', 'Contact Information', 'Save My Quote'],
+    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Quote & Payment Options', 'Contact Information', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
