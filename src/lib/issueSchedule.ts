@@ -107,7 +107,7 @@ export function formatMonthForDisplay(monthStr: string): string {
 
 /**
  * Get all available issue options for a given set of area schedules
- * Returns up to 6 future months as starting options
+ * Returns up to 6 future months as starting options, grouped by which areas publish in each month
  */
 export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
   if (!areaSchedules || areaSchedules.length === 0) {
@@ -117,20 +117,23 @@ export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
   const currentDate = new Date();
   const currentMonth = startOfMonth(currentDate);
 
-  // Get all unique months from all area schedules
-  const allMonths = new Set<string>();
+  // Build a map of months to areas that publish in that month
+  const monthToAreas = new Map<string, any[]>();
+  
   areaSchedules.forEach(area => {
     if (area.schedule) {
       area.schedule.forEach((monthData: any) => {
-        allMonths.add(monthData.month);
+        const monthStr = monthData.month;
+        if (!monthToAreas.has(monthStr)) {
+          monthToAreas.set(monthStr, []);
+        }
+        monthToAreas.get(monthStr)!.push(area);
       });
     }
   });
 
-  // Sort months chronologically
-  const sortedMonths = Array.from(allMonths).sort();
-
-  // Get up to 6 future months as starting options
+  // Sort months chronologically and create options
+  const sortedMonths = Array.from(monthToAreas.keys()).sort();
   const options: IssueOption[] = [];
   let addedCount = 0;
   const maxOptions = 6;
@@ -145,9 +148,14 @@ export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
       // If this month is current month or in the future, add it as an option
       if (!isBefore(monthDate, currentMonth)) {
         const displayMonth = formatMonthForDisplay(monthStr);
+        const areasInMonth = monthToAreas.get(monthStr) || [];
+        const areaNames = areasInMonth.map(area => area.name).join(', ');
+        
         options.push({
           value: monthStr,
-          label: addedCount === 0 ? `Next Available Issue - ${displayMonth}` : displayMonth,
+          label: addedCount === 0 
+            ? `Next Available Issue - ${displayMonth} (${areaNames})` 
+            : `${displayMonth} (${areaNames})`,
           month: monthStr
         });
         addedCount++;
