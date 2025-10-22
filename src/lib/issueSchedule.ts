@@ -6,6 +6,12 @@ export interface IssueOption {
   month: string;
 }
 
+export interface AreaGroupSchedule {
+  areas: any[];
+  areaNames: string;
+  scheduleOptions: IssueOption[];
+}
+
 /**
  * Get the next available issue based on current date and area schedules
  */
@@ -166,4 +172,82 @@ export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
   }
 
   return options;
+}
+
+/**
+ * Group areas by their schedules and return available starting months for each group
+ * Areas with identical schedules are grouped together
+ */
+export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule[] {
+  if (!areaSchedules || areaSchedules.length === 0) {
+    return [];
+  }
+
+  const currentDate = new Date();
+  const currentMonth = startOfMonth(currentDate);
+
+  // Group areas by their schedule (as JSON string for comparison)
+  const scheduleGroups = new Map<string, any[]>();
+  
+  areaSchedules.forEach(area => {
+    if (area.schedule) {
+      const scheduleKey = JSON.stringify(area.schedule.map((m: any) => m.month).sort());
+      if (!scheduleGroups.has(scheduleKey)) {
+        scheduleGroups.set(scheduleKey, []);
+      }
+      scheduleGroups.get(scheduleKey)!.push(area);
+    }
+  });
+
+  // Build the result with available months for each group
+  const result: AreaGroupSchedule[] = [];
+
+  scheduleGroups.forEach((areas) => {
+    // Get unique months from this group's schedule
+    const monthsSet = new Set<string>();
+    areas.forEach(area => {
+      if (area.schedule) {
+        area.schedule.forEach((monthData: any) => {
+          monthsSet.add(monthData.month);
+        });
+      }
+    });
+
+    // Sort months and get future ones (up to 6)
+    const sortedMonths = Array.from(monthsSet).sort();
+    const scheduleOptions: IssueOption[] = [];
+    let addedCount = 0;
+    const maxOptions = 6;
+
+    for (const monthStr of sortedMonths) {
+      if (addedCount >= maxOptions) break;
+
+      try {
+        const monthDate = parse(monthStr, 'yyyy-MM', new Date());
+        
+        if (!isBefore(monthDate, currentMonth)) {
+          const displayMonth = formatMonthForDisplay(monthStr);
+          scheduleOptions.push({
+            value: monthStr,
+            label: displayMonth,
+            month: monthStr
+          });
+          addedCount++;
+        }
+      } catch (error) {
+        console.error('Error parsing month:', monthStr, error);
+      }
+    }
+
+    if (scheduleOptions.length > 0) {
+      const areaNames = areas.map(area => area.name).join(', ');
+      result.push({
+        areas,
+        areaNames,
+        scheduleOptions
+      });
+    }
+  });
+
+  return result;
 }

@@ -45,7 +45,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     selectedMonths: {} as Record<string, string[]>,
     pricingBreakdown: null as any,
     selectedPaymentOption: '' as string,
-    selectedStartingIssue: '' as string
+    selectedStartingIssues: {} as Record<string, string>
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -121,7 +121,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       selectedMonths: {}, // Clear month selections (fixed term specific)
       pricingBreakdown: null, // Reset pricing - will be recalculated for subscription
       selectedPaymentOption: '', // Clear payment option - user must select for subscription
-      selectedStartingIssue: '' // Clear starting issue
+      selectedStartingIssues: {} // Clear starting issues
     }));
     
     setShowFixedTermConfirmation(false);
@@ -712,8 +712,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   pricingBreakdown={campaignData.pricingBreakdown}
                   selectedPaymentOption={campaignData.selectedPaymentOption}
                   onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
-                  selectedStartingIssue={campaignData.selectedStartingIssue}
-                  onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
+                  selectedStartingIssues={campaignData.selectedStartingIssues}
+                  onStartingIssuesChange={(issues) => setCampaignData(prev => ({ ...prev, selectedStartingIssues: issues }))}
                 />
               )}
               
@@ -830,8 +830,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingBreakdown={campaignData.pricingBreakdown}
                 selectedPaymentOption={campaignData.selectedPaymentOption}
                 onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
-                selectedStartingIssue={campaignData.selectedStartingIssue}
-                onStartingIssueChange={(option) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: option }))}
+                selectedStartingIssues={campaignData.selectedStartingIssues}
+                onStartingIssuesChange={(issues) => setCampaignData(prev => ({ ...prev, selectedStartingIssues: issues }))}
               />
             )}
             

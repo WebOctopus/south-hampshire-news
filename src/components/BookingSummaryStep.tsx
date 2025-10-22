@@ -8,7 +8,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useStepForm } from '@/components/StepForm';
-import { getAvailableIssueOptions } from '@/lib/issueSchedule';
+import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
 import { calculatePaymentAmount as calcPaymentAmount } from '@/lib/paymentCalculations';
 
 interface BookingSummaryStepProps {
@@ -21,8 +21,8 @@ interface BookingSummaryStepProps {
   pricingBreakdown: any;
   selectedPaymentOption?: string;
   onPaymentOptionChange: (option: string) => void;
-  selectedStartingIssue?: string;
-  onStartingIssueChange?: (option: string) => void;
+  selectedStartingIssues?: Record<string, string>;
+  onStartingIssuesChange?: (issues: Record<string, string>) => void;
   onNext?: () => void;
 }
 
@@ -36,8 +36,8 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   pricingBreakdown,
   selectedPaymentOption,
   onPaymentOptionChange,
-  selectedStartingIssue,
-  onStartingIssueChange,
+  selectedStartingIssues = {},
+  onStartingIssuesChange,
   onNext
 }) => {
   const { areas, adSizes, durations } = usePricingData();
@@ -45,7 +45,7 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   const { data: paymentOptions = [] } = usePaymentOptions();
   const { nextStep } = useStepForm();
 
-  // Calculate available starting issue options
+  // Calculate area grouped schedules for starting issue selection
   const effectiveAreas = pricingModel === 'leafleting' ? leafletAreas : areas;
   const effectiveSelectedAreas = pricingModel === 'bogof' ? 
     [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas;
@@ -53,7 +53,18 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     effectiveSelectedAreas.includes(area.id)
   ) || [];
   
-  const availableIssueOptions = getAvailableIssueOptions(selectedAreaData);
+  const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
+
+  // Handler for updating starting issue for a specific area group
+  const handleStartingIssueChange = (areaIds: string[], month: string) => {
+    if (!onStartingIssuesChange) return;
+    
+    const updatedIssues = { ...selectedStartingIssues };
+    areaIds.forEach(areaId => {
+      updatedIssues[areaId] = month;
+    });
+    onStartingIssuesChange(updatedIssues);
+  };
 
   // Get display names
   const getAdSizeName = () => {
@@ -143,24 +154,38 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                 </div>
               )}
               
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">Starting Issue</Label>
-                {availableIssueOptions.length > 0 ? (
-                  <div className="mt-2">
-                    <RadioGroup 
-                      value={selectedStartingIssue || availableIssueOptions[0]?.value} 
-                      onValueChange={onStartingIssueChange}
-                      className="space-y-2"
-                    >
-                      {availableIssueOptions.map((option) => (
-                        <div key={option.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={option.value} id={option.value} />
-                          <Label htmlFor={option.value} className="text-sm font-medium cursor-pointer">
-                            {option.label}
-                          </Label>
+              <div className="space-y-4">
+                <Label className="text-sm font-medium text-muted-foreground">Starting Issue Per Area</Label>
+                {areaGroupedSchedules.length > 0 ? (
+                  <div className="space-y-6">
+                    {areaGroupedSchedules.map((group, groupIndex) => {
+                      const areaIds = group.areas.map(a => a.id);
+                      const firstAreaId = areaIds[0];
+                      const selectedMonth = selectedStartingIssues[firstAreaId] || group.scheduleOptions[0]?.value;
+                      
+                      return (
+                        <div key={groupIndex} className="border rounded-lg p-4 space-y-3">
+                          <div>
+                            <Label className="font-semibold text-base">{group.areaNames}</Label>
+                            <p className="text-xs text-muted-foreground mt-1">Select starting issue for this area</p>
+                          </div>
+                          <RadioGroup 
+                            value={selectedMonth} 
+                            onValueChange={(month) => handleStartingIssueChange(areaIds, month)}
+                            className="space-y-2"
+                          >
+                            {group.scheduleOptions.map((option) => (
+                              <div key={option.value} className="flex items-center space-x-2">
+                                <RadioGroupItem value={option.value} id={`${groupIndex}-${option.value}`} />
+                                <Label htmlFor={`${groupIndex}-${option.value}`} className="text-sm font-medium cursor-pointer">
+                                  {option.label}
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
                         </div>
-                      ))}
-                    </RadioGroup>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="font-medium">Next available issue</p>
