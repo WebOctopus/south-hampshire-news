@@ -268,6 +268,31 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
 
         {/* Right Column - Payment Options */}
         <div className="space-y-6">
+          {/* Pricing Breakdown Card */}
+          {pricingBreakdown?.designFee && pricingBreakdown.designFee > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Cost Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Campaign Cost</span>
+                  <span className="font-medium">{formatPrice(pricingBreakdown.finalTotalBeforeDesign || baseTotal)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Artwork Design Service</span>
+                  <span className="font-medium">{formatPrice(pricingBreakdown.designFee)}</span>
+                </div>
+                <div className="border-t pt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">Total (Excl. VAT)</span>
+                    <span className="font-bold text-primary">{formatPrice(baseTotal)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">3 Payment Options</CardTitle>
