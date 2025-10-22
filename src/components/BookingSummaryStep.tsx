@@ -301,7 +301,7 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
                             {option.option_type === 'monthly' ? 'Monthly Payment Plan' : option.display_name}
                           </Label>
                           <p className="text-sm text-muted-foreground mt-1">
-                            {option.option_type === 'monthly' ? 'Direct debit or debit/credit card' : option.description}
+                            {option.option_type === 'monthly' ? 'Direct Debit' : option.description}
                           </p>
                           <p className="text-lg font-bold text-primary">
                             {formatPrice(amount)} + VAT
