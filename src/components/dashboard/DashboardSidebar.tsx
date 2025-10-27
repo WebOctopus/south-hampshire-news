@@ -124,6 +124,28 @@ export function DashboardSidebar({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-sm font-semibold text-muted-foreground">
+            Advertising
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {otherItems.map((item) => (
+                <SidebarMenuItem key={item.value}>
+                  <SidebarMenuButton 
+                    onClick={() => setActiveTab(item.value)}
+                    disabled={item.disabled}
+                    className={getNavCls(item.value)}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {state !== "collapsed" && <span>{item.title}</span>}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sm font-semibold text-muted-foreground">
             Business Directory
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -151,28 +173,6 @@ export function DashboardSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               {eventItems.map((item) => (
-                <SidebarMenuItem key={item.value}>
-                  <SidebarMenuButton 
-                    onClick={() => setActiveTab(item.value)}
-                    disabled={item.disabled}
-                    className={getNavCls(item.value)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {state !== "collapsed" && <span>{item.title}</span>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sm font-semibold text-muted-foreground">
-            Advertising
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {otherItems.map((item) => (
                 <SidebarMenuItem key={item.value}>
                   <SidebarMenuButton 
                     onClick={() => setActiveTab(item.value)}
