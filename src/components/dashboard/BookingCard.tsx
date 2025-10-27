@@ -266,15 +266,12 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="w-4 h-4" />
-          <span>Booked: {formatDate(booking.created_at)}</span>
-        </div>
-
         {booking.webhook_sent_at && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="w-4 h-4" />
-            <span>Submitted: {formatDate(booking.webhook_sent_at)}</span>
+            <span>
+              Submitted{isPaymentRequired ? ' - Not paid' : ''}: {formatDate(booking.webhook_sent_at)}
+            </span>
           </div>
         )}
 
