@@ -37,6 +37,7 @@ interface FormData {
   jobTitle: string;
   companyName: string;
   companySector: string;
+  charityNumber: string;
   email: string;
   phone: string;
   postcode: string;
@@ -71,6 +72,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     jobTitle: "",
     companyName: "",
     companySector: "",
+    charityNumber: "",
     email: "",
     phone: "",
     postcode: "",
@@ -474,25 +476,39 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                           disabled={submitting}
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="companySector">Business Sector</Label>
-                        <Select 
-                          value={formData.companySector} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, companySector: value }))}
-                          disabled={submitting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your business sector" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {businessSectors.map((sector) => (
-                              <SelectItem key={sector} value={sector}>
-                                {sector}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      {formData.businessType === 'non_profit' ? (
+                        <div>
+                          <Label htmlFor="charityNumber">Charity Registration Number</Label>
+                          <Input
+                            id="charityNumber"
+                            name="charityNumber"
+                            value={formData.charityNumber}
+                            onChange={(e) => setFormData(prev => ({ ...prev, charityNumber: e.target.value }))}
+                            placeholder="Enter your charity registration number"
+                            disabled={submitting}
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <Label htmlFor="companySector">Business Sector</Label>
+                          <Select 
+                            value={formData.companySector} 
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, companySector: value }))}
+                            disabled={submitting}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your business sector" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {businessSectors.map((sector) => (
+                                <SelectItem key={sector} value={sector}>
+                                  {sector}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                       <div>
                         <Label htmlFor="email">Email Address *</Label>
                         <Input
