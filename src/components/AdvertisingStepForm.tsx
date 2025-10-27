@@ -514,6 +514,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           selectedAreas: campaignData.selectedAreas || [],
           bogofPaidAreas: campaignData.bogofPaidAreas || [],
           bogofFreeAreas: campaignData.bogofFreeAreas || [],
+          selectedMonths: campaignData.selectedMonths || {},
           payment_option_id: campaignData.selectedPaymentOption || null,
           address: contactData.address || '',
           addressLine2: contactData.addressLine2 || '',

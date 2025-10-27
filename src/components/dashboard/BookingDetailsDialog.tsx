@@ -431,6 +431,32 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         <span className="font-medium">Created:</span>{' '}
                         <span className="text-muted-foreground">{formatDate(booking.created_at)}</span>
                       </p>
+                      {(() => {
+                        const selectedMonths = booking.selections?.selectedMonths || {};
+                        const firstAreaMonths = Object.values(selectedMonths)[0] as string[] | undefined;
+                        const startDate = firstAreaMonths?.[0];
+                        if (!startDate) return null;
+                        const formatStartDate = (monthString: string) => {
+                          if (!monthString) return '';
+                          if (monthString.includes('-')) {
+                            const [year, month] = monthString.split('-');
+                            const monthNumber = parseInt(month, 10);
+                            const monthNames = [
+                              'January','February','March','April','May','June',
+                              'July','August','September','October','November','December'
+                            ];
+                            return `${monthNames[monthNumber - 1]} ${year}`;
+                          }
+                          return monthString;
+                        };
+                        return (
+                          <p className="text-sm">
+                            <span className="font-medium">Start Date:</span>{' '}
+                            <span className="text-muted-foreground">{formatStartDate(startDate)}</span>
+                          </p>
+                        );
+                      })()}
+
                     </div>
                   </div>
                 </div>
