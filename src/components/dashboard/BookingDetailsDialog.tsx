@@ -116,6 +116,40 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
     enabled: !!booking && open,
   });
 
+  // Query ad size details
+  const { data: adSize } = useQuery({
+    queryKey: ['ad-size', booking?.ad_size_id],
+    queryFn: async () => {
+      if (!booking?.ad_size_id) return null;
+      const { data, error } = await supabase
+        .from('ad_sizes')
+        .select('*')
+        .eq('id', booking.ad_size_id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!booking?.ad_size_id && open,
+  });
+
+  // Query duration details
+  const { data: duration } = useQuery({
+    queryKey: ['duration', booking?.duration_id],
+    queryFn: async () => {
+      if (!booking?.duration_id) return null;
+      const { data, error } = await supabase
+        .from('pricing_durations')
+        .select('*')
+        .eq('id', booking.duration_id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!booking?.duration_id && open,
+  });
+
   const handleSetupPayment = async () => {
     if (!selectedPaymentOption || !booking) {
       toast({
@@ -269,6 +303,22 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Verification Message */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-blue-900 mb-1">
+                  Please Review Your Campaign Details
+                </p>
+                <p className="text-sm text-blue-800">
+                  Take a moment to verify all the information below is correct before proceeding with payment. 
+                  This ensures your advertising campaign reaches exactly where you want it to go.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Campaign Overview */}
           <Card>
             <CardHeader>
@@ -279,118 +329,170 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="flex items-center space-x-3">
-                  <CalendarDays className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Created</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(booking.created_at)}
-                    </p>
+            <CardContent className="space-y-6">
+              {/* Main Campaign Details */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Campaign Type & Package */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold text-base">Campaign Package</h4>
+                    </div>
+                    <div className="bg-muted p-4 rounded-lg space-y-2">
+                      <p className="text-sm">
+                        <span className="font-medium">Type:</span>{' '}
+                        <span className="text-muted-foreground">{getPricingModelDisplay(booking.pricing_model)}</span>
+                      </p>
+                      {adSize && (
+                        <p className="text-sm">
+                          <span className="font-medium">Ad Size:</span>{' '}
+                          <span className="text-muted-foreground">{adSize.name} ({adSize.dimensions})</span>
+                        </p>
+                      )}
+                      {duration && (
+                        <p className="text-sm">
+                          <span className="font-medium">Duration:</span>{' '}
+                          <span className="text-muted-foreground">
+                            {duration.name} 
+                            {booking.duration_multiplier && booking.duration_multiplier > 1 && 
+                              ` × ${booking.duration_multiplier}`
+                            }
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Reach & Investment */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold text-base">Your Reach & Investment</h4>
+                    </div>
+                    <div className="bg-muted p-4 rounded-lg space-y-2">
+                      <p className="text-sm">
+                        <span className="font-medium">Total Circulation:</span>{' '}
+                        <span className="text-muted-foreground font-semibold">
+                          {booking.total_circulation?.toLocaleString() || 'N/A'} homes
+                        </span>
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Campaign Cost:</span>{' '}
+                        <span className="text-muted-foreground font-semibold">
+                          {(() => {
+                            const selectedPaymentOptionId = booking.selections?.payment_option_id;
+                            const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
+                            const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
+                            const designFee = booking.pricing_breakdown?.designFee || 0;
+                            
+                            if (selectedOption && paymentOptions.length > 0) {
+                              return formatPrice(calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee));
+                            }
+                            return formatPrice(booking.final_total || booking.monthly_price);
+                          })()}
+                        </span>
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Created:</span>{' '}
+                        <span className="text-muted-foreground">{formatDate(booking.created_at)}</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-center space-x-3">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Circulation</p>
-                    <p className="text-sm text-muted-foreground">
-                      {booking.total_circulation?.toLocaleString() || 'N/A'} homes
-                    </p>
-                  </div>
-                </div>
+              <Separator />
 
-                <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Campaign Type</p>
-                    <p className="text-sm text-muted-foreground">
-                      {getPricingModelDisplay(booking.pricing_model)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary-foreground">£</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Total Cost</p>
-                    <p className="text-sm text-muted-foreground">
-                      {(() => {
-                        const selectedPaymentOptionId = booking.selections?.payment_option_id;
-                        const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
-                        const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
-                        const designFee = booking.pricing_breakdown?.designFee || 0;
-                        
-                        if (selectedOption && paymentOptions.length > 0) {
-                          return formatPrice(calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee));
-                        }
-                        return formatPrice(booking.final_total || booking.monthly_price);
-                      })()}
-                    </p>
-                  </div>
+              {/* Distribution Areas */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <h4 className="font-semibold text-base">Distribution Areas</h4>
                 </div>
 
                 {/* Paid Locations */}
-                <div className="flex items-start space-x-3">
-                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">Paid For Locations</p>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {(() => {
-                        const paidAreaIds = booking.pricing_model === 'bogof' 
-                          ? booking.bogof_paid_area_ids || []
-                          : booking.selected_area_ids || [];
-                        
-                        if (!pricingAreas || paidAreaIds.length === 0) {
-                          return 'No areas selected';
-                        }
-
-                        const names = paidAreaIds
-                          .map((id: string) => pricingAreas.find((a: any) => a.id === id)?.name)
-                          .filter(Boolean);
-                        
-                        return names.join(', ') || 'Loading...';
-                      })()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Free Locations (only for BOGOF) */}
-                {booking.pricing_model === 'bogof' && (
+                <div className="bg-muted p-4 rounded-lg">
                   <div className="flex items-start space-x-3">
-                    <MapPin className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <MapPin className="h-4 w-4 text-primary" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">Free Locations</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p className="text-sm font-semibold mb-2">
+                        {booking.pricing_model === 'bogof' ? 'Paid Areas' : 'Your Selected Areas'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
                         {(() => {
-                          const freeAreaIds = booking.bogof_free_area_ids || [];
+                          const paidAreaIds = booking.pricing_model === 'bogof' 
+                            ? booking.bogof_paid_area_ids || []
+                            : booking.selected_area_ids || [];
                           
-                          if (!pricingAreas || freeAreaIds.length === 0) {
+                          if (!pricingAreas || paidAreaIds.length === 0) {
                             return 'No areas selected';
                           }
 
-                          const names = freeAreaIds
+                          const names = paidAreaIds
                             .map((id: string) => pricingAreas.find((a: any) => a.id === id)?.name)
                             .filter(Boolean);
                           
                           return names.join(', ') || 'Loading...';
                         })()}
                       </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {booking.pricing_model === 'bogof' 
+                          ? `${(booking.bogof_paid_area_ids || []).length} paid area${(booking.bogof_paid_area_ids || []).length !== 1 ? 's' : ''}`
+                          : `${(booking.selected_area_ids || []).length} area${(booking.selected_area_ids || []).length !== 1 ? 's' : ''} selected`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Free Locations (only for BOGOF) */}
+                {booking.pricing_model === 'bogof' && (booking.bogof_free_area_ids || []).length > 0 && (
+                  <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold mb-2 text-green-900">
+                          Bonus Free Areas 🎉
+                        </p>
+                        <p className="text-sm text-green-800">
+                          {(() => {
+                            const freeAreaIds = booking.bogof_free_area_ids || [];
+                            
+                            if (!pricingAreas || freeAreaIds.length === 0) {
+                              return 'No areas selected';
+                            }
+
+                            const names = freeAreaIds
+                              .map((id: string) => pricingAreas.find((a: any) => a.id === id)?.name)
+                              .filter(Boolean);
+                            
+                            return names.join(', ') || 'Loading...';
+                          })()}
+                        </p>
+                        <p className="text-xs text-green-700 mt-2">
+                          {(booking.bogof_free_area_ids || []).length} additional area{(booking.bogof_free_area_ids || []).length !== 1 ? 's' : ''} at no extra cost
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
               {booking.notes && (
-                <div>
-                  <p className="text-sm font-medium mb-2">Notes</p>
-                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                    {booking.notes}
-                  </p>
-                </div>
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold">Additional Notes</p>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                      {booking.notes}
+                    </p>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
