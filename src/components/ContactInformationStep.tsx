@@ -466,7 +466,11 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                         />
                       </div>
                       <div>
-                        <Label htmlFor="companyName">Company/Organisation Name *</Label>
+                        <Label htmlFor="companyName">
+                          {formData.businessType === 'limited_company' 
+                            ? 'Company/Organisation Name (as per Companies House)*' 
+                            : 'Company/Organisation Name *'}
+                        </Label>
                         <Input
                           id="companyName"
                           name="companyName"
