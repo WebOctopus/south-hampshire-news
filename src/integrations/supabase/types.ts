@@ -1120,6 +1120,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_agency_member: boolean | null
+          is_first_login: boolean | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -1132,6 +1133,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_agency_member?: boolean | null
+          is_first_login?: boolean | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -1144,6 +1146,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_agency_member?: boolean | null
+          is_first_login?: boolean | null
           phone?: string | null
           updated_at?: string
           user_id?: string

@@ -8,9 +8,10 @@ interface WelcomeHeaderProps {
   user: User | null;
   quotes: any[];
   bookings?: any[];
+  isFirstLogin?: boolean;
 }
 
-export default function WelcomeHeader({ user, quotes, bookings = [] }: WelcomeHeaderProps) {
+export default function WelcomeHeader({ user, quotes, bookings = [], isFirstLogin = false }: WelcomeHeaderProps) {
   // Preview mode disabled - bookings are now live
   const PREVIEW_AS_PAID = false;
   
@@ -23,12 +24,13 @@ export default function WelcomeHeader({ user, quotes, bookings = [] }: WelcomeHe
   const activeQuotes = quotes.filter(quote => quote.pricing_model).length;
 
   const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Friend';
+  const greeting = isFirstLogin ? 'Welcome' : 'Hello';
 
   return (
     <div className="mb-8">
       <div className="text-center mb-6">
         <h1 className="text-4xl font-heading font-bold mb-2">
-          Welcome back, {displayName}! 👋
+          {greeting}, {displayName}! 👋
         </h1>
         <p className="text-xl text-muted-foreground mb-4">
           {hasPaidBookings 

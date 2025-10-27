@@ -54,6 +54,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('create');
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [voucherCount, setVoucherCount] = useState(0);
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
   
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
@@ -182,6 +183,29 @@ const Dashboard = () => {
     setVoucherCount(count || 0);
   };
 
+  const checkAndUpdateFirstLogin = async () => {
+    if (!user) return;
+    
+    // Fetch user profile to check if first login
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_first_login')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (profile?.is_first_login) {
+      setIsFirstLogin(true);
+      
+      // Update the profile to mark as no longer first login
+      await supabase
+        .from('profiles')
+        .update({ is_first_login: false })
+        .eq('user_id', user.id);
+    } else {
+      setIsFirstLogin(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadBusinesses();
@@ -189,6 +213,7 @@ const Dashboard = () => {
       loadQuotes();
       loadBookings();
       loadVoucherCount();
+      checkAndUpdateFirstLogin();
       
       // Check if user came from calculator and set appropriate tab
       const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
@@ -1363,7 +1388,12 @@ const Dashboard = () => {
           
           <div className="flex-1 overflow-auto">
             <div className="max-w-7xl mx-auto p-6 space-y-6">
-              <WelcomeHeader user={user} quotes={quotes} bookings={bookings} />
+              <WelcomeHeader 
+                user={user} 
+                quotes={quotes} 
+                bookings={bookings} 
+                isFirstLogin={isFirstLogin}
+              />
               
               {activeTab === 'create' && renderCreateBusinessForm()}
               {activeTab === 'listings' && renderBusinessListings()}
