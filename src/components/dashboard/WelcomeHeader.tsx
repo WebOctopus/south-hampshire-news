@@ -9,15 +9,21 @@ interface WelcomeHeaderProps {
   quotes: any[];
   bookings?: any[];
   isFirstLogin?: boolean;
+  onBookNowClick?: () => void;
 }
 
-export default function WelcomeHeader({ user, quotes, bookings = [], isFirstLogin = false }: WelcomeHeaderProps) {
+export default function WelcomeHeader({ user, quotes, bookings = [], isFirstLogin = false, onBookNowClick }: WelcomeHeaderProps) {
   // Preview mode disabled - bookings are now live
   const PREVIEW_AS_PAID = false;
   
   const hasPaidBookings = PREVIEW_AS_PAID 
     ? bookings.length > 0 
     : bookings.some(b => b.payment_status === 'paid' || b.payment_status === 'subscription_active' || b.payment_status === 'mandate_active');
+  
+  // Check if there are unpaid bookings
+  const hasUnpaidBookings = PREVIEW_AS_PAID
+    ? false
+    : bookings.some(b => !b.payment_status || b.payment_status === 'pending');
   
   // Calculate total circulation from paid bookings
   const paidBookingsReach = bookings
@@ -52,8 +58,12 @@ export default function WelcomeHeader({ user, quotes, bookings = [], isFirstLogi
             : "Start creating your advertising campaign today!"
           }
         </p>
-        {!hasPaidBookings && (
-          <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-lg">
+        {hasUnpaidBookings && (
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-lg"
+            onClick={onBookNowClick}
+          >
             Book Your Campaign Today
           </Button>
         )}

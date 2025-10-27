@@ -1393,6 +1393,7 @@ const Dashboard = () => {
                 quotes={quotes} 
                 bookings={bookings} 
                 isFirstLogin={isFirstLogin}
+                onBookNowClick={() => setActiveTab('bookings')}
               />
               
               {activeTab === 'create' && renderCreateBusinessForm()}
