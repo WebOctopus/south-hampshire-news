@@ -47,7 +47,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     selectedMonths: {} as Record<string, string[]>,
     pricingBreakdown: null as any,
     selectedPaymentOption: '' as string,
-    selectedStartingIssues: {} as Record<string, string>,
+    selectedStartingIssue: '',
     needsDesign: false,
     designFee: 0
   });
@@ -187,7 +187,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       selectedMonths: {}, // Clear month selections (fixed term specific)
       pricingBreakdown: null, // Reset pricing - will be recalculated for subscription
       selectedPaymentOption: '', // Clear payment option - user must select for subscription
-      selectedStartingIssues: {}, // Clear starting issues
+      selectedStartingIssue: '', // Clear starting issue
       needsDesign: prev.needsDesign, // Keep design choice
       designFee: prev.designFee // Keep design fee
     }));
@@ -728,8 +728,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   pricingBreakdown={campaignData.pricingBreakdown}
                   selectedPaymentOption={campaignData.selectedPaymentOption}
                   onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
-                  selectedStartingIssues={campaignData.selectedStartingIssues}
-                  onStartingIssuesChange={(issues) => setCampaignData(prev => ({ ...prev, selectedStartingIssues: issues }))}
+                  selectedStartingIssue={campaignData.selectedStartingIssue}
+                  onStartingIssueChange={(issue) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: issue }))}
                   needsDesign={campaignData.needsDesign}
                   designFee={campaignData.designFee}
                 />
@@ -857,8 +857,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingBreakdown={campaignData.pricingBreakdown}
                 selectedPaymentOption={campaignData.selectedPaymentOption}
                 onPaymentOptionChange={(option) => setCampaignData(prev => ({ ...prev, selectedPaymentOption: option }))}
-                selectedStartingIssues={campaignData.selectedStartingIssues}
-                onStartingIssuesChange={(issues) => setCampaignData(prev => ({ ...prev, selectedStartingIssues: issues }))}
+                selectedStartingIssue={campaignData.selectedStartingIssue}
+                onStartingIssueChange={(issue) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: issue }))}
                 needsDesign={campaignData.needsDesign}
                 designFee={campaignData.designFee}
               />
