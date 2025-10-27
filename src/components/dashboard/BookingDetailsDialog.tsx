@@ -351,18 +351,17 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         </p>
                       )}
                       {(() => {
-                        // Extract start date from selectedMonths (from step 4 - Campaign Starting Issue)
+                        // Prefer 'Campaign Starting Issue' from step 4, fallback to first selected month per area
+                        const selectedStartingIssue = booking.selections?.selectedStartingIssue as string | undefined;
                         const selectedMonths = booking.selections?.selectedMonths || {};
                         const firstAreaMonths = Object.values(selectedMonths)[0] as string[] | undefined;
-                        const startDate = firstAreaMonths?.[0];
+                        const derivedStart = firstAreaMonths?.[0];
+                        const startDate = selectedStartingIssue || derivedStart;
                         
                         if (!startDate) return null;
                         
-                        // Format the date properly
                         const formatStartDate = (monthString: string) => {
                           if (!monthString) return '';
-                          
-                          // Handle "2025-09" format
                           if (monthString.includes('-')) {
                             const [year, month] = monthString.split('-');
                             const monthNumber = parseInt(month, 10);
@@ -372,8 +371,6 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                             ];
                             return `${monthNames[monthNumber - 1]} ${year}`;
                           }
-                          
-                          // Return as-is if already formatted
                           return monthString;
                         };
                         

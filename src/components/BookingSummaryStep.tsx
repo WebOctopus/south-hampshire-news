@@ -62,6 +62,13 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
   const availableStartingIssues = areaGroupedSchedules.length > 0 ? areaGroupedSchedules[0].scheduleOptions : [];
 
+  // Ensure a default starting issue is set (first available) if none chosen yet
+  React.useEffect(() => {
+    if (!selectedStartingIssue && availableStartingIssues.length > 0) {
+      onStartingIssueChange?.(availableStartingIssues[0].value);
+    }
+  }, [selectedStartingIssue, availableStartingIssues, onStartingIssueChange]);
+
   // Get display names
   const getAdSizeName = () => {
     if (pricingModel === 'leafleting') {
