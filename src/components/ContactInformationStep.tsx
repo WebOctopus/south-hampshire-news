@@ -593,7 +593,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     
                     {/* Company Address Section with Postcode Lookup */}
                     <div className="space-y-4">
-                      <h5 className="text-sm font-medium">Company Address</h5>
+                      <h5 className="text-sm font-medium">Invoice Address</h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <Label htmlFor="postcode">Postcode *</Label>
@@ -802,7 +802,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     
                     {/* Business Address Section with Postcode Lookup */}
                     <div className="space-y-4">
-                      <h5 className="text-sm font-medium">Business Address</h5>
+                      <h5 className="text-sm font-medium">Invoice Address</h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <Label htmlFor="postcode">Postcode *</Label>
