@@ -35,9 +35,19 @@ export default function WelcomeHeader({ user, quotes, bookings = [], isFirstLogi
     .filter(b => !PREVIEW_AS_PAID && (!b.payment_status || b.payment_status === 'pending'))
     .reduce((sum, booking) => sum + (booking.total_circulation || 0), 0);
   
-  const totalReach = quotes.reduce((sum, quote) => sum + (quote.total_circulation || 0), 0);
-  const totalInvestment = quotes.reduce((sum, quote) => sum + (quote.final_total || 0), 0);
+  // Calculate total investment from unpaid bookings
+  const unpaidBookingsInvestment = bookings
+    .filter(b => !PREVIEW_AS_PAID && (!b.payment_status || b.payment_status === 'pending'))
+    .reduce((sum, booking) => sum + (booking.final_total || 0), 0);
+  
+  // Get count of unpaid bookings
+  const unpaidBookingsCount = bookings.filter(b => !PREVIEW_AS_PAID && (!b.payment_status || b.payment_status === 'pending')).length;
+  
+  // Combine quotes and unpaid bookings data
+  const totalReach = quotes.reduce((sum, quote) => sum + (quote.total_circulation || 0), 0) + unpaidBookingsReach;
+  const totalInvestment = quotes.reduce((sum, quote) => sum + (quote.final_total || 0), 0) + unpaidBookingsInvestment;
   const activeQuotes = quotes.filter(quote => quote.pricing_model).length;
+  const totalActiveItems = activeQuotes + unpaidBookingsCount;
 
   const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Friend';
   const greeting = isFirstLogin ? 'Welcome' : 'Hello';
@@ -77,8 +87,8 @@ export default function WelcomeHeader({ user, quotes, bookings = [], isFirstLogi
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Saved Quotes</p>
-                <p className="text-2xl font-bold">{activeQuotes}</p>
+                <p className="text-sm text-muted-foreground">Quotes & Bookings</p>
+                <p className="text-2xl font-bold">{totalActiveItems}</p>
               </div>
             </div>
           </CardContent>
