@@ -64,3 +64,6 @@ verify_jwt = false
 
 [functions.generate-invoice]
 verify_jwt = false
+
+[functions.test-gocardless-webhook]
+verify_jwt = false

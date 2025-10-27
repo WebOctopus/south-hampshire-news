@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     // Fetch booking details
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
-      .select('*, ad_sizes(*), pricing_areas(*)')
+      .select('*')
       .eq('id', bookingId)
       .single();
 
