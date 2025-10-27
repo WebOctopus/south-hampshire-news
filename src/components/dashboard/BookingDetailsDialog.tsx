@@ -361,12 +361,40 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                           </span>
                         </p>
                       )}
-                      {booking.selections?.start_date && (
-                        <p className="text-sm">
-                          <span className="font-medium">Start Date:</span>{' '}
-                          <span className="text-muted-foreground">{formatDate(booking.selections.start_date)}</span>
-                        </p>
-                      )}
+                      {(() => {
+                        // Extract start date from selectedMonths
+                        const selectedMonths = booking.selections?.selectedMonths || {};
+                        const firstAreaMonths = Object.values(selectedMonths)[0] as string[] | undefined;
+                        const startDate = firstAreaMonths?.[0];
+                        
+                        if (!startDate) return null;
+                        
+                        // Format the date properly
+                        const formatStartDate = (monthString: string) => {
+                          if (!monthString) return '';
+                          
+                          // Handle "2025-09" format
+                          if (monthString.includes('-')) {
+                            const [year, month] = monthString.split('-');
+                            const monthNumber = parseInt(month, 10);
+                            const monthNames = [
+                              'January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'
+                            ];
+                            return `${monthNames[monthNumber - 1]} ${year}`;
+                          }
+                          
+                          // Return as-is if already formatted
+                          return monthString;
+                        };
+                        
+                        return (
+                          <p className="text-sm">
+                            <span className="font-medium">Start Date:</span>{' '}
+                            <span className="text-muted-foreground">{formatStartDate(startDate)}</span>
+                          </p>
+                        );
+                      })()}
                     </div>
                   </div>
 
