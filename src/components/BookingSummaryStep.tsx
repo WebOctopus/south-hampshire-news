@@ -256,31 +256,6 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
 
         {/* Right Column - Payment Options */}
         <div className="space-y-6">
-          {/* Pricing Breakdown Card - Show campaign + add-on, total inclusive */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Cost Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Campaign Cost</span>
-                <span className="font-medium">{formatPrice(campaignCostExclDesign)}</span>
-              </div>
-              {designFeeToShow > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Artwork Design Service</span>
-                  <span className="font-medium">{formatPrice(designFeeToShow)}</span>
-                </div>
-              )}
-              <div className="border-t pt-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Total (Excl. VAT)</span>
-                  <span className="font-bold text-primary">{formatPrice(baseTotal)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">3 Payment Options</CardTitle>
