@@ -677,18 +677,23 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                                   {option.option_type === 'direct_debit' && <span className="text-sm text-muted-foreground">/month</span>}
                                 </span>
                               </div>
-                              {option.description && (
-                                <p className="text-sm text-muted-foreground mb-2">{option.description}</p>
-                              )}
                               {option.discount_percentage > 0 && discount > 0 && (
                                 <p className="text-sm text-green-600">
                                   Save {formatPrice(discount)} ({option.discount_percentage}% discount)
                                 </p>
                               )}
                               {option.minimum_payments && option.option_type === 'monthly' && (
-                                <p className="text-sm text-muted-foreground">
-                                  • Minimum number of payments = {option.minimum_payments}
-                                </p>
+                                <div className="space-y-1">
+                                  <p className="text-sm text-muted-foreground">
+                                    • Minimum number of payments = {option.minimum_payments}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    • 'Go Cardless REF DISCOVERMAGA' will appear on your statement
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    • 1ST payment will be taken within the next 3 days. Subsequent payments on the 10th day of each month.
+                                  </p>
+                                </div>
                               )}
                             </Label>
                           </div>
