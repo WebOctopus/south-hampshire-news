@@ -32,7 +32,10 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   onOpenChange,
 }) => {
   const { toast } = useToast();
-  const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(null);
+  // Initialize with the payment option selected in step 4
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(
+    booking?.selections?.paymentOption || null
+  );
   const { data: paymentOptions = [] } = usePaymentOptions();
   const { createMandate } = useGoCardless();
 
@@ -209,7 +212,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       case 'fixed':
         return 'Fixed Placement';
       case 'bogof':
-        return 'Buy One Get One Free';
+        return '3+ Repeat Package Booking';
       case 'leafleting':
         return 'Leaflet Distribution';
       default:
@@ -315,7 +318,17 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                   <div>
                     <p className="text-sm font-medium">Total Cost</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatPrice(booking.final_total || booking.monthly_price)}
+                      {(() => {
+                        const selectedPaymentOptionId = booking.selections?.paymentOption;
+                        const selectedOption = paymentOptions.find(opt => opt.id === selectedPaymentOptionId);
+                        const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
+                        const designFee = booking.pricing_breakdown?.designFee || 0;
+                        
+                        if (selectedOption && paymentOptions.length > 0) {
+                          return formatPrice(calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee));
+                        }
+                        return formatPrice(booking.final_total || booking.monthly_price);
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -324,7 +337,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                 <div className="flex items-start space-x-3">
                   <MapPin className="h-5 w-5 text-primary mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">Paid Locations</p>
+                    <p className="text-sm font-medium">Paid For Locations</p>
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {(() => {
                         const paidAreaIds = booking.pricing_model === 'bogof' 
@@ -490,23 +503,14 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Show Payment Options */}
+                  {/* Show only the selected payment option from step 4 */}
                   <p className="text-sm text-muted-foreground">
-                    Choose your preferred payment method to complete your booking:
+                    Your selected payment method:
                   </p>
 
                   <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
-                    {[...paymentOptions]
-                      .sort((a, b) => {
-                        // Sort order: monthly first, then 6 months, then 12 months
-                        const getOrder = (option: typeof a) => {
-                          if (option.option_type === 'monthly') return 1;
-                          if (option.display_name?.includes('6 Months')) return 2;
-                          if (option.display_name?.includes('12 Months')) return 3;
-                          return 4;
-                        };
-                        return getOrder(a) - getOrder(b);
-                      })
+                    {paymentOptions
+                      .filter(option => option.id === booking.selections?.paymentOption)
                       .map((option) => {
                       // Use the same calculation logic as the booking summary
                       const baseTotal = booking.final_total || booking.monthly_price;
