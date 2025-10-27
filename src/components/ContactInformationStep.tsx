@@ -381,9 +381,9 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   return (
     <div className="space-y-8">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Contact Information & Account Setup</h2>
+        <h2 className="text-2xl font-bold">Contact Information & Registration</h2>
         <p className="text-muted-foreground">
-          We'll create your account and save your quote to your dashboard
+          We'll create your account so you can book online, revisit any future quotations, review campaign schedules and retrieve discount vouchers
         </p>
       </div>
 
