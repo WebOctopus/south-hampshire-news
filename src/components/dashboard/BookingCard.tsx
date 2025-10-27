@@ -125,17 +125,14 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
   };
 
   const getPaymentStatusLabel = (status?: string) => {
+    // Simplified labels: only "Payment Required" or "Paid"
     if (!status || status === 'pending') return 'Payment Required';
-    switch (status) {
-      case 'paid': return 'Paid';
-      case 'subscription_active': return 'Subscription Active';
-      case 'mandate_active': return 'Direct Debit Setup';
-      case 'payment_pending': return 'Payment Processing';
-      case 'subscription_pending': return 'Setting Up';
-      case 'mandate_created': return 'DD Setup Complete';
-      case 'failed': return 'Payment Failed';
-      default: return status.replace(/_/g, ' ');
+    // All paid/active statuses show as "Paid"
+    if (status === 'paid' || status === 'subscription_active' || status === 'mandate_active') {
+      return 'Paid';
     }
+    // All other statuses default to "Payment Required"
+    return 'Payment Required';
   };
 
   const getPricingModelDisplay = (model: string) => {
@@ -195,9 +192,6 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
               )}
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline" className={getStatusColor(booking.status)}>
-                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).replace('_', ' ')}
-              </Badge>
               <Badge 
                 variant="outline" 
                 className={`${getPaymentStatusColor(booking.payment_status)} ${
@@ -205,9 +199,6 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
                 }`}
               >
                 {getPaymentStatusLabel(booking.payment_status)}
-              </Badge>
-              <Badge variant="secondary">
-                {getPricingModelDisplay(booking.pricing_model)}
               </Badge>
             </div>
           </div>
