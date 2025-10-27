@@ -51,7 +51,7 @@ const Dashboard = () => {
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [bookingDetailsOpen, setBookingDetailsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('create');
+  const [activeTab, setActiveTab] = useState('bookings');
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const [voucherCount, setVoucherCount] = useState(0);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
