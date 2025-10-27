@@ -361,6 +361,12 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                           </span>
                         </p>
                       )}
+                      {booking.selections?.start_date && (
+                        <p className="text-sm">
+                          <span className="font-medium">Start Date:</span>{' '}
+                          <span className="text-muted-foreground">{formatDate(booking.selections.start_date)}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 
