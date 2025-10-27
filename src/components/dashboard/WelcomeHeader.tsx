@@ -11,8 +11,8 @@ interface WelcomeHeaderProps {
 }
 
 export default function WelcomeHeader({ user, quotes, bookings = [] }: WelcomeHeaderProps) {
-  // TEMPORARY: Preview mode - same as in BookingCard
-  const PREVIEW_AS_PAID = true;
+  // Preview mode disabled - bookings are now live
+  const PREVIEW_AS_PAID = false;
   
   const hasPaidBookings = PREVIEW_AS_PAID 
     ? bookings.length > 0 

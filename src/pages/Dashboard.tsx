@@ -1213,8 +1213,8 @@ const Dashboard = () => {
   );
 
   const renderBookings = () => {
-    // TEMPORARY: Preview mode - same as in BookingCard
-    const PREVIEW_AS_PAID = true;
+    // Preview mode disabled - bookings are now live
+    const PREVIEW_AS_PAID = false;
     
     const unpaidBookings = PREVIEW_AS_PAID 
       ? [] 

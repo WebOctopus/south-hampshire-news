@@ -32,9 +32,8 @@ interface BookingCardProps {
 
 export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails, onNavigateToVouchers }) => {
   
-  // TEMPORARY: Preview mode - treat all bookings as paid for visual testing
-  // Remove this line when ready for production
-  const PREVIEW_AS_PAID = true;
+  // Preview mode disabled - bookings are now live
+  const PREVIEW_AS_PAID = false;
   
   const isPaymentRequired = PREVIEW_AS_PAID ? false : (!booking.payment_status || booking.payment_status === 'pending');
   const isPaid = PREVIEW_AS_PAID ? true : (booking.payment_status === 'paid' || booking.payment_status === 'subscription_active' || booking.payment_status === 'mandate_active');
