@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Clock, DollarSign, Package, Trash2, CreditCard, AlertCircle, Gift, CheckCircle2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, Package, Trash2, CreditCard, AlertCircle, Gift, CheckCircle2 } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+import { calculatePaymentAmount } from '@/lib/paymentCalculations';
 
 interface BookingCardProps {
   booking: {
@@ -38,6 +40,34 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
   const isPaid = PREVIEW_AS_PAID ? true : (booking.payment_status === 'paid' || booking.payment_status === 'subscription_active' || booking.payment_status === 'mandate_active');
   const [hasVoucher, setHasVoucher] = useState(false);
   const [voucherCode, setVoucherCode] = useState<string | null>(null);
+  
+  const { data: paymentOptions = [] } = usePaymentOptions();
+  
+  // Get the selected payment option and calculate display amount
+  const selectedPaymentOption = booking.selections?.paymentOption;
+  const selectedOption = paymentOptions.find(opt => opt.id === selectedPaymentOption);
+  const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+  const designFee = booking.pricing_breakdown?.designFee || 0;
+  
+  const displayAmount = selectedOption && paymentOptions.length > 0
+    ? calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee)
+    : booking.final_total;
+    
+  const getPaymentLabel = () => {
+    if (!selectedOption) return 'Total Cost';
+    
+    if (selectedOption.option_type === 'monthly') {
+      return 'Monthly Payment';
+    } else if (selectedOption.option_type === 'lump_sum') {
+      if (selectedOption.display_name.includes('6')) {
+        return '6 Month Payment';
+      } else if (selectedOption.display_name.includes('12')) {
+        return '12 Month Payment';
+      }
+      return 'Total Cost';
+    }
+    return 'Total Cost';
+  };
 
   useEffect(() => {
     // Check if this booking generated a voucher
@@ -216,12 +246,11 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2 text-sm">
-            <DollarSign className="w-4 h-4 text-muted-foreground" />
             <div>
-              <div className={`font-medium ${isPaymentRequired ? 'text-lg text-amber-900' : ''}`}>
-                {formatPrice(booking.final_total)}
+              <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
+                {formatPrice(displayAmount)}
               </div>
-              <div className="text-xs text-muted-foreground">Total</div>
+              <div className="text-xs text-muted-foreground">{getPaymentLabel()}</div>
             </div>
           </div>
           
