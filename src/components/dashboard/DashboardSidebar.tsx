@@ -1,8 +1,8 @@
-import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift, Home, LogOut, Settings, HelpCircle } from "lucide-react"
+import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
+  
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -11,9 +11,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { supabase } from "@/integrations/supabase/client"
-import { useNavigate } from "react-router-dom"
-import { toast } from "sonner"
 
 interface DashboardSidebarProps {
   activeTab: string
@@ -39,29 +36,6 @@ export function DashboardSidebar({
   editingEvent
 }: DashboardSidebarProps) {
   const { state } = useSidebar()
-  const navigate = useNavigate()
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut()
-      navigate("/")
-      toast.success("Signed out successfully")
-    } catch (error) {
-      toast.error("Error signing out")
-    }
-  }
-
-  const handleBackToWebsite = () => {
-    navigate("/")
-  }
-
-  const handleProfileSettings = () => {
-    setActiveTab("profile")
-  }
-
-  const handleSupport = () => {
-    navigate("/support")
-  }
 
   const getNavCls = (tabValue: string) =>
     activeTab === tabValue 
@@ -188,38 +162,6 @@ export function DashboardSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
-      <SidebarFooter className="border-t">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleBackToWebsite}>
-              <Home className="h-4 w-4" />
-              {state !== "collapsed" && <span>Back to Website</span>}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleProfileSettings} className={getNavCls("profile")}>
-              <Settings className="h-4 w-4" />
-              {state !== "collapsed" && <span>Profile Settings</span>}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSupport}>
-              <HelpCircle className="h-4 w-4" />
-              {state !== "collapsed" && <span>Support</span>}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSignOut} className="text-destructive hover:text-destructive">
-              <LogOut className="h-4 w-4" />
-              {state !== "collapsed" && <span>Sign Out</span>}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   )
 }

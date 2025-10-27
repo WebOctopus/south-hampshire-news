@@ -31,6 +31,7 @@ import BookingCard from '@/components/dashboard/BookingCard';
 import { BookingDetailsDialog } from '@/components/dashboard/BookingDetailsDialog';
 import VouchersSection from '@/components/dashboard/VouchersSection';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -1355,13 +1356,10 @@ const Dashboard = () => {
         />
         
         <SidebarInset className="flex-1 min-w-0">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-6">
-            <SidebarTrigger className="-ml-1" />
-            <div className="h-4 w-px bg-sidebar-border" />
-            <div className="flex-1">
-              <h1 className="text-lg font-semibold">Dashboard</h1>
-            </div>
-          </header>
+          <DashboardHeader 
+            user={user} 
+            onProfileClick={() => setActiveTab('profile')}
+          />
           
           <div className="flex-1 overflow-auto">
             <div className="max-w-7xl mx-auto p-6 space-y-6">
