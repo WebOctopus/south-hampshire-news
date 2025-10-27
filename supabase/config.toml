@@ -61,3 +61,6 @@ verify_jwt = false
 
 [functions.validate-bogof-eligibility]
 verify_jwt = false
+
+[functions.generate-invoice]
+verify_jwt = false

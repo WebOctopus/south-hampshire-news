@@ -150,6 +150,23 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
     enabled: !!booking?.duration_id && open,
   });
 
+  // Fetch invoices for this booking
+  const { data: invoices, isLoading: invoicesLoading } = useQuery({
+    queryKey: ['invoices', booking?.id],
+    queryFn: async () => {
+      if (!booking?.id) return [];
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('booking_id', booking.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!booking?.id && open,
+  });
+
   const handleSetupPayment = async () => {
     if (!selectedPaymentOption || !booking) {
       toast({
@@ -268,30 +285,6 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       currency: 'GBP'
     }).format(price);
   };
-
-  const legalDocuments = [
-    {
-      id: 1,
-      name: 'Terms & Conditions',
-      description: 'Standard terms and conditions for advertising services',
-      type: 'PDF',
-      size: '245 KB'
-    },
-    {
-      id: 2,
-      name: 'Service Agreement',
-      description: 'Detailed service agreement for your campaign',
-      type: 'PDF',
-      size: '189 KB'
-    },
-    {
-      id: 3,
-      name: 'Data Protection Notice',
-      description: 'Information about how we handle your personal data',
-      type: 'PDF',
-      size: '156 KB'
-    }
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -763,49 +756,103 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
             </CardContent>
           </Card>
 
-          {/* Legal Documents */}
+          {/* Invoices & Documents */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <FileText className="h-5 w-5" />
-                <span>Legal Documents</span>
+                <span>Invoices & Documents</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Download your legal documents related to this booking. These documents contain important 
-                information about your service agreement, terms and conditions, and data protection.
-              </p>
-              
-              <div className="space-y-3">
-                {legalDocuments.map((document) => (
-                  <div
-                    key={document.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-red-600" />
+              {invoicesLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading invoices...</span>
+                </div>
+              ) : invoices && invoices.length > 0 ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Download your invoices and payment receipts below.
+                  </p>
+                  <div className="space-y-3">
+                    {invoices.map((invoice) => (
+                      <div
+                        key={invoice.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <FileText className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Invoice {invoice.invoice_number}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(invoice.invoice_date)} • {formatPrice(invoice.amount)}
+                              {invoice.payment_type === 'subscription' && ' per month'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={invoice.status === 'generated' ? 'default' : 'secondary'}>
+                            {invoice.status}
+                          </Badge>
+                          {invoice.pdf_url ? (
+                            <Button size="sm" variant="outline" asChild>
+                              <a href={invoice.pdf_url} download>
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled>
+                              <Download className="h-4 w-4 mr-2 opacity-50" />
+                              Generating...
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{document.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {document.description} • {document.type} • {document.size}
-                        </p>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </>
+              ) : booking.invoice_generated ? (
+                <div className="flex items-center justify-center py-8 text-center">
+                  <div className="space-y-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
+                    <p className="text-sm text-muted-foreground">
+                      Your invoice is being generated...
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      This usually takes a few moments. Please refresh if it doesn't appear.
+                    </p>
+                  </div>
+                </div>
+              ) : booking.status === 'confirmed' ? (
+                <div className="flex items-center justify-center py-8 text-center">
+                  <div className="space-y-2">
+                    <CheckCircle className="h-8 w-8 text-green-600 mx-auto" />
+                    <p className="text-sm text-muted-foreground">
+                      Invoice will be generated once payment is confirmed
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-8 text-center">
+                  <div className="space-y-2">
+                    <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto" />
+                    <p className="text-sm text-muted-foreground">
+                      No invoices available yet
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Invoices will appear here after payment setup is complete
+                    </p>
+                  </div>
+                </div>
+              )}
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
-                  <strong>Need help?</strong> If you have questions about any of these documents, 
-                  please contact our support team who will be happy to assist you.
+                  <strong>Payment Reference:</strong> "Go Cardless REF DISCOVERMAGA" will appear on your bank statement.
                 </p>
               </div>
             </CardContent>

@@ -124,6 +124,8 @@ async function handleMandateEvent(supabase: any, event: any) {
         .from('bookings')
         .update({ payment_status: 'mandate_active' })
         .eq('id', mandate.booking_id);
+      
+      console.log('Mandate active for booking:', mandate.booking_id);
     }
   }
 }
@@ -150,7 +152,7 @@ async function handlePaymentEvent(supabase: any, event: any) {
   if (status === 'confirmed' || status === 'paid_out') {
     const { data: payment } = await supabase
       .from('gocardless_payments')
-      .select('booking_id')
+      .select('booking_id, gocardless_mandate_id')
       .eq('gocardless_payment_id', paymentId)
       .single();
 
@@ -162,6 +164,21 @@ async function handlePaymentEvent(supabase: any, event: any) {
           status: 'confirmed' 
         })
         .eq('id', payment.booking_id);
+      
+      // Generate invoice for one-off payment
+      console.log('Payment confirmed, generating invoice for booking:', payment.booking_id);
+      try {
+        await supabase.functions.invoke('generate-invoice', {
+          body: {
+            bookingId: payment.booking_id,
+            paymentId: paymentId,
+            mandateId: payment.gocardless_mandate_id,
+            type: 'payment'
+          }
+        });
+      } catch (error) {
+        console.error('Failed to generate invoice:', error);
+      }
     }
   }
 }
@@ -188,7 +205,7 @@ async function handleSubscriptionEvent(supabase: any, event: any) {
   if (status === 'active') {
     const { data: subscription } = await supabase
       .from('gocardless_subscriptions')
-      .select('booking_id')
+      .select('booking_id, gocardless_mandate_id')
       .eq('gocardless_subscription_id', subscriptionId)
       .single();
 
@@ -200,6 +217,21 @@ async function handleSubscriptionEvent(supabase: any, event: any) {
           status: 'confirmed'
         })
         .eq('id', subscription.booking_id);
+      
+      // Generate invoice for subscription
+      console.log('Subscription active, generating invoice for booking:', subscription.booking_id);
+      try {
+        await supabase.functions.invoke('generate-invoice', {
+          body: {
+            bookingId: subscription.booking_id,
+            subscriptionId: subscriptionId,
+            mandateId: subscription.gocardless_mandate_id,
+            type: 'subscription'
+          }
+        });
+      } catch (error) {
+        console.error('Failed to generate invoice:', error);
+      }
     }
   }
 }

@@ -161,6 +161,7 @@ export type Database = {
           final_total: number | null
           gocardless_mandate_id: string | null
           id: string
+          invoice_generated: boolean | null
           ip_address_hash: string | null
           monthly_price: number
           notes: string | null
@@ -196,6 +197,7 @@ export type Database = {
           final_total?: number | null
           gocardless_mandate_id?: string | null
           id?: string
+          invoice_generated?: boolean | null
           ip_address_hash?: string | null
           monthly_price?: number
           notes?: string | null
@@ -231,6 +233,7 @@ export type Database = {
           final_total?: number | null
           gocardless_mandate_id?: string | null
           id?: string
+          invoice_generated?: boolean | null
           ip_address_hash?: string | null
           monthly_price?: number
           notes?: string | null
@@ -691,6 +694,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "gocardless_subscriptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount: number
+          booking_id: string
+          created_at: string
+          currency: string | null
+          gocardless_mandate_id: string
+          gocardless_payment_id: string | null
+          gocardless_subscription_id: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string
+          payment_type: string
+          pdf_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          created_at?: string
+          currency?: string | null
+          gocardless_mandate_id: string
+          gocardless_payment_id?: string | null
+          gocardless_subscription_id?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          payment_type: string
+          pdf_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          created_at?: string
+          currency?: string | null
+          gocardless_mandate_id?: string
+          gocardless_payment_id?: string | null
+          gocardless_subscription_id?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          payment_type?: string
+          pdf_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
@@ -1606,6 +1668,7 @@ export type Database = {
     }
     Functions: {
       assign_admin_role: { Args: { user_email: string }; Returns: string }
+      generate_invoice_number: { Args: never; Returns: string }
       generate_voucher_code: { Args: never; Returns: string }
       get_active_alerts: {
         Args: never
