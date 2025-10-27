@@ -273,9 +273,28 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         ...bogofFreeAreas.map(id => effectiveAreas?.find(a => a.id === id)).filter(Boolean)
       ];
       
-      const availableStartDates = allAreas.length > 0 && allAreas[0]?.schedule 
-        ? allAreas[0].schedule.map((monthData: any) => monthData.month)
-        : [];
+      // Get the next 3 available start dates from all areas
+      const availableStartDates = (() => {
+        if (allAreas.length === 0 || !allAreas[0]?.schedule) return [];
+        
+        // Get all unique months from all areas
+        const allMonths = allAreas
+          .flatMap(area => area.schedule.map((s: any) => s.month))
+          .filter((month, index, self) => self.indexOf(month) === index);
+        
+        // Sort chronologically
+        const sortedMonths = allMonths.sort();
+        
+        // Filter out past months and take only the next 3
+        const today = new Date();
+        const futureMonths = sortedMonths.filter(month => {
+          const [year, monthNum] = month.split('-').map(Number);
+          const monthDate = new Date(year, monthNum - 1);
+          return monthDate >= new Date(today.getFullYear(), today.getMonth());
+        });
+        
+        return futureMonths.slice(0, 3);
+      })();
       
       const globalStartDate = Object.keys(selectedMonths).length > 0 
         ? selectedMonths[Object.keys(selectedMonths)[0]]?.[0] || null
@@ -285,14 +304,14 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         <div className="space-y-6">
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
             <p className="text-sm font-medium text-primary">
-              📅 Select your campaign start date - this will apply to ALL {allAreas.length} selected areas
+              📅 Select your campaign start month - this will apply to ALL {allAreas.length} selected areas
             </p>
           </div>
           
           <div className="border rounded-lg p-6">
             <h4 className="font-medium text-lg mb-4 flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Campaign Start Date for All Areas
+              Campaign start month:
             </h4>
             <p className="text-sm text-muted-foreground mb-4">
               This start date will be used for all {allAreas.length} areas in your campaign.
