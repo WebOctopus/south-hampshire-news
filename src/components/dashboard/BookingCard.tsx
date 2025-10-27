@@ -237,10 +237,23 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2 text-sm">
             <div>
-              <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
-                {formatPrice(displayAmount)}
-              </div>
-              <div className="text-xs text-muted-foreground">{getPaymentLabel()}</div>
+              {selectedOption?.option_type === 'monthly' ? (
+                <>
+                  <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
+                    {formatPrice(displayAmount / 1.2)} + vat
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    ({formatPrice(displayAmount)} per month for 6 months minimum)
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
+                    {formatPrice(displayAmount)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{getPaymentLabel()}</div>
+                </>
+              )}
             </div>
           </div>
           
