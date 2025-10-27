@@ -43,8 +43,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
   const { data: paymentOptions = [] } = usePaymentOptions();
   
   // Get the selected payment option and calculate display amount
-  const selectedPaymentOption = booking.selections?.paymentOption;
-  const selectedOption = paymentOptions.find(opt => opt.id === selectedPaymentOption);
+  const selectedPaymentOption = booking.selections?.payment_option_id;
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOption);
   const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
   const designFee = booking.pricing_breakdown?.designFee || 0;
   

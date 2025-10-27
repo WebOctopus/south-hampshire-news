@@ -34,7 +34,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   const { toast } = useToast();
   // Initialize with the payment option selected in step 4
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(
-    booking?.selections?.paymentOption || null
+    booking?.selections?.payment_option_id || null
   );
   const { data: paymentOptions = [] } = usePaymentOptions();
   const { createMandate } = useGoCardless();
@@ -319,8 +319,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     <p className="text-sm font-medium">Total Cost</p>
                     <p className="text-sm text-muted-foreground">
                       {(() => {
-                        const selectedPaymentOptionId = booking.selections?.paymentOption;
-                        const selectedOption = paymentOptions.find(opt => opt.id === selectedPaymentOptionId);
+                        const selectedPaymentOptionId = booking.selections?.payment_option_id;
+                        const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
                         const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
                         const designFee = booking.pricing_breakdown?.designFee || 0;
                         
@@ -510,7 +510,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
 
                   <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
                     {paymentOptions
-                      .filter(option => option.id === booking.selections?.paymentOption)
+                      .filter(option => option.option_type === booking.selections?.payment_option_id)
                       .map((option) => {
                       // Use the same calculation logic as the booking summary
                       const baseTotal = booking.final_total || booking.monthly_price;
@@ -527,13 +527,13 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         <div
                           key={option.id}
                           className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                            selectedPaymentOption === option.id
+                            selectedPaymentOption === option.option_type
                               ? 'border-primary bg-primary/5'
                               : 'border-border hover:border-primary/50'
                           }`}
-                          onClick={() => setSelectedPaymentOption(option.id)}
+                          onClick={() => setSelectedPaymentOption(option.option_type)}
                         >
-                          <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
+                          <RadioGroupItem value={option.option_type} id={option.id} className="mt-1" />
                           <div className="flex-1">
                             <Label htmlFor={option.id} className="cursor-pointer">
                               <div className="flex items-center justify-between mb-1">
