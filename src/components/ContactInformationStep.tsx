@@ -34,6 +34,7 @@ interface FormData {
   businessType: 'limited_company' | 'sole_trader' | 'non_profit' | 'partnership';
   firstName: string;
   lastName: string;
+  jobTitle: string;
   companyName: string;
   companySector: string;
   email: string;
@@ -67,6 +68,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     businessType: 'limited_company',
     firstName: "",
     lastName: "",
+    jobTitle: "",
     companyName: "",
     companySector: "",
     email: "",
@@ -451,6 +453,17 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                         />
                       </div>
                       <div>
+                        <Label htmlFor="jobTitle">Job Title/Position</Label>
+                        <Input
+                          id="jobTitle"
+                          name="jobTitle"
+                          value={formData.jobTitle}
+                          onChange={(e) => setFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                          placeholder="Enter your job title"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
                         <Label htmlFor="companyName">Company/Organisation Name *</Label>
                         <Input
                           id="companyName"
@@ -645,6 +658,17 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                           value={formData.lastName}
                           onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
                           placeholder="Enter your last name"
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="jobTitle">Job Title/Position</Label>
+                        <Input
+                          id="jobTitle"
+                          name="jobTitle"
+                          value={formData.jobTitle}
+                          onChange={(e) => setFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                          placeholder="Enter your job title"
                           disabled={submitting}
                         />
                       </div>
