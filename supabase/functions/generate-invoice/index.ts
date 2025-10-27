@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.10';
+import { jsPDF } from 'https://cdn.skypack.dev/jspdf@2.5.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -91,12 +92,45 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to create invoice: ${invoiceError.message}`);
     }
 
-    // Generate HTML invoice (simplified version - can be enhanced with PDF generation later)
-    const invoiceHtml = generateInvoiceHtml(invoice, booking);
+    // Generate PDF invoice
+    const pdf = generateInvoicePdf(invoice, booking);
+    const pdfBytes = pdf.output('arraybuffer');
+    
+    console.log('PDF generated, uploading to storage...');
 
-    // For now, we'll store the invoice record without PDF
-    // In the future, you can add PDF generation using a library like puppeteer or an API service
-    console.log('Invoice HTML generated, ready for PDF conversion');
+    // Upload PDF to storage
+    const fileName = `${invoice.invoice_number}.pdf`;
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('invoices')
+      .upload(fileName, pdfBytes, {
+        contentType: 'application/pdf',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('Error uploading PDF:', uploadError);
+      throw new Error(`Failed to upload PDF: ${uploadError.message}`);
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase
+      .storage
+      .from('invoices')
+      .getPublicUrl(fileName);
+
+    // Update invoice with PDF URL
+    const { error: updateError } = await supabase
+      .from('invoices')
+      .update({ pdf_url: publicUrl })
+      .eq('id', invoice.id);
+
+    if (updateError) {
+      console.error('Error updating invoice with PDF URL:', updateError);
+      throw new Error(`Failed to update invoice: ${updateError.message}`);
+    }
+
+    console.log('PDF uploaded successfully:', publicUrl);
 
     // Update booking
     await supabase
@@ -107,7 +141,10 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        invoice,
+        invoice: {
+          ...invoice,
+          pdf_url: publicUrl
+        },
         message: 'Invoice generated successfully'
       }),
       { 
@@ -240,4 +277,158 @@ function generateInvoiceHtml(invoice: any, booking: any): string {
     </body>
     </html>
   `;
+}
+
+function generateInvoicePdf(invoice: any, booking: any): jsPDF {
+  const doc = new jsPDF();
+  
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatPrice = (amount: number) => {
+    return `£${amount.toFixed(2)}`;
+  };
+
+  // Header - Company Info
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Discover Magazine', 20, 20);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Community Magazine & Local Advertising', 20, 27);
+
+  // Invoice Title
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('INVOICE', 150, 20);
+
+  // Invoice Details
+  let yPos = 50;
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Invoice Number:', 20, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(invoice.invoice_number, 70, yPos);
+
+  yPos += 7;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Invoice Date:', 20, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(formatDate(invoice.invoice_date), 70, yPos);
+
+  yPos += 7;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Payment Method:', 20, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Direct Debit via GoCardless', 70, yPos);
+
+  // Bill To Section
+  yPos += 15;
+  doc.setFont('helvetica', 'bold');
+  doc.text('BILL TO:', 20, yPos);
+  
+  yPos += 7;
+  doc.setFont('helvetica', 'normal');
+  doc.text(booking.contact_name || '', 20, yPos);
+  
+  if (booking.company) {
+    yPos += 6;
+    doc.text(booking.company, 20, yPos);
+  }
+  
+  yPos += 6;
+  doc.text(booking.email || '', 20, yPos);
+  
+  if (booking.phone) {
+    yPos += 6;
+    doc.text(booking.phone, 20, yPos);
+  }
+
+  // Payment Details Section
+  yPos += 15;
+  doc.setFont('helvetica', 'bold');
+  doc.text('PAYMENT DETAILS:', 20, yPos);
+  
+  yPos += 7;
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Mandate Reference: ${invoice.gocardless_mandate_id}`, 20, yPos);
+  
+  yPos += 6;
+  doc.text('Statement Reference: Go Cardless REF DISCOVERMAGA', 20, yPos);
+
+  if (invoice.payment_type === 'subscription') {
+    yPos += 6;
+    doc.text('First Payment: Within 3 business days of setup', 20, yPos);
+    yPos += 6;
+    doc.text('Subsequent Payments: 10th day of each month', 20, yPos);
+  }
+
+  // Campaign Details Table
+  yPos += 15;
+  doc.setFont('helvetica', 'bold');
+  doc.text('CAMPAIGN DETAILS:', 20, yPos);
+
+  yPos += 10;
+  // Table Header
+  doc.setFillColor(244, 244, 244);
+  doc.rect(20, yPos - 5, 170, 8, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.text('Description', 25, yPos);
+  doc.text('Details', 80, yPos);
+  doc.text('Amount', 160, yPos);
+
+  // Table Content
+  yPos += 10;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Advertising Campaign', 25, yPos);
+  
+  const campaignType = booking.pricing_model === 'fixed' ? 'Fixed Term' : 
+                       booking.pricing_model === 'subscription' ? 'Subscription' : 'BOGOF';
+  doc.text(campaignType, 80, yPos);
+  doc.text(formatPrice(booking.subtotal || 0), 160, yPos);
+
+  yPos += 6;
+  doc.setFontSize(9);
+  doc.text(`${booking.ad_sizes?.name || 'Standard Ad Size'}`, 80, yPos);
+  yPos += 5;
+  doc.text(`${booking.selected_area_ids?.length || 0} distribution areas`, 80, yPos);
+
+  if (booking.pricing_breakdown?.designFee > 0) {
+    yPos += 8;
+    doc.setFontSize(11);
+    doc.text('Design Service', 25, yPos);
+    doc.text('Professional ad design', 80, yPos);
+    doc.text(formatPrice(booking.pricing_breakdown.designFee), 160, yPos);
+  }
+
+  // Total
+  yPos += 15;
+  doc.setDrawColor(200, 200, 200);
+  doc.line(20, yPos, 190, yPos);
+  yPos += 10;
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  const totalLabel = invoice.payment_type === 'subscription' ? 'Total Monthly:' : 'Total:';
+  doc.text(totalLabel, 120, yPos);
+  doc.text(formatPrice(invoice.amount), 160, yPos);
+
+  // Footer
+  yPos += 20;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Thank you for your business!', 20, yPos);
+  yPos += 6;
+  doc.text('For any questions about this invoice, please contact us.', 20, yPos);
+  yPos += 6;
+  doc.setFontSize(8);
+  doc.setTextColor(128, 128, 128);
+  doc.text('This invoice was automatically generated by our system.', 20, yPos);
+
+  return doc;
 }
