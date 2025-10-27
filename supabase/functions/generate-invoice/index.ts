@@ -113,16 +113,21 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to upload PDF: ${uploadError.message}`);
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase
+    // Generate a signed URL (valid for 1 year) for the private invoice
+    const { data: signedUrlData, error: signedUrlError } = await supabase
       .storage
       .from('invoices')
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 31536000); // 1 year in seconds
+
+    if (signedUrlError || !signedUrlData) {
+      console.error('Error creating signed URL:', signedUrlError);
+      throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`);
+    }
 
     // Update invoice with PDF URL
     const { error: updateError } = await supabase
       .from('invoices')
-      .update({ pdf_url: publicUrl })
+      .update({ pdf_url: signedUrlData.signedUrl })
       .eq('id', invoice.id);
 
     if (updateError) {
@@ -130,7 +135,7 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to update invoice: ${updateError.message}`);
     }
 
-    console.log('PDF uploaded successfully:', publicUrl);
+    console.log('PDF uploaded successfully:', signedUrlData.signedUrl);
 
     // Update booking
     await supabase
@@ -143,7 +148,7 @@ Deno.serve(async (req) => {
         success: true, 
         invoice: {
           ...invoice,
-          pdf_url: publicUrl
+          pdf_url: signedUrlData.signedUrl
         },
         message: 'Invoice generated successfully'
       }),
