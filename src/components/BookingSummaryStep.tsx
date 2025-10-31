@@ -215,17 +215,46 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   </p>
                 </div>
 
-                {selectedAreaData.map((area) => {
-                  const startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
+                {selectedAreaData.map((area, areaIndex) => {
                   const schedule = area.schedule || [];
+                  
+                  // For BOGOF packages, determine the correct starting month for this area
+                  // based on whether it should start in odd or even months
+                  let startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
+                  
+                  if (pricingModel === 'bogof' && startMonth) {
+                    const baseStartDate = new Date(startMonth + '-01');
+                    const baseMonth = baseStartDate.getMonth(); // 0-11
+                    const isEvenStart = baseMonth % 2 === 1; // Jan=0, Feb=1, so Feb is "even" in our alternating pattern
+                    
+                    // Alternate areas: even index gets base month, odd index gets next month
+                    const shouldUseNextMonth = areaIndex % 2 !== 0;
+                    
+                    if (shouldUseNextMonth) {
+                      // Find the next available month in this area's schedule
+                      const baseStartIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                      if (baseStartIndex >= 0 && baseStartIndex + 1 < schedule.length) {
+                        startMonth = schedule[baseStartIndex + 1].month;
+                      }
+                    }
+                  }
                   
                   // Get the starting index in the schedule
                   const startIndex = schedule.findIndex((s: any) => s.month === startMonth);
-                  if (startIndex === -1) return null;
+                  if (startIndex === -1) {
+                    // Fallback: use the first available month in the schedule that's not in the past
+                    const today = new Date();
+                    const futureSchedules = schedule.filter((s: any) => new Date(s.month + '-01') >= today);
+                    if (futureSchedules.length === 0) return null;
+                    startMonth = futureSchedules[0].month;
+                  }
+                  
+                  const finalStartIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                  if (finalStartIndex === -1) return null;
 
                   // Get the next 3 issues for this area (for BOGOF or first period)
                   const issueCount = pricingModel === 'bogof' ? 3 : parseInt(selectedDuration) || 3;
-                  const issues = schedule.slice(startIndex, startIndex + issueCount);
+                  const issues = schedule.slice(finalStartIndex, finalStartIndex + issueCount);
 
                   return (
                     <div key={area.id} className="space-y-2 pb-3">
@@ -266,10 +295,31 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                     {effectivePaidAreas.map((areaId) => {
                       const area = selectedAreaData.find(a => a.id === areaId);
                       if (!area) return null;
-
-                      const startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
+                      
+                      const areaIndex = selectedAreaData.findIndex(a => a.id === areaId);
                       const schedule = area.schedule || [];
-                      const startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                      
+                      // Determine the correct starting month for this area (same logic as above)
+                      let startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
+                      
+                      if (pricingModel === 'bogof' && startMonth) {
+                        const shouldUseNextMonth = areaIndex % 2 !== 0;
+                        if (shouldUseNextMonth) {
+                          const baseStartIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                          if (baseStartIndex >= 0 && baseStartIndex + 1 < schedule.length) {
+                            startMonth = schedule[baseStartIndex + 1].month;
+                          }
+                        }
+                      }
+                      
+                      let startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                      if (startIndex === -1) {
+                        const today = new Date();
+                        const futureSchedules = schedule.filter((s: any) => new Date(s.month + '-01') >= today);
+                        if (futureSchedules.length === 0) return null;
+                        startMonth = futureSchedules[0].month;
+                        startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                      }
                       
                       // Get the 4th issue (index 3) which is month 7
                       const month7Issue = schedule[startIndex + 3];
