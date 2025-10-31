@@ -141,24 +141,41 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
             <CardHeader>
               <CardTitle className="text-xl">Booking Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Advert Size</Label>
-                  <p className="font-medium">{getAdSizeName()}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">
-                    {pricingModel === 'bogof' ? 'Minimum Duration: 3 issues per area = 6 months' : 'Duration'}
-                  </Label>
-                  <p className="font-medium">{pricingModel === 'bogof' ? '' : getDurationName()}</p>
-                </div>
+            <CardContent className="space-y-6">
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">Advert Size</Label>
+                <p className="font-medium">{getAdSizeName()}</p>
+                {(() => {
+                  if (pricingModel === 'leafleting') {
+                    return null; // Leaflet sizes don't have dimensions
+                  }
+                  const adSize = adSizes?.find(size => size.id === selectedAdSize);
+                  return adSize?.dimensions ? (
+                    <div className="mt-1">
+                      <Label className="text-sm font-medium text-muted-foreground">Dimensions</Label>
+                      <p className="text-sm">{adSize.dimensions}</p>
+                    </div>
+                  ) : null;
+                })()}
               </div>
               
               {pricingModel === 'bogof' && (
+                <>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
+                    <p className="font-medium">3+ Repeat Package for New Advertisers including Buy One Area Get One Area Free</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Minimum Duration</Label>
+                    <p className="font-medium">3 issues per area = 6 months</p>
+                  </div>
+                </>
+              )}
+              
+              {!pricingModel && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
-                  <p className="font-medium">3+ Repeat Package including Buy One Get One Free</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
+                  <p className="font-medium">{getDurationName()}</p>
                 </div>
               )}
               
@@ -184,6 +201,91 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   </div>
                 ) : (
                   <p className="font-medium">Next available issue</p>
+                )}
+              </div>
+
+              {/* Campaign Schedule Section */}
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">
+                    {pricingModel === 'bogof' ? 'Campaign Schedule—Months 1-6' : 'Campaign Schedule'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    A full schedule with copy deadlines, print and delivery dates will be available to download in your account
+                  </p>
+                </div>
+
+                {selectedAreaData.map((area) => {
+                  const startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
+                  const schedule = area.schedule || [];
+                  
+                  // Get the starting index in the schedule
+                  const startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                  if (startIndex === -1) return null;
+
+                  // Get the next 3 issues for this area (for BOGOF or first period)
+                  const issueCount = pricingModel === 'bogof' ? 3 : parseInt(selectedDuration) || 3;
+                  const issues = schedule.slice(startIndex, startIndex + issueCount);
+
+                  return (
+                    <div key={area.id} className="space-y-2 pb-3">
+                      <p className="font-medium">
+                        {pricingModel === 'leafleting' && 'area_number' in area ? `Area ${area.area_number}—` : ''}{area.name}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Issues: </span>
+                        {issues.map((issue: any, idx: number) => {
+                          const date = new Date(issue.month + '-01');
+                          const monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                          return idx === issues.length - 1 ? monthYear : `${monthYear}, `;
+                        })}
+                      </p>
+                      {issues.length > 0 && issues[0].copy_deadline && (
+                        <p className="text-sm">
+                          <span className="font-medium">Copy deadlines: </span>
+                          {issues.map((issue: any, idx: number) => {
+                            if (!issue.copy_deadline) return '';
+                            const date = new Date(issue.copy_deadline);
+                            const formatted = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                            return idx === issues.length - 1 ? formatted : `${formatted}, `;
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Months 7+ Section for BOGOF */}
+                {pricingModel === 'bogof' && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Campaign Schedule—Months 7 onwards until cancellation</h3>
+                      <p className="text-sm text-muted-foreground mb-4">You are free to opt out after Months 1-6</p>
+                    </div>
+
+                    {effectivePaidAreas.map((areaId) => {
+                      const area = selectedAreaData.find(a => a.id === areaId);
+                      if (!area) return null;
+
+                      const startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
+                      const schedule = area.schedule || [];
+                      const startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                      
+                      // Get the 4th issue (index 3) which is month 7
+                      const month7Issue = schedule[startIndex + 3];
+                      if (!month7Issue) return null;
+
+                      const date = new Date(month7Issue.month + '-01');
+                      const monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+                      return (
+                        <div key={areaId} className="space-y-1">
+                          <p className="font-medium">{area.name}</p>
+                          <p className="text-sm">{monthYear} and bi-monthly thereafter</p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </CardContent>
