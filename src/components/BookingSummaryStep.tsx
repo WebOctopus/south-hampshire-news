@@ -244,7 +244,25 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   if (startIndex === -1) {
                     // Fallback: use the first available month in the schedule that's not in the past
                     const today = new Date();
-                    const futureSchedules = schedule.filter((s: any) => new Date(s.month + '-01') >= today);
+                    const futureSchedules = schedule.filter((s: any) => {
+                      let dateStr: string;
+                      if (s.month && s.month.includes('-')) {
+                        dateStr = s.month + '-01';
+                      } else if (s.month && s.year) {
+                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                            'July', 'August', 'September', 'October', 'November', 'December'];
+                        const monthIndex = monthNames.indexOf(s.month);
+                        if (monthIndex !== -1) {
+                          const monthNum = String(monthIndex + 1).padStart(2, '0');
+                          dateStr = `${s.year}-${monthNum}-01`;
+                        } else {
+                          dateStr = s.month + '-01';
+                        }
+                      } else {
+                        dateStr = s.month + '-01';
+                      }
+                      return new Date(dateStr) >= today;
+                    });
                     if (futureSchedules.length === 0) return null;
                     startMonth = futureSchedules[0].month;
                   }
@@ -276,7 +294,27 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                       <p className="text-sm">
                         <span className="font-medium">Issues: </span>
                         {issues.map((issue: any, idx: number) => {
-                          const date = new Date(issue.month + '-01');
+                          // Handle both "YYYY-MM" format and month name format
+                          let dateStr: string;
+                          if (issue.month && issue.month.includes('-')) {
+                            // Already in YYYY-MM format
+                            dateStr = issue.month + '-01';
+                          } else if (issue.month && issue.year) {
+                            // Convert month name to YYYY-MM format
+                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                                'July', 'August', 'September', 'October', 'November', 'December'];
+                            const monthIndex = monthNames.indexOf(issue.month);
+                            if (monthIndex !== -1) {
+                              const monthNum = String(monthIndex + 1).padStart(2, '0');
+                              dateStr = `${issue.year}-${monthNum}-01`;
+                            } else {
+                              dateStr = issue.month + '-01';
+                            }
+                          } else {
+                            dateStr = issue.month + '-01';
+                          }
+                          
+                          const date = new Date(dateStr);
                           const monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
                           return idx === issues.length - 1 ? monthYear : `${monthYear}, `;
                         })}
@@ -286,8 +324,14 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                           <span className="font-medium">Copy deadlines: </span>
                           {issues.map((issue: any, idx: number) => {
                             if (!issue.copy_deadline) return '';
-                            const date = new Date(issue.copy_deadline);
-                            const formatted = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                            // Handle ISO date format or fallback to copyDeadline field
+                            let formatted: string;
+                            if (issue.copy_deadline.includes('-')) {
+                              const date = new Date(issue.copy_deadline);
+                              formatted = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                            } else {
+                              formatted = issue.copyDeadline || issue.copy_deadline;
+                            }
                             return idx === issues.length - 1 ? formatted : `${formatted}, `;
                           })}
                         </p>
@@ -327,7 +371,25 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                       let startIndex = schedule.findIndex((s: any) => s.month === startMonth);
                       if (startIndex === -1) {
                         const today = new Date();
-                        const futureSchedules = schedule.filter((s: any) => new Date(s.month + '-01') >= today);
+                        const futureSchedules = schedule.filter((s: any) => {
+                          let dateStr: string;
+                          if (s.month && s.month.includes('-')) {
+                            dateStr = s.month + '-01';
+                          } else if (s.month && s.year) {
+                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                                'July', 'August', 'September', 'October', 'November', 'December'];
+                            const monthIndex = monthNames.indexOf(s.month);
+                            if (monthIndex !== -1) {
+                              const monthNum = String(monthIndex + 1).padStart(2, '0');
+                              dateStr = `${s.year}-${monthNum}-01`;
+                            } else {
+                              dateStr = s.month + '-01';
+                            }
+                          } else {
+                            dateStr = s.month + '-01';
+                          }
+                          return new Date(dateStr) >= today;
+                        });
                         if (futureSchedules.length === 0) return null;
                         startMonth = futureSchedules[0].month;
                         startIndex = schedule.findIndex((s: any) => s.month === startMonth);
@@ -340,11 +402,49 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                       let monthYear: string;
                       
                       if (month7Issue) {
-                        const date = new Date(month7Issue.month + '-01');
+                        // Handle both "YYYY-MM" format and month name format
+                        let dateStr: string;
+                        if (month7Issue.month && month7Issue.month.includes('-')) {
+                          dateStr = month7Issue.month + '-01';
+                        } else if (month7Issue.month && month7Issue.year) {
+                          const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                              'July', 'August', 'September', 'October', 'November', 'December'];
+                          const monthIndex = monthNames.indexOf(month7Issue.month);
+                          if (monthIndex !== -1) {
+                            const monthNum = String(monthIndex + 1).padStart(2, '0');
+                            dateStr = `${month7Issue.year}-${monthNum}-01`;
+                          } else {
+                            dateStr = month7Issue.month + '-01';
+                          }
+                        } else {
+                          dateStr = month7Issue.month + '-01';
+                        }
+                        const date = new Date(dateStr);
                         monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
                       } else {
                         // Calculate month 7 manually (6 months after start, since bi-monthly = 3 issues * 2 months)
-                        const startDate = new Date(startMonth + '-01');
+                        // Handle both date formats for startMonth
+                        let startDateStr: string;
+                        if (startMonth.includes('-')) {
+                          startDateStr = startMonth + '-01';
+                        } else {
+                          // Try to find the schedule item to get the year
+                          const scheduleItem = schedule.find((s: any) => s.month === startMonth);
+                          if (scheduleItem && scheduleItem.year) {
+                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                                'July', 'August', 'September', 'October', 'November', 'December'];
+                            const monthIndex = monthNames.indexOf(startMonth);
+                            if (monthIndex !== -1) {
+                              const monthNum = String(monthIndex + 1).padStart(2, '0');
+                              startDateStr = `${scheduleItem.year}-${monthNum}-01`;
+                            } else {
+                              startDateStr = startMonth + '-01';
+                            }
+                          } else {
+                            startDateStr = startMonth + '-01';
+                          }
+                        }
+                        const startDate = new Date(startDateStr);
                         const month7Date = new Date(startDate);
                         month7Date.setMonth(startDate.getMonth() + 6);
                         monthYear = month7Date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
