@@ -285,14 +285,14 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                 })}
 
                 {/* Months 7+ Section for BOGOF */}
-                {pricingModel === 'bogof' && (
+                {pricingModel === 'bogof' && bogofPaidAreas.length > 0 && (
                   <div className="space-y-4 pt-4 border-t">
                     <div>
                       <h3 className="font-semibold text-lg mb-2">Campaign Schedule—Months 7 onwards until cancellation</h3>
                       <p className="text-sm text-muted-foreground mb-4">You are free to opt out after Months 1-6</p>
                     </div>
 
-                    {effectivePaidAreas.map((areaId) => {
+                    {bogofPaidAreas.map((areaId) => {
                       const area = selectedAreaData.find(a => a.id === areaId);
                       if (!area) return null;
                       
