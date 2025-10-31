@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.10';
-import { jsPDF } from 'https://cdn.skypack.dev/jspdf@2.5.2';
+import { jsPDF } from 'https://esm.sh/jspdf@2.5.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
