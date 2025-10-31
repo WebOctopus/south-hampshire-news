@@ -292,7 +292,7 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                       <p className="text-sm text-muted-foreground mb-4">You are free to opt out after Months 1-6</p>
                     </div>
 
-                    {bogofPaidAreas.map((areaId) => {
+                    {bogofPaidAreas.map((areaId, paidAreaIndex) => {
                       const area = selectedAreaData.find(a => a.id === areaId);
                       if (!area) return null;
                       
@@ -319,14 +319,24 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                         if (futureSchedules.length === 0) return null;
                         startMonth = futureSchedules[0].month;
                         startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                        if (startIndex === -1) return null;
                       }
                       
                       // Get the 4th issue (index 3) which is month 7
-                      const month7Issue = schedule[startIndex + 3];
-                      if (!month7Issue) return null;
-
-                      const date = new Date(month7Issue.month + '-01');
-                      const monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                      // If not available in schedule, calculate it
+                      let month7Issue = schedule[startIndex + 3];
+                      let monthYear: string;
+                      
+                      if (month7Issue) {
+                        const date = new Date(month7Issue.month + '-01');
+                        monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                      } else {
+                        // Calculate month 7 manually (6 months after start, since bi-monthly = 3 issues * 2 months)
+                        const startDate = new Date(startMonth + '-01');
+                        const month7Date = new Date(startDate);
+                        month7Date.setMonth(startDate.getMonth() + 6);
+                        monthYear = month7Date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                      }
 
                       return (
                         <div key={areaId} className="space-y-1">
