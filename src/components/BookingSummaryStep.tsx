@@ -215,7 +215,19 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   </p>
                 </div>
 
-                {selectedAreaData.map((area, areaIndex) => {
+                {/* Sort areas: paid first, then free for BOGOF */}
+                {(pricingModel === 'bogof' 
+                  ? [...selectedAreaData].sort((a, b) => {
+                      const aIsPaid = bogofPaidAreas.includes(a.id);
+                      const bIsPaid = bogofPaidAreas.includes(b.id);
+                      if (aIsPaid && !bIsPaid) return -1;
+                      if (!aIsPaid && bIsPaid) return 1;
+                      return 0;
+                    })
+                  : selectedAreaData
+                ).map((area, displayIndex) => {
+                  // Get the original index for alternating logic
+                  const areaIndex = selectedAreaData.findIndex(a => a.id === area.id);
                   const schedule = area.schedule || [];
                   
                   // For BOGOF packages, determine the correct starting month for this area
