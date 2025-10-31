@@ -256,11 +256,23 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   const issueCount = pricingModel === 'bogof' ? 3 : parseInt(selectedDuration) || 3;
                   const issues = schedule.slice(finalStartIndex, finalStartIndex + issueCount);
 
+                  // Determine if this area is paid or free
+                  const isPaidArea = pricingModel === 'bogof' ? bogofPaidAreas.includes(area.id) : true;
+                  const isFreeArea = pricingModel === 'bogof' ? bogofFreeAreas.includes(area.id) : false;
+
                   return (
                     <div key={area.id} className="space-y-2 pb-3">
-                      <p className="font-medium">
-                        {pricingModel === 'leafleting' && 'area_number' in area ? `Area ${area.area_number}—` : ''}{area.name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        {pricingModel === 'bogof' && isPaidArea && (
+                          <Badge variant="default" className="bg-primary">Paid</Badge>
+                        )}
+                        {pricingModel === 'bogof' && isFreeArea && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">Free</Badge>
+                        )}
+                        <p className="font-medium">
+                          {pricingModel === 'leafleting' && 'area_number' in area ? `Area ${area.area_number}—` : ''}{area.name}
+                        </p>
+                      </div>
                       <p className="text-sm">
                         <span className="font-medium">Issues: </span>
                         {issues.map((issue: any, idx: number) => {
@@ -340,7 +352,10 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
 
                       return (
                         <div key={areaId} className="space-y-1">
-                          <p className="font-medium">{area.name}</p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="default" className="bg-primary">Paid</Badge>
+                            <p className="font-medium">{area.name}</p>
+                          </div>
                           <p className="text-sm">{monthYear} and bi-monthly thereafter</p>
                         </div>
                       );
@@ -350,42 +365,6 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
               </div>
             </CardContent>
           </Card>
-
-          {/* Selected Paid Areas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Selected "Paid For" Areas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                 {effectivePaidAreas.map((areaId) => (
-                   <div key={areaId} className="flex items-center gap-2">
-                     <Badge variant="default" className="bg-primary">Paid</Badge>
-                     <span className="text-sm">{getAreaName(areaId)}</span>
-                   </div>
-                 ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Free Areas (BOGOF only) */}
-          {pricingModel === 'bogof' && effectiveFreeAreas.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Your Selected FREE Areas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                   {effectiveFreeAreas.map((areaId) => (
-                     <div key={areaId} className="flex items-center gap-2">
-                       <Badge variant="secondary" className="bg-green-100 text-green-800">Free</Badge>
-                       <span className="text-sm">{getAreaName(areaId)}</span>
-                     </div>
-                   ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Circulation Total */}
           <Card>
