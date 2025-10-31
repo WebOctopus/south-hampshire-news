@@ -163,8 +163,8 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
               )}
               
               <div className="space-y-4">
-                <Label className="text-sm font-medium text-muted-foreground">Campaign Starting Issue</Label>
-                <p className="text-xs text-muted-foreground">Select when you want your campaign to start (applies to all selected areas)</p>
+                <Label className="text-sm font-medium text-muted-foreground">When Would You like Your Advertising to Start?</Label>
+                <p className="text-xs text-muted-foreground">Choose one:</p>
                 {availableStartingIssues.length > 0 ? (
                   <div className="border rounded-lg p-4">
                     <RadioGroup 

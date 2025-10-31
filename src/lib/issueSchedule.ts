@@ -176,7 +176,7 @@ export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
 
 /**
  * Group areas by their schedules and return available starting months for each group
- * Areas with identical schedules are grouped together
+ * Returns fixed options: Next Available Issues, January 2026, February 2026, March 2026, and Later option
  */
 export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule[] {
   if (!areaSchedules || areaSchedules.length === 0) {
@@ -199,7 +199,7 @@ export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule
     }
   });
 
-  // Build the result with available months for each group
+  // Build the result with fixed starting options
   const result: AreaGroupSchedule[] = [];
 
   scheduleGroups.forEach((areas) => {
@@ -213,40 +213,57 @@ export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule
       }
     });
 
-    // Sort months and get future ones (up to 6)
+    // Sort months and find the next available one
     const sortedMonths = Array.from(monthsSet).sort();
-    const scheduleOptions: IssueOption[] = [];
-    let addedCount = 0;
-    const maxOptions = 6;
-
+    let nextAvailableMonth = '';
+    
     for (const monthStr of sortedMonths) {
-      if (addedCount >= maxOptions) break;
-
       try {
         const monthDate = parse(monthStr, 'yyyy-MM', new Date());
-        
         if (!isBefore(monthDate, currentMonth)) {
-          const displayMonth = formatMonthForDisplay(monthStr);
-          scheduleOptions.push({
-            value: monthStr,
-            label: displayMonth,
-            month: monthStr
-          });
-          addedCount++;
+          nextAvailableMonth = monthStr;
+          break;
         }
       } catch (error) {
         console.error('Error parsing month:', monthStr, error);
       }
     }
 
-    if (scheduleOptions.length > 0) {
-      const areaNames = areas.map(area => area.name).join(', ');
-      result.push({
-        areas,
-        areaNames,
-        scheduleOptions
-      });
-    }
+    // Build fixed options
+    const scheduleOptions: IssueOption[] = [
+      {
+        value: nextAvailableMonth || sortedMonths[0],
+        label: 'Next Available Issues',
+        month: nextAvailableMonth || sortedMonths[0]
+      },
+      {
+        value: '2026-01',
+        label: 'January 2026',
+        month: '2026-01'
+      },
+      {
+        value: '2026-02',
+        label: 'February 2026',
+        month: '2026-02'
+      },
+      {
+        value: '2026-03',
+        label: 'March 2026',
+        month: '2026-03'
+      },
+      {
+        value: 'later',
+        label: 'Later—please call 023 8026 6388',
+        month: 'later'
+      }
+    ];
+
+    const areaNames = areas.map(area => area.name).join(', ');
+    result.push({
+      areas,
+      areaNames,
+      scheduleOptions
+    });
   });
 
   return result;
