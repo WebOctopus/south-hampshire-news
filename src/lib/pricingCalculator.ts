@@ -101,11 +101,25 @@ export function calculateAdvertisingPrice(
     let basePrice = selectedAdSize.base_price_per_month;
     
     // Check if we have area-count specific pricing configured
-    if (subscriptionPricing && typeof subscriptionPricing === 'object') {
+    if (subscriptionPricing && typeof subscriptionPricing === 'object' && Object.keys(subscriptionPricing).length > 0) {
       const areasKey = areasCount.toString();
       if (subscriptionPricing[areasKey]) {
         basePrice = subscriptionPricing[areasKey];
+      } else {
+        // Log warning when area-count specific pricing is missing
+        console.warn(
+          `Missing subscription pricing for ${selectedAdSize.name} with ${areasCount} areas. ` +
+          `Falling back to base_price_per_month: £${basePrice}. ` +
+          `Please configure pricing in Admin > Issue-Based Pricing.`
+        );
       }
+    } else {
+      // Log warning when no issue-based pricing exists at all
+      console.warn(
+        `No subscription issue-based pricing configured for ${selectedAdSize.name}. ` +
+        `Using fallback base_price_per_month: £${basePrice}. ` +
+        `Please configure pricing in Admin > Issue-Based Pricing.`
+      );
     }
     
     // Use the base price directly without area multipliers
@@ -127,11 +141,25 @@ export function calculateAdvertisingPrice(
     let basePrice = selectedAdSize.base_price_per_month;
     
     // Check if we have area-count specific pricing configured
-    if (fixedPricing && typeof fixedPricing === 'object') {
+    if (fixedPricing && typeof fixedPricing === 'object' && Object.keys(fixedPricing).length > 0) {
       const areasKey = areasCount.toString();
       if (fixedPricing[areasKey]) {
         basePrice = fixedPricing[areasKey];
+      } else {
+        // Log warning when area-count specific pricing is missing
+        console.warn(
+          `Missing fixed pricing for ${selectedAdSize.name} with ${areasCount} areas. ` +
+          `Falling back to base_price_per_month: £${basePrice}. ` +
+          `Please configure pricing in Admin > Issue-Based Pricing.`
+        );
       }
+    } else {
+      // Log warning when no issue-based pricing exists at all
+      console.warn(
+        `No fixed issue-based pricing configured for ${selectedAdSize.name}. ` +
+        `Using fallback base_price_per_month: £${basePrice}. ` +
+        `Please configure pricing in Admin > Issue-Based Pricing.`
+      );
     }
     
     // Use the base price directly without area multipliers

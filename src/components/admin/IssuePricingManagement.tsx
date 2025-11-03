@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { DollarSign, Receipt } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { DollarSign, Receipt, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useUpdateAdSizePricing, usePricingInvalidation } from '@/hooks/usePricingMutations';
@@ -107,9 +108,52 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
     }));
   };
 
+  // Check if pricing data is incomplete
+  const isPricingIncomplete = (adSize: AdSize): { incomplete: boolean; missing: string[] } => {
+    const missing: string[] = [];
+    const fixedPricing = adSize.fixed_pricing_per_issue || {};
+    const subscriptionPricing = adSize.subscription_pricing_per_issue || {};
+    
+    // Check for critical area counts (1-14)
+    const criticalAreaCounts = Array.from({ length: 14 }, (_, i) => (i + 1).toString());
+    
+    const hasFixedPricing = adSize.available_for?.includes('fixed');
+    const hasSubscriptionPricing = adSize.available_for?.includes('subscription');
+    
+    if (hasFixedPricing && Object.keys(fixedPricing).length === 0) {
+      missing.push('Fixed Rates');
+    } else if (hasFixedPricing) {
+      const missingFixed = criticalAreaCounts.filter(count => !fixedPricing[count] || fixedPricing[count] === 0);
+      if (missingFixed.length > 0) {
+        missing.push(`Fixed Rates (${missingFixed.length} missing)`);
+      }
+    }
+    
+    if (hasSubscriptionPricing && Object.keys(subscriptionPricing).length === 0) {
+      missing.push('Subscription Rates');
+    } else if (hasSubscriptionPricing) {
+      const missingSubscription = criticalAreaCounts.filter(count => !subscriptionPricing[count] || subscriptionPricing[count] === 0);
+      if (missingSubscription.length > 0) {
+        missing.push(`Subscription Rates (${missingSubscription.length} missing)`);
+      }
+    }
+    
+    return { incomplete: missing.length > 0, missing };
+  };
+
   const saveIssuePricing = async (adSizeId: string) => {
     const updatedAdSize = tempPricingUpdates[adSizeId];
     if (!updatedAdSize) return;
+
+    // Check if pricing is still incomplete after updates
+    const { incomplete, missing } = isPricingIncomplete(updatedAdSize);
+    if (incomplete) {
+      toast({
+        title: "Warning: Incomplete Pricing",
+        description: `Missing pricing for: ${missing.join(', ')}. This may cause pricing calculator to use fallback values.`,
+        variant: "default"
+      });
+    }
 
     try {
       await updateAdSizePricingMutation.mutateAsync({
@@ -174,28 +218,44 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
             </div>
           ) : (
             <Accordion type="single" collapsible className="w-full">
-              {adSizes.map((adSize) => (
-                <AccordionItem key={adSize.id} value={adSize.id} className="border rounded-lg mb-4 last:mb-0">
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline bg-muted/50 rounded-t-lg data-[state=open]:rounded-b-none">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-lg">{adSize.name}</span>
-                        <Badge variant="outline" className="bg-background">
-                          {adSize.dimensions}
-                        </Badge>
+              {adSizes.map((adSize) => {
+                const { incomplete, missing } = isPricingIncomplete(adSize);
+                return (
+                  <AccordionItem key={adSize.id} value={adSize.id} className="border rounded-lg mb-4 last:mb-0">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline bg-muted/50 rounded-t-lg data-[state=open]:rounded-b-none">
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                          <span className="font-semibold text-lg">{adSize.name}</span>
+                          <Badge variant="outline" className="bg-background">
+                            {adSize.dimensions}
+                          </Badge>
+                          {incomplete && (
+                            <Badge variant="destructive" className="gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              Incomplete
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>
+                            Base Fixed: £{adSize.base_price_per_area.toFixed(2)}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            Base Subscription: £{adSize.base_price_per_month.toFixed(2)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>
-                          Base Fixed: £{adSize.base_price_per_area.toFixed(2)}
-                        </span>
-                        <span>•</span>
-                        <span>
-                          Base Subscription: £{adSize.base_price_per_month.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6 pt-2 bg-background rounded-b-lg">
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6 pt-2 bg-background rounded-b-lg">
+                      {incomplete && (
+                        <Alert variant="destructive" className="mb-4">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertDescription>
+                            Missing pricing data: {missing.join(', ')}. The calculator will use fallback base prices until configured.
+                          </AlertDescription>
+                        </Alert>
+                      )}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       {/* Fixed Rates Table */}
                       <div className="space-y-4">
@@ -300,9 +360,10 @@ const IssuePricingManagement = ({ onStatsUpdate }: IssuePricingManagementProps) 
                         {tempPricingUpdates[adSize.id] ? "Save Changes" : "No Changes"} - {adSize.name} Pricing
                       </Button>
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
             </Accordion>
           )}
         </CardContent>

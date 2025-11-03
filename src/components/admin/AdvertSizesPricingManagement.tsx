@@ -188,6 +188,25 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
 
   const handleSave = async () => {
     try {
+      // Validation
+      if (!formData.name || !formData.dimensions) {
+        toast({
+          title: "Validation Error",
+          description: "Name and dimensions are required.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (formData.base_price_per_area <= 0 && formData.base_price_per_month <= 0) {
+        toast({
+          title: "Validation Error",
+          description: "At least one base price (fixed or subscription) must be greater than 0.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const adSizeData = {
         ...formData,
         base_price_per_area: Number(formData.base_price_per_area),
@@ -216,7 +235,7 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
 
       toast({
         title: "Success",
-        description: `Ad size ${editingAdSize ? 'updated' : 'created'} successfully.`
+        description: `Ad size ${editingAdSize ? 'updated' : 'created'} successfully. ${!editingAdSize ? 'Configure area-count pricing in Issue-Based Pricing section.' : ''}`
       });
 
       setIsDialogOpen(false);
