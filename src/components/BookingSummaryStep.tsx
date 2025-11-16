@@ -10,6 +10,7 @@ import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useStepForm } from '@/components/StepForm';
 import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
 import { calculatePaymentAmount as calcPaymentAmount } from '@/lib/paymentCalculations';
+import { parse } from 'date-fns';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -49,6 +50,31 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   const { leafletAreas, leafletSizes } = useLeafletData();
   const { data: paymentOptions = [] } = usePaymentOptions();
   const { nextStep } = useStepForm();
+
+  // Helper function to parse and format dates from the schedule
+  const parseScheduleDate = (dateStr: string): string => {
+    if (!dateStr) return '';
+    try {
+      // Try parsing DD.MM.YYYY format first
+      if (dateStr.includes('.')) {
+        const parsed = parse(dateStr, 'dd.MM.yyyy', new Date());
+        if (!isNaN(parsed.getTime())) {
+          return parsed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        }
+      }
+      // Try ISO date format (YYYY-MM-DD)
+      if (dateStr.includes('-') && dateStr.length > 7) {
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        }
+      }
+      // Fallback to returning the original string (for old formats like "15th")
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
+  };
 
   // Get available starting issue options from the first selected area
   const effectiveAreas = pricingModel === 'leafleting' ? leafletAreas : areas;
@@ -331,19 +357,35 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                           return idx === issues.length - 1 ? monthYear : `${monthYear}, `;
                         })}
                       </p>
-                      {issues.length > 0 && issues[0].copy_deadline && (
+                      {issues.length > 0 && issues[0].copyDeadline && (
                         <p className="text-sm">
                           <span className="font-medium">Copy deadlines: </span>
                           {issues.map((issue: any, idx: number) => {
-                            if (!issue.copy_deadline) return '';
-                            // Handle ISO date format or fallback to copyDeadline field
-                            let formatted: string;
-                            if (issue.copy_deadline.includes('-')) {
-                              const date = new Date(issue.copy_deadline);
-                              formatted = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-                            } else {
-                              formatted = issue.copyDeadline || issue.copy_deadline;
-                            }
+                            const deadline = issue.copyDeadline || issue.copy_deadline;
+                            if (!deadline) return '';
+                            const formatted = parseScheduleDate(deadline);
+                            return idx === issues.length - 1 ? formatted : `${formatted}, `;
+                          })}
+                        </p>
+                      )}
+                      {issues.length > 0 && issues[0].printDeadline && (
+                        <p className="text-sm">
+                          <span className="font-medium">Print deadlines: </span>
+                          {issues.map((issue: any, idx: number) => {
+                            const deadline = issue.printDeadline || issue.print_deadline;
+                            if (!deadline) return '';
+                            const formatted = parseScheduleDate(deadline);
+                            return idx === issues.length - 1 ? formatted : `${formatted}, `;
+                          })}
+                        </p>
+                      )}
+                      {issues.length > 0 && issues[0].deliveryDate && (
+                        <p className="text-sm">
+                          <span className="font-medium">Week Commencing: </span>
+                          {issues.map((issue: any, idx: number) => {
+                            const deadline = issue.deliveryDate || issue.delivery_date;
+                            if (!deadline) return '';
+                            const formatted = parseScheduleDate(deadline);
                             return idx === issues.length - 1 ? formatted : `${formatted}, `;
                           })}
                         </p>
