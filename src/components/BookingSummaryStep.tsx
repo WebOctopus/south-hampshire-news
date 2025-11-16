@@ -486,10 +486,10 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                 <p className="text-2xl font-bold text-primary">
                   {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
                 </p>
-                {(() => {
+                {pricingModel === 'bogof' && (() => {
                   const duration = durations?.find(d => d.id === selectedDuration);
                   const durationMonths = duration?.duration_value || 0;
-                  const issues = pricingModel === 'leafleting' ? (duration as any)?.issues || 1 : durationMonths;
+                  const issues = durationMonths;
                   const totalImpressions = (pricingBreakdown?.totalCirculation || 0) * issues;
                   if (issues > 1) {
                     return (

@@ -188,24 +188,6 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                 <p className="text-2xl font-bold text-primary">
                   {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
                 </p>
-                {(() => {
-                  const totalMonthsSelected = Object.values(selectedMonths).reduce(
-                    (sum, months) => sum + (months?.length || 0), 
-                    0
-                  );
-                  const totalImpressions = (pricingBreakdown?.totalCirculation || 0) * totalMonthsSelected;
-                  if (totalMonthsSelected > 1) {
-                    return (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Published {totalMonthsSelected} {totalMonthsSelected === 1 ? 'time' : 'times'}
-                        <span className="block font-medium text-primary mt-1">
-                          ({totalImpressions.toLocaleString()} total impressions)
-                        </span>
-                      </p>
-                    );
-                  }
-                  return null;
-                })()}
               </div>
             </CardContent>
           </Card>
