@@ -577,25 +577,30 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                   
                   <div className="space-y-3 max-h-96 overflow-y-auto border rounded-md p-4 bg-muted/20">
                     {formData.schedule.map((scheduleItem, index) => {
-                      // Helper to parse dates
-                      const parseDate = (dateStr: string, year: number, month: string) => {
+                      // Helper to parse dates safely
+                      const parseDate = (dateStr: string, year: number, month: string): Date | undefined => {
                         if (!dateStr) return undefined;
                         try {
                           // Try parsing DD.MM.YYYY format first
                           if (dateStr.includes('.')) {
-                            return parse(dateStr, 'dd.MM.yyyy', new Date());
+                            const parsed = parse(dateStr, 'dd.MM.yyyy', new Date());
+                            // Check if date is valid
+                            return isNaN(parsed.getTime()) ? undefined : parsed;
                           }
-                          // Fallback to creating a date from the current month/year context
-                          const monthIndex = allMonths.indexOf(month);
-                          const day = parseInt(dateStr.replace(/\D/g, '')) || 1;
-                          return new Date(year, monthIndex, day);
+                          // Try to extract day number from formats like "15th", "20th", etc.
+                          const dayMatch = dateStr.match(/\d+/);
+                          if (dayMatch) {
+                            const monthIndex = allMonths.indexOf(month);
+                            if (monthIndex === -1) return undefined;
+                            const day = parseInt(dayMatch[0]);
+                            const date = new Date(year, monthIndex, day);
+                            // Validate the date
+                            return isNaN(date.getTime()) ? undefined : date;
+                          }
+                          return undefined;
                         } catch {
                           return undefined;
                         }
-                      };
-
-                      const formatDate = (date: Date | undefined) => {
-                        return date ? format(date, 'dd.MM.yyyy') : '';
                       };
 
                       const copyDate = parseDate(scheduleItem.copyDeadline, scheduleItem.year, scheduleItem.month);
