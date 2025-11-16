@@ -138,6 +138,12 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
   const validLeafletAreaIds = new Set((leafletAreas || []).map(a => a.id));
   const uniqueSelectedLeafletAreas = Array.from(new Set(selectedAreas)).filter(id => validLeafletAreaIds.has(id));
 
+  // Get total circulation based on uniquely selected leaflet areas
+  const totalCirculation = leafletAreas
+    ?.filter(area => uniqueSelectedLeafletAreas.includes(area.id))
+    .reduce((sum, area) => sum + (area.bimonthly_circulation || 0), 0) || 0;
+
+  const totalImpressions = totalCirculation * getDurationValue();
   const baseTotal = pricingBreakdown?.finalTotal || 0;
 
   const handleNext = () => {
@@ -192,10 +198,13 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {selectedAreas.map((areaId) => {
+                {uniqueSelectedLeafletAreas.map((areaId) => {
                   const areaNumber = getAreaNumber(areaId);
                   const areaName = getAreaName(areaId);
                   const formattedMonths = formatSelectedMonths(areaId);
+                  
+                  // Skip areas with no months selected
+                  if (!formattedMonths) return null;
                   
                   return (
                     <div key={areaId} className="space-y-1">
@@ -205,11 +214,9 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                           {areaNumber ? `Area ${areaNumber} - ` : ''}{areaName}
                         </span>
                       </div>
-                      {formattedMonths && (
-                        <div className="text-xs text-muted-foreground ml-16">
-                          Selected issues: {formattedMonths}
-                        </div>
-                      )}
+                      <div className="text-xs text-muted-foreground ml-16">
+                        Selected issues: {formattedMonths}
+                      </div>
                     </div>
                   );
                 })}
