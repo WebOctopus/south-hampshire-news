@@ -5,9 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { useStepForm } from '@/components/StepForm';
-import { AlertCircle } from 'lucide-react';
-import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
 
 interface LeafletBasketSummaryProps {
   selectedAreas: string[];
@@ -95,40 +93,33 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
 
   const getAreaName = (areaId: string) => {
     const area = leafletAreas?.find(area => area.id === areaId);
-    return `Area ${area?.area_number} - ${area?.name}` || 'Unknown Area';
+    return area?.name || 'Unknown Area';
   };
 
-  // Get the starting issues grouped by area
-  const getStartingIssues = () => {
-    if (!selectedMonths || Object.keys(selectedMonths).length === 0) {
-      return [];
+  const getAreaNumber = (areaId: string) => {
+    const area = leafletAreas?.find(area => area.id === areaId);
+    return area?.area_number || '';
+  };
+
+  const formatSelectedMonths = (areaId: string) => {
+    if (!selectedMonths || !selectedMonths[areaId]) {
+      return '';
     }
-    
-    // Get selected area data
-    const selectedAreaData = leafletAreas?.filter(area => 
-      selectedAreas.includes(area.id)
-    ) || [];
-    
-    // Group areas by schedule
-    const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
-    
-    // Build starting issues display
-    return areaGroupedSchedules.map(group => {
-      const firstAreaId = group.areas[0]?.id;
-      const firstAreaMonths = selectedMonths[firstAreaId];
-      
-      if (!firstAreaMonths || firstAreaMonths.length === 0) {
-        return null;
-      }
-      
-      return {
-        areaNames: group.areaNames,
-        startingMonth: formatMonthDisplay(firstAreaMonths[0])
-      };
-    }).filter(Boolean);
+    const months = selectedMonths[areaId] || [];
+    return months.map(month => {
+      // Convert "2025-12" to "Dec '25"
+      const [year, monthNum] = month.split('-');
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthName = monthNames[parseInt(monthNum) - 1];
+      const shortYear = year.slice(2);
+      return `${monthName} '${shortYear}`;
+    }).join(', ');
   };
 
-  const startingIssues = getStartingIssues();
+  const getDurationValue = () => {
+    const duration = leafletDurations?.find(d => d.id === selectedDuration);
+    return duration?.issues || 0;
+  };
 
   const baseTotal = pricingBreakdown?.finalTotal || 0;
 
@@ -164,49 +155,15 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
               </div>
               
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Starting Issue Per Area</Label>
-                <div className="space-y-3 mt-2">
-                  {(() => {
-                    const selectedAreaData = leafletAreas?.filter(a => selectedAreas.includes(a.id)) || [];
-                    const groups = getAreaGroupedSchedules(selectedAreaData);
-                    if (!groups.length) return (
-                      <p className="text-sm text-muted-foreground">Not selected</p>
-                    );
-                    return groups.map((group, idx) => {
-                      const firstAreaId = group.areas[0]?.id;
-                      const value = selectedMonths[firstAreaId]?.[0] || '';
-                      return (
-                        <div key={idx} className="border rounded-lg p-4">
-                          <p className="font-medium mb-2">{group.areaNames}</p>
-                          <RadioGroup
-                            value={value}
-                            onValueChange={(month) => {
-                              if (!month) return;
-                              const next = { ...selectedMonths } as Record<string, string[]>;
-                              group.areas.forEach((area: any) => {
-                                next[area.id] = [month];
-                              });
-                              // If parent provided a handler, update upstream
-                              // Otherwise this is just visual
-                              if (typeof onNext === 'function' && !onMonthsChange) {
-                                // no-op, keep compatibility
-                              }
-                              onMonthsChange?.(next);
-                            }}
-                            className="space-y-2"
-                          >
-                            {group.scheduleOptions.map((opt, i) => (
-                              <div key={i} className="flex items-center space-x-2">
-                                <RadioGroupItem id={`lb-${idx}-${i}`} value={opt.month} />
-                                <Label htmlFor={`lb-${idx}-${i}`} className="cursor-pointer">{opt.label}</Label>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
+                <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
+                <p className="font-medium">Leaflet Distribution</p>
+              </div>
+
+              <Separator />
+
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">Number of Issues</Label>
+                <p className="font-medium">{getDurationValue()}</p>
               </div>
             </CardContent>
           </Card>
@@ -217,13 +174,28 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
               <CardTitle className="text-lg">Selected Distribution Areas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {selectedAreas.map((areaId) => (
-                  <div key={areaId} className="flex items-center gap-2">
-                    <Badge variant="default" className="bg-primary">Paid</Badge>
-                    <span className="text-sm">{getAreaName(areaId)}</span>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                {selectedAreas.map((areaId) => {
+                  const areaNumber = getAreaNumber(areaId);
+                  const areaName = getAreaName(areaId);
+                  const formattedMonths = formatSelectedMonths(areaId);
+                  
+                  return (
+                    <div key={areaId} className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="default" className="bg-primary">Paid</Badge>
+                        <span className="text-sm font-medium">
+                          {areaNumber ? `Area ${areaNumber} - ` : ''}{areaName}
+                        </span>
+                      </div>
+                      {formattedMonths && (
+                        <div className="text-xs text-muted-foreground ml-16">
+                          Selected issues: {formattedMonths}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
