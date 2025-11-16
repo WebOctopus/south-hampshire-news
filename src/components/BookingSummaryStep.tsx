@@ -482,7 +482,9 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <Label className="text-sm font-medium text-muted-foreground">Total Number of Homes Reached</Label>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  Total Number of Homes Reached{pricingModel === 'bogof' && ' (Months 1-6)'}
+                </Label>
                 <p className="text-2xl font-bold text-primary">
                   {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
                 </p>
@@ -493,12 +495,14 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   const totalImpressions = (pricingBreakdown?.totalCirculation || 0) * issues;
                   if (issues > 1) {
                     return (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Published {issues} {issues === 1 ? 'time' : 'times'} over {durationMonths} {durationMonths === 1 ? 'month' : 'months'}
-                        <span className="block font-medium text-primary mt-1">
-                          ({totalImpressions.toLocaleString()} total impressions)
-                        </span>
-                      </p>
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-sm text-muted-foreground">
+                          Your advert will be published <span className="font-semibold text-foreground">{issues} times</span> over {durationMonths} months
+                        </p>
+                        <p className="text-lg font-semibold text-primary mt-2">
+                          {totalImpressions.toLocaleString()} total impressions
+                        </p>
+                      </div>
                     );
                   }
                   return null;
