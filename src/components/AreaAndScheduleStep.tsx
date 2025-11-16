@@ -365,60 +365,82 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
       );
     }
 
-    // For leafleting, group areas by schedule and show radio buttons for starting month
+    // For leafleting, show checkbox selection for each area's months (like fixed term)
     if (pricingModel === 'leafleting') {
-      const selectedAreaData = effectiveAreas?.filter(area => 
-        effectiveSelectedAreas.includes(area.id)
-      ) || [];
-      
-      const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
+      const maxSelectableMonths = (durationData as any)?.issues || (durationData as any)?.months || 1;
       
       return (
         <div className="space-y-6">
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
             <p className="text-sm font-medium text-primary">
-              📅 Select starting issue for each area group
+              📅 Select the months you want your leaflet campaign to run for each selected area
             </p>
           </div>
           
-          <h4 className="font-semibold text-lg">Starting Issue Per Area</h4>
-          
-          {areaGroupedSchedules.map((group, groupIndex) => {
-            const firstAreaId = group.areas[0]?.id;
-            const selectedStartingMonth = selectedMonths[firstAreaId]?.[0] || '';
-            
+          {effectiveSelectedAreas.map((areaId) => {
+            const area = effectiveAreas?.find(a => a.id === areaId);
+            if (!area) return null;
+
+            const availableMonths = area.schedule || [];
+            const areaSelectedMonths = selectedMonths[areaId] || [];
+
             return (
-              <Card key={groupIndex} className="border-2">
-                <CardContent className="p-6">
-                  <h5 className="font-medium text-base mb-2">
-                    {group.areaNames}
-                  </h5>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Select starting issue for this area
-                  </p>
-                  
-                  <RadioGroup
-                    value={selectedStartingMonth}
-                    onValueChange={(month) => {
-                      const newSelectedMonths = { ...selectedMonths };
-                      group.areas.forEach(area => {
-                        newSelectedMonths[area.id] = [month];
-                      });
-                      onMonthsChange(newSelectedMonths);
-                    }}
-                    className="space-y-3"
-                  >
-                    {group.scheduleOptions.map((option, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option.month} id={`${groupIndex}-option-${index}`} />
-                        <Label htmlFor={`${groupIndex}-option-${index}`} className="cursor-pointer">
-                          {option.label}
-                        </Label>
+              <div key={areaId} className="border rounded-lg p-6">
+                <h4 className="font-medium text-lg mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {area.name}
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {areaSelectedMonths.length}/{maxSelectableMonths} selected
+                  </Badge>
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {availableMonths.map((monthData: any, index: number) => {
+                    const isSelected = areaSelectedMonths.includes(monthData.month);
+                    const isDisabled = !isSelected && areaSelectedMonths.length >= maxSelectableMonths;
+                    
+                    return (
+                      <div key={index} className={`
+                        border rounded-lg p-4 cursor-pointer transition-all
+                        ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-muted hover:border-primary/50'}
+                        ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}>
+                        <div className="flex items-start space-x-3">
+                          <input
+                            type="checkbox"
+                            id={`leaflet-month-${areaId}-${index}`}
+                            checked={isSelected}
+                            disabled={isDisabled}
+                            onChange={(e) => {
+                              const newAreaMonths = e.target.checked
+                                ? [...areaSelectedMonths, monthData.month]
+                                : areaSelectedMonths.filter(m => m !== monthData.month);
+                              
+                              onMonthsChange({
+                                ...selectedMonths,
+                                [areaId]: newAreaMonths
+                              });
+                            }}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 space-y-2">
+                            <div className="font-medium text-sm">
+                              {formatMonthDisplay(monthData.month)}
+                            </div>
+                            {monthData.copy_deadline && (
+                              <div className="text-xs text-muted-foreground">
+                                Distribution: {formatDateUK(monthData.copy_deadline)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                  </RadioGroup>
-                </CardContent>
-              </Card>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
