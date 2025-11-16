@@ -106,13 +106,26 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
       return '';
     }
     const months = selectedMonths[areaId] || [];
-    return months.map(month => {
-      // Convert "2025-12" to "Dec '25"
-      const [year, monthNum] = month.split('-');
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const monthName = monthNames[parseInt(monthNum) - 1];
-      const shortYear = year.slice(2);
-      return `${monthName} '${shortYear}`;
+    return months.map((month) => {
+      // Normalize to "Month YYYY"
+      const display = formatMonthDisplay(month);
+      const parts = display.split(' ');
+      if (parts.length === 2) {
+        const [fullMonth, fullYear] = parts;
+        const monthAbbr = fullMonth.slice(0, 3);
+        const shortYear = fullYear.slice(-2);
+        return `${monthAbbr} '${shortYear}`;
+      }
+      // Fallback: try YYYY-MM pattern
+      if (month.includes('-')) {
+        const [year, monthNum] = month.split('-');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const idx = parseInt(monthNum, 10) - 1;
+        if (!isNaN(idx) && idx >= 0 && idx < 12) {
+          return `${monthNames[idx]} '${year.slice(2)}`;
+        }
+      }
+      return month; // as-is if unknown format
     }).join(', ');
   };
 
@@ -120,6 +133,10 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     const duration = leafletDurations?.find(d => d.id === selectedDuration);
     return duration?.issues || 0;
   };
+
+  // Sanitize selected areas to only include valid leaflet area IDs and remove duplicates
+  const validLeafletAreaIds = new Set((leafletAreas || []).map(a => a.id));
+  const uniqueSelectedLeafletAreas = Array.from(new Set(selectedAreas)).filter(id => validLeafletAreaIds.has(id));
 
   const baseTotal = pricingBreakdown?.finalTotal || 0;
 
