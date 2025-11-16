@@ -236,6 +236,19 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                 <p className="text-2xl font-bold text-primary">
                   {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
                 </p>
+                {(() => {
+                  const duration = leafletDurations?.find(d => d.id === selectedDuration);
+                  const issues = duration?.issues || 1;
+                  const totalImpressions = (pricingBreakdown?.totalCirculation || 0) * issues;
+                  return (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Delivered {issues} {issues === 1 ? 'time' : 'times'} over {duration?.months || 0} months
+                      <span className="block font-medium text-primary mt-1">
+                        ({totalImpressions.toLocaleString()} total impressions)
+                      </span>
+                    </p>
+                  );
+                })()}
               </div>
             </CardContent>
           </Card>

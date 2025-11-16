@@ -486,6 +486,23 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                 <p className="text-2xl font-bold text-primary">
                   {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
                 </p>
+                {(() => {
+                  const duration = durations?.find(d => d.id === selectedDuration);
+                  const durationMonths = duration?.duration_value || 0;
+                  const issues = pricingModel === 'leafleting' ? (duration as any)?.issues || 1 : durationMonths;
+                  const totalImpressions = (pricingBreakdown?.totalCirculation || 0) * issues;
+                  if (issues > 1) {
+                    return (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Published {issues} {issues === 1 ? 'time' : 'times'} over {durationMonths} {durationMonths === 1 ? 'month' : 'months'}
+                        <span className="block font-medium text-primary mt-1">
+                          ({totalImpressions.toLocaleString()} total impressions)
+                        </span>
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </CardContent>
           </Card>
