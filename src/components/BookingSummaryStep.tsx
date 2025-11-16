@@ -358,56 +358,38 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                         })}
                       </p>
                       {(() => {
-                        // Only show deadlines if at least one issue has them
-                        const copyDeadlines = issues
-                          .map((issue: any) => issue.copyDeadline || issue.copy_deadline)
-                          .filter(Boolean);
-                        
-                        if (copyDeadlines.length === 0) return null;
-                        
+                        // Show only the selected month's copy deadline (first issue)
+                        const firstIssue = issues[0];
+                        const copyDeadline = firstIssue?.copyDeadline || firstIssue?.copy_deadline;
+                        if (!copyDeadline) return null;
                         return (
                           <p className="text-sm">
-                            <span className="font-medium">Copy deadlines: </span>
-                            {copyDeadlines.map((deadline: string, idx: number) => {
-                              const formatted = parseScheduleDate(deadline);
-                              return idx === copyDeadlines.length - 1 ? formatted : `${formatted}, `;
-                            })}
+                            <span className="font-medium">Copy deadline: </span>
+                            {parseScheduleDate(copyDeadline)}
                           </p>
                         );
                       })()}
                       {(() => {
-                        // Only show print deadlines if at least one issue has them
-                        const printDeadlines = issues
-                          .map((issue: any) => issue.printDeadline || issue.print_deadline)
-                          .filter(Boolean);
-                        
-                        if (printDeadlines.length === 0) return null;
-                        
+                        // Show only the selected month's print deadline (first issue)
+                        const firstIssueForPrint = issues[0];
+                        const printDeadline = firstIssueForPrint?.printDeadline || firstIssueForPrint?.print_deadline;
+                        if (!printDeadline) return null;
                         return (
                           <p className="text-sm">
-                            <span className="font-medium">Print deadlines: </span>
-                            {printDeadlines.map((deadline: string, idx: number) => {
-                              const formatted = parseScheduleDate(deadline);
-                              return idx === printDeadlines.length - 1 ? formatted : `${formatted}, `;
-                            })}
+                            <span className="font-medium">Print deadline: </span>
+                            {parseScheduleDate(printDeadline)}
                           </p>
                         );
                       })()}
                       {(() => {
-                        // Only show delivery dates if at least one issue has them
-                        const deliveryDates = issues
-                          .map((issue: any) => issue.deliveryDate || issue.delivery_date)
-                          .filter(Boolean);
-                        
-                        if (deliveryDates.length === 0) return null;
-                        
+                        // Show only the selected month's delivery date (first issue)
+                        const firstIssueForDelivery = issues[0];
+                        const deliveryDate = firstIssueForDelivery?.deliveryDate || firstIssueForDelivery?.delivery_date;
+                        if (!deliveryDate) return null;
                         return (
                           <p className="text-sm">
                             <span className="font-medium">Week Commencing: </span>
-                            {deliveryDates.map((deadline: string, idx: number) => {
-                              const formatted = parseScheduleDate(deadline);
-                              return idx === deliveryDates.length - 1 ? formatted : `${formatted}, `;
-                            })}
+                            {parseScheduleDate(deliveryDate)}
                           </p>
                         );
                       })()}
