@@ -10,10 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Plus, Edit, Trash2, Search, Filter, ArrowUpDown, CheckCircle, XCircle, Users, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { MapPin, Plus, Edit, Trash2, Search, Filter, ArrowUpDown, CheckCircle, XCircle, Users, X, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { areas } from '@/data/advertisingPricing';
+import { format, parse } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 // Helper function to format month display
 const formatMonthDisplay = (month: string, year: number) => {
@@ -92,12 +96,18 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
   const availableYears = [2024, 2025, 2026];
 
   const addScheduleItem = (year: number, monthName: string) => {
+    const monthIndex = allMonths.indexOf(monthName);
+    // Set default dates: 15th for copy, 20th for print, 25th for delivery
+    const copyDate = new Date(year, monthIndex, 15);
+    const printDate = new Date(year, monthIndex, 20);
+    const deliveryDate = new Date(year, monthIndex, 25);
+    
     const newScheduleItem = {
       year,
       month: monthName,
-      copyDeadline: '15th',
-      printDeadline: '20th',
-      deliveryDate: '25th'
+      copyDeadline: format(copyDate, 'dd.MM.yyyy'),
+      printDeadline: format(printDate, 'dd.MM.yyyy'),
+      deliveryDate: format(deliveryDate, 'dd.MM.yyyy')
     };
     const newSchedule = [...formData.schedule, newScheduleItem].sort((a, b) => {
       if (a.year !== b.year) return a.year - b.year;
@@ -565,62 +575,159 @@ const LocationsManagement = ({ onStatsUpdate }: LocationsManagementProps) => {
                     </Badge>
                   </div>
                   
-                  <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
-                    {formData.schedule.map((scheduleItem, index) => (
-                       <div key={`${scheduleItem.year}-${scheduleItem.month}`} className="grid grid-cols-5 gap-2 items-center">
-                         <div className="text-sm font-medium">{formatMonthDisplay(scheduleItem.month, scheduleItem.year)}</div>
-                        <div>
-                          <Label className="text-xs">Copy Deadline</Label>
-                          <Input
-                            value={scheduleItem.copyDeadline}
-                            onChange={(e) => {
-                              const newSchedule = [...formData.schedule];
-                              newSchedule[index] = { ...scheduleItem, copyDeadline: e.target.value };
-                              setFormData(prev => ({ ...prev, schedule: newSchedule }));
-                            }}
-                            placeholder="15th"
-                            className="text-sm"
-                          />
+                  <div className="space-y-3 max-h-96 overflow-y-auto border rounded-md p-4 bg-muted/20">
+                    {formData.schedule.map((scheduleItem, index) => {
+                      // Helper to parse dates
+                      const parseDate = (dateStr: string, year: number, month: string) => {
+                        if (!dateStr) return undefined;
+                        try {
+                          // Try parsing DD.MM.YYYY format first
+                          if (dateStr.includes('.')) {
+                            return parse(dateStr, 'dd.MM.yyyy', new Date());
+                          }
+                          // Fallback to creating a date from the current month/year context
+                          const monthIndex = allMonths.indexOf(month);
+                          const day = parseInt(dateStr.replace(/\D/g, '')) || 1;
+                          return new Date(year, monthIndex, day);
+                        } catch {
+                          return undefined;
+                        }
+                      };
+
+                      const formatDate = (date: Date | undefined) => {
+                        return date ? format(date, 'dd.MM.yyyy') : '';
+                      };
+
+                      const copyDate = parseDate(scheduleItem.copyDeadline, scheduleItem.year, scheduleItem.month);
+                      const printDate = parseDate(scheduleItem.printDeadline, scheduleItem.year, scheduleItem.month);
+                      const deliveryDate = parseDate(scheduleItem.deliveryDate, scheduleItem.year, scheduleItem.month);
+
+                      return (
+                        <div key={`${scheduleItem.year}-${scheduleItem.month}`} className="bg-background rounded-lg border p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-semibold text-foreground">
+                              {formatMonthDisplay(scheduleItem.month, scheduleItem.year)}
+                            </h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeScheduleItem(scheduleItem.year, scheduleItem.month)}
+                              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                              title={`Remove ${formatMonthDisplay(scheduleItem.month, scheduleItem.year)}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-3">
+                            {/* Copy Deadline */}
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-muted-foreground">Copy Deadline</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal text-sm h-9",
+                                      !copyDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                                    {copyDate ? format(copyDate, 'dd.MM.yyyy') : "Pick date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={copyDate}
+                                    onSelect={(date) => {
+                                      const newSchedule = [...formData.schedule];
+                                      newSchedule[index] = { 
+                                        ...scheduleItem, 
+                                        copyDeadline: date ? format(date, 'dd.MM.yyyy') : '' 
+                                      };
+                                      setFormData(prev => ({ ...prev, schedule: newSchedule }));
+                                    }}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+
+                            {/* Print Deadline */}
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-muted-foreground">Print Deadline</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal text-sm h-9",
+                                      !printDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                                    {printDate ? format(printDate, 'dd.MM.yyyy') : "Pick date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={printDate}
+                                    onSelect={(date) => {
+                                      const newSchedule = [...formData.schedule];
+                                      newSchedule[index] = { 
+                                        ...scheduleItem, 
+                                        printDeadline: date ? format(date, 'dd.MM.yyyy') : '' 
+                                      };
+                                      setFormData(prev => ({ ...prev, schedule: newSchedule }));
+                                    }}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+
+                            {/* Delivery Date */}
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-muted-foreground">Week Commencing</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal text-sm h-9",
+                                      !deliveryDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                                    {deliveryDate ? format(deliveryDate, 'dd.MM.yyyy') : "Pick date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={deliveryDate}
+                                    onSelect={(date) => {
+                                      const newSchedule = [...formData.schedule];
+                                      newSchedule[index] = { 
+                                        ...scheduleItem, 
+                                        deliveryDate: date ? format(date, 'dd.MM.yyyy') : '' 
+                                      };
+                                      setFormData(prev => ({ ...prev, schedule: newSchedule }));
+                                    }}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-xs">Print Deadline</Label>
-                          <Input
-                            value={scheduleItem.printDeadline}
-                            onChange={(e) => {
-                              const newSchedule = [...formData.schedule];
-                              newSchedule[index] = { ...scheduleItem, printDeadline: e.target.value };
-                              setFormData(prev => ({ ...prev, schedule: newSchedule }));
-                            }}
-                            placeholder="20th"
-                            className="text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Delivery Date</Label>
-                          <Input
-                            value={scheduleItem.deliveryDate}
-                            onChange={(e) => {
-                              const newSchedule = [...formData.schedule];
-                              newSchedule[index] = { ...scheduleItem, deliveryDate: e.target.value };
-                              setFormData(prev => ({ ...prev, schedule: newSchedule }));
-                            }}
-                            placeholder="25th"
-                            className="text-sm"
-                          />
-                        </div>
-                        <div className="flex justify-end">
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => removeScheduleItem(scheduleItem.year, scheduleItem.month)}
-                             className="h-8 w-8 p-0"
-                             title={`Remove ${formatMonthDisplay(scheduleItem.month, scheduleItem.year)}`}
-                           >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     
                     {formData.schedule.length === 0 && (
                       <div className="text-center py-4 text-gray-500 text-sm">
