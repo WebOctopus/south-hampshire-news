@@ -396,10 +396,47 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleContactInfoBook = async (contactData: any) => {
-    
     setSubmitting(true);
 
     try {
+      // Check BOGOF eligibility before proceeding with booking
+      if (selectedPricingModel === 'bogof') {
+        const { data: { user } } = await supabase.auth.getUser();
+        let userEmail = contactData.email;
+        let userPhone = contactData.phone;
+        
+        // If user is already logged in, use their email/phone
+        if (user?.email) {
+          userEmail = user.email;
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('phone')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          if (profile?.phone) {
+            userPhone = profile.phone;
+          }
+        }
+        
+        // Call the validate-bogof-eligibility function
+        const { data: eligibilityResult, error: eligibilityError } = await supabase.functions.invoke('validate-bogof-eligibility', {
+          body: { email: userEmail, phone: userPhone }
+        });
+        
+        if (eligibilityError) {
+          console.error('Error checking BOGOF eligibility:', eligibilityError);
+          // Allow booking to continue if check fails (fail open)
+        } else if (eligibilityResult && !eligibilityResult.isEligible) {
+          toast({
+            title: "Package Already Claimed",
+            description: eligibilityResult.message || "You have already booked the 3+ Repeat Package for New Advertisers. Please save as a quote instead.",
+            variant: "destructive",
+          });
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
       const fullName = `${contactData.firstName} ${contactData.lastName}`;
       

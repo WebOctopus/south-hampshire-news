@@ -82,12 +82,6 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
   }, []);
 
   const handleSelectOption = (option: 'fixed' | 'bogof' | 'leafleting', packageData: any) => {
-    // Check BOGOF eligibility before allowing selection
-    if (option === 'bogof' && eligibilityData && !eligibilityData.isEligible) {
-      // User is not eligible - do nothing, button should be disabled
-      return;
-    }
-    
     onSelectOption(option);
     nextStep();
   };
@@ -122,9 +116,6 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {packages.map((option) => {
           const Icon = getIcon(option.icon);
-          const isBogof = option.package_id === 'bogof';
-          const isEligible = !isBogof || !eligibilityData || eligibilityData.isEligible;
-          const showWarning = isBogof && eligibilityData && !eligibilityData.isEligible;
           
           return (
             <Card 
@@ -132,8 +123,7 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
               className={cn(
                 "relative overflow-hidden transition-all duration-200",
                 option.is_popular && "border-primary shadow-lg scale-105",
-                isEligible && "hover:shadow-elegant",
-                !isEligible && "opacity-60"
+                "hover:shadow-elegant"
               )}
             >
               {option.is_popular && (
@@ -164,18 +154,8 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
               </CardHeader>
 
               <CardContent className="space-y-6">
-                {showWarning && eligibilityData && (
-                  <Alert variant="destructive" className="mb-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {eligibilityData.message || 'This offer has already been claimed.'}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
                 <Button
                   onClick={() => handleSelectOption(option.package_id as 'fixed' | 'bogof' | 'leafleting', option)}
-                  disabled={!isEligible || checkingEligibility}
                   className={cn(
                     "w-full",
                     option.is_popular 
@@ -184,9 +164,7 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
                   )}
                   size="lg"
                 >
-                  {checkingEligibility && isBogof ? 'Checking eligibility...' : 
-                   !isEligible ? 'Already Claimed' : 
-                   option.cta_text}
+                  {option.cta_text}
                 </Button>
 
                 <div className="space-y-1">
