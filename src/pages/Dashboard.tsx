@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { formatPrice } from '@/lib/pricingCalculator';
 import EditQuoteForm from '@/components/EditQuoteForm';
 import PasswordSetupDialog from '@/components/PasswordSetupDialog';
+import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 import WelcomeHeader from '@/components/dashboard/WelcomeHeader';
 import QuoteConversionCard from '@/components/dashboard/QuoteConversionCard';
 import SuccessStories from '@/components/dashboard/SuccessStories';
@@ -53,6 +54,7 @@ const Dashboard = () => {
   const [bookingDetailsOpen, setBookingDetailsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('bookings');
   const [showPasswordSetup, setShowPasswordSetup] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [voucherCount, setVoucherCount] = useState(0);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   
@@ -1350,7 +1352,11 @@ const Dashboard = () => {
         <div className="pt-4 border-t">
           <h4 className="font-medium mb-3">Account Actions</h4>
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => setShowChangePassword(true)}
+            >
               Change Password
             </Button>
             <Button variant="outline" className="w-full justify-start">
@@ -1542,6 +1548,11 @@ const Dashboard = () => {
       <PasswordSetupDialog
         open={showPasswordSetup}
         onClose={() => setShowPasswordSetup(false)}
+      />
+
+      <ChangePasswordDialog
+        open={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
       />
 
       <BookingDetailsDialog
