@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,10 @@ import { useStepForm } from '@/components/StepForm';
 import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
 import { calculatePaymentAmount as calcPaymentAmount } from '@/lib/paymentCalculations';
 import { parse } from 'date-fns';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { useBogofEligibility } from '@/hooks/useBogofEligibility';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -50,6 +54,33 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   const { leafletAreas, leafletSizes } = useLeafletData();
   const { data: paymentOptions = [] } = usePaymentOptions();
   const { nextStep } = useStepForm();
+  
+  const [userEmail, setUserEmail] = useState<string | undefined>();
+  const [userPhone, setUserPhone] = useState<string | undefined>();
+  const { data: eligibilityData, isLoading: checkingEligibility } = useBogofEligibility(userEmail, userPhone);
+
+  // Get current user's email and phone for BOGOF eligibility check
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email);
+        
+        // Try to get phone from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (profile?.phone) {
+          setUserPhone(profile.phone);
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, []);
 
   // Helper function to parse and format dates from the schedule
   const parseScheduleDate = (dateStr: string): string => {
@@ -152,8 +183,20 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
     nextStep();
   };
 
+  const isBogof = pricingModel === 'bogof';
+  const showBogofWarning = isBogof && eligibilityData && !eligibilityData.isEligible;
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
+      {showBogofWarning && (
+        <Alert className="bg-pink-50 border-pink-200 dark:bg-pink-950/20 dark:border-pink-800">
+          <AlertCircle className="h-4 w-4 text-pink-600 dark:text-pink-400" />
+          <AlertDescription className="text-pink-800 dark:text-pink-300">
+            You have already booked the one time 3+ Repeat Package for New Advertisers. We'll direct you to your account where you can place further bookings.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold">YOUR BASKET</h2>
         <p className="text-muted-foreground">Review your selection and choose your payment option</p>

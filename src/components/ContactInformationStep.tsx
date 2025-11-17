@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Info } from 'lucide-react';
+import { Loader2, Info, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useBogofEligibility } from '@/hooks/useBogofEligibility';
 
 
 interface ContactInformationStepProps {
@@ -89,6 +91,32 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [legalDocumentsOpen, setLegalDocumentsOpen] = useState(false);
+  const [userEmailForBogof, setUserEmailForBogof] = useState<string | undefined>();
+  const [userPhoneForBogof, setUserPhoneForBogof] = useState<string | undefined>();
+  const { data: eligibilityData, isLoading: checkingEligibility } = useBogofEligibility(userEmailForBogof, userPhoneForBogof);
+
+  // Get current user's email and phone for BOGOF eligibility check
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmailForBogof(user.email);
+        
+        // Try to get phone from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (profile?.phone) {
+          setUserPhoneForBogof(profile.phone);
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, []);
 
   const businessSectors = [
     "Accounting & Finance",
@@ -382,8 +410,20 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     };
   }, [handleSaveQuote, handleBookNow]);
 
+  const isBogof = pricingModel === 'bogof';
+  const showBogofWarning = isBogof && eligibilityData && !eligibilityData.isEligible;
+
   return (
     <div className="space-y-8">
+      {showBogofWarning && (
+        <Alert className="bg-pink-50 border-pink-200 dark:bg-pink-950/20 dark:border-pink-800">
+          <AlertCircle className="h-4 w-4 text-pink-600 dark:text-pink-400" />
+          <AlertDescription className="text-pink-800 dark:text-pink-300">
+            You have already booked the one time 3+ Repeat Package for New Advertisers. This package has already been claimed. You can save this quote and we'll contact you about additional booking options.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold">Contact Information & Registration</h2>
         <p className="text-muted-foreground">
