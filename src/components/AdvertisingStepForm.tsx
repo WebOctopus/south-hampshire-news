@@ -575,6 +575,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           localStorage.setItem('newUserFromCalculator', 'true');
         }
         localStorage.setItem('justSavedQuote', 'true');
+        localStorage.setItem('returningBogofCustomer', 'true');
 
         toast({
           title: "Thanks for Your Interest!",
