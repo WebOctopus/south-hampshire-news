@@ -1166,18 +1166,22 @@ const Dashboard = () => {
 
   const renderQuotes = () => (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">Latest Quote</h3>
-          <QuoteConversionCard 
-            quote={quotes[0] || null}
-            onEdit={setEditingQuote}
-            onView={setViewingQuote}
-            onDelete={handleDeleteQuoteClick}
-            onBookNow={handleBookNow}
-            isDeleting={deletingQuoteId === quotes[0]?.id}
-          />
-        </div>
+      <h2 className="text-2xl font-bold text-foreground">Your Saved Quotes</h2>
+      
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-foreground">Latest Quote</h3>
+        <QuoteConversionCard 
+          quote={quotes[0] || null}
+          onEdit={setEditingQuote}
+          onView={setViewingQuote}
+          onDelete={handleDeleteQuoteClick}
+          onBookNow={handleBookNow}
+          isDeleting={deletingQuoteId === quotes[0]?.id}
+        />
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-foreground">Your ROI Calculator</h3>
         <ROICalculator 
           totalCirculation={quotes[0]?.total_circulation || 50000}
           totalInvestment={quotes[0]?.final_total || 1000}
