@@ -72,7 +72,13 @@ export function DashboardSidebar({
     }
   ]
 
-  const otherItems = [
+  const advertisingItems = [
+    {
+      title: "Create Booking",
+      value: "create-booking",
+      icon: Plus,
+      disabled: false
+    },
     {
       title: `Saved Quotes (${quoteCount})`,
       value: "quotes",
@@ -102,7 +108,7 @@ export function DashboardSidebar({
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {otherItems.map((item) => (
+              {advertisingItems.map((item) => (
                 <SidebarMenuItem key={item.value}>
                   <SidebarMenuButton 
                     onClick={() => setActiveTab(item.value)}
