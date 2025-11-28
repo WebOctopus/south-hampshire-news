@@ -30,23 +30,40 @@ export const useProductPackages = (includeInactive = false) => {
   return useQuery({
     queryKey: ['product-packages', includeInactive],
     queryFn: async () => {
-      let query = supabase
-        .from('product_packages')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      // Add request timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
+      try {
+        let query = supabase
+          .from('product_packages')
+          .select('*')
+          .order('sort_order', { ascending: true })
+          .abortSignal(controller.signal);
 
-      if (!includeInactive) {
-        query = query.eq('is_active', true);
+        if (!includeInactive) {
+          query = query.eq('is_active', true);
+        }
+
+        const { data, error } = await query;
+        clearTimeout(timeoutId);
+
+        if (error) throw error;
+        return (data || []).map(item => ({
+          ...item,
+          features: item.features as unknown as ProductPackageFeature[]
+        })) as ProductPackage[];
+      } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
       }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return (data || []).map(item => ({
-        ...item,
-        features: item.features as unknown as ProductPackageFeature[]
-      })) as ProductPackage[];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes - packages don't change often
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
+    retryDelay: 1000,
+    refetchOnMount: 'always', // Always refetch when component mounts (important for Dialog)
+    refetchOnWindowFocus: false,
   });
 };
 

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, AlertCircle } from 'lucide-react';
+import { Check, X, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStepForm } from './StepForm';
 import { useProductPackages, type ProductPackageFeature } from '@/hooks/useProductPackages';
@@ -53,10 +53,33 @@ const FeatureRow: React.FC<{ feature: ProductPackageFeature }> = ({ feature }) =
 
 export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelectOption }) => {
   const { nextStep } = useStepForm();
-  const { data: packages, isLoading, isError } = useProductPackages();
+  const mountedRef = useRef(true);
+  const { data: packages, isLoading, isError, refetch } = useProductPackages();
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [userPhone, setUserPhone] = useState<string | undefined>();
+  const [forceError, setForceError] = useState(false);
   const { data: eligibilityData, isLoading: checkingEligibility } = useBogofEligibility(userEmail, userPhone);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  // Timeout safeguard to prevent infinite loading
+  useEffect(() => {
+    if (isLoading && !forceError) {
+      const timeoutId = setTimeout(() => {
+        if (mountedRef.current && isLoading) {
+          console.warn('Product packages loading timeout - showing retry option');
+          setForceError(true);
+        }
+      }, 15000);
+      return () => clearTimeout(timeoutId);
+    }
+    return undefined;
+  }, [isLoading, forceError]);
 
   // Get current user's email and phone from profile
   useEffect(() => {
@@ -86,18 +109,29 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
     nextStep();
   };
 
-  if (isLoading) {
+  if (isLoading && !forceError) {
     return (
       <div className="text-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
         <p className="text-muted-foreground">Loading packages...</p>
       </div>
     );
   }
 
-  if (isError || !packages || packages.length === 0) {
+  if (isError || forceError || !packages || packages.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-destructive">Unable to load pricing options. Please try again later.</p>
+      <div className="text-center py-12 space-y-4">
+        <AlertCircle className="w-8 h-8 mx-auto text-destructive" />
+        <p className="text-destructive">Unable to load pricing options.</p>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setForceError(false);
+            refetch();
+          }}
+        >
+          Try Again
+        </Button>
       </div>
     );
   }
