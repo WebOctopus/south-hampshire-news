@@ -12,14 +12,16 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { User } from '@supabase/supabase-js';
-import { Edit, Calendar, Trash2, Phone } from 'lucide-react';
+import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
+import { format } from 'date-fns';
 import EditQuoteForm from '@/components/EditQuoteForm';
 import PasswordSetupDialog from '@/components/PasswordSetupDialog';
 import ChangePasswordDialog from '@/components/ChangePasswordDialog';
@@ -60,6 +62,7 @@ const Dashboard = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [voucherCount, setVoucherCount] = useState(0);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [quotesExpanded, setQuotesExpanded] = useState(true);
   
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
@@ -1164,9 +1167,114 @@ const Dashboard = () => {
     </Card>
   );
 
+  const renderSavedQuotesDropdown = () => {
+    const getStatusBadge = (quote: any) => {
+      if (quote.status === 'bogof_return_interest') {
+        return <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">Awaiting Contact</Badge>;
+      }
+      if (quote.status === 'draft') {
+        return <Badge variant="outline">Draft</Badge>;
+      }
+      if (quote.status === 'active' || quote.status === 'approved') {
+        return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Active</Badge>;
+      }
+      return <Badge variant="secondary">{quote.status}</Badge>;
+    };
+
+    return (
+      <Card className="p-6">
+        <Collapsible open={quotesExpanded} onOpenChange={setQuotesExpanded}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-foreground">Your Saved Quotes</h2>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                {quotesExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+
+          {quotes.length > 0 && quotes[0]?.status === 'bogof_return_interest' && (
+            <Alert className="mb-4 border-amber-200 bg-amber-50">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                <strong>Returning Customer Quote Saved</strong><br />
+                This quote was saved because you've previously used our 3+ Repeat Package offer. Our team will contact you within 24 hours with exclusive returning customer rates!
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <CollapsibleContent>
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-left p-4 font-semibold">Date Created</th>
+                    <th className="text-left p-4 font-semibold">Campaign Type</th>
+                    <th className="text-left p-4 font-semibold">Total Cost</th>
+                    <th className="text-right p-4 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quotes.map((quote) => (
+                    <tr key={quote.id} className="border-t hover:bg-muted/30 transition-colors">
+                      <td className="p-4">
+                        {format(new Date(quote.created_at), 'dd/MM/yyyy')}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <span className="capitalize">
+                            {quote.pricing_model === 'bogof' ? 'Bogof' : 
+                             quote.pricing_model === 'fixed_term' ? 'Fixed Term' : 
+                             quote.pricing_model === 'leafleting' ? 'Leafleting' : 
+                             quote.pricing_model}
+                          </span>
+                          {getStatusBadge(quote)}
+                        </div>
+                      </td>
+                      <td className="p-4 font-semibold">
+                        £{quote.final_total?.toFixed(2) || '0.00'}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setViewingQuote(quote)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingQuote(quote)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteQuoteClick(quote.id)}
+                            disabled={deletingQuoteId === quote.id}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    );
+  };
+
   const renderQuotes = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-foreground">Your Saved Quotes</h2>
+      {renderSavedQuotesDropdown()}
       
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-foreground">Latest Quote</h3>
