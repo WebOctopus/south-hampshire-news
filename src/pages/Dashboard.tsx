@@ -35,6 +35,7 @@ import { BookingDetailsDialog } from '@/components/dashboard/BookingDetailsDialo
 import VouchersSection from '@/components/dashboard/VouchersSection';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import CreateBookingForm from '@/components/dashboard/CreateBookingForm';
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -1446,6 +1447,19 @@ const Dashboard = () => {
                 onBookNowClick={() => setActiveTab('bookings')}
               />
               
+              {activeTab === 'create-booking' && user && (
+                <CreateBookingForm
+                  user={user}
+                  onBookingCreated={() => {
+                    loadBookings();
+                    setActiveTab('bookings');
+                  }}
+                  onQuoteSaved={() => {
+                    loadQuotes();
+                    setActiveTab('quotes');
+                  }}
+                />
+              )}
               {activeTab === 'create' && renderCreateBusinessForm()}
               {activeTab === 'listings' && renderBusinessListings()}
               {activeTab === 'create-event' && renderCreateEventForm()}
