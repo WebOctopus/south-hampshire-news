@@ -399,7 +399,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     setSubmitting(true);
 
     try {
-      // Check BOGOF eligibility before proceeding with booking
+      // Check BOGOF eligibility - if returning customer, save as special quote request
+      let isReturningBogofCustomer = false;
       if (selectedPricingModel === 'bogof') {
         const { data: { user } } = await supabase.auth.getUser();
         let userEmail = contactData.email;
@@ -427,20 +428,15 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           console.error('Error checking BOGOF eligibility:', eligibilityError);
           // Allow booking to continue if check fails (fail open)
         } else if (eligibilityResult && !eligibilityResult.isEligible) {
-          toast({
-            title: "Package Already Claimed",
-            description: eligibilityResult.message || "You have already booked the 3+ Repeat Package for New Advertisers. Please save as a quote instead.",
-            variant: "destructive",
-          });
-          setSubmitting(false);
-          return;
+          // Mark as returning customer - we'll save as quote request instead
+          isReturningBogofCustomer = true;
         }
       }
 
       const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
       const fullName = `${contactData.firstName} ${contactData.lastName}`;
       
-      console.log('Starting booking process...', { contactData, campaignData, selectedPricingModel });
+      console.log('Starting booking process...', { contactData, campaignData, selectedPricingModel, isReturningBogofCustomer });
       
       // First, try to sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -522,7 +518,77 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const fraudData = await getFraudDetectionData();
       console.log('Fraud detection data:', fraudData);
 
-      // Create booking record
+      // If returning BOGOF customer, save as quote request instead of booking
+      if (isReturningBogofCustomer) {
+        const quotePayload = {
+          user_id: userId,
+          contact_name: fullName,
+          email: contactData.email,
+          phone: contactData.phone || '',
+          company: contactData.companyName || '',
+          title: '3+ Repeat Package - Returning Customer Interest',
+          pricing_model: selectedPricingModel,
+          ad_size_id: campaignData.selectedAdSize || null,
+          duration_id: campaignData.selectedDuration || null,
+          selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
+          bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
+          bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
+          monthly_price: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
+          final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+          total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
+          volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
+          duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
+          agency_discount_percent: Number(campaignData.pricingBreakdown?.agencyDiscountPercent) || 0,
+          pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+          selections: {
+            pricingModel: selectedPricingModel,
+            selectedAdSize: campaignData.selectedAdSize || null,
+            selectedDuration: campaignData.selectedDuration || null,
+            selectedAreas: Array.isArray(campaignData.selectedAreas) ? campaignData.selectedAreas : [],
+            bogofPaidAreas: Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
+            bogofFreeAreas: Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
+            address: contactData.address || '',
+            addressLine2: contactData.addressLine2 || '',
+            city: contactData.city || '',
+            postcode: contactData.postcode || '',
+            ...campaignData
+          } as any,
+          notes: 'Returning customer - previously used 3+ Repeat Package. Interested in booking again - please contact with new terms.',
+          status: 'bogof_return_interest'
+        };
+
+        // Save to both quotes and quote_requests
+        const { error: quoteError } = await supabase.from('quotes').insert(quotePayload);
+        if (quoteError) {
+          console.error('Quote save error:', quoteError);
+        }
+
+        const { error: requestError } = await supabase.from('quote_requests').insert(quotePayload);
+        if (requestError) {
+          console.error('Quote request save error:', requestError);
+        }
+
+        // Store information for dashboard
+        if (isNewUser) {
+          localStorage.setItem('newUserFromCalculator', 'true');
+        }
+        localStorage.setItem('justSavedQuote', 'true');
+
+        toast({
+          title: "Thanks for Your Interest!",
+          description: "Our team will contact you with exclusive returning customer rates. Redirecting to your dashboard...",
+        });
+
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+        
+        return;
+      }
+
+      // Create booking record for eligible customers
       const bookingPayload = {
         user_id: userId,
         contact_name: fullName,
