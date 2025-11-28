@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletCampaignDurations, useLeafletData } from '@/hooks/useLeafletData';
+import { useQueryClient } from '@tanstack/react-query';
 import { calculateLeafletingPrice } from '@/lib/leafletingCalculator';
 import { calculateAdvertisingPrice } from '@/lib/pricingCalculator';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
@@ -31,6 +32,7 @@ interface AdvertisingStepFormProps {
 export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ children, asDialog = false }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { durations, subscriptionDurations, areas, adSizes, volumeDiscounts } = usePricingData();
   const { data: leafletDurations } = useLeafletCampaignDurations();
   const { leafletAreas } = useLeafletData();
@@ -731,7 +733,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   return (
     <ErrorBoundary>
       {asDialog && children ? (
-        <Dialog>
+        <Dialog onOpenChange={(open) => {
+          if (open) {
+            // Invalidate product packages to force fresh fetch when Dialog opens
+            queryClient.invalidateQueries({ queryKey: ['product-packages'] });
+          }
+        }}>
           <DialogTrigger asChild>
             {children}
           </DialogTrigger>
