@@ -419,7 +419,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
         <Alert className="bg-pink-50 border-pink-200 dark:bg-pink-950/20 dark:border-pink-800">
           <AlertCircle className="h-4 w-4 text-pink-600 dark:text-pink-400" />
           <AlertDescription className="text-pink-800 dark:text-pink-300">
-            You have already booked the one time 3+ Repeat Package for New Advertisers. This package has already been claimed. You can save this quote and we'll contact you about additional booking options.
+            <strong>Returning Customer</strong> — You've previously used this offer. Complete your booking and our team will contact you with exclusive returning customer rates!
           </AlertDescription>
         </Alert>
       )}
