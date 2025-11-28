@@ -32,6 +32,7 @@ import AdvertisingAlerts from "@/components/AdvertisingAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import AdvertisingStepForm from "@/components/AdvertisingStepForm";
 import { useAgencyDiscount } from "@/hooks/useAgencyDiscount";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface FormData {
   name: string;
@@ -48,6 +49,7 @@ interface SelectedIssues {
 const CalculatorTest = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -89,6 +91,13 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
   // Use agency discount hook
   const { data: agencyData } = useAgencyDiscount();
   const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
+
+  // Invalidate all calculator-related queries when page mounts to ensure fresh data
+  useEffect(() => {
+    console.log('Advertising page mounted - invalidating calculator queries');
+    queryClient.invalidateQueries({ queryKey: ['product-packages'] });
+    queryClient.invalidateQueries({ queryKey: ['pricing'] });
+  }, [queryClient]);
 
   // Debug logging - remove in production
 

@@ -81,6 +81,14 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
     return undefined;
   }, [isLoading, forceError]);
 
+  // Reset forceError when packages load successfully
+  useEffect(() => {
+    if (packages && packages.length > 0 && forceError) {
+      console.log('Packages loaded successfully - clearing error state');
+      setForceError(false);
+    }
+  }, [packages, forceError]);
+
   // Get current user's email and phone from profile
   useEffect(() => {
     const fetchUserData = async () => {

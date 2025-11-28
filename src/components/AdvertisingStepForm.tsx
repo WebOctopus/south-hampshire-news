@@ -55,6 +55,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Invalidate product packages cache when component mounts to ensure fresh data
+  React.useEffect(() => {
+    console.log('AdvertisingStepForm mounted - invalidating product packages cache');
+    queryClient.invalidateQueries({ queryKey: ['product-packages'] });
+  }, [queryClient]);
+
   // Calculate leafleting pricing when relevant data changes
   React.useEffect(() => {
     if (selectedPricingModel === 'leafleting' && 
