@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 const WhatsOn = () => {
+  // Mounted ref to prevent state updates after unmount
+  const mountedRef = useRef(true);
+  
   // State management
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,12 +45,21 @@ const WhatsOn = () => {
   const [areas, setAreas] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   // Fetch events with filters
   const fetchEvents = useCallback(async () => {
     try {
       console.log('Fetching events...');
-      setLoading(true);
-      setError(null);
+      if (mountedRef.current) {
+        setLoading(true);
+        setError(null);
+      }
 
       console.log('Supabase client:', supabase);
       
@@ -106,17 +118,23 @@ const WhatsOn = () => {
       }
 
       console.log('Setting events with data:', data);
-      setEvents(data || []);
+      if (mountedRef.current) {
+        setEvents(data || []);
+      }
     } catch (err) {
       console.error('Error fetching events:', err);
-      setError('Failed to load events. Please try again.');
-      toast({
-        title: "Error",
-        description: "Failed to load events. Please try again.",
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        setError('Failed to load events. Please try again.');
+        toast({
+          title: "Error",
+          description: "Failed to load events. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange.from, dateRange.to]);
 
@@ -146,6 +164,16 @@ const WhatsOn = () => {
   // Fetch events when filters change
   useEffect(() => {
     fetchEvents();
+    
+    // Safeguard: ensure loading state is cleared after 10 seconds
+    const timeoutId = setTimeout(() => {
+      if (mountedRef.current && loading) {
+        console.warn('Loading state timeout - forcing loading to false');
+        setLoading(false);
+      }
+    }, 10000);
+    
+    return () => clearTimeout(timeoutId);
   }, [fetchEvents]);
 
   // Initial load
