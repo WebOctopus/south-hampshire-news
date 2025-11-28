@@ -170,7 +170,7 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
           </div>
         </div>
 
-        {/* Navigation - Only show on steps after the first */}
+        {/* Top Navigation - Only show on steps after the first */}
         {currentStep > 0 && (
           <div className="mb-6 pb-6 border-b border-border">
             {/* Mobile-first responsive layout */}
@@ -247,6 +247,67 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
             </div>
           ))}
         </div>
+
+        {/* Bottom Navigation - Only show on steps after the first */}
+        {currentStep > 0 && (
+          <div className="mt-8 pt-6 border-t border-border">
+            {/* Mobile-first responsive layout */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              {/* Left side - Previous button */}
+              <Button
+                variant="outline"
+                onClick={prevStep}
+                className="flex items-center justify-center gap-2 w-full sm:w-auto min-h-[44px] text-sm"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden xs:inline">{stepLabels?.prevButtonLabel || 'Previous Step'}</span>
+                <span className="xs:hidden">Previous</span>
+              </Button>
+              
+              {/* Center - Step indicator */}
+              <div className="text-sm text-muted-foreground text-center font-medium">
+                Step {currentStep + 1} of {totalSteps}
+              </div>
+              
+              {/* Right side - Action buttons */}
+              {currentStep === totalSteps - 1 ? (
+                <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if ((window as any).handleContactFormSave) {
+                        (window as any).handleContactFormSave();
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 w-full xs:w-auto min-h-[44px] text-sm"
+                  >
+                    <span className="hidden xs:inline">Save My Quote</span>
+                    <span className="xs:hidden">Save Quote</span>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if ((window as any).handleContactFormBook) {
+                        (window as any).handleContactFormBook();
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 w-full xs:w-auto min-h-[44px] text-sm"
+                  >
+                    Book Now
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={nextStep}
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto min-h-[44px] text-sm"
+                >
+                  <span className="hidden xs:inline">{stepLabels?.nextButtonLabels?.[currentStep] || 'Next Step'}</span>
+                  <span className="xs:hidden">Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </StepFormContext.Provider>
   );
