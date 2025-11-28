@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,6 +64,7 @@ const Dashboard = () => {
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [quotesExpanded, setQuotesExpanded] = useState(true);
   
+  const contentRef = useRef<HTMLDivElement>(null);
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -319,6 +320,14 @@ const Dashboard = () => {
       setActiveTab('listings');
     }
   }, [hasExistingBusiness, editingBusiness]);
+
+  // Scroll to top when tab changes
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo(0, 0);
+    }
+    window.scrollTo(0, 0);
+  }, [activeTab]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -1455,7 +1464,7 @@ const Dashboard = () => {
             onProfileClick={() => setActiveTab('profile')}
           />
           
-          <div className="flex-1 overflow-auto">
+          <div ref={contentRef} className="flex-1 overflow-auto">
             <div className="max-w-7xl mx-auto p-6 space-y-6">
               <WelcomeHeader 
                 user={user} 
