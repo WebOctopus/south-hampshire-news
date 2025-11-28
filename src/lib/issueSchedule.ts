@@ -232,11 +232,6 @@ export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule
     // Build fixed options
     const scheduleOptions: IssueOption[] = [
       {
-        value: nextAvailableMonth || sortedMonths[0],
-        label: 'Next Available Issues',
-        month: nextAvailableMonth || sortedMonths[0]
-      },
-      {
         value: '2026-01',
         label: 'January 2026',
         month: '2026-01'
