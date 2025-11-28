@@ -60,8 +60,7 @@ export const useProductPackages = (includeInactive = false) => {
     retry: 2,
     retryDelay: 1000,
     refetchOnMount: 'always', // Always refetch when component mounts (important for Dialog)
-    refetchOnWindowFocus: false,
-    networkMode: 'offlineFirst', // Prevents hanging on slow networks
+    refetchOnWindowFocus: false
   });
 };
 
