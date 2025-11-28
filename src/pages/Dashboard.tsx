@@ -1210,7 +1210,7 @@ const Dashboard = () => {
                   <tr>
                     <th className="text-left p-4 font-semibold">Date Created</th>
                     <th className="text-left p-4 font-semibold">Campaign Type</th>
-                    <th className="text-left p-4 font-semibold">Total Cost</th>
+                    <th className="text-left p-4 font-semibold">Monthly Cost</th>
                     <th className="text-right p-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
@@ -1232,7 +1232,7 @@ const Dashboard = () => {
                         </div>
                       </td>
                       <td className="p-4 font-semibold">
-                        £{quote.final_total?.toFixed(2) || '0.00'}
+                        £{quote.monthly_price?.toFixed(2) || '0.00'}
                       </td>
                       <td className="p-4">
                         <div className="flex items-center justify-end gap-2">
