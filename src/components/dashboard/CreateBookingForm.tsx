@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, AlertCircle, Package, MapPin, Calendar, Layout, Pencil, DollarSign } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Package, MapPin, Calendar, Layout, Pencil, DollarSign, Phone } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
@@ -51,6 +51,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
 
   // Get user profile for pre-filling contact info
   const [profile, setProfile] = useState<any>(null);
+  const [isReturningBogofCustomer, setIsReturningBogofCustomer] = useState(false);
   
   useEffect(() => {
     const loadProfile = async () => {
@@ -62,6 +63,21 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
       if (data) setProfile(data);
     };
     loadProfile();
+  }, [user.id]);
+
+  // Check if user has previous BOGOF bookings
+  useEffect(() => {
+    const checkBogofHistory = async () => {
+      const { data } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('pricing_model', 'bogof')
+        .limit(1);
+      
+      setIsReturningBogofCustomer(!!data && data.length > 0);
+    };
+    checkBogofHistory();
   }, [user.id]);
 
   // Reset selections when pricing model changes
@@ -334,6 +350,17 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
               </div>
             </RadioGroup>
           </div>
+
+          {/* Returning BOGOF Customer Notice */}
+          {pricingModel === 'bogof' && isReturningBogofCustomer && (
+            <Alert className="border-amber-500/50 bg-amber-500/10">
+              <Phone className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-sm">
+                <strong>Returning Customer Notice:</strong> As you've previously booked the 3+ Repeat Package, 
+                please call our team to discuss your next booking and explore special retention offers available to you.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Separator />
 
