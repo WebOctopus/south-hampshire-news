@@ -934,7 +934,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
                       <Label htmlFor="legalDocuments" className="text-sm font-medium cursor-pointer">
-                        I accept the legal documents *
+                        I accept the T&C's *
                       </Label>
                       <Dialog open={legalDocumentsOpen} onOpenChange={setLegalDocumentsOpen}>
                         <DialogTrigger asChild>
