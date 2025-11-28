@@ -170,26 +170,9 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
           </div>
         </div>
 
-        {/* Step Content */}
-        <div className="relative">
-          {React.Children.map(children, (child, index) => (
-            <div
-              key={index}
-              className={cn(
-                "transition-all duration-300 ease-in-out",
-                index === currentStep
-                  ? "opacity-100 translate-x-0 relative"
-                  : "opacity-0 absolute inset-0 translate-x-4 pointer-events-none"
-              )}
-            >
-              {child}
-            </div>
-          ))}
-        </div>
-
         {/* Navigation - Only show on steps after the first */}
         {currentStep > 0 && (
-          <div className="mt-8 pt-6 border-t border-border">
+          <div className="mb-6 pb-6 border-b border-border">
             {/* Mobile-first responsive layout */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               {/* Left side - Previous button */}
@@ -247,6 +230,23 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
             </div>
           </div>
         )}
+
+        {/* Step Content */}
+        <div className="relative">
+          {React.Children.map(children, (child, index) => (
+            <div
+              key={index}
+              className={cn(
+                "transition-all duration-300 ease-in-out",
+                index === currentStep
+                  ? "opacity-100 translate-x-0 relative"
+                  : "opacity-0 absolute inset-0 translate-x-4 pointer-events-none"
+              )}
+            >
+              {child}
+            </div>
+          ))}
+        </div>
       </div>
     </StepFormContext.Provider>
   );
