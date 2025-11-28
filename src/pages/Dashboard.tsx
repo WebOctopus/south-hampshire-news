@@ -1175,7 +1175,10 @@ const Dashboard = () => {
                 onBookNow={handleBookNow}
                 isDeleting={deletingQuoteId === quotes[0]?.id}
               />
-              <UrgencyAlerts />
+              <ROICalculator 
+                totalCirculation={quotes[0]?.total_circulation || 50000}
+                totalInvestment={quotes[0]?.final_total || 1000}
+              />
       </div>
       
       <Card>
@@ -1275,10 +1278,6 @@ const Dashboard = () => {
       </Card>
       
       <div className="space-y-6">
-        <ROICalculator 
-          totalCirculation={50000}
-          totalInvestment={quotes[0]?.total_cost || 1000}
-        />
         <CampaignTimeline quote={quotes[0] || null} />
         <SuccessStories />
       </div>
