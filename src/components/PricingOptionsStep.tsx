@@ -52,8 +52,9 @@ const FeatureRow: React.FC<{ feature: ProductPackageFeature }> = ({ feature }) =
 };
 
 export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelectOption }) => {
-  const { nextStep } = useStepForm();
+  const { nextStep, currentStep } = useStepForm();
   const mountedRef = useRef(true);
+  const hasRefetchedRef = useRef(false);
   const { data: packages, isLoading, isError, refetch } = useProductPackages();
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [userPhone, setUserPhone] = useState<string | undefined>();
@@ -80,6 +81,23 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
     }
     return undefined;
   }, [isLoading, forceError]);
+
+  // Force refetch when this step becomes visible (step 1)
+  useEffect(() => {
+    if (currentStep === 1 && !hasRefetchedRef.current) {
+      console.log('PricingOptionsStep visible - forcing fresh data fetch');
+      hasRefetchedRef.current = true;
+      setForceError(false);
+      refetch();
+    }
+  }, [currentStep, refetch]);
+
+  // Reset refetch flag when leaving this step
+  useEffect(() => {
+    if (currentStep !== 1) {
+      hasRefetchedRef.current = false;
+    }
+  }, [currentStep]);
 
   // Reset forceError when packages load successfully
   useEffect(() => {
