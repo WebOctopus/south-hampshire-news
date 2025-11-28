@@ -10,12 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { User } from '@supabase/supabase-js';
-import { Edit, Calendar, Trash2 } from 'lucide-react';
+import { Edit, Calendar, Trash2, Phone } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import EditQuoteForm from '@/components/EditQuoteForm';
@@ -119,6 +121,19 @@ const Dashboard = () => {
     checkAuth();
     loadCategories();
   }, [navigate]);
+
+  // Check for returning BOGOF customer flag
+  useEffect(() => {
+    const isReturningBogof = localStorage.getItem('returningBogofCustomer');
+    if (isReturningBogof === 'true') {
+      toast({
+        title: "Welcome back!",
+        description: "We've saved your interest in the 3+ Repeat Package. Since you've used this offer before, our team will contact you within 24 hours with exclusive returning customer rates.",
+        duration: 8000,
+      });
+      localStorage.removeItem('returningBogofCustomer');
+    }
+  }, [toast]);
 
   const loadBusinesses = async () => {
     if (!user) return;
@@ -1167,6 +1182,24 @@ const Dashboard = () => {
           <CardTitle>Your Saved Quotes</CardTitle>
         </CardHeader>
         <CardContent>
+          {quotes.some(q => q.status === 'bogof_return_interest') && (
+            <Alert className="mb-4 border-amber-300 bg-amber-50">
+              <AlertDescription className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <Phone className="h-5 w-5 text-amber-700" />
+                </div>
+                <div>
+                  <p className="font-medium text-amber-900 mb-1">
+                    Returning Customer Quote Saved
+                  </p>
+                  <p className="text-sm text-amber-800">
+                    This quote was saved because you've previously used our 3+ Repeat Package offer. 
+                    Our team will contact you within 24 hours with exclusive returning customer rates!
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
           {quotes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>You don't have any saved quotes yet.</p>
@@ -1190,10 +1223,21 @@ const Dashboard = () => {
                         {new Date(quote.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="capitalize">
-                        {quote.campaign_type?.replace('_', ' ') || 'N/A'}
+                        {quote.pricing_model?.replace('_', ' ') || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        {quote.status === 'bogof_return_interest' ? (
+                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300">
+                            Awaiting Contact
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                            Ready to Book
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {formatPrice(quote.total_cost)}
+                        {formatPrice(quote.final_total)}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">

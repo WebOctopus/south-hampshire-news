@@ -20,6 +20,8 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
     return null;
   }
 
+  const isReturningBogofCustomer = quote.status === 'bogof_return_interest';
+
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'active': return 'bg-green-100 text-green-800 border-green-200';
@@ -89,19 +91,43 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
           </div>
         </div>
 
+        {/* Special Message for Returning BOGOF Customers */}
+        {isReturningBogofCustomer && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-1">
+                <CheckCircle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-amber-900 mb-1">Returning Customer - Awaiting Contact</h4>
+                <p className="text-sm text-amber-800 mb-2">
+                  Our team will contact you shortly with exclusive returning customer rates for the 3+ Repeat Package.
+                </p>
+                {quote.notes && (
+                  <p className="text-xs text-amber-700 italic">
+                    {quote.notes}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Progress Indicator */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Campaign Progress</span>
-            <span>{progress}% Complete</span>
+        {!isReturningBogofCustomer && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Campaign Progress</span>
+              <span>{progress}% Complete</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Quote Saved ✓</span>
+              <span>{quote.status === 'approved' || quote.status === 'active' ? 'Approved ✓' : 'Awaiting Approval'}</span>
+              <span>{quote.status === 'active' ? 'Campaign Live ✓' : 'Ready to Launch'}</span>
+            </div>
           </div>
-          <Progress value={progress} className="h-2" />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Quote Saved ✓</span>
-            <span>{quote.status === 'approved' || quote.status === 'active' ? 'Approved ✓' : 'Awaiting Approval'}</span>
-            <span>{quote.status === 'active' ? 'Campaign Live ✓' : 'Ready to Launch'}</span>
-          </div>
-        </div>
+        )}
 
         {/* ROI Highlight */}
         <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border">
@@ -119,12 +145,13 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className={isReturningBogofCustomer ? "grid grid-cols-3 gap-2" : "grid grid-cols-4 gap-2"}>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => onEdit(quote)}
             className="flex items-center"
+            disabled={isReturningBogofCustomer}
           >
             <Edit className="h-4 w-4 mr-1" />
             Edit
@@ -150,14 +177,16 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
               {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
           )}
-          <Button 
-            size="sm"
-            onClick={() => onBookNow && onBookNow(quote)}
-            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center"
-          >
-            <CheckCircle className="h-4 w-4 mr-1" />
-            Book Now
-          </Button>
+          {!isReturningBogofCustomer && (
+            <Button 
+              size="sm"
+              onClick={() => onBookNow && onBookNow(quote)}
+              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center"
+            >
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Book Now
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

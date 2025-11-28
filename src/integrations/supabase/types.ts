@@ -1345,6 +1345,7 @@ export type Database = {
           pricing_model: string
           selected_area_ids: string[] | null
           selections: Json
+          status: string | null
           subtotal: number | null
           title: string | null
           total_circulation: number | null
@@ -1373,6 +1374,7 @@ export type Database = {
           pricing_model: string
           selected_area_ids?: string[] | null
           selections?: Json
+          status?: string | null
           subtotal?: number | null
           title?: string | null
           total_circulation?: number | null
@@ -1401,6 +1403,7 @@ export type Database = {
           pricing_model?: string
           selected_area_ids?: string[] | null
           selections?: Json
+          status?: string | null
           subtotal?: number | null
           title?: string | null
           total_circulation?: number | null
