@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, AlertCircle, CheckCircle2, Info, HelpCircle } from "lucide-react";
-import editionsMap from "@/assets/14-editions-map-2025.jpg";
+import InteractiveEditionsMap from "@/components/InteractiveEditionsMap";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
@@ -1372,16 +1372,14 @@ const effectiveSelectedAreas = useMemo(() => {
 
             {/* Map and Alerts Section */}
             <div className="space-y-8">
-              {/* Map */}
-              <div id="distribution-map" className="text-center">
-                <img 
-                  src={editionsMap}
-                  alt="Distribution Areas Map - 14 Areas across South Hampshire showing numbered regions including Winchester, Southampton, Fareham, New Forest and surrounding areas" 
-                  className="w-full max-w-2xl mx-auto rounded-lg shadow-lg" 
+              {/* Interactive Map */}
+              <div id="distribution-map">
+                <InteractiveEditionsMap 
+                  onAreaClick={(areaId) => {
+                    console.log('Area clicked:', areaId);
+                  }}
+                  className="max-w-2xl mx-auto"
                 />
-                <p className="text-sm text-gray-600 mt-4 font-medium">
-                  14 Distribution Areas across South Hampshire
-                </p>
               </div>
 
               {/* Alerts */}
