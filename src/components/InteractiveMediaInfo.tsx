@@ -139,8 +139,8 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
                           )}
                           style={{ 
                             backgroundColor: area.color,
-                            top: area.buttonPosition.top,
-                            left: area.buttonPosition.left,
+                            top: `${area.buttonPosition.top}%`,
+                            left: `${area.buttonPosition.left}%`,
                             transform: 'translate(-50%, -50%)'
                           }}
                           aria-label={`Select ${area.name} edition`}
