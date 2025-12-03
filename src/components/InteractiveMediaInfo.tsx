@@ -125,13 +125,6 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
             <div className="relative bg-white rounded-xl shadow-lg p-4">
               {/* Map Container */}
               <div className="relative w-full" style={{ paddingBottom: '52.89%' }}>
-                {/* Background Map */}
-                <img
-                  src={mapBackground}
-                  alt="Distribution Areas Map - 14 Areas across South Hampshire"
-                  className="absolute inset-0 w-full h-full object-contain"
-                />
-
                 {/* Show ALL area images simultaneously (jigsaw effect) */}
                 {editionAreas.map((area) => (
                   <img
