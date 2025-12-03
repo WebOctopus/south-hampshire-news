@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, AlertCircle, CheckCircle2, Info, HelpCircle } from "lucide-react";
-import InteractiveEditionsMap from "@/components/InteractiveEditionsMap";
+import InteractiveMediaInfo from "@/components/InteractiveMediaInfo";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
@@ -920,6 +920,11 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
+      {/* Interactive Media Info Section - Full Width */}
+      <InteractiveMediaInfo 
+        onAreaSelect={(areaId) => console.log('Selected area:', areaId)} 
+      />
+
       {/* Essential Facts & Figures Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1370,22 +1375,9 @@ const effectiveSelectedAreas = useMemo(() => {
               </Accordion>
             </div>
 
-            {/* Map and Alerts Section */}
-            <div className="space-y-8">
-              {/* Interactive Map */}
-              <div id="distribution-map">
-                <InteractiveEditionsMap 
-                  onAreaClick={(areaId) => {
-                    console.log('Area clicked:', areaId);
-                  }}
-                  className="max-w-2xl mx-auto"
-                />
-              </div>
-
-              {/* Alerts */}
-              <div className="space-y-4">
-                <AdvertisingAlerts />
-              </div>
+            {/* Alerts Section */}
+            <div className="space-y-4">
+              <AdvertisingAlerts />
             </div>
           </div>
 
