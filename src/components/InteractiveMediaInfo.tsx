@@ -71,11 +71,21 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
   return (
     <section className={cn("py-12 bg-gradient-to-b from-slate-50 to-white", className)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        {/* Header - Dynamic based on selection */}
         <div className="text-center mb-8">
-          <h2 className="text-xl md:text-2xl font-heading font-bold text-community-navy">
-            Welcome to Discover's Interactive Media Info - <span className="text-community-green">CLICK ANY BUTTON</span>
-          </h2>
+          {selectedArea ? (
+            <h2 className="text-xl md:text-2xl font-heading font-bold">
+              <span className="text-community-navy">Area {selectedArea.id}</span>
+              <span className="mx-2 text-muted-foreground">-</span>
+              <span className="text-community-green">{selectedArea.name}</span>
+              <span className="mx-2 text-muted-foreground">-</span>
+              <span className="text-community-navy">{selectedArea.homes.toLocaleString()}</span>
+            </h2>
+          ) : (
+            <h2 className="text-xl md:text-2xl font-heading font-bold text-community-navy">
+              Welcome to Discover's Interactive Media Info - <span className="text-community-green">CLICK ANY BUTTON</span>
+            </h2>
+          )}
         </div>
 
         {/* Three Column Layout */}
@@ -122,15 +132,28 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
                   className="absolute inset-0 w-full h-full object-contain"
                 />
 
-                {/* Highlighted Area Overlay */}
-                {(selectedArea || hoveredArea) && (
+                {/* Show ALL area images simultaneously (jigsaw effect) */}
+                {editionAreas.map((area) => (
                   <img
-                    src={highlightImages[(selectedArea || hoveredArea)!.highlightImage]}
-                    alt={`${(selectedArea || hoveredArea)!.name} highlighted`}
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none transition-opacity duration-200"
-                    style={{ opacity: selectedArea ? 1 : 0.7 }}
+                    key={area.id}
+                    src={highlightImages[area.highlightImage]}
+                    alt={area.name}
+                    className={cn(
+                      "absolute inset-0 w-full h-full object-contain pointer-events-none transition-all duration-300",
+                      // When an area is selected, fade non-selected areas
+                      selectedArea 
+                        ? selectedArea.id === area.id 
+                          ? "opacity-100" 
+                          : "opacity-30 grayscale-[40%]"
+                        // When hovering, highlight the hovered area
+                        : hoveredArea
+                          ? hoveredArea.id === area.id
+                            ? "opacity-100"
+                            : "opacity-60"
+                          : "opacity-100"
+                    )}
                   />
-                )}
+                ))}
 
                 {/* Clickable Area Buttons */}
                 {editionAreas.map((area) => (
