@@ -6,22 +6,39 @@ import { cn } from '@/lib/utils';
 // Import map images
 import mapBackground from '@/assets/map/map-background.png';
 
-// Import highlight images dynamically
+// Import ALL 23 PNG files for debug grid
+const allPngFiles = [
+  '107.png', '205.png', '319.png', '325.png', '328.png', '332.png',
+  '450.png', '451.png', '655.png', '662.png', '665.png', '708.png',
+  '711.png', '749.png', '758.png', '763.png', '770.png', '774.png',
+  '837.png', '861.png', '863.png', '868.png', '870.png'
+];
+
+// Import highlight images dynamically - ALL 23 files
 const highlightImages: Record<string, string> = {
-  '870.png': new URL('@/assets/map/870.png', import.meta.url).href,
-  '868.png': new URL('@/assets/map/868.png', import.meta.url).href,
-  '863.png': new URL('@/assets/map/863.png', import.meta.url).href,
-  '861.png': new URL('@/assets/map/861.png', import.meta.url).href,
-  '837.png': new URL('@/assets/map/837.png', import.meta.url).href,
-  '774.png': new URL('@/assets/map/774.png', import.meta.url).href,
-  '770.png': new URL('@/assets/map/770.png', import.meta.url).href,
-  '763.png': new URL('@/assets/map/763.png', import.meta.url).href,
-  '758.png': new URL('@/assets/map/758.png', import.meta.url).href,
-  '749.png': new URL('@/assets/map/749.png', import.meta.url).href,
-  '711.png': new URL('@/assets/map/711.png', import.meta.url).href,
-  '708.png': new URL('@/assets/map/708.png', import.meta.url).href,
-  '665.png': new URL('@/assets/map/665.png', import.meta.url).href,
+  '107.png': new URL('@/assets/map/107.png', import.meta.url).href,
+  '205.png': new URL('@/assets/map/205.png', import.meta.url).href,
+  '319.png': new URL('@/assets/map/319.png', import.meta.url).href,
+  '325.png': new URL('@/assets/map/325.png', import.meta.url).href,
+  '328.png': new URL('@/assets/map/328.png', import.meta.url).href,
+  '332.png': new URL('@/assets/map/332.png', import.meta.url).href,
+  '450.png': new URL('@/assets/map/450.png', import.meta.url).href,
+  '451.png': new URL('@/assets/map/451.png', import.meta.url).href,
+  '655.png': new URL('@/assets/map/655.png', import.meta.url).href,
   '662.png': new URL('@/assets/map/662.png', import.meta.url).href,
+  '665.png': new URL('@/assets/map/665.png', import.meta.url).href,
+  '708.png': new URL('@/assets/map/708.png', import.meta.url).href,
+  '711.png': new URL('@/assets/map/711.png', import.meta.url).href,
+  '749.png': new URL('@/assets/map/749.png', import.meta.url).href,
+  '758.png': new URL('@/assets/map/758.png', import.meta.url).href,
+  '763.png': new URL('@/assets/map/763.png', import.meta.url).href,
+  '770.png': new URL('@/assets/map/770.png', import.meta.url).href,
+  '774.png': new URL('@/assets/map/774.png', import.meta.url).href,
+  '837.png': new URL('@/assets/map/837.png', import.meta.url).href,
+  '861.png': new URL('@/assets/map/861.png', import.meta.url).href,
+  '863.png': new URL('@/assets/map/863.png', import.meta.url).href,
+  '868.png': new URL('@/assets/map/868.png', import.meta.url).href,
+  '870.png': new URL('@/assets/map/870.png', import.meta.url).href,
 };
 
 const sellingPoints = [
@@ -123,32 +140,37 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
           {/* Center Column - Interactive Map */}
           <div className="order-1 lg:order-2">
             <div className="relative bg-white rounded-xl shadow-lg p-4">
-              {/* Grid Layout - Show each area piece separately */}
-              <div className="grid grid-cols-4 gap-4">
-                {editionAreas.map((area) => (
+              {/* DEBUG GRID - All 23 PNG Files */}
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <p className="text-sm font-bold text-yellow-800 mb-1">🔧 DEBUG MODE: All 23 PNG Files</p>
+                <p className="text-xs text-yellow-700">Compare these shapes to your reference map and note which filename matches each area number.</p>
+              </div>
+              
+              <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                {allPngFiles.map((filename, index) => (
                   <div 
-                    key={area.id}
-                    className="relative bg-gray-100 rounded-lg p-2 cursor-pointer hover:bg-gray-200 transition-colors"
-                    onClick={() => handleAreaClick(area)}
+                    key={filename}
+                    className="relative bg-slate-100 rounded-lg p-2 border-2 border-slate-300 hover:border-community-green transition-colors"
                   >
-                    <img
-                      src={highlightImages[area.highlightImage]}
-                      alt={area.name}
-                      className="w-full h-auto"
-                    />
-                    <div className="text-center mt-1">
-                      <span className="text-xs font-bold" style={{ color: area.color }}>
-                        {area.id}: {area.name}
-                      </span>
+                    <div className="bg-community-navy text-white text-xs font-bold px-2 py-1 rounded mb-2 text-center">
+                      #{index + 1}: {filename}
+                    </div>
+                    <div className="aspect-square flex items-center justify-center bg-white rounded">
+                      <img
+                        src={highlightImages[filename]}
+                        alt={filename}
+                        className="max-w-full max-h-full object-contain"
+                      />
                     </div>
                   </div>
                 ))}
               </div>
-
-              {/* 14 Local Editions Badge */}
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-community-navy text-white px-6 py-2 rounded-full shadow-lg">
-                <span className="font-bold text-lg">14</span>
-                <span className="text-sm ml-1">Local Editions</span>
+              
+              {/* Reference note */}
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-300 rounded-lg">
+                <p className="text-sm font-bold text-blue-800 mb-1">📋 How to identify:</p>
+                <p className="text-xs text-blue-700">Look at each shape above and compare to your reference map. Then tell me which filename corresponds to which area number (1-14).</p>
+                <p className="text-xs text-blue-700 mt-1">Example: "Area 1 (Southampton) = 319.png, Area 2 (Eastleigh) = 107.png"</p>
               </div>
             </div>
 
