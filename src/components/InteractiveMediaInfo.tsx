@@ -221,101 +221,11 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
                   ))}
                 </div>
               </div>
-
-              {/* Selected Area Detail Panel */}
-              {selectedArea && (
-                <div className="mt-4 bg-white rounded-xl shadow-xl border overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-                  {/* Header */}
-                  <div 
-                    className="p-4 text-white relative"
-                    style={{ backgroundColor: selectedArea.color }}
-                  >
-                    <button
-                      onClick={handleClose}
-                      className="absolute top-3 right-3 p-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-                      aria-label="Close details"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-white/20 rounded-full w-12 h-12 flex items-center justify-center">
-                        <span className="text-xl font-bold">{selectedArea.id}</span>
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg leading-tight">{selectedArea.name}</h3>
-                        <p className="text-white/90 text-sm">{selectedArea.postcodes}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 space-y-4">
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center gap-2">
-                        <Home className="h-5 w-5 text-community-green" />
-                        <div>
-                          <p className="text-2xl font-bold text-community-green">
-                            {selectedArea.homes.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-muted-foreground">Homes Reached</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-5 w-5 text-primary" />
-                        <div>
-                          {selectedArea.leafletService.available ? (
-                            <>
-                              <p className="text-2xl font-bold text-primary">
-                                {selectedArea.leafletService.homes?.toLocaleString()}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Leaflet Homes {selectedArea.leafletService.note && `(${selectedArea.leafletService.note})`}
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <p className="text-sm font-semibold text-muted-foreground">Not Available</p>
-                              <p className="text-xs text-muted-foreground">Leaflet Service</p>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Coverage Details */}
-                    <div>
-                      <h4 className="font-semibold text-community-navy mb-2 flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        Coverage Details
-                      </h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {selectedArea.coverageDetails}
-                      </p>
-                    </div>
-
-                    {/* Leaflet Service Badge */}
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">Leaflet Service</span>
-                        {selectedArea.leafletService.available ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-community-green/10 text-community-green text-sm font-semibold">
-                            ✓ Available
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-600 text-sm font-semibold">
-                            ✗ Not Available
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* Right Column - Selling Points */}
-            <div className="bg-white rounded-xl shadow-lg p-4 order-3">
+            {/* Right Column - Selling Points & Area Details */}
+            <div className="bg-white rounded-xl shadow-lg p-4 order-3 space-y-4">
+              {/* Selling Points - Always visible */}
               <div className="space-y-4">
                 {sellingPoints.map((point, index) => (
                   <div key={index} className="flex items-start gap-3">
@@ -362,6 +272,97 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
                   </div>
                 </div>
               </div>
+
+              {/* Selected Area Detail Panel - Shows when area is selected */}
+              {selectedArea && (
+                <div className="border-t pt-4 animate-in slide-in-from-right-4 duration-300">
+                  {/* Header */}
+                  <div 
+                    className="p-3 text-white relative rounded-lg mb-3"
+                    style={{ backgroundColor: selectedArea.color }}
+                  >
+                    <button
+                      onClick={handleClose}
+                      className="absolute top-2 right-2 p-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                      aria-label="Close details"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-white/20 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-bold">{selectedArea.id}</span>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm leading-tight">{selectedArea.name}</h3>
+                        <p className="text-white/90 text-xs">{selectedArea.postcodes}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="space-y-3">
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center gap-2">
+                        <Home className="h-4 w-4 text-community-green flex-shrink-0" />
+                        <div>
+                          <p className="text-lg font-bold text-community-green">
+                            {selectedArea.homes.toLocaleString()}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">Homes Reached</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-primary flex-shrink-0" />
+                        <div>
+                          {selectedArea.leafletService.available ? (
+                            <>
+                              <p className="text-lg font-bold text-primary">
+                                {selectedArea.leafletService.homes?.toLocaleString()}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">
+                                Leaflet {selectedArea.leafletService.note && `(${selectedArea.leafletService.note})`}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs font-semibold text-muted-foreground">Not Available</p>
+                              <p className="text-[10px] text-muted-foreground">Leaflet Service</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Coverage Details */}
+                    <div>
+                      <h4 className="font-semibold text-community-navy text-xs mb-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        Coverage Details
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {selectedArea.coverageDetails}
+                      </p>
+                    </div>
+
+                    {/* Leaflet Service Badge */}
+                    <div className="pt-2 border-t">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Leaflet Service</span>
+                        {selectedArea.leafletService.available ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-community-green/10 text-community-green text-xs font-semibold">
+                            ✓ Available
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-semibold">
+                            ✗ Not Available
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
