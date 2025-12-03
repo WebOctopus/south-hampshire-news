@@ -79,14 +79,21 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
     <TooltipProvider delayDuration={100}>
       <section className={cn("py-12 bg-gradient-to-b from-slate-50 to-white", className)}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Main Section Title */}
+          {/* Header - Dynamic based on selection */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-community-navy mb-2">
-              14 Local Editions
-            </h2>
-            <h3 className="text-xl md:text-2xl font-heading font-bold text-community-green">
-              Essential Facts & Figures
-            </h3>
+            {selectedArea ? (
+              <h2 className="text-xl md:text-2xl font-heading font-bold">
+                <span className="text-community-navy">Area {selectedArea.id}</span>
+                <span className="mx-2 text-muted-foreground">-</span>
+                <span className="text-community-green">{selectedArea.name}</span>
+                <span className="mx-2 text-muted-foreground">-</span>
+                <span className="text-community-navy">{selectedArea.homes.toLocaleString()}</span>
+              </h2>
+            ) : (
+              <h2 className="text-xl md:text-2xl font-heading font-bold text-community-navy">
+                Welcome to Discover's Interactive Media Info - <span className="text-community-green">CLICK ANY BUTTON</span>
+              </h2>
+            )}
           </div>
 
           {/* Three Column Layout */}
@@ -124,23 +131,6 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
             {/* Center Column - Interactive Map */}
             <div className="order-1 lg:order-2">
               <div className="relative bg-white rounded-xl shadow-lg p-4">
-                {/* Dynamic Area Title - Inside Map Section */}
-                <div className="text-center mb-3 min-h-[32px]">
-                  {selectedArea ? (
-                    <p className="text-base md:text-lg font-heading font-bold">
-                      <span className="text-community-navy">Area {selectedArea.id}</span>
-                      <span className="mx-2 text-muted-foreground">-</span>
-                      <span className="text-community-green">{selectedArea.name}</span>
-                      <span className="mx-2 text-muted-foreground">-</span>
-                      <span className="text-community-navy">{selectedArea.homes.toLocaleString()}</span>
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Click any button to view area details
-                    </p>
-                  )}
-                </div>
-                
                 {/* Main Map Container */}
                 <div className="relative w-full">
                   {/* Map Image */}

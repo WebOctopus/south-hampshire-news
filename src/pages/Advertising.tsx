@@ -925,53 +925,249 @@ const effectiveSelectedAreas = useMemo(() => {
         onAreaSelect={(areaId) => console.log('Selected area:', areaId)} 
       />
 
-      {/* Special Offer Section */}
-      <section className="py-16 bg-gradient-to-r from-community-green to-green-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Essential Facts & Figures Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="inline-block bg-white text-community-green px-6 py-2 rounded-full font-bold text-lg mb-6">
-              🎉 LIMITED TIME OFFER
-            </div>
-            <h2 className="text-5xl md:text-6xl font-heading font-bold mb-6">
-              £999 ALL AREAS PACKAGE
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              14 Local Editions
             </h2>
-            <p className="text-2xl md:text-3xl mb-4 font-bold">
-              Reach 142,000 Homes Across All 14 Areas
-            </p>
-            <p className="text-xl mb-8 opacity-90">
-              Save over £500 with our exclusive package deal
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">142,000</div>
-                <div className="text-lg">Total Homes Reached</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-lg">Distribution Areas</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">6</div>
-                <div className="text-lg">Magazine Editions</div>
-              </CardContent>
-            </Card>
+            <h3 className="text-2xl font-heading font-bold text-community-green mb-4">
+              Essential Facts & Figures
+            </h3>
           </div>
 
-          <div className="text-center">
-            <SpecialOfferForm>
-              <Button size="lg" className="bg-white text-community-green hover:bg-gray-100 text-xl px-12 py-6 font-bold">
-                CLAIM THIS OFFER - £999
-              </Button>
-            </SpecialOfferForm>
-          </div>
-        </div>
-      </section>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
+            {/* Area Cards - Vertical Stack */}
+            <div className="space-y-3">
+              {/* Area 1 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-1" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">1</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">SOUTHAMPTON CITY SUBURBS</h3>
+                        <p className="text-gray-600 text-xs">SO15 SO16 SO17</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">10,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        ABC1 homes in the more affluent residential suburban streets of Southampton including Chilworth, Upper Shirley, Rownhams, Nursling Bassett Green, Regents Park, Highfield. Sector 7 of SO16 is delivered to by Royal Mail. Excluding HMO, student areas & flats.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 7,100 homes</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 2 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-2" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">2</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">CHANDLER'S FORD</h3>
+                        <p className="text-gray-600 text-xs">SO53</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">11,300</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Affluent residential suburb between Southampton and Winchester. Includes Valley Park, Knightwood, Hiltingbury, Chalvington, Toynbee, Peverells Wood, Scantabout, Hocombe.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">Yes 11,300 homes</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 3 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-3" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">3</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">FAIR OAK, HORTON HEATH & EASTLEIGH</h3>
+                        <p className="text-gray-600 text-xs">SO50</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">12,500</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Majority of this circulation covers Bishopstoke, Fair Oak, Horton Heath, Lakeside plus the more affluent residential streets of Eastleigh. Properties are either detached or semi-detached, townhouses but excluding flats, council owned areas and terraced houses.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">Yes 12,500 homes</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 4 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-4" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">4</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">HEDGE END & BOTLEY</h3>
+                        <p className="text-gray-600 text-xs">SO30</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">9,400</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        A community east of Southampton, Hedge End and Botley is primarily residential with a retail park and village high streets. A mixture of new build estates, bungalows, older detached and semi-detached homes.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 9,400 homes</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 5 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-5" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">5</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">LOCKS HEATH & WHITELEY</h3>
+                        <p className="text-gray-600 text-xs">SO31 PO15</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">12,000</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        This area includes the residential communities of Locks Heath, Park Gate, Sarisbury Green, Warsash and the new build estate of Whiteley. The suburban area straddles the M27 and lies equidistant from Southampton and Fareham.
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">Yes 12,000 homes</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 6 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-6" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">6</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">FAREHAM & VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">PO12, PO13, PO14, PO15, PO16</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">12,100</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        West of Portsmouth lie the town of Fareham plus a collection of villages; Stubbington, Lee-on-the-Solent, Titchfield. Discover is delivered to selected above average affluent homes in the west side of Fareham
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Service</h4>
+                      <p className="text-xs text-community-green font-bold">YES 12,100 homes</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 7 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-7" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">7</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WICKHAM, B WALTHAM & MEON VALLEY VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">SO32 PO17</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-community-green font-bold text-lg">12,400</div>
+                        <p className="text-xs text-gray-600">Homes</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
+                    <div className="bg-gray-50 rounded-lg p-4 mt-2">
+                      <h4 className="font-bold text-sm text-gray-900 mb-2">Coverage Details</h4>
+                      <p className="text-xs text-gray-700 mb-3">
+                        Often referred to as Meon Valley. Delivered is by Royal Mail and every property in the postcode SO32 includes two sectors 1 and 2 which include the market town of Bishop's Waltham, Waltham Chase, Swanmore, Durley, Upham, Boorley Green. Also included is PO17 which includes Wickham, Shedfield, Shirrell Heath. Every property in these postcodes receive Discover. Often, Discover is the only local magazine delivered to these rural properties, farms, and semi rural homes
+                      </p>
+                      <h4 className="font-bold text-sm text-gray-900 mb-1">Leaflet Services</h4>
+                      <p className="text-xs text-red-600 font-bold">No</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Area 8 */}
+              <Accordion type="single" collapsible>
+                <AccordionItem value="area-8" className="border-0">
+                  <AccordionTrigger className="hover:no-underline p-0">
+                    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border hover:shadow-md transition-shadow w-full">
+                      <div className="bg-community-green rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-bold text-white">8</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-community-navy text-sm leading-tight">WINCHESTER & SURROUNDING VILLAGES</h3>
+                        <p className="text-gray-600 text-xs">SO21 SO22 SO23</p>
                       </div>
                       <div className="text-right">
                         <div className="text-community-green font-bold text-lg">12,000</div>
