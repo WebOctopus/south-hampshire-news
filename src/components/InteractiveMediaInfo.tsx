@@ -132,34 +132,25 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
                   className="absolute inset-0 w-full h-full object-contain"
                 />
 
-                {/* Show ALL area images simultaneously (jigsaw effect) - scaled to 50% */}
+                {/* Show ALL area images simultaneously (jigsaw effect) */}
                 {editionAreas.map((area) => (
                   <img
                     key={area.id}
                     src={highlightImages[area.highlightImage]}
                     alt={area.name}
                     className={cn(
-                      "absolute pointer-events-none transition-all duration-300",
+                      "absolute inset-0 w-full h-full object-contain pointer-events-none transition-all duration-300",
                       // When an area is selected, fade non-selected areas
                       selectedArea 
                         ? selectedArea.id === area.id 
                           ? "opacity-100" 
                           : "opacity-30 grayscale-[40%]"
-                        // When hovering, highlight the hovered area
                         : hoveredArea
                           ? hoveredArea.id === area.id
                             ? "opacity-100"
                             : "opacity-60"
                           : "opacity-100"
                     )}
-                    style={{
-                      width: '50%',
-                      height: '50%',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      objectFit: 'contain'
-                    }}
                   />
                 ))}
 
