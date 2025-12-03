@@ -24,6 +24,25 @@ const sellingPoints = [
   },
 ];
 
+// Map location labels with positions matching the reference image
+const mapLabels = [
+  { name: "Stockbridge", top: 15, left: 28, size: "md", dotPosition: "right", dotColor: "#4ade80" },
+  { name: "Winchester", top: 24, left: 48, size: "md", dotPosition: "right", dotColor: "#4ade80" },
+  { name: "Chandler's Ford", top: 34, left: 44, size: "sm" },
+  { name: "Eastleigh", top: 38, left: 52, size: "sm" },
+  { name: "Romsey", top: 38, left: 32, size: "md", dotPosition: "right", dotColor: "#4ade80" },
+  { name: "Southampton", top: 46, left: 34, size: "lg" },
+  { name: "Meon Valley", top: 32, left: 70, size: "sm" },
+  { name: "Bishop's Waltham", top: 42, left: 70, size: "md", dotPosition: "left", dotColor: "#4ade80" },
+  { name: "Totton", top: 56, left: 32, size: "sm" },
+  { name: "Hedge End", top: 54, left: 56, size: "sm" },
+  { name: "Wickham", top: 52, left: 70, size: "md", dotPosition: "left", dotColor: "#4ade80" },
+  { name: "Hythe", top: 62, left: 34, size: "md", dotPosition: "right", dotColor: "#4ade80" },
+  { name: "New Forest", top: 66, left: 26, size: "lg" },
+  { name: "Locks Heath", top: 72, left: 56, size: "sm" },
+  { name: "Fareham", top: 78, left: 70, size: "md", dotPosition: "left", dotColor: "#3b82f6" },
+];
+
 interface InteractiveMediaInfoProps {
   onAreaSelect?: (areaId: number) => void;
   className?: string;
@@ -165,6 +184,40 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
                         </div>
                       </TooltipContent>
                     </Tooltip>
+                  ))}
+
+                  {/* Location Name Labels */}
+                  {mapLabels.map((label, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "absolute flex items-center gap-1 pointer-events-none",
+                        label.size === "lg" && "text-sm md:text-base font-bold",
+                        label.size === "md" && "text-xs md:text-sm font-semibold",
+                        label.size === "sm" && "text-[10px] md:text-xs font-medium"
+                      )}
+                      style={{
+                        top: `${label.top}%`,
+                        left: `${label.left}%`,
+                        transform: 'translate(-50%, -50%)',
+                        color: '#1e3a5f',
+                        textShadow: '0 0 3px white, 0 0 3px white, 0 0 3px white'
+                      }}
+                    >
+                      {label.dotPosition === 'left' && label.dotColor && (
+                        <span 
+                          className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: label.dotColor }}
+                        />
+                      )}
+                      <span>{label.name}</span>
+                      {label.dotPosition === 'right' && label.dotColor && (
+                        <span 
+                          className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: label.dotColor }}
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
