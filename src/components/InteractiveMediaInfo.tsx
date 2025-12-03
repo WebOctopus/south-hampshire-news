@@ -123,55 +123,25 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
           {/* Center Column - Interactive Map */}
           <div className="order-1 lg:order-2">
             <div className="relative bg-white rounded-xl shadow-lg p-4">
-              {/* Map Container */}
-              <div className="relative w-full" style={{ paddingBottom: '52.89%' }}>
-                {/* Show ALL area images simultaneously (jigsaw effect) */}
+              {/* Grid Layout - Show each area piece separately */}
+              <div className="grid grid-cols-4 gap-4">
                 {editionAreas.map((area) => (
-                  <img
+                  <div 
                     key={area.id}
-                    src={highlightImages[area.highlightImage]}
-                    alt={area.name}
-                    className={cn(
-                      "absolute inset-0 w-full h-full object-contain pointer-events-none transition-all duration-300",
-                      // When an area is selected, fade non-selected areas
-                      selectedArea 
-                        ? selectedArea.id === area.id 
-                          ? "opacity-100" 
-                          : "opacity-30 grayscale-[40%]"
-                        : hoveredArea
-                          ? hoveredArea.id === area.id
-                            ? "opacity-100"
-                            : "opacity-60"
-                          : "opacity-100"
-                    )}
-                  />
-                ))}
-
-                {/* Clickable Area Buttons */}
-                {editionAreas.map((area) => (
-                  <button
-                    key={area.id}
+                    className="relative bg-gray-100 rounded-lg p-2 cursor-pointer hover:bg-gray-200 transition-colors"
                     onClick={() => handleAreaClick(area)}
-                    onMouseEnter={() => setHoveredArea(area)}
-                    onMouseLeave={() => setHoveredArea(null)}
-                    className={cn(
-                      "absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center",
-                      "text-white text-xs md:text-sm font-bold",
-                      "transition-all duration-200 transform hover:scale-125",
-                      "focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2",
-                      "shadow-lg hover:shadow-xl",
-                      selectedArea?.id === area.id && "ring-2 ring-white scale-125"
-                    )}
-                    style={{
-                      top: `${area.buttonPosition.top}%`,
-                      left: `${area.buttonPosition.left}%`,
-                      backgroundColor: area.color,
-                      transform: `translate(-50%, -50%) ${selectedArea?.id === area.id || hoveredArea?.id === area.id ? 'scale(1.25)' : 'scale(1)'}`,
-                    }}
-                    aria-label={`View ${area.name} - ${area.homes.toLocaleString()} homes`}
                   >
-                    {area.id}
-                  </button>
+                    <img
+                      src={highlightImages[area.highlightImage]}
+                      alt={area.name}
+                      className="w-full h-auto"
+                    />
+                    <div className="text-center mt-1">
+                      <span className="text-xs font-bold" style={{ color: area.color }}>
+                        {area.id}: {area.name}
+                      </span>
+                    </div>
+                  </div>
                 ))}
               </div>
 
