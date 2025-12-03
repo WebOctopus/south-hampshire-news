@@ -920,6 +920,17 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
+      {/* 14 Local Editions Section Header */}
+      <section className="pt-16 pb-8 bg-gradient-to-b from-slate-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-4xl font-heading font-bold text-community-navy">
+              14 Local Editions
+            </h2>
+          </div>
+        </div>
+      </section>
+
       {/* Interactive Media Info Section - Full Width */}
       <InteractiveMediaInfo 
         onAreaSelect={(areaId) => console.log('Selected area:', areaId)} 
