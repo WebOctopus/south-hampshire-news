@@ -223,59 +223,11 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
               </div>
             </div>
 
-            {/* Right Column - Selling Points & Area Details */}
+            {/* Right Column - Area Details & Selling Points */}
             <div className="bg-white rounded-xl shadow-lg p-4 order-3 space-y-4">
-              {/* Selling Points - Always visible */}
-              <div className="space-y-4">
-                {sellingPoints.map((point, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="bg-community-green/10 rounded-full p-2 flex-shrink-0">
-                      <point.icon className="h-5 w-5 text-community-green" />
-                    </div>
-                    <div>
-                      <p className={cn(
-                        "font-semibold text-community-navy text-sm",
-                        point.underline && "underline decoration-community-green decoration-2 underline-offset-2"
-                      )}>
-                        {point.title}
-                      </p>
-                      {point.subtitle && (
-                        <p className="text-xs text-muted-foreground mt-1">{point.subtitle}</p>
-                      )}
-                      {point.subtitle2 && (
-                        <p className="text-xs text-muted-foreground">{point.subtitle2}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {/* Total Stats */}
-                <div className="mt-6 pt-4 border-t">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-community-green">
-                      {getTotalHomes().toLocaleString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Total Homes Reached</p>
-                  </div>
-                </div>
-
-                {/* Partner Logos Placeholder */}
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-xs text-center text-muted-foreground mb-3">Distribution Partners</p>
-                  <div className="flex flex-col gap-2">
-                    <div className="h-10 bg-gray-100 rounded flex items-center justify-center">
-                      <span className="text-xs text-gray-400">Hampshire Leaflets</span>
-                    </div>
-                    <div className="h-10 bg-gray-100 rounded flex items-center justify-center">
-                      <span className="text-xs text-gray-400">Royal Mail</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Selected Area Detail Panel - Shows when area is selected */}
+              {/* Selected Area Detail Panel - Shows when area is selected (NOW ON TOP) */}
               {selectedArea && (
-                <div className="border-t pt-4 animate-in slide-in-from-right-4 duration-300">
+                <div className="pb-4 border-b animate-in slide-in-from-top-4 duration-300">
                   {/* Header */}
                   <div 
                     className="p-3 text-white relative rounded-lg mb-3"
@@ -363,6 +315,54 @@ const InteractiveMediaInfo: React.FC<InteractiveMediaInfoProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* Selling Points - Always visible (NOW BELOW) */}
+              <div className="space-y-4">
+                {sellingPoints.map((point, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="bg-community-green/10 rounded-full p-2 flex-shrink-0">
+                      <point.icon className="h-5 w-5 text-community-green" />
+                    </div>
+                    <div>
+                      <p className={cn(
+                        "font-semibold text-community-navy text-sm",
+                        point.underline && "underline decoration-community-green decoration-2 underline-offset-2"
+                      )}>
+                        {point.title}
+                      </p>
+                      {point.subtitle && (
+                        <p className="text-xs text-muted-foreground mt-1">{point.subtitle}</p>
+                      )}
+                      {point.subtitle2 && (
+                        <p className="text-xs text-muted-foreground">{point.subtitle2}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Total Stats */}
+                <div className="mt-6 pt-4 border-t">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-community-green">
+                      {getTotalHomes().toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Total Homes Reached</p>
+                  </div>
+                </div>
+
+                {/* Partner Logos Placeholder */}
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-xs text-center text-muted-foreground mb-3">Distribution Partners</p>
+                  <div className="flex flex-col gap-2">
+                    <div className="h-10 bg-gray-100 rounded flex items-center justify-center">
+                      <span className="text-xs text-gray-400">Hampshire Leaflets</span>
+                    </div>
+                    <div className="h-10 bg-gray-100 rounded flex items-center justify-center">
+                      <span className="text-xs text-gray-400">Royal Mail</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
