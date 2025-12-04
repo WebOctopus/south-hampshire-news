@@ -932,16 +932,15 @@ const effectiveSelectedAreas = useMemo(() => {
             </p>
           </div>
           
-          {/* Adobe InDesign Interactive Embed - cropped to hide Adobe UI */}
+          {/* Adobe InDesign Interactive Embed - cropped to hide Adobe UI bars */}
           <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
-            <div className="relative w-full overflow-hidden" style={{ paddingBottom: '58%' }}>
+            <div className="relative w-full overflow-hidden" style={{ paddingBottom: '62%' }}>
               <iframe
                 src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=false"
-                className="absolute w-full h-full"
+                className="absolute w-full"
                 style={{ 
-                  transform: 'scale(1.12)', 
-                  transformOrigin: 'center center',
-                  top: '-6%',
+                  height: '115%',
+                  top: '-5%',
                   left: '0'
                 }}
                 frameBorder="0"
