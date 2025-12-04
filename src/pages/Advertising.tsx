@@ -933,13 +933,12 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
           
           {/* Adobe InDesign Interactive Embed */}
-          <div className="w-full rounded-xl overflow-hidden shadow-xl border border-border bg-white">
-            <div className="relative w-full" style={{ paddingBottom: '75%' }}>
+          <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
+            <div className="relative w-full" style={{ paddingBottom: '70%' }}>
               <iframe
-                src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=true"
+                src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=false"
                 className="absolute inset-0 w-full h-full"
                 frameBorder="0"
-                allowFullScreen
                 title="14 Local Editions Interactive Map"
               />
             </div>
