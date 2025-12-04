@@ -303,20 +303,16 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   // based on whether it should start in odd or even months
                   let startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
                   
-                  if (pricingModel === 'bogof' && startMonth) {
+                  // If the selected start month doesn't exist in this area's schedule,
+                  // find the first available month at or after the selected start date
+                  if (startMonth && !schedule.some((s: any) => s.month === startMonth)) {
                     const baseStartDate = new Date(startMonth + '-01');
-                    const baseMonth = baseStartDate.getMonth(); // 0-11
-                    const isEvenStart = baseMonth % 2 === 1; // Jan=0, Feb=1, so Feb is "even" in our alternating pattern
-                    
-                    // Alternate areas: even index gets base month, odd index gets next month
-                    const shouldUseNextMonth = areaIndex % 2 !== 0;
-                    
-                    if (shouldUseNextMonth) {
-                      // Find the next available month in this area's schedule
-                      const baseStartIndex = schedule.findIndex((s: any) => s.month === startMonth);
-                      if (baseStartIndex >= 0 && baseStartIndex + 1 < schedule.length) {
-                        startMonth = schedule[baseStartIndex + 1].month;
-                      }
+                    const futureMonth = schedule.find((s: any) => {
+                      const scheduleDate = new Date(s.month + '-01');
+                      return scheduleDate >= baseStartDate;
+                    });
+                    if (futureMonth) {
+                      startMonth = futureMonth.month;
                     }
                   }
                   
