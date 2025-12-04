@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, AlertCircle, CheckCircle2, Info, HelpCircle } from "lucide-react";
-import InteractiveMediaInfo from "@/components/InteractiveMediaInfo";
+
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
@@ -920,21 +920,32 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
-      {/* 14 Local Editions Section Header */}
-      <section className="pt-16 pb-8 bg-gradient-to-b from-slate-50 to-white">
+      {/* 14 Local Editions Section with Adobe Interactive Embed */}
+      <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-4xl font-heading font-bold text-community-navy">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
               14 Local Editions
             </h2>
+            <p className="text-lg text-muted-foreground">
+              Click on a numbered button or area name to view detailed distribution information
+            </p>
+          </div>
+          
+          {/* Adobe InDesign Interactive Embed */}
+          <div className="w-full rounded-xl overflow-hidden shadow-xl border border-border bg-white">
+            <div className="relative w-full" style={{ paddingBottom: '75%' }}>
+              <iframe
+                src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=true"
+                className="absolute inset-0 w-full h-full"
+                frameBorder="0"
+                allowFullScreen
+                title="14 Local Editions Interactive Map"
+              />
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Interactive Media Info Section - Full Width */}
-      <InteractiveMediaInfo 
-        onAreaSelect={(areaId) => console.log('Selected area:', areaId)} 
-      />
 
       {/* Special Offer Section */}
       <section className="py-16 bg-gradient-to-r from-community-green to-green-600 text-white relative overflow-hidden">
