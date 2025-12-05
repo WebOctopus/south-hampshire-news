@@ -945,6 +945,8 @@ const effectiveSelectedAreas = useMemo(() => {
                 }}
                 frameBorder="0"
                 title="14 Local Editions Interactive Map"
+                allowFullScreen={false}
+                sandbox="allow-scripts allow-same-origin allow-popups-to-escape-sandbox"
               />
             </div>
           </div>
