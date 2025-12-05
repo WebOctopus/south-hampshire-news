@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, AlertCircle, Package, MapPin, Calendar, Layout, Pencil, DollarSign, Phone } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Package, MapPin, Calendar, Layout, Pencil, DollarSign, Phone, Home, Sparkles } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { User } from '@supabase/supabase-js';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+import { calculatePaymentAmount, formatPaymentPrice } from '@/lib/paymentCalculations';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -66,6 +67,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   // Ad size and design
   const [selectedAdSize, setSelectedAdSize] = useState<string>('');
   const [includeDesign, setIncludeDesign] = useState(false);
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState<string>('monthly');
   const [selectedLeafletSize, setSelectedLeafletSize] = useState<string>('');
   
   // Load data
@@ -594,48 +596,114 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         </CardContent>
       </Card>
 
-      {/* Pricing Summary */}
+      {/* 3 Payment Options */}
       {pricingBreakdown && (
         <Card className="border-primary/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
               <DollarSign className="h-5 w-5" />
-              Pricing Summary
+              3 Payment Options
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {'basePrice' in pricingBreakdown && (
-              <div className="flex justify-between text-sm">
-                <span>Base Price:</span>
-                <span>{pricingModel === 'leafleting' ? formatLeafletPrice((pricingBreakdown as any).basePrice) : formatPrice((pricingBreakdown as any).basePrice)}</span>
-              </div>
-            )}
-            {'volumeDiscount' in pricingBreakdown && (pricingBreakdown as any).volumeDiscount > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
-                <span>Volume Discount ({(pricingBreakdown as any).volumeDiscount}%):</span>
-                <span>-{'basePrice' in pricingBreakdown && formatPrice((pricingBreakdown as any).basePrice * ((pricingBreakdown as any).volumeDiscount / 100))}</span>
-              </div>
-            )}
-            {'durationDiscount' in pricingBreakdown && (pricingBreakdown as any).durationDiscount && (pricingBreakdown as any).durationDiscount > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
-                <span>Duration Discount ({(pricingBreakdown as any).durationDiscount}%):</span>
-                <span>-{'basePrice' in pricingBreakdown && formatPrice((pricingBreakdown as any).basePrice * ((pricingBreakdown as any).durationDiscount / 100))}</span>
-              </div>
-            )}
-            {includeDesign && 'designFee' in pricingBreakdown && (pricingBreakdown as any).designFee && (pricingBreakdown as any).designFee > 0 && (
-              <div className="flex justify-between text-sm">
-                <span>Design Service:</span>
-                <span>+{formatPrice((pricingBreakdown as any).designFee)}</span>
-              </div>
-            )}
-            <Separator />
-            <div className="flex justify-between text-lg font-bold">
-              <span>Total:</span>
-              <span className="text-primary">{pricingModel === 'leafleting' ? formatLeafletPrice(pricingBreakdown.finalTotal) : formatPrice(pricingBreakdown.finalTotal)}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Total Circulation: {pricingBreakdown.totalCirculation.toLocaleString()}
-            </div>
+          <CardContent className="space-y-4">
+            {(() => {
+              const baseTotal = pricingBreakdown.finalTotal || 0;
+              const circulation = pricingBreakdown.totalCirculation || 0;
+              const designFee = includeDesign && 'designFee' in pricingBreakdown ? (pricingBreakdown as any).designFee || 0 : 0;
+              
+              if (!baseTotal) return null;
+
+              // Sort payment options
+              const sortedOptions = [...paymentOptions].sort((a, b) => {
+                const order: Record<string, number> = { 'monthly': 1, '6_months': 2, '12_months': 3 };
+                return (order[a.option_type] || 99) - (order[b.option_type] || 99);
+              });
+
+              return (
+                <>
+                  <RadioGroup value={selectedPaymentOption} onValueChange={setSelectedPaymentOption} className="space-y-3">
+                    {sortedOptions.map((option) => {
+                      const amount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
+                      const isMonthly = option.option_type === 'monthly';
+                      const hasDiscount = option.discount_percentage > 0;
+
+                      return (
+                        <div
+                          key={option.id}
+                          className={`flex items-center space-x-3 p-4 rounded-lg border transition-all cursor-pointer ${
+                            selectedPaymentOption === option.option_type
+                              ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          onClick={() => setSelectedPaymentOption(option.option_type)}
+                        >
+                          <RadioGroupItem value={option.option_type} id={option.option_type} />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={option.option_type} className="font-semibold cursor-pointer">
+                                {option.display_name}
+                              </Label>
+                              {hasDiscount && (
+                                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                                  Save {option.discount_percentage}%
+                                </Badge>
+                              )}
+                            </div>
+                            {option.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
+                            )}
+                            {isMonthly && option.minimum_payments && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {option.minimum_payments} monthly payments
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-lg">
+                              {formatPaymentPrice(amount)}
+                            </div>
+                            {isMonthly && <span className="text-xs text-muted-foreground">/month</span>}
+                            {!isMonthly && <span className="text-xs text-muted-foreground">+ VAT</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+
+                  {/* Amazing Value Section */}
+                  {circulation > 0 && (
+                    <>
+                      <Separator />
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sparkles className="h-5 w-5 text-amber-600" />
+                          <span className="font-semibold text-amber-800 dark:text-amber-400">Amazing Value</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Home className="h-4 w-4 text-muted-foreground" />
+                          <span>
+                            Only <strong className="text-primary">{formatPaymentPrice((baseTotal / circulation) * 1000)}</strong> per 1,000 homes reached
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Summary Info */}
+                  <Separator />
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Campaign Cost:</span>
+                      <span className="font-semibold">{formatPaymentPrice(baseTotal)} + VAT</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Circulation:</span>
+                      <span className="font-semibold">{circulation.toLocaleString()} homes</span>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
       )}
