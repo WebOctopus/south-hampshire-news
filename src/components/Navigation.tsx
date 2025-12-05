@@ -93,18 +93,6 @@ const Navigation = () => {
     }
   };
 
-  // Programmatic navigation handler to avoid URL encoding issues with hash/query links
-  const handleNavigation = (href: string) => {
-    setIsMenuOpen(false);
-    
-    // For links with hash or query params, use window.location for clean navigation
-    if (href.includes('#') || href.includes('?')) {
-      window.location.href = href;
-    } else {
-      navigate(href);
-    }
-  };
-
   const homeDropdownItems = [
     { name: 'Latest Community News', href: '/#news', description: 'Stay updated with the latest local stories and updates', icon: Newspaper },
     { name: 'Featured Advertisers', href: '/#advertisers', description: 'Discover local businesses and services in your area', icon: Star },
@@ -198,13 +186,9 @@ const Navigation = () => {
                                     const IconComponent = item.icon;
                                     return (
                                       <NavigationMenuLink key={item.name} asChild>
-                                        <a
-                                          href={item.href}
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            handleNavigation(item.href);
-                                          }}
-                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
+                                        <Link
+                                          to={item.href}
+                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
                                         >
                                           <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
                                             <IconComponent size={20} />
@@ -217,7 +201,7 @@ const Navigation = () => {
                                               {item.description}
                                             </p>
                                           </div>
-                                        </a>
+                                        </Link>
                                       </NavigationMenuLink>
                                     );
                                   })}
@@ -356,14 +340,11 @@ const Navigation = () => {
                             {section.items.map((item) => {
                               const IconComponent = item.icon;
                               return (
-                                <a
+                                <Link
                                   key={item.name}
-                                  href={item.href}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNavigation(item.href);
-                                  }}
-                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group cursor-pointer"
+                                  to={item.href}
+                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group"
+                                  onClick={() => setIsMenuOpen(false)}
                                 >
                                   <div className="flex-shrink-0 w-5 h-5 text-muted-foreground group-hover:text-community-green transition-colors">
                                     <IconComponent size={18} />
@@ -376,7 +357,7 @@ const Navigation = () => {
                                       {item.description}
                                     </p>
                                   </div>
-                                </a>
+                                </Link>
                               );
                             })}
                           </div>
