@@ -93,6 +93,15 @@ const Navigation = () => {
     }
   };
 
+  // Helper to parse href for hash links - React Router needs object syntax for hashes
+  const parseHref = (href: string): string | { pathname: string; hash: string } => {
+    if (href.includes('#')) {
+      const [pathname, hash] = href.split('#');
+      return { pathname: pathname || '/', hash };
+    }
+    return href;
+  };
+
   const homeDropdownItems = [
     { name: 'Latest Community News', href: '/#news', description: 'Stay updated with the latest local stories and updates', icon: Newspaper },
     { name: 'Featured Advertisers', href: '/#advertisers', description: 'Discover local businesses and services in your area', icon: Star },
@@ -187,7 +196,7 @@ const Navigation = () => {
                                     return (
                                       <NavigationMenuLink key={item.name} asChild>
                                         <Link
-                                          to={item.href}
+                                          to={parseHref(item.href)}
                                           className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
                                         >
                                           <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
@@ -342,7 +351,7 @@ const Navigation = () => {
                               return (
                                 <Link
                                   key={item.name}
-                                  to={item.href}
+                                  to={parseHref(item.href)}
                                   className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group"
                                   onClick={() => setIsMenuOpen(false)}
                                 >
