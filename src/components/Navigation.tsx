@@ -97,7 +97,7 @@ const Navigation = () => {
   const parseHref = (href: string): string | { pathname: string; hash: string } => {
     if (href.includes('#')) {
       const [pathname, hash] = href.split('#');
-      return { pathname: pathname || '/', hash };
+      return { pathname: pathname || '/', hash: `#${hash}` };
     }
     return href;
   };
