@@ -93,13 +93,16 @@ const Navigation = () => {
     }
   };
 
-  // Helper to parse href for hash links - React Router needs object syntax for hashes
-  const parseHref = (href: string): string | { pathname: string; hash: string } => {
-    if (href.includes('#')) {
-      const [pathname, hash] = href.split('#');
-      return { pathname: pathname || '/', hash: `#${hash}` };
+  // Programmatic navigation handler to avoid URL encoding issues with hash/query links
+  const handleNavigation = (href: string) => {
+    setIsMenuOpen(false);
+    
+    // For links with hash or query params, use window.location for clean navigation
+    if (href.includes('#') || href.includes('?')) {
+      window.location.href = href;
+    } else {
+      navigate(href);
     }
-    return href;
   };
 
   const homeDropdownItems = [
@@ -195,9 +198,13 @@ const Navigation = () => {
                                     const IconComponent = item.icon;
                                     return (
                                       <NavigationMenuLink key={item.name} asChild>
-                                        <Link
-                                          to={parseHref(item.href)}
-                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
+                                        <a
+                                          href={item.href}
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            handleNavigation(item.href);
+                                          }}
+                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
                                         >
                                           <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
                                             <IconComponent size={20} />
@@ -210,7 +217,7 @@ const Navigation = () => {
                                               {item.description}
                                             </p>
                                           </div>
-                                        </Link>
+                                        </a>
                                       </NavigationMenuLink>
                                     );
                                   })}
@@ -349,11 +356,14 @@ const Navigation = () => {
                             {section.items.map((item) => {
                               const IconComponent = item.icon;
                               return (
-                                <Link
+                                <a
                                   key={item.name}
-                                  to={parseHref(item.href)}
-                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group"
-                                  onClick={() => setIsMenuOpen(false)}
+                                  href={item.href}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleNavigation(item.href);
+                                  }}
+                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group cursor-pointer"
                                 >
                                   <div className="flex-shrink-0 w-5 h-5 text-muted-foreground group-hover:text-community-green transition-colors">
                                     <IconComponent size={18} />
@@ -366,7 +376,7 @@ const Navigation = () => {
                                       {item.description}
                                     </p>
                                   </div>
-                                </Link>
+                                </a>
                               );
                             })}
                           </div>
