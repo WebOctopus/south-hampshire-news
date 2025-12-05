@@ -93,6 +93,20 @@ const Navigation = () => {
     }
   };
 
+  // Handle navigation for links with hash (#) or query params (?)
+  // Uses direct window navigation to avoid React Router URL encoding issues
+  const handleNavigation = (href: string, closeMenu?: boolean) => {
+    if (closeMenu) {
+      setIsMenuOpen(false);
+    }
+    
+    if (href.includes('#') || href.includes('?')) {
+      window.location.href = href;
+    } else {
+      navigate(href);
+    }
+  };
+
   const homeDropdownItems = [
     { name: 'Latest Community News', href: '/#news', description: 'Stay updated with the latest local stories and updates', icon: Newspaper },
     { name: 'Featured Advertisers', href: '/#advertisers', description: 'Discover local businesses and services in your area', icon: Star },
@@ -186,9 +200,9 @@ const Navigation = () => {
                                     const IconComponent = item.icon;
                                     return (
                                       <NavigationMenuLink key={item.name} asChild>
-                                        <Link
-                                          to={item.href}
-                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors"
+                                        <div
+                                          onClick={() => handleNavigation(item.href)}
+                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
                                         >
                                           <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
                                             <IconComponent size={20} />
@@ -201,7 +215,7 @@ const Navigation = () => {
                                               {item.description}
                                             </p>
                                           </div>
-                                        </Link>
+                                        </div>
                                       </NavigationMenuLink>
                                     );
                                   })}
@@ -340,11 +354,10 @@ const Navigation = () => {
                             {section.items.map((item) => {
                               const IconComponent = item.icon;
                               return (
-                                <Link
+                                <div
                                   key={item.name}
-                                  to={item.href}
-                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group"
-                                  onClick={() => setIsMenuOpen(false)}
+                                  onClick={() => handleNavigation(item.href, true)}
+                                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent transition-colors group cursor-pointer"
                                 >
                                   <div className="flex-shrink-0 w-5 h-5 text-muted-foreground group-hover:text-community-green transition-colors">
                                     <IconComponent size={18} />
@@ -357,7 +370,7 @@ const Navigation = () => {
                                       {item.description}
                                     </p>
                                   </div>
-                                </Link>
+                                </div>
                               );
                             })}
                           </div>
