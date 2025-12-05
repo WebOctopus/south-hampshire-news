@@ -154,7 +154,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         subscriptionDurations || [],
         [],
         pricingModel === 'bogof' ? bogofFreeAreas : [],
-        profile?.agency_discount_percent || 0
+        0 // Don't apply agency discount to display - matches frontend calculator
       );
     }
   }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, leafletAreas, leafletDurations]);
