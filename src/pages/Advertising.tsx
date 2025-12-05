@@ -946,7 +946,16 @@ const effectiveSelectedAreas = useMemo(() => {
                 frameBorder="0"
                 title="14 Local Editions Interactive Map"
                 allowFullScreen={false}
-                sandbox="allow-scripts allow-same-origin allow-popups-to-escape-sandbox"
+              />
+              {/* Overlay to block clicks on Adobe UI chrome at top */}
+              <div 
+                className="absolute top-0 left-0 right-0 h-4 bg-transparent z-10"
+                style={{ pointerEvents: 'auto' }}
+              />
+              {/* Overlay to block clicks on Adobe UI chrome at bottom */}
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-4 bg-transparent z-10"
+                style={{ pointerEvents: 'auto' }}
               />
             </div>
           </div>
