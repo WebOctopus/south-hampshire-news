@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, AlertCircle, Package, MapPin, Calendar, Layout, Pencil, DollarSign, Phone, Home, Sparkles } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Package, MapPin, Calendar, Layout, Pencil, PoundSterling, Phone, Home, Sparkles } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
@@ -601,7 +601,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         <Card className="border-primary/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
-              <DollarSign className="h-5 w-5" />
+              <PoundSterling className="h-5 w-5" />
               3 Payment Options
             </CardTitle>
           </CardHeader>
