@@ -23,6 +23,29 @@ import { Button } from '@/components/ui/button';
 import LeafletSizeStep from '@/components/LeafletSizeStep';
 import { cn } from '@/lib/utils';
 import { getFraudDetectionData } from '@/hooks/useBogofEligibility';
+import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+
+// Helper function to calculate the correct monthly price for display consistency
+const calculateMonthlyPrice = (
+  finalTotal: number,
+  pricingModel: string,
+  durationMultiplier: number,
+  paymentOptions: any[]
+): number => {
+  if (!finalTotal || finalTotal <= 0) return 0;
+  
+  // Find the monthly payment option to get minimum_payments
+  const monthlyOption = paymentOptions?.find(opt => opt.option_type === 'monthly');
+  const minPayments = monthlyOption?.minimum_payments || 6;
+  
+  if (pricingModel === 'bogof') {
+    // BOGOF: total / 2 (50% discount) / minimum_payments
+    return finalTotal / 2 / minPayments;
+  }
+  
+  // Fixed/Leafleting: total / duration (number of issues/months)
+  return finalTotal / (durationMultiplier || 1);
+};
 
 interface AdvertisingStepFormProps {
   children?: React.ReactNode;
@@ -36,6 +59,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const { durations, subscriptionDurations, areas, adSizes, volumeDiscounts } = usePricingData();
   const { data: leafletDurations } = useLeafletCampaignDurations();
   const { leafletAreas } = useLeafletData();
+  const { data: paymentOptions } = usePaymentOptions();
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
   const [currentStep, setCurrentStep] = useState(1);
@@ -326,7 +350,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
         bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
         bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-        monthly_price: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        monthly_price: calculateMonthlyPrice(
+          Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          selectedPricingModel,
+          Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+          paymentOptions || []
+        ),
         subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
         final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
@@ -541,7 +570,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
           bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
           bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-          monthly_price: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          monthly_price: calculateMonthlyPrice(
+            Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+            selectedPricingModel,
+            Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+            paymentOptions || []
+          ),
           subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
           final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
           duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
@@ -611,7 +645,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
         bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
         bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-        monthly_price: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        monthly_price: calculateMonthlyPrice(
+          Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          selectedPricingModel,
+          Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+          paymentOptions || []
+        ),
         subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
         final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
