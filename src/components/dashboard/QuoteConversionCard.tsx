@@ -161,13 +161,9 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
           <div className="flex items-center gap-2 text-sm">
             <div>
               <div className={`font-semibold text-xl ${isDraft ? 'text-amber-900' : 'text-primary'}`}>
-                {formatPrice(quote.final_total)} + vat
+                {formatPrice(quote.monthly_price || quote.final_total)} + vat
               </div>
-              {quote.monthly_price > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  ({formatPrice(quote.monthly_price)} per month)
-                </div>
-              )}
+              <div className="text-xs text-muted-foreground">per month</div>
             </div>
           </div>
           
