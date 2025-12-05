@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -67,6 +67,7 @@ const Dashboard = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -228,8 +229,10 @@ const Dashboard = () => {
     }
   };
 
+  // Always reload data when navigating to dashboard or when user changes
   useEffect(() => {
     if (user) {
+      // Always load fresh data when dashboard mounts or user navigates here
       loadBusinesses();
       loadEvents();
       loadQuotes();
@@ -283,7 +286,7 @@ const Dashboard = () => {
         }, 1500);
       }
     }
-  }, [user]);
+  }, [user, location.pathname]);
 
   useEffect(() => {
     const savePending = async () => {
