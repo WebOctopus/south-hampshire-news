@@ -1266,7 +1266,7 @@ const Dashboard = () => {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDeleteQuoteClick(quote.id)}
+                            onClick={() => handleDeleteQuoteClick(quote)}
                             disabled={deletingQuoteId === quote.id}
                           >
                             <Trash2 className="h-4 w-4" />
