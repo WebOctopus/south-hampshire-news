@@ -56,9 +56,10 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
 
   // Track if pricing selections have changed from the original quote
   useEffect(() => {
-    const areasChanged = JSON.stringify(selectedAreas.sort()) !== JSON.stringify((quote.selected_area_ids || []).sort());
-    const bogofPaidChanged = JSON.stringify(bogofPaidAreas.sort()) !== JSON.stringify((quote.bogof_paid_area_ids || []).sort());
-    const bogofFreeChanged = JSON.stringify(bogofFreeAreas.sort()) !== JSON.stringify((quote.bogof_free_area_ids || []).sort());
+    // Use spread to avoid mutating state arrays
+    const areasChanged = JSON.stringify([...selectedAreas].sort()) !== JSON.stringify([...(quote.selected_area_ids || [])].sort());
+    const bogofPaidChanged = JSON.stringify([...bogofPaidAreas].sort()) !== JSON.stringify([...(quote.bogof_paid_area_ids || [])].sort());
+    const bogofFreeChanged = JSON.stringify([...bogofFreeAreas].sort()) !== JSON.stringify([...(quote.bogof_free_area_ids || [])].sort());
     const adSizeChanged = selectedAdSize !== (quote.ad_size_id || '');
     const durationChanged = selectedDuration !== (quote.duration_id || '');
     const modelChanged = pricingModel !== (quote.pricing_model || 'fixed');
@@ -556,9 +557,9 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
           </CardHeader>
           <CardContent>
             {(() => {
-              // Use stored values if not modified
-              const baseTotal = isModified ? pricingBreakdown?.finalTotal : quote.final_total;
-              const totalCirculation = isModified ? pricingBreakdown?.totalCirculation : quote.total_circulation;
+              // Always prioritize stored values - only use recalculated if stored values don't exist
+              const baseTotal = quote.final_total || pricingBreakdown?.finalTotal || 0;
+              const totalCirculation = quote.total_circulation || pricingBreakdown?.totalCirculation || 0;
               
               if (!baseTotal) return null;
               
