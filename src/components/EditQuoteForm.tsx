@@ -14,28 +14,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
-
-// Helper function to calculate the correct monthly price for display consistency
-const calculateMonthlyPrice = (
-  finalTotal: number,
-  pricingModel: string,
-  durationMultiplier: number,
-  paymentOptions: any[]
-): number => {
-  if (!finalTotal || finalTotal <= 0) return 0;
-  
-  // Find the monthly payment option to get minimum_payments
-  const monthlyOption = paymentOptions?.find(opt => opt.option_type === 'monthly');
-  const minPayments = monthlyOption?.minimum_payments || 6;
-  
-  if (pricingModel === 'bogof') {
-    // BOGOF: total / 2 (50% discount) / minimum_payments
-    return finalTotal / 2 / minPayments;
-  }
-  
-  // Fixed/Leafleting: total / duration (number of issues/months)
-  return finalTotal / (durationMultiplier || 1);
-};
+import { calculatePaymentAmount } from '@/lib/paymentCalculations';
 
 interface EditQuoteFormProps {
   quote: any;
@@ -72,6 +51,20 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   const [selectedDuration, setSelectedDuration] = useState<string>(quote.duration_id || '');
   const [selectedMonths, setSelectedMonths] = useState<Record<string, string[]>>(quote.selections?.selectedMonths || {});
   const [submitting, setSubmitting] = useState(false);
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState<string>('monthly');
+  const [isModified, setIsModified] = useState(false);
+
+  // Track if pricing selections have changed from the original quote
+  useEffect(() => {
+    const areasChanged = JSON.stringify(selectedAreas.sort()) !== JSON.stringify((quote.selected_area_ids || []).sort());
+    const bogofPaidChanged = JSON.stringify(bogofPaidAreas.sort()) !== JSON.stringify((quote.bogof_paid_area_ids || []).sort());
+    const bogofFreeChanged = JSON.stringify(bogofFreeAreas.sort()) !== JSON.stringify((quote.bogof_free_area_ids || []).sort());
+    const adSizeChanged = selectedAdSize !== (quote.ad_size_id || '');
+    const durationChanged = selectedDuration !== (quote.duration_id || '');
+    const modelChanged = pricingModel !== (quote.pricing_model || 'fixed');
+    
+    setIsModified(areasChanged || bogofPaidChanged || bogofFreeChanged || adSizeChanged || durationChanged || modelChanged);
+  }, [selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, pricingModel, quote]);
 
   // Calculate effective areas based on pricing model
   const effectiveSelectedAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
@@ -166,24 +159,27 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   };
 
   const handleSave = async () => {
-    if (!pricingBreakdown) return;
+    // Use stored values if not modified, otherwise use recalculated breakdown
+    const finalTotal = isModified ? pricingBreakdown?.finalTotal : quote.final_total;
+    const subtotal = isModified ? (pricingBreakdown?.subtotal || pricingBreakdown?.finalTotal) : quote.subtotal;
+    const totalCirculation = isModified ? pricingBreakdown?.totalCirculation : quote.total_circulation;
+    const durationMultiplier = isModified ? pricingBreakdown?.durationMultiplier : quote.duration_multiplier;
+    
+    if (!finalTotal) return;
 
     setSubmitting(true);
     try {
       console.log('Starting quote save...');
       
       const relevantDurationData = effectiveDurations?.find(d => d.id === selectedDuration);
-      // Check if it's a regular duration (has discount_percentage) or leaflet duration
       const isRegularDuration = relevantDurationData && 'discount_percentage' in relevantDurationData;
       const durationDiscountPercent = isRegularDuration ? (relevantDurationData as any).discount_percentage : 0;
       
-      // Calculate monthly price using the same logic as the frontend calculator
-      const monthlyFinal = calculateMonthlyPrice(
-        pricingBreakdown.finalTotal,
-        pricingModel,
-        pricingBreakdown.durationMultiplier || 1,
-        paymentOptions
-      );
+      // Calculate monthly price using calculatePaymentAmount (same as frontend calculator)
+      const monthlyOption = paymentOptions.find(opt => opt.option_type === 'monthly');
+      const monthlyFinal = monthlyOption 
+        ? calculatePaymentAmount(finalTotal, monthlyOption, pricingModel, paymentOptions, 0)
+        : quote.monthly_price || 0;
 
       const updatedQuote = {
         contact_name: formData.contact_name,
@@ -198,13 +194,13 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
         bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : [],
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
-        subtotal: pricingBreakdown.subtotal || pricingBreakdown.finalTotal,
-        final_total: pricingBreakdown.finalTotal,
-        duration_multiplier: pricingBreakdown.durationMultiplier || 1,
-        total_circulation: pricingBreakdown.totalCirculation,
-        volume_discount_percent: pricingBreakdown.volumeDiscountPercent || 0,
+        subtotal: subtotal,
+        final_total: finalTotal,
+        duration_multiplier: durationMultiplier || 1,
+        total_circulation: totalCirculation,
+        volume_discount_percent: isModified ? (pricingBreakdown?.volumeDiscountPercent || 0) : (quote.volume_discount_percent || 0),
         duration_discount_percent: durationDiscountPercent,
-        pricing_breakdown: JSON.parse(JSON.stringify(pricingBreakdown)),
+        pricing_breakdown: isModified ? JSON.parse(JSON.stringify(pricingBreakdown)) : quote.pricing_breakdown,
         selections: {
           pricingModel,
           selectedAdSize,
@@ -552,70 +548,110 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
         </CardContent>
       </Card>
 
-      {/* Pricing Summary */}
-      {pricingBreakdown && (
+      {/* Pricing Summary - Use stored values if not modified */}
+      {(pricingBreakdown || quote.final_total) && (
         <Card>
           <CardHeader>
-            <CardTitle>Pricing Summary</CardTitle>
+            <CardTitle>3 Payment Options</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {pricingModel === 'leafleting' ? (
-                <>
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>{formatLeafletPrice(pricingBreakdown.subtotal)}</span>
-                  </div>
-                  {pricingBreakdown.volumeDiscountPercent > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                      <span>-{formatLeafletPrice(pricingBreakdown.volumeDiscount)}</span>
+            {(() => {
+              // Use stored values if not modified
+              const baseTotal = isModified ? pricingBreakdown?.finalTotal : quote.final_total;
+              const totalCirculation = isModified ? pricingBreakdown?.totalCirculation : quote.total_circulation;
+              
+              if (!baseTotal) return null;
+              
+              return (
+                <div className="space-y-4">
+                  <RadioGroup 
+                    value={selectedPaymentOption} 
+                    onValueChange={setSelectedPaymentOption}
+                    className="space-y-4"
+                  >
+                    {paymentOptions
+                      .sort((a, b) => {
+                        const getOrder = (option: any) => {
+                          if (option.option_type === 'monthly') return 1;
+                          if (option.display_name?.includes('6 Months')) return 2;
+                          if (option.display_name?.includes('12 Months')) return 3;
+                          return 4;
+                        };
+                        return getOrder(a) - getOrder(b);
+                      })
+                      .map((option) => {
+                        const amount = calculatePaymentAmount(
+                          baseTotal,
+                          option,
+                          pricingModel,
+                          paymentOptions,
+                          0
+                        );
+                        const savings = option.discount_percentage > 0 ? baseTotal - amount : 0;
+                        
+                        return (
+                          <div key={option.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
+                            <RadioGroupItem value={option.option_type} id={`edit-${option.option_type}`} className="mt-1" />
+                            <div className="flex-1">
+                              <Label htmlFor={`edit-${option.option_type}`} className="font-medium cursor-pointer">
+                                {option.option_type === 'monthly' ? 'Monthly Payment Plan' : option.display_name}
+                              </Label>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {option.option_type === 'monthly' ? 'Direct Debit' : option.description}
+                              </p>
+                              <p className="text-lg font-bold text-primary">
+                                {formatPrice(amount)} + VAT
+                              </p>
+                              {savings > 0 && (
+                                <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                                  Save {formatPrice(savings)}
+                                </Badge>
+                              )}
+                              {option.minimum_payments && (
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  <p>• Minimum number of payments = {option.minimum_payments}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </RadioGroup>
+
+                  {/* Amazing Value Section */}
+                  <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border">
+                    <div className="text-center">
+                      <h4 className="font-bold text-lg mb-2">🎯 Amazing Value!</h4>
+                      <p className="text-xl font-bold text-primary">
+                        {(() => {
+                          if (totalCirculation) {
+                            const monthlyOption = paymentOptions.find(opt => opt.option_type === 'monthly');
+                            if (monthlyOption) {
+                              const monthlyAmount = calculatePaymentAmount(
+                                baseTotal,
+                                monthlyOption,
+                                pricingModel,
+                                paymentOptions,
+                                0
+                              );
+                              const costPer1000 = ((monthlyAmount * 2) / totalCirculation) * 1000;
+                              return `Only ${formatPrice(costPer1000)} + VAT per 1,000 homes reached`;
+                            }
+                          }
+                          return 'Great value advertising';
+                        })()}
+                      </p>
                     </div>
-                  )}
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Total Price:</span>
-                    <span>{formatLeafletPrice(pricingBreakdown.finalTotal)}</span>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Total Circulation: {pricingBreakdown.totalCirculation?.toLocaleString()} homes
+
+                  {/* Summary Info */}
+                  <div className="text-sm text-muted-foreground pt-4 border-t space-y-1">
+                    <p>Total Campaign Cost: {formatPrice(baseTotal)}</p>
+                    <p>Total Circulation: {totalCirculation?.toLocaleString() || 0} homes</p>
                   </div>
-                  {pricingBreakdown.totalCirculation && pricingBreakdown.finalTotal && (
-                    <div className="text-sm text-muted-foreground">
-                      CPM: {formatLeafletPrice((pricingBreakdown.finalTotal / pricingBreakdown.totalCirculation) * 1000)}
-                    </div>
-                  )}
-                </>
-              ) : (
-              <>
-                  <div className="flex justify-between">
-                    <span>Per Issue Price:</span>
-                    <span>{formatPrice(pricingBreakdown.subtotal)}</span>
-                  </div>
-                  {pricingBreakdown.volumeDiscount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Volume Discount ({pricingBreakdown.volumeDiscountPercent}%):</span>
-                      <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between border-t pt-2">
-                    <span>Total Campaign Cost:</span>
-                    <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>Monthly Price:</span>
-                    <span>{formatPrice(calculateMonthlyPrice(
-                      pricingBreakdown.finalTotal,
-                      pricingModel,
-                      pricingBreakdown.durationMultiplier || 1,
-                      paymentOptions
-                    ))} + VAT</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Total Circulation: {pricingBreakdown.totalCirculation?.toLocaleString()} homes
-                  </div>
-                </>
-              )}
-            </div>
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
       )}
