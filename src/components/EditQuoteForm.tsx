@@ -13,6 +13,29 @@ import { calculateLeafletingPrice, formatLeafletPrice } from '@/lib/leafletingCa
 import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
+import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+
+// Helper function to calculate the correct monthly price for display consistency
+const calculateMonthlyPrice = (
+  finalTotal: number,
+  pricingModel: string,
+  durationMultiplier: number,
+  paymentOptions: any[]
+): number => {
+  if (!finalTotal || finalTotal <= 0) return 0;
+  
+  // Find the monthly payment option to get minimum_payments
+  const monthlyOption = paymentOptions?.find(opt => opt.option_type === 'monthly');
+  const minPayments = monthlyOption?.minimum_payments || 6;
+  
+  if (pricingModel === 'bogof') {
+    // BOGOF: total / 2 (50% discount) / minimum_payments
+    return finalTotal / 2 / minPayments;
+  }
+  
+  // Fixed/Leafleting: total / duration (number of issues/months)
+  return finalTotal / (durationMultiplier || 1);
+};
 
 interface EditQuoteFormProps {
   quote: any;
@@ -29,6 +52,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
   const { data: leafletAreas, isLoading: leafletAreasLoading } = useLeafletAreas();
   const { data: leafletDurations, isLoading: leafletDurationsLoading } = useLeafletCampaignDurations();
   const { data: agencyData } = useAgencyDiscount();
+  const { data: paymentOptions = [] } = usePaymentOptions();
 
   const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
   
@@ -148,18 +172,18 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
     try {
       console.log('Starting quote save...');
       
-      let monthlyFinal, durationDiscountPercent = 0;
+      const relevantDurationData = effectiveDurations?.find(d => d.id === selectedDuration);
+      // Check if it's a regular duration (has discount_percentage) or leaflet duration
+      const isRegularDuration = relevantDurationData && 'discount_percentage' in relevantDurationData;
+      const durationDiscountPercent = isRegularDuration ? (relevantDurationData as any).discount_percentage : 0;
       
-      if (pricingModel === 'leafleting') {
-        monthlyFinal = pricingBreakdown.finalTotal;
-      } else {
-        const relevantDurationData = effectiveDurations?.find(d => d.id === selectedDuration);
-        // Check if it's a regular duration (has discount_percentage) or leaflet duration
-        const isRegularDuration = relevantDurationData && 'discount_percentage' in relevantDurationData;
-        durationDiscountPercent = isRegularDuration ? (relevantDurationData as any).discount_percentage : 0;
-        const subtotalAfterVolume = pricingBreakdown.subtotal - (pricingBreakdown.volumeDiscount || 0);
-        monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
-      }
+      // Calculate monthly price using the same logic as the frontend calculator
+      const monthlyFinal = calculateMonthlyPrice(
+        pricingBreakdown.finalTotal,
+        pricingModel,
+        pricingBreakdown.durationMultiplier || 1,
+        paymentOptions
+      );
 
       const updatedQuote = {
         contact_name: formData.contact_name,
@@ -562,9 +586,9 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
                   )}
                 </>
               ) : (
-                <>
+              <>
                   <div className="flex justify-between">
-                    <span>Subtotal:</span>
+                    <span>Per Issue Price:</span>
                     <span>{formatPrice(pricingBreakdown.subtotal)}</span>
                   </div>
                   {pricingBreakdown.volumeDiscount > 0 && (
@@ -573,9 +597,18 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
                       <span>-{formatPrice(pricingBreakdown.volumeDiscount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Total Monthly Price:</span>
+                  <div className="flex justify-between border-t pt-2">
+                    <span>Total Campaign Cost:</span>
                     <span>{formatPrice(pricingBreakdown.finalTotal)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Monthly Price:</span>
+                    <span>{formatPrice(calculateMonthlyPrice(
+                      pricingBreakdown.finalTotal,
+                      pricingModel,
+                      pricingBreakdown.durationMultiplier || 1,
+                      paymentOptions
+                    ))} + VAT</span>
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Total Circulation: {pricingBreakdown.totalCirculation?.toLocaleString()} homes

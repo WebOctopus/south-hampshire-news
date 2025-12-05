@@ -16,6 +16,29 @@ import { calculateLeafletingPrice, formatLeafletPrice } from '@/lib/leafletingCa
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { User } from '@supabase/supabase-js';
+import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+
+// Helper function to calculate the correct monthly price for display consistency
+const calculateMonthlyPrice = (
+  finalTotal: number,
+  pricingModel: string,
+  durationMultiplier: number,
+  paymentOptions: any[]
+): number => {
+  if (!finalTotal || finalTotal <= 0) return 0;
+  
+  // Find the monthly payment option to get minimum_payments
+  const monthlyOption = paymentOptions?.find(opt => opt.option_type === 'monthly');
+  const minPayments = monthlyOption?.minimum_payments || 6;
+  
+  if (pricingModel === 'bogof') {
+    // BOGOF: total / 2 (50% discount) / minimum_payments
+    return finalTotal / 2 / minPayments;
+  }
+  
+  // Fixed/Leafleting: total / duration (number of issues/months)
+  return finalTotal / (durationMultiplier || 1);
+};
 
 interface CreateBookingFormProps {
   user: User;
@@ -48,6 +71,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   // Load data
   const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
   const { leafletAreas, leafletDurations, leafletSizes, isLoading: leafletLoading } = useLeafletData();
+  const { data: paymentOptions = [] } = usePaymentOptions();
 
   // Get user profile for pre-filling contact info
   const [profile, setProfile] = useState<any>(null);
@@ -159,7 +183,12 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         selected_area_ids: pricingModel === 'leafleting' ? selectedAreas : (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas),
         bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : null,
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : null,
-        monthly_price: pricingBreakdown.finalTotal,
+        monthly_price: calculateMonthlyPrice(
+          pricingBreakdown.finalTotal,
+          pricingModel,
+          pricingBreakdown.durationMultiplier || 1,
+          paymentOptions
+        ),
         subtotal: pricingBreakdown.subtotal,
         final_total: pricingBreakdown.finalTotal,
         total_circulation: pricingBreakdown.totalCirculation,
@@ -216,7 +245,12 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         selected_area_ids: pricingModel === 'leafleting' ? selectedAreas : (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas),
         bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : null,
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : null,
-        monthly_price: pricingBreakdown.finalTotal,
+        monthly_price: calculateMonthlyPrice(
+          pricingBreakdown.finalTotal,
+          pricingModel,
+          pricingBreakdown.durationMultiplier || 1,
+          paymentOptions
+        ),
         subtotal: pricingBreakdown.subtotal,
         final_total: pricingBreakdown.finalTotal,
         total_circulation: pricingBreakdown.totalCirculation,
