@@ -732,6 +732,64 @@ const effectiveSelectedAreas = useMemo(() => {
         </div>
       </section>
 
+      {/* Company History Hero Section */}
+      <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
+        {/* Futuristic Background Effects */}
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,255,255,0.03)_50%,transparent_75%,transparent_100%)] bg-[length:30px_30px]" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-community-green/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-community-navy/20 rounded-full blur-3xl" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
+              Since 2005
+            </h2>
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              We started publishing local magazines in 2005 starting with one magazine delivered to 2,000 homes and now Discover has the largest single circulation of any magazine in South Hampshire. We've perfected the formula for local print media both for advertisers and our readers.
+            </p>
+          </div>
+
+          {/* Magazine Covers Carousel */}
+          <div className="relative max-w-5xl mx-auto">
+            <Carousel opts={{ align: "center", loop: true }} className="w-full">
+              <CarouselContent className="-ml-6">
+                {[
+                  { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Winchester & Surrounds", title: "WINCHESTER & SURROUNDS" },
+                  { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Itchen Valley", title: "ITCHEN VALLEY" },
+                  { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Meon Valley & Whiteley", title: "MEON VALLEY & WHITELEY" },
+                  { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "New Forest & Waterside", title: "NEW FOREST & WATERSIDE" },
+                  { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Southampton West & Totton", title: "SOUTHAMPTON WEST & TOTTON" },
+                  { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Test Valley & Romsey", title: "TEST VALLEY & ROMSEY" },
+                  { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Winchester & Alresford", title: "WINCHESTER & ALRESFORD" },
+                  { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Chandler's Ford & Eastleigh", title: "CHANDLER'S FORD & EASTLEIGH" }
+                ].map((cover, index) => (
+                  <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                    <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
+                      <CardContent className="p-6">
+                        <div className="relative overflow-hidden rounded-lg">
+                          <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <h3 className="text-white font-bold text-sm mb-2">{cover.title}</h3>
+                            <div className="flex items-center gap-2">
+                              <div className="w-1 h-1 bg-community-green rounded-full" />
+                              <span className="text-community-green text-xs font-medium">CURRENT EDITION</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
+              <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
+            </Carousel>
+          </div>
+        </div>
+      </section>
+
       {/* Three Service Types Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
