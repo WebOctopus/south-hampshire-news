@@ -34,6 +34,7 @@ import { useAgencyDiscount } from "@/hooks/useAgencyDiscount";
 import { useQueryClient } from "@tanstack/react-query";
 import QuickQuoteCalculator from "@/components/QuickQuoteCalculator";
 import { EnquiryFormSection } from "@/components/EnquiryFormSection";
+import Footer from "@/components/Footer";
 interface FormData {
   name: string;
   email: string;
@@ -947,44 +948,7 @@ const CalculatorTest = () => {
       {/* Marketing Services */}
       
 
-      {/* CTA Section */}
-      <section className="py-16 bg-community-navy text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h2 className="text-4xl font-heading font-bold mb-6">
-              Sales Lead Generation with Direct Marketing
-            </h2>
-            <div className="space-y-4 text-lg">
-              <p><strong>Sales Leads.</strong></p>
-              <p><strong>Web Traffic.</strong></p>
-              <p><strong>Brand Awareness.</strong></p>
-            </div>
-            <p className="text-xl mt-6">
-              Helping businesses launch, grow and succeed since 2005. South Hampshire's most respected local magazine publisher.
-            </p>
-          </div>
-          
-          <div className="mb-8">
-            <h3 className="text-2xl font-heading font-bold mb-4">
-              Talk to the Local Magazine Experts
-            </h3>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-community-green hover:bg-community-green/90">
-              <Phone className="mr-2 h-5 w-5" />
-              023 80 266388
-            </Button>
-            <Button size="lg" variant="outline" className="border-white hover:bg-white hover:text-community-navy text-slate-950">
-              Advertising Enquiry Form
-            </Button>
-          </div>
-          
-          <p className="mt-6 text-lg">
-            Go On ... Love your Business ... Help it Grow & Prosper Today!
-          </p>
-        </div>
-      </section>
+      <Footer />
     </div>;
 };
 export default CalculatorTest;
