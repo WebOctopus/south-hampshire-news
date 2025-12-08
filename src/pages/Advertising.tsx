@@ -870,7 +870,7 @@ const CalculatorTest = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Get Your Instant Quote
+              Get Your Instant Quote & Booking
             </h2>
             <p className="text-xl text-gray-600">
               Start by selecting your preferred advertising package
