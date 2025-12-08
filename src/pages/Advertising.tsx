@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, AlertCircle, CheckCircle2, Info, HelpCircle } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { usePricingData } from "@/hooks/usePricingData";
@@ -34,7 +33,6 @@ import AdvertisingStepForm from "@/components/AdvertisingStepForm";
 import { useAgencyDiscount } from "@/hooks/useAgencyDiscount";
 import { useQueryClient } from "@tanstack/react-query";
 import QuickQuoteCalculator from "@/components/QuickQuoteCalculator";
-
 interface FormData {
   name: string;
   email: string;
@@ -42,13 +40,13 @@ interface FormData {
   company: string;
   password: string;
 }
-
 interface SelectedIssues {
   [areaId: string]: string[]; // Array of month strings like "2024-01", "2024-02"
 }
-
 const CalculatorTest = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<FormData>({
@@ -56,7 +54,7 @@ const CalculatorTest = () => {
     email: "",
     phone: "",
     company: "",
-    password: "",
+    password: ""
   });
   const [pricingModel, setPricingModel] = useState<'fixed' | 'subscription' | 'bogof' | 'leafleting'>('fixed');
   const [prevPricingModel, setPrevPricingModel] = useState<string>('fixed');
@@ -64,7 +62,7 @@ const CalculatorTest = () => {
   const [bogofPaidAreas, setBogofPaidAreas] = useState<string[]>([]);
   const [bogofFreeAreas, setBogofFreeAreas] = useState<string[]>([]);
   const [selectedAdSize, setSelectedAdSize] = useState<string>("");
-const [selectedDuration, setSelectedDuration] = useState<string>("");
+  const [selectedDuration, setSelectedDuration] = useState<string>("");
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [upsellDismissed, setUpsellDismissed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -86,55 +84,68 @@ const [selectedDuration, setSelectedDuration] = useState<string>("");
   } = usePricingData();
 
   // Use leafleting data hooks
-  const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
-  const { data: leafletDurations, isLoading: leafletDurationsLoading, error: leafletDurationsError } = useLeafletCampaignDurations();
+  const {
+    data: leafletAreas,
+    isLoading: leafletAreasLoading,
+    error: leafletAreasError
+  } = useLeafletAreas();
+  const {
+    data: leafletDurations,
+    isLoading: leafletDurationsLoading,
+    error: leafletDurationsError
+  } = useLeafletCampaignDurations();
 
   // Use agency discount hook
-  const { data: agencyData } = useAgencyDiscount();
+  const {
+    data: agencyData
+  } = useAgencyDiscount();
   const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
 
   // Invalidate all calculator-related queries when page mounts to ensure fresh data
   useEffect(() => {
     console.log('Advertising page mounted - invalidating calculator queries');
-    queryClient.invalidateQueries({ queryKey: ['product-packages'] });
-    queryClient.invalidateQueries({ queryKey: ['pricing'] });
+    queryClient.invalidateQueries({
+      queryKey: ['product-packages']
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['pricing']
+    });
   }, [queryClient]);
 
   // Debug logging - remove in production
 
   const handleAreaChange = useCallback((areaId: string, checked: boolean) => {
-    setSelectedAreas(prev => 
-      checked ? [...prev, areaId] : prev.filter(id => id !== areaId)
-    );
+    setSelectedAreas(prev => checked ? [...prev, areaId] : prev.filter(id => id !== areaId));
   }, []);
-
-const maybeOpenUpsell = useCallback(() => {
-  if (pricingModel === 'fixed' && selectedAreas.length > 2 && !upsellDismissed) {
-    setUpsellOpen(true);
-  }
-}, [pricingModel, selectedAreas.length, upsellDismissed]);
-
-const handleUpsellNo = useCallback(() => {
-  setUpsellOpen(false);
-  setUpsellDismissed(true);
-}, []);
-
-const handleUpsellYes = useCallback(() => {
-  setUpsellOpen(false);
-  setUpsellDismissed(true);
-  setPricingModel('bogof');
-  setBogofPaidAreas(Array.from(new Set([...selectedAreas])));
-  if (selectedAreas.length >= 3) {
-    toast({ title: "Switched to BOGOF", description: "Great choice! Now pick your free areas." });
-  } else {
-    toast({ title: "Almost there", description: "Choose 1 more paid area to unlock your free areas." });
-  }
-}, [selectedAreas, toast]);
-
-const effectiveSelectedAreas = useMemo(() => {
+  const maybeOpenUpsell = useCallback(() => {
+    if (pricingModel === 'fixed' && selectedAreas.length > 2 && !upsellDismissed) {
+      setUpsellOpen(true);
+    }
+  }, [pricingModel, selectedAreas.length, upsellDismissed]);
+  const handleUpsellNo = useCallback(() => {
+    setUpsellOpen(false);
+    setUpsellDismissed(true);
+  }, []);
+  const handleUpsellYes = useCallback(() => {
+    setUpsellOpen(false);
+    setUpsellDismissed(true);
+    setPricingModel('bogof');
+    setBogofPaidAreas(Array.from(new Set([...selectedAreas])));
+    if (selectedAreas.length >= 3) {
+      toast({
+        title: "Switched to BOGOF",
+        description: "Great choice! Now pick your free areas."
+      });
+    } else {
+      toast({
+        title: "Almost there",
+        description: "Choose 1 more paid area to unlock your free areas."
+      });
+    }
+  }, [selectedAreas, toast]);
+  const effectiveSelectedAreas = useMemo(() => {
     return pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   }, [pricingModel, selectedAreas, bogofPaidAreas]);
-
   const pricingBreakdown = useMemo(() => {
     // Handle leafleting service pricing
     if (pricingModel === 'leafleting') {
@@ -146,45 +157,22 @@ const effectiveSelectedAreas = useMemo(() => {
       const selectedLeafletDurationData = leafletDurations?.find(d => d.id === selectedDuration);
       const durationMultiplier = selectedLeafletDurationData?.issues || 1;
       const issuesCount = selectedLeafletDurationData?.issues || 1;
-      
-      return calculateLeafletingPrice(
-        effectiveSelectedAreas,
-        leafletAreas || [],
-        durationMultiplier,
-        issuesCount
-      );
+      return calculateLeafletingPrice(effectiveSelectedAreas, leafletAreas || [], durationMultiplier, issuesCount);
     }
 
     // Handle regular advertising pricing
     if (!selectedAdSize || !selectedDuration || effectiveSelectedAreas.length === 0) {
       return null;
     }
-
-    const relevantDurations = (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
-    
-    const result = calculateAdvertisingPrice(
-      effectiveSelectedAreas,
-      selectedAdSize,
-      selectedDuration,
-      pricingModel === 'subscription' || pricingModel === 'bogof',
-      areas,
-      adSizes,
-      relevantDurations,
-      subscriptionDurations,
-      volumeDiscounts,
-      pricingModel === 'bogof' ? bogofFreeAreas : [], // Include free areas for circulation
-      agencyDiscountPercent
-    );
-    
+    const relevantDurations = pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations;
+    const result = calculateAdvertisingPrice(effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel === 'subscription' || pricingModel === 'bogof', areas, adSizes, relevantDurations, subscriptionDurations, volumeDiscounts, pricingModel === 'bogof' ? bogofFreeAreas : [],
+    // Include free areas for circulation
+    agencyDiscountPercent);
     return result;
   }, [effectiveSelectedAreas, selectedAdSize, selectedDuration, pricingModel, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, bogofPaidAreas, selectedAreas, leafletAreas, leafletDurations, bogofFreeAreas, agencyDiscountPercent]);
-
-  
   React.useEffect(() => {
-
     try {
-      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations :
-        (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations;
       if (relevantDurations && relevantDurations.length > 0) {
         // If no duration selected or it was cleared, set the first/default one
         if (!selectedDuration) {
@@ -200,7 +188,7 @@ const effectiveSelectedAreas = useMemo(() => {
           }
         }
       }
-      
+
       // Update previous model reference
       setPrevPricingModel(pricingModel);
     } catch (error) {
@@ -213,11 +201,12 @@ const effectiveSelectedAreas = useMemo(() => {
     if (pricingModel === 'leafleting' && selectedDuration && leafletDurations) {
       const selectedDurationData = leafletDurations.find(d => d.id === selectedDuration);
       const maxIssues = (selectedDurationData as any)?.issues || 1;
-      
       setSelectedIssues(prev => {
-        const updated = { ...prev };
+        const updated = {
+          ...prev
+        };
         let hasChanges = false;
-        
+
         // For each area, limit selections to maxIssues
         Object.keys(updated).forEach(areaId => {
           const currentSelections = updated[areaId] || [];
@@ -227,7 +216,6 @@ const effectiveSelectedAreas = useMemo(() => {
             hasChanges = true;
           }
         });
-        
         return hasChanges ? updated : prev;
       });
     }
@@ -240,7 +228,9 @@ const effectiveSelectedAreas = useMemo(() => {
       const element = document.getElementById(hash.substring(1));
       if (element) {
         setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
+          element.scrollIntoView({
+            behavior: 'smooth'
+          });
         }, 100);
       }
     }
@@ -250,78 +240,68 @@ const effectiveSelectedAreas = useMemo(() => {
   useEffect(() => {
     const contactSection = document.querySelector('[data-contact-section]');
     if (!contactSection) return;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !contactSectionReached) {
+          setContactSectionReached(true);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !contactSectionReached) {
-            setContactSectionReached(true);
-            
-            // Show confirmation dialog for Fixed Term users only when pricing is calculated
-            if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
-              setShowFixedTermConfirmation(true);
-            }
+          // Show confirmation dialog for Fixed Term users only when pricing is calculated
+          if (pricingModel === 'fixed' && !showFixedTermConfirmation && pricingBreakdown) {
+            setShowFixedTermConfirmation(true);
           }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
+        }
+      });
+    }, {
+      threshold: 0.5
+    });
     observer.observe(contactSection);
     return () => observer.disconnect();
   }, [pricingModel, contactSectionReached, showFixedTermConfirmation, pricingBreakdown]);
-
   const handleGetQuote = async () => {
     // Validation
     if (!formData.name || !formData.email || !formData.password) {
       toast({
         title: "Missing Information",
         description: "Please fill in your name, email, and password.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (formData.password.length < 6) {
       toast({
         title: "Password Too Short",
         description: "Password must be at least 6 characters long.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (effectiveSelectedAreas.length === 0) {
       toast({
         title: "No Areas Selected",
         description: "Please select at least one distribution area.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (!selectedAdSize) {
       toast({
         title: "No Ad Size Selected",
         description: "Please select an advertisement size.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (!selectedDuration) {
       toast({
         title: "No Duration Selected",
         description: "Please select a campaign duration.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setSubmitting(true);
     try {
-      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : 
-                                (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations;
       const durationData = relevantDurations?.find(d => d.id === selectedDuration);
       // Leafleting doesn't have duration discounts, only regular advertising does
       const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
@@ -329,8 +309,11 @@ const effectiveSelectedAreas = useMemo(() => {
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
 
       // Get current user for request association
-      const { data: { user } } = await supabase.auth.getUser();
-
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       const payload = {
         contact_name: formData.name,
         email: formData.email,
@@ -359,53 +342,68 @@ const effectiveSelectedAreas = useMemo(() => {
           bogofPaidAreas,
           bogofFreeAreas
         } as any,
-        user_id: user?.id || null  // Associate with user if authenticated
+        user_id: user?.id || null // Associate with user if authenticated
       };
-
-      const { error } = await supabase.from('quote_requests').insert(payload);
+      const {
+        error
+      } = await supabase.from('quote_requests').insert(payload);
       if (error) throw error;
-      
       toast({
         title: "Quote Request Sent!",
-        description: "Our sales team will contact you within 24 hours to discuss your advertising needs.",
+        description: "Our sales team will contact you within 24 hours to discuss your advertising needs."
       });
     } catch (err: any) {
       console.error('Submit quote error:', err);
-      toast({ title: "Error", description: err.message || 'Failed to submit quote request.', variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message || 'Failed to submit quote request.',
+        variant: "destructive"
+      });
     } finally {
       setSubmitting(false);
     }
   };
-
   const handleSaveQuote = async () => {
     if (!pricingBreakdown) {
-      toast({ title: "Missing Selection", description: "Complete your selections first.", variant: "destructive" });
+      toast({
+        title: "Missing Selection",
+        description: "Complete your selections first.",
+        variant: "destructive"
+      });
       return;
     }
     if (!formData.name || !formData.email || !formData.phone || !formData.password) {
-      toast({ title: "Missing Information", description: "Please fill in your contact details and password.", variant: "destructive" });
+      toast({
+        title: "Missing Information",
+        description: "Please fill in your contact details and password.",
+        variant: "destructive"
+      });
       return;
     }
-
     if (formData.password.length < 6) {
-      toast({ title: "Password Too Short", description: "Password must be at least 6 characters long.", variant: "destructive" });
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
       return;
     }
     if (effectiveSelectedAreas.length === 0 || !selectedAdSize || !selectedDuration) {
-      toast({ title: "Incomplete", description: "Please select areas, ad size and duration.", variant: "destructive" });
+      toast({
+        title: "Incomplete",
+        description: "Please select areas, ad size and duration.",
+        variant: "destructive"
+      });
       return;
     }
-
     setSaving(true);
     try {
-      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : 
-                                (pricingModel === 'subscription' || pricingModel === 'bogof') ? subscriptionDurations : durations;
+      const relevantDurations = pricingModel === 'leafleting' ? leafletDurations : pricingModel === 'subscription' || pricingModel === 'bogof' ? subscriptionDurations : durations;
       const durationData = relevantDurations?.find(d => d.id === selectedDuration);
       // Leafleting doesn't have duration discounts, only regular advertising does
       const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
       const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
-
       const basePayload = {
         email: formData.email,
         contact_name: formData.name,
@@ -435,44 +433,61 @@ const effectiveSelectedAreas = useMemo(() => {
           bogofFreeAreas
         } as any
       };
-
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (session?.user) {
-        const payloadForDb = { ...basePayload, user_id: session.user.id } as any;
-        const { error } = await supabase.from('quotes').insert(payloadForDb);
+        const payloadForDb = {
+          ...basePayload,
+          user_id: session.user.id
+        } as any;
+        const {
+          error
+        } = await supabase.from('quotes').insert(payloadForDb);
         if (error) throw error;
-        toast({ title: "Saved", description: "Quote saved to your dashboard." });
+        toast({
+          title: "Saved",
+          description: "Quote saved to your dashboard."
+        });
       } else {
         // Create account automatically and log them in
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const {
+          data: authData,
+          error: authError
+        } = await supabase.auth.signUp({
           email: formData.email,
-          password: formData.password, // Use user-provided password
+          password: formData.password,
+          // Use user-provided password
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { 
-              display_name: formData.name, 
-              phone: formData.phone, 
-              company: formData.company 
+            data: {
+              display_name: formData.name,
+              phone: formData.phone,
+              company: formData.company
             }
           }
         });
-
         if (authError) throw authError;
-
         if (authData.user) {
           // Save the quote with the new user ID
-          const payloadForDb = { ...basePayload, user_id: authData.user.id } as any;
-          const { error: quotesError } = await supabase.from('quotes').insert(payloadForDb);
+          const payloadForDb = {
+            ...basePayload,
+            user_id: authData.user.id
+          } as any;
+          const {
+            error: quotesError
+          } = await supabase.from('quotes').insert(payloadForDb);
           if (quotesError) throw quotesError;
-          
+
           // Mark this as a new user from the calculator for password setup
           localStorage.setItem('newUserFromCalculator', 'true');
-          
-          toast({ 
-            title: "Account Created & Quote Saved!", 
-            description: "Your account has been created and quote saved. Check your email to verify your account." 
+          toast({
+            title: "Account Created & Quote Saved!",
+            description: "Your account has been created and quote saved. Check your email to verify your account."
           });
-          
+
           // Redirect to dashboard after a short delay
           setTimeout(() => {
             navigate('/dashboard');
@@ -481,7 +496,11 @@ const effectiveSelectedAreas = useMemo(() => {
       }
     } catch (err: any) {
       console.error('Save quote error:', err);
-      toast({ title: "Error", description: err.message || 'Failed to save quote.', variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message || 'Failed to save quote.',
+        variant: "destructive"
+      });
     } finally {
       setSaving(false);
     }
@@ -490,25 +509,22 @@ const effectiveSelectedAreas = useMemo(() => {
   // Handle Fixed Term confirmation dialog actions
   const handleFixedTermContinue = () => {
     setShowFixedTermConfirmation(false);
-    toast({ 
-      title: "Fixed Term Confirmed", 
-      description: "You can continue with your Fixed Term booking." 
+    toast({
+      title: "Fixed Term Confirmed",
+      description: "You can continue with your Fixed Term booking."
     });
   };
-
   const handleSwitchToSubscription = () => {
     setShowFixedTermConfirmation(false);
     setPricingModel('subscription');
     setSelectedDuration("");
-    toast({ 
-      title: "Switched to Subscription", 
-      description: "You're now using our subscription pricing model." 
+    toast({
+      title: "Switched to Subscription",
+      description: "You're now using our subscription pricing model."
     });
   };
-
   if (isError) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-md mx-auto">
             <CardHeader>
@@ -527,8 +543,7 @@ const effectiveSelectedAreas = useMemo(() => {
             </CardContent>
           </Card>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Stats and data from the original Advertising page
@@ -557,7 +572,6 @@ const effectiveSelectedAreas = useMemo(() => {
     label: "Leaflets Distributed Per Year",
     icon: Truck
   }];
-
   const localAreas = [{
     area: "AREA 1",
     title: "SOUTHAMPTON SUBURBS",
@@ -636,7 +650,6 @@ const effectiveSelectedAreas = useMemo(() => {
     circulation: "13,500",
     leaflets: "NO, SORRY"
   }];
-
   const magazineCovers = [{
     src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
     alt: "Discover Magazine - Winchester & Surrounds Edition",
@@ -670,25 +683,14 @@ const effectiveSelectedAreas = useMemo(() => {
     alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition",
     title: "CHANDLER'S FORD & EASTLEIGH"
   }];
-
-
   return <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Header Section */}
       <section className="relative bg-community-navy overflow-hidden h-[50vh]">
         {/* Background Video */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        >
-          <source 
-            src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/Monthly-Community-Magazine-In-South-Hampshire-1.mp4" 
-            type="video/mp4" 
-          />
+        <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover object-center">
+          <source src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/Monthly-Community-Magazine-In-South-Hampshire-1.mp4" type="video/mp4" />
         </video>
       </section>
 
@@ -742,19 +744,44 @@ const effectiveSelectedAreas = useMemo(() => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Magazine Covers Carousel */}
           <div className="relative max-w-5xl mx-auto mb-12">
-            <Carousel opts={{ align: "center", loop: true }} className="w-full">
+            <Carousel opts={{
+            align: "center",
+            loop: true
+          }} className="w-full">
               <CarouselContent className="-ml-6">
-                {[
-                  { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Winchester & Surrounds", title: "WINCHESTER & SURROUNDS" },
-                  { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Itchen Valley", title: "ITCHEN VALLEY" },
-                  { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Meon Valley & Whiteley", title: "MEON VALLEY & WHITELEY" },
-                  { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "New Forest & Waterside", title: "NEW FOREST & WATERSIDE" },
-                  { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Southampton West & Totton", title: "SOUTHAMPTON WEST & TOTTON" },
-                  { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Test Valley & Romsey", title: "TEST VALLEY & ROMSEY" },
-                  { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Winchester & Alresford", title: "WINCHESTER & ALRESFORD" },
-                  { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Chandler's Ford & Eastleigh", title: "CHANDLER'S FORD & EASTLEIGH" }
-                ].map((cover, index) => (
-                  <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                {[{
+                src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
+                alt: "Winchester & Surrounds",
+                title: "WINCHESTER & SURROUNDS"
+              }, {
+                src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png",
+                alt: "Itchen Valley",
+                title: "ITCHEN VALLEY"
+              }, {
+                src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png",
+                alt: "Meon Valley & Whiteley",
+                title: "MEON VALLEY & WHITELEY"
+              }, {
+                src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png",
+                alt: "New Forest & Waterside",
+                title: "NEW FOREST & WATERSIDE"
+              }, {
+                src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png",
+                alt: "Southampton West & Totton",
+                title: "SOUTHAMPTON WEST & TOTTON"
+              }, {
+                src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png",
+                alt: "Test Valley & Romsey",
+                title: "TEST VALLEY & ROMSEY"
+              }, {
+                src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png",
+                alt: "Winchester & Alresford",
+                title: "WINCHESTER & ALRESFORD"
+              }, {
+                src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png",
+                alt: "Chandler's Ford & Eastleigh",
+                title: "CHANDLER'S FORD & EASTLEIGH"
+              }].map((cover, index) => <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
                     <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
                       <CardContent className="p-6">
                         <div className="relative overflow-hidden rounded-lg">
@@ -771,8 +798,7 @@ const effectiveSelectedAreas = useMemo(() => {
                         <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       </CardContent>
                     </Card>
-                  </CarouselItem>
-                ))}
+                  </CarouselItem>)}
               </CarouselContent>
               <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
               <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
@@ -792,129 +818,10 @@ const effectiveSelectedAreas = useMemo(() => {
       </section>
 
       {/* Three Service Types Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Display Advertising</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/34ecfbb2-fff7-4b7e-a22f-14509fe08bf3.png" 
-                  alt="Discover Magazine Cover Example" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">We offer 11 ad sizes to more easily match with your budget and campaign needs</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Premium Position Advertising</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/9f1d05c6-6723-48d2-9b24-3aee6cb957bd.png" 
-                  alt="Premium Position Advertising Example" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
-                />
-                <p className="text-gray-600">Pay a little extra for pages 2,3,5 or back cover... Stand out from the Crowd!</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Small Budget Options</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/9ba0441a-d421-4a65-8738-115023b9fc55.png" 
-                  alt="Think Big Shop Small - Small Budget Options" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
-                />
-                <p className="text-gray-600">Low cost sizes, special packages and generous discounts for selected businesses</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Getting Started Process Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              WANT TO GET STARTED?
-            </h2>
-            <p className="text-xl text-gray-600">
-              From Quote to Artwork - We'll Help you All the Way!
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-left">
-              <CardHeader>
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl font-bold text-white">1</span>
-                  </div>
-                  <CardTitle className="text-community-navy text-xl">Identifying What's Right for You</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  If you are new to advertising or need a fresh pair of eyes to improve what you are getting from your current advertising, our sales team are focused on what's right for your business; starting with the size of advert, the style, the design to which areas to choose.
-                </p>
-                <p className="text-gray-600 font-semibold">
-                  If Discover isn't right for you, we'll tell you – honest!
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-left">
-              <CardHeader>
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl font-bold text-white">2</span>
-                  </div>
-                  <CardTitle className="text-community-navy text-xl">Self Select quotations - You choose</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  You'll receive an instant verbal quotation followed by 3 priced options. PLUS a link to our unique self service online cost calculator so you can play with the combination of advert size, areas and type of booking.
-                </p>
-                <p className="text-gray-600 mb-4 font-semibold">
-                  We believe in the power of informed choice with no hidden costs or surprises!
-                </p>
-                <p className="text-community-green font-semibold">
-                  Payment plans available
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-left">
-              <CardHeader>
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="bg-community-green rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl font-bold text-white">3</span>
-                  </div>
-                  <CardTitle className="text-community-navy text-xl">Free In-house Design - At your service</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Many of customers rely on us to create eye catching adverts for them from scratch or adapting what they have. Our editorial department is on hand to write a complimentary article if you book a series.
-                </p>
-                <p className="text-gray-600 font-semibold">
-                  You'll be allocated an account manager to look after you throughout your journey with us.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Quick Quote Calculator Section for New Advertisers */}
       <section id="quick-quote" className="py-16 bg-white">
@@ -1016,83 +923,29 @@ const effectiveSelectedAreas = useMemo(() => {
           
           {/* Adobe InDesign Interactive Embed - cropped to hide Adobe UI bars */}
           <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
-            <div className="relative w-full overflow-hidden" style={{ paddingBottom: '56%' }}>
-              <iframe
-                src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=false"
-                className="absolute w-full"
-                style={{ 
-                  height: '135%',
-                  top: '-12%',
-                  left: '0'
-                }}
-                frameBorder="0"
-                title="14 Local Editions Interactive Map"
-                allowFullScreen={false}
-              />
+            <div className="relative w-full overflow-hidden" style={{
+            paddingBottom: '56%'
+          }}>
+              <iframe src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=false" className="absolute w-full" style={{
+              height: '135%',
+              top: '-12%',
+              left: '0'
+            }} frameBorder="0" title="14 Local Editions Interactive Map" allowFullScreen={false} />
               {/* Overlay to block clicks on Adobe UI chrome at top */}
-              <div 
-                className="absolute top-0 left-0 right-0 h-4 bg-transparent z-10"
-                style={{ pointerEvents: 'auto' }}
-              />
+              <div className="absolute top-0 left-0 right-0 h-4 bg-transparent z-10" style={{
+              pointerEvents: 'auto'
+            }} />
               {/* Overlay to block clicks on Adobe UI chrome at bottom */}
-              <div 
-                className="absolute bottom-0 left-0 right-0 h-4 bg-transparent z-10"
-                style={{ pointerEvents: 'auto' }}
-              />
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-transparent z-10" style={{
+              pointerEvents: 'auto'
+            }} />
             </div>
           </div>
         </div>
       </section>
 
       {/* Special Offer Section */}
-      <section className="py-16 bg-gradient-to-r from-community-green to-green-600 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="inline-block bg-white text-community-green px-6 py-2 rounded-full font-bold text-lg mb-6">
-              🎉 LIMITED TIME OFFER
-            </div>
-            <h2 className="text-5xl md:text-6xl font-heading font-bold mb-6">
-              £999 ALL AREAS PACKAGE
-            </h2>
-            <p className="text-2xl md:text-3xl mb-4 font-bold">
-              Reach 142,000 Homes Across All 14 Areas
-            </p>
-            <p className="text-xl mb-8 opacity-90">
-              Save over £500 with our exclusive package deal
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">142,000</div>
-                <div className="text-lg">Total Homes Reached</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">14</div>
-                <div className="text-lg">Distribution Areas</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/10 backdrop-blur border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <div className="text-4xl font-bold mb-2">6</div>
-                <div className="text-lg">Magazine Editions</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="text-center">
-            <SpecialOfferForm>
-              <Button size="lg" className="bg-white text-community-green hover:bg-gray-100 text-xl px-12 py-6 font-bold">
-                CLAIM THIS OFFER - £999
-              </Button>
-            </SpecialOfferForm>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Fixed Term Confirmation Dialog */}
       <Dialog open={showFixedTermConfirmation} onOpenChange={setShowFixedTermConfirmation}>
@@ -1132,17 +985,10 @@ const effectiveSelectedAreas = useMemo(() => {
           </div>
           
           <div className="flex gap-4 justify-center">
-            <Button 
-              onClick={handleFixedTermContinue}
-              className="bg-community-green hover:bg-community-green/90 text-white px-8 py-2"
-            >
+            <Button onClick={handleFixedTermContinue} className="bg-community-green hover:bg-community-green/90 text-white px-8 py-2">
               YES, CONTINUE
             </Button>
-            <Button 
-              onClick={handleSwitchToSubscription}
-              variant="outline"
-              className="border-2 border-community-green text-community-green hover:bg-community-green hover:text-white px-6 py-2"
-            >
+            <Button onClick={handleSwitchToSubscription} variant="outline" className="border-2 border-community-green text-community-green hover:bg-community-green hover:text-white px-6 py-2">
               NO, SWITCH TO SUBSCRIPTION, PLEASE
             </Button>
           </div>
@@ -1150,214 +996,13 @@ const effectiveSelectedAreas = useMemo(() => {
       </Dialog>
 
       {/* Services Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              ADVERTISING ENQUIRY FORM
-            </h2>
-            <p className="text-xl text-gray-600">
-              South Hampshire Advertising Services: reach up to 142,000 homes in SO & PO Postcodes
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Display Advertising</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/34ecfbb2-fff7-4b7e-a22f-14509fe08bf3.png" 
-                  alt="Discover Magazine Cover Example" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">We offer 11 ad sizes to more easily match with your budget and campaign needs.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Premium Position Advertising</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/9f1d05c6-6723-48d2-9b24-3aee6cb957bd.png" 
-                  alt="Premium Position Advertising Example" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
-                />
-                <p className="text-gray-600">Pay a little extra for pages 2,3,5 or back cover ... Stand out from the Crowd!</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Small Budget Options</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/9ba0441a-d421-4a65-8738-115023b9fc55.png" 
-                  alt="Think Big Shop Small - Small Budget Options" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md"
-                />
-                <p className="text-gray-600">Low cost sizes, special packages and generous discounts for selected businesses</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Leaflet Distribution */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              The Best Leaflet Management Service in South Hampshire
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Target Up to 108,000 Homes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/fe26219a-b740-4f8f-8a86-f3611b4b16dc.png" 
-                  alt="Target Up to 108,000 Homes - Footprints tracking" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">100% Tracked, Monitored & Recorded</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Cost Saving Options</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/8302477f-4fa2-42dd-8d1d-a479d5e981db.png" 
-                  alt="Cost Saving Options - Tree representing growth and savings" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">Plus Leaflet Sharing Save on Print and 50% off Delivery!</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Royal Mail Partners</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/163918e9-487a-48cd-a7c4-61b988ecb9ea.png" 
-                  alt="Royal Mail Partners - Official Royal Mail logo" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">Piggyback on our Royal Mail Contracts - Save Hassle & £££</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Marketing Services */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Marketing Services: Traditional & Digital
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Eye-Catching Design</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/9019f654-8637-4147-80ed-9ea16f9b7361.png" 
-                  alt="Eye-Catching Design - Colorful artistic eye makeup" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">Ask about free artwork services for series bookings and anything else you need!</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Logos & Branding</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/057f04d1-71d6-4a38-8318-51bcd9dff466.png" 
-                  alt="Logos & Branding - ARTBOX Digital Design logo" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">Whether a new design or a refresh and update we offer low cost portfolios</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">QR Codes & Geo Numbers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/50abedfe-ca8b-4655-9286-1c33ae15e786.png" 
-                  alt="QR Codes & Geo Numbers - QR code example" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">Quantify your advertising responses with trackable QR codes and local phone numbers</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Lead Generation Specialists</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/06688917-138a-40f5-b46d-527ed07e7f8b.png" 
-                  alt="Lead Generation Specialists - Wise owl representing expertise" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">We can talk about more than print advertising to market your business</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Marketing Support</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/0856841b-a768-43dd-b06b-edc0c2255265.png" 
-                  alt="Marketing Support - Media Buddy logo" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">Every Discover advertisers deserves - and gets - their own Media Buddy.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardHeader>
-                <CardTitle className="text-community-navy">Social Media Promotion</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src="/lovable-uploads/1950c3ad-577b-4c76-9ca1-aad2fc4bdb7a.png" 
-                  alt="Social Media Promotion - Friendly dog representing social engagement" 
-                  className="w-full max-w-xs mx-auto mb-4 rounded-lg shadow-md h-64 object-cover"
-                />
-                <p className="text-gray-600">We can "twitter-woo" for you, too! (doesn't sound as good with X)</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      
 
       {/* CTA Section */}
       <section className="py-16 bg-community-navy text-white">
@@ -1399,5 +1044,4 @@ const effectiveSelectedAreas = useMemo(() => {
       </section>
     </div>;
 };
-
 export default CalculatorTest;
