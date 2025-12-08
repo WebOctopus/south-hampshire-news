@@ -6,6 +6,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { Calculator, TrendingUp, Users, Target, Gift, PoundSterling } from 'lucide-react';
 import ROIFactorsInfo from './ROIFactorsInfo';
+import NewAdvertiserPromo from './NewAdvertiserPromo';
 
 // Ad size options for the slider - ordered from smallest to largest
 const AD_SIZE_OPTIONS = [
@@ -104,6 +105,9 @@ const QuickQuoteCalculator: React.FC = () => {
     <div className="space-y-8">
       {/* ROI Factors Educational Section */}
       <ROIFactorsInfo />
+      
+      {/* New Advertiser BOGOF Promo Banner */}
+      <NewAdvertiserPromo />
       
       {/* Main Quick Quote Card */}
       <Card className="w-full border-2 border-primary/20 shadow-lg">
