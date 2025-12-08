@@ -692,6 +692,26 @@ const effectiveSelectedAreas = useMemo(() => {
         </video>
       </section>
 
+      {/* Key Statistics Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {stats.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return <div key={index} className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <IconComponent className="h-12 w-12 text-community-green" />
+                  </div>
+                  <div className="text-4xl font-heading font-bold text-community-navy mb-2">
+                    {stat.number}
+                  </div>
+                  <div className="text-gray-600 font-medium text-sm">{stat.label}</div>
+                </div>;
+          })}
+          </div>
+        </div>
+      </section>
+
       {/* Three Service Types Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -737,26 +757,6 @@ const effectiveSelectedAreas = useMemo(() => {
                 <p className="text-gray-600">Low cost sizes, special packages and generous discounts for selected businesses</p>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Key Statistics Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-            {stats.map((stat, index) => {
-            const IconComponent = stat.icon;
-            return <div key={index} className="text-center">
-                  <div className="flex justify-center mb-4">
-                    <IconComponent className="h-12 w-12 text-community-green" />
-                  </div>
-                  <div className="text-4xl font-heading font-bold text-community-navy mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-gray-600 font-medium text-sm">{stat.label}</div>
-                </div>;
-          })}
           </div>
         </div>
       </section>
