@@ -27,7 +27,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail } from "lucide-react";
+import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Heart } from "lucide-react";
 import AdvertisingAlerts from "@/components/AdvertisingAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import AdvertisingStepForm from "@/components/AdvertisingStepForm";
@@ -709,6 +709,26 @@ const effectiveSelectedAreas = useMemo(() => {
                 </div>;
           })}
           </div>
+        </div>
+      </section>
+
+      {/* Love Your Business Introduction Section */}
+      <section className="py-20 bg-community-navy text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex justify-center mb-6">
+            <Heart className="h-16 w-16 text-community-green fill-community-green" />
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold mb-6">
+            Love Your Business...
+            <span className="block text-community-green mt-2">
+              Invest in Local Advertising to Grow, Expand & Thrive
+            </span>
+          </h2>
+          
+          <p className="text-lg md:text-xl text-gray-200 leading-relaxed max-w-3xl mx-auto">
+            Discover Magazine is the region's most established and widespread portfolio of local publications available to businesses to generate brand awareness, create leads and boost website traffic from affluent homeowners in South Hampshire.
+          </p>
         </div>
       </section>
 
