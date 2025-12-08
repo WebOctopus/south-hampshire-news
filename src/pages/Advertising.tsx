@@ -676,13 +676,22 @@ const effectiveSelectedAreas = useMemo(() => {
       <Navigation />
       
       {/* Header Section */}
-      <section className="relative bg-gradient-to-r from-community-navy to-community-green text-white py-20 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{
-          backgroundImage: 'url(/lovable-uploads/08771cf3-89e3-4223-98db-747dce5d2283.png)'
-        }} />
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-community-navy/80 to-community-green/80" />
+      <section className="relative bg-community-navy text-white py-20 overflow-hidden">
+        {/* Background Video */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source 
+            src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/Monthly-Community-Magazine-In-South-Hampshire-1.mp4" 
+            type="video/mp4" 
+          />
+        </video>
+        {/* Dark Overlay for text readability */}
+        <div className="absolute inset-0 bg-black/50" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-2xl md:text-3xl font-heading font-bold mb-4 text-gray-200">
