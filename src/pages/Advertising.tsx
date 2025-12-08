@@ -844,7 +844,7 @@ const effectiveSelectedAreas = useMemo(() => {
 
       {/* Quick Quote Calculator Section for New Advertisers */}
       <section id="quick-quote" className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <QuickQuoteCalculator />
         </div>
       </section>

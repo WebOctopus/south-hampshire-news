@@ -72,39 +72,39 @@ const ROIFactorsInfo: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="text-center space-y-3">
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-community-navy">
           The all important question: How much does it cost to advertise in Discover?
         </h2>
-        <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-          The real question—and impossible to know for sure—is <span className="text-primary font-semibold">return on investment</span>. 
+        <p className="text-gray-600 text-lg max-w-4xl mx-auto">
+          The real question—and impossible to know for sure—is <span className="text-community-green font-semibold">return on investment</span>. 
           What we do know is that ROI depends on several factors:
         </p>
       </div>
 
       {/* Two Column Layout */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-8">
         {/* The Product */}
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardContent className="p-6">
+        <Card className="border border-gray-200 shadow-sm">
+          <CardContent className="p-6 text-left">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 rounded-lg bg-primary/10">
-                <Newspaper className="h-6 w-6 text-primary" />
+              <div className="p-2.5 rounded-lg bg-community-green/10">
+                <Newspaper className="h-6 w-6 text-community-green" />
               </div>
-              <h3 className="text-xl font-bold text-foreground">The Product</h3>
+              <h3 className="text-xl font-bold text-community-navy">The Product</h3>
             </div>
             
             <ul className="space-y-4">
               {productPoints.map((point, index) => (
                 <li key={index} className="flex gap-3">
                   <div className="flex-shrink-0 mt-0.5">
-                    <point.icon className="h-5 w-5 text-primary/70" />
+                    <point.icon className="h-5 w-5 text-community-green" />
                   </div>
                   <div>
-                    <span className="font-medium text-foreground">{point.title}:</span>{' '}
-                    <span className="text-muted-foreground text-sm">{point.description}</span>
+                    <span className="font-medium text-community-navy">{point.title}:</span>{' '}
+                    <span className="text-gray-600 text-sm">{point.description}</span>
                   </div>
                 </li>
               ))}
@@ -113,24 +113,24 @@ const ROIFactorsInfo: React.FC = () => {
         </Card>
 
         {/* The Advertiser */}
-        <Card className="border-secondary/20 bg-gradient-to-br from-secondary/5 to-transparent">
-          <CardContent className="p-6">
+        <Card className="border border-gray-200 shadow-sm">
+          <CardContent className="p-6 text-left">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 rounded-lg bg-secondary/20">
-                <User className="h-6 w-6 text-secondary-foreground" />
+              <div className="p-2.5 rounded-lg bg-community-green/10">
+                <User className="h-6 w-6 text-community-green" />
               </div>
-              <h3 className="text-xl font-bold text-foreground">The Advertiser (You!)</h3>
+              <h3 className="text-xl font-bold text-community-navy">The Advertiser (You!)</h3>
             </div>
             
             <ul className="space-y-4">
               {advertiserPoints.map((point, index) => (
                 <li key={index} className="flex gap-3">
                   <div className="flex-shrink-0 mt-0.5">
-                    <point.icon className="h-5 w-5 text-secondary-foreground/70" />
+                    <point.icon className="h-5 w-5 text-community-green" />
                   </div>
                   <div>
-                    <span className="font-medium text-foreground">{point.title}:</span>{' '}
-                    <span className="text-muted-foreground text-sm">{point.description}</span>
+                    <span className="font-medium text-community-navy">{point.title}:</span>{' '}
+                    <span className="text-gray-600 text-sm">{point.description}</span>
                   </div>
                 </li>
               ))}
