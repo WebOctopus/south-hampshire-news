@@ -676,34 +676,20 @@ const effectiveSelectedAreas = useMemo(() => {
       <Navigation />
       
       {/* Header Section */}
-      <section className="relative bg-community-navy text-white py-20 overflow-hidden">
+      <section className="relative bg-community-navy overflow-hidden">
         {/* Background Video */}
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="w-full h-auto"
         >
           <source 
             src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/Monthly-Community-Magazine-In-South-Hampshire-1.mp4" 
             type="video/mp4" 
           />
         </video>
-        {/* Dark Overlay for text readability */}
-        <div className="absolute inset-0 bg-black/50" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-2xl md:text-3xl font-heading font-bold mb-4 text-gray-200">
-            ADVERTISING
-          </h1>
-          <h2 className="text-5xl md:text-6xl font-heading font-bold mb-6">
-            YOUR BUSINESS NEEDS TO BE SEEN
-          </h2>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-            We can't promise to find you a mate, but we will match you up with new customers!
-          </p>
-        </div>
       </section>
 
       {/* Three Service Types Section */}
