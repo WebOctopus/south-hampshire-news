@@ -676,14 +676,14 @@ const effectiveSelectedAreas = useMemo(() => {
       <Navigation />
       
       {/* Header Section */}
-      <section className="relative bg-community-navy overflow-hidden max-h-[75vh]">
+      <section className="relative bg-community-navy overflow-hidden h-[50vh]">
         {/* Background Video */}
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="w-full h-auto scale-100"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         >
           <source 
             src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/Monthly-Community-Magazine-In-South-Hampshire-1.mp4" 
