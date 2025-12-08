@@ -32,7 +32,7 @@ const NewAdvertiserPromo: React.FC = () => {
           {/* BOGOF Tagline */}
           <div className="mb-6">
             <p className="text-xl md:text-2xl font-bold text-community-navy">
-              For <span className="line-through text-gray-400">Every Area Booked*</span>{' '}
+              For <span className="text-pink-500">Every Area Booked*</span>{' '}
               We Give You{' '}
               <span className="text-pink-500">One Area Free</span>{' '}
               for 6 months
