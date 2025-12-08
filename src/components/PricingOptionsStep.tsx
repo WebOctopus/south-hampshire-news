@@ -241,8 +241,7 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-6">
         <Button
-          variant="outline"
-          className="border-community-navy text-community-navy hover:bg-community-navy hover:text-white"
+          className="bg-community-green hover:bg-community-green/90 text-white font-semibold px-6 py-3 rounded-full"
           onClick={() => window.open('/contact#advertising', '_blank')}
         >
           <FileText className="w-4 h-4 mr-2" />
@@ -250,7 +249,7 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
         </Button>
         <Button
           variant="outline"
-          className="border-community-green text-community-green hover:bg-community-green hover:text-white"
+          className="bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold px-6 py-3 rounded-full"
           onClick={() => window.open('/contact#media-pack', '_blank')}
         >
           <BookOpen className="w-4 h-4 mr-2" />
@@ -258,7 +257,7 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
         </Button>
         <Button
           variant="outline"
-          className="border-community-navy text-community-navy hover:bg-community-navy hover:text-white"
+          className="bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold px-6 py-3 rounded-full"
           onClick={() => window.location.href = 'tel:02380123456'}
         >
           <Phone className="w-4 h-4 mr-2" />
