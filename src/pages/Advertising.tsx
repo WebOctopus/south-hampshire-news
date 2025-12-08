@@ -716,105 +716,141 @@ const CalculatorTest = () => {
         </div>
       </section>
 
-      {/* Love Your Business Introduction Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex justify-center mb-6">
-            <Heart className="h-16 w-16 text-community-green fill-community-green" />
-          </div>
-          
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold mb-6 text-gray-900">
-            Love Your Business...
-            <span className="block text-community-green mt-2">
-              Invest in Local Advertising to Grow, Expand & Thrive
-            </span>
-          </h2>
-          
-          <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-            Discover Magazine is the region's most established and widespread portfolio of local publications available to businesses to generate brand awareness, create leads and boost website traffic from affluent homeowners in South Hampshire.
-          </p>
-        </div>
-      </section>
-
-      {/* Company History Hero Section */}
-      <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
-        {/* Futuristic Background Effects */}
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,255,255,0.03)_50%,transparent_75%,transparent_100%)] bg-[length:30px_30px]" />
-        <div className="absolute top-0 left-0 w-96 h-96 bg-community-green/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-community-navy/20 rounded-full blur-3xl" />
+      {/* Our Story & Reach - Merged Section */}
+      <section className="py-20 bg-gradient-to-br from-stone-50 via-amber-50/30 to-stone-100 relative overflow-hidden">
+        {/* Subtle decorative elements */}
+        <div className="absolute top-20 right-10 w-64 h-64 bg-community-green/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-10 w-48 h-48 bg-community-navy/5 rounded-full blur-3xl" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Magazine Covers Carousel */}
-          <div className="relative max-w-5xl mx-auto mb-12">
-            <Carousel opts={{
-            align: "center",
-            loop: true
-          }} className="w-full">
-              <CarouselContent className="-ml-6">
-                {[{
-                src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
-                alt: "Winchester & Surrounds",
-                title: "WINCHESTER & SURROUNDS"
-              }, {
-                src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png",
-                alt: "Itchen Valley",
-                title: "ITCHEN VALLEY"
-              }, {
-                src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png",
-                alt: "Meon Valley & Whiteley",
-                title: "MEON VALLEY & WHITELEY"
-              }, {
-                src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png",
-                alt: "New Forest & Waterside",
-                title: "NEW FOREST & WATERSIDE"
-              }, {
-                src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png",
-                alt: "Southampton West & Totton",
-                title: "SOUTHAMPTON WEST & TOTTON"
-              }, {
-                src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png",
-                alt: "Test Valley & Romsey",
-                title: "TEST VALLEY & ROMSEY"
-              }, {
-                src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png",
-                alt: "Winchester & Alresford",
-                title: "WINCHESTER & ALRESFORD"
-              }, {
-                src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png",
-                alt: "Chandler's Ford & Eastleigh",
-                title: "CHANDLER'S FORD & EASTLEIGH"
-              }].map((cover, index) => <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
-                    <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
-                      <CardContent className="p-6">
-                        <div className="relative overflow-hidden rounded-lg">
-                          <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                            <h3 className="text-white font-bold text-sm mb-2">{cover.title}</h3>
-                            <div className="flex items-center gap-2">
-                              <div className="w-1 h-1 bg-community-green rounded-full" />
-                              <span className="text-community-green text-xs font-medium">CURRENT EDITION</span>
+          {/* Section Header with Timeline Badge */}
+          <div className="flex justify-center mb-12">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-white rounded-full shadow-lg border border-stone-200">
+              <div className="w-3 h-3 bg-community-green rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-muted-foreground">Our Journey</span>
+              <div className="w-px h-4 bg-stone-300" />
+              <Badge className="bg-community-navy text-white border-0 font-bold">
+                Since 2005
+              </Badge>
+              <div className="w-px h-4 bg-stone-300" />
+              <span className="text-sm font-medium text-muted-foreground">Still Growing</span>
+              <div className="w-3 h-3 bg-community-green rounded-full animate-pulse" />
+            </div>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Text Content */}
+            <div className="space-y-8">
+              {/* Heart Icon & Title */}
+              <div>
+                <div className="inline-flex items-center justify-center p-3 bg-community-green/10 rounded-2xl mb-6">
+                  <Heart className="h-10 w-10 text-community-green fill-community-green" />
+                </div>
+                
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-community-navy leading-tight">
+                  Love Your Business...
+                </h2>
+                <p className="text-2xl md:text-3xl font-heading font-bold text-community-green mt-2">
+                  Invest in Local Advertising to Grow, Expand & Thrive
+                </p>
+              </div>
+              
+              {/* Story Paragraphs */}
+              <div className="space-y-4">
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Discover Magazine is the region's most established and widespread portfolio of local publications available to businesses to generate brand awareness, create leads and boost website traffic from affluent homeowners in South Hampshire.
+                </p>
+                
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  We started publishing local magazines in 2005 with one magazine delivered to 2,000 homes. Today, Discover has the <span className="font-semibold text-community-navy">largest single circulation of any magazine in South Hampshire</span>.
+                </p>
+              </div>
+              
+              {/* Key Stats Row */}
+              <div className="grid grid-cols-3 gap-4 pt-4">
+                <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-stone-200">
+                  <div className="text-3xl font-bold text-community-navy">20</div>
+                  <div className="text-sm text-muted-foreground">Years Experience</div>
+                </div>
+                <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-stone-200">
+                  <div className="text-3xl font-bold text-community-green">14</div>
+                  <div className="text-sm text-muted-foreground">Local Editions</div>
+                </div>
+                <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-stone-200">
+                  <div className="text-3xl font-bold text-community-navy">120k+</div>
+                  <div className="text-sm text-muted-foreground">Homes Reached</div>
+                </div>
+              </div>
+
+              {/* Tagline */}
+              <div className="p-5 bg-community-navy rounded-xl">
+                <p className="text-white text-center font-medium">
+                  "We've perfected the formula for local print media — for advertisers <span className="text-community-green">and</span> our readers."
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Magazine Covers Carousel */}
+            <div className="relative">
+              {/* Decorative frame */}
+              <div className="absolute -inset-4 bg-gradient-to-br from-community-navy/5 to-community-green/5 rounded-3xl" />
+              
+              <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-community-navy rounded-2xl p-6 shadow-2xl">
+                {/* Carousel Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm font-medium text-slate-400">Current Editions</span>
+                  <Badge variant="outline" className="border-community-green/50 text-community-green bg-community-green/10">
+                    <Newspaper className="h-3 w-3 mr-1" />
+                    14 Magazines
+                  </Badge>
+                </div>
+                
+                <Carousel opts={{ align: "center", loop: true }} className="w-full">
+                  <CarouselContent className="-ml-4">
+                    {[
+                      { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Winchester & Surrounds", title: "WINCHESTER & SURROUNDS" },
+                      { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Itchen Valley", title: "ITCHEN VALLEY" },
+                      { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Meon Valley & Whiteley", title: "MEON VALLEY & WHITELEY" },
+                      { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "New Forest & Waterside", title: "NEW FOREST & WATERSIDE" },
+                      { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Southampton West & Totton", title: "SOUTHAMPTON WEST & TOTTON" },
+                      { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Test Valley & Romsey", title: "TEST VALLEY & ROMSEY" },
+                      { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Winchester & Alresford", title: "WINCHESTER & ALRESFORD" },
+                      { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Chandler's Ford & Eastleigh", title: "CHANDLER'S FORD & EASTLEIGH" }
+                    ].map((cover, index) => (
+                      <CarouselItem key={index} className="pl-4 basis-full">
+                        <div className="group relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-community-green/50 transition-all duration-500">
+                          <div className="relative overflow-hidden">
+                            <img 
+                              src={cover.src} 
+                              alt={cover.alt} 
+                              className="w-full h-80 object-contain transition-transform duration-700 group-hover:scale-105" 
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                              <h3 className="text-white font-bold text-sm">{cover.title}</h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="w-1.5 h-1.5 bg-community-green rounded-full" />
+                                <span className="text-community-green text-xs font-medium">CURRENT EDITION</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>)}
-              </CarouselContent>
-              <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
-              <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
-            </Carousel>
-          </div>
-
-          {/* Text content below carousel */}
-          <div className="text-center mt-12">
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
-              Since 2005
-            </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              We started publishing local magazines in 2005 starting with one magazine delivered to 2,000 homes and now Discover has the largest single circulation of any magazine in South Hampshire. We've perfected the formula for local print media both for advertisers and our readers.
-            </p>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300 h-10 w-10" />
+                  <CarouselNext className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300 h-10 w-10" />
+                </Carousel>
+                
+                {/* Carousel dots indicator */}
+                <div className="flex justify-center gap-1.5 mt-4">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
