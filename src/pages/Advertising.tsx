@@ -847,67 +847,7 @@ const CalculatorTest = () => {
       </section>
 
       {/* Top Website Features Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Top 10+ Website Features Users Will Value the Most in 2023
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-xl font-bold text-community-green">1</span>
-                </div>
-                <h3 className="font-bold text-community-navy mb-2">Easy Navigation</h3>
-                <p className="text-gray-600 text-sm">Intuitive menu structure and clear pathways</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-xl font-bold text-community-green">2</span>
-                </div>
-                <h3 className="font-bold text-community-navy mb-2">Intuitive Design</h3>
-                <p className="text-gray-600 text-sm">User experience that feels natural</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-xl font-bold text-community-green">3</span>
-                </div>
-                <h3 className="font-bold text-community-navy mb-2">Value Propositions</h3>
-                <p className="text-gray-600 text-sm">Clear benefits and unique selling points</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-xl font-bold text-community-green">4</span>
-                </div>
-                <h3 className="font-bold text-community-navy mb-2">About Us</h3>
-                <p className="text-gray-600 text-sm">Build trust with company information</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="bg-community-green/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-xl font-bold text-community-green">5</span>
-                </div>
-                <h3 className="font-bold text-community-navy mb-2">Client Lists</h3>
-                <p className="text-gray-600 text-sm">Showcase existing and past clients</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      
 
       {/* 14 Local Editions Section with Adobe Interactive Embed */}
       <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
