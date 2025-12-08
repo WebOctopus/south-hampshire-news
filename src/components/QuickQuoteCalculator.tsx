@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { usePricingData } from '@/hooks/usePricingData';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { Calculator, TrendingUp, Users, Target, Gift, PoundSterling } from 'lucide-react';
+import ROIFactorsInfo from './ROIFactorsInfo';
 
 // Ad size options for the slider - ordered from smallest to largest
 const AD_SIZE_OPTIONS = [
@@ -101,6 +102,9 @@ const QuickQuoteCalculator: React.FC = () => {
 
   return (
     <div className="space-y-8">
+      {/* ROI Factors Educational Section */}
+      <ROIFactorsInfo />
+      
       {/* Main Quick Quote Card */}
       <Card className="w-full border-2 border-primary/20 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b">
