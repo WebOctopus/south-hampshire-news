@@ -740,17 +740,8 @@ const effectiveSelectedAreas = useMemo(() => {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-community-navy/20 rounded-full blur-3xl" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
-              Since 2005
-            </h2>
-            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              We started publishing local magazines in 2005 starting with one magazine delivered to 2,000 homes and now Discover has the largest single circulation of any magazine in South Hampshire. We've perfected the formula for local print media both for advertisers and our readers.
-            </p>
-          </div>
-
           {/* Magazine Covers Carousel */}
-          <div className="relative max-w-5xl mx-auto">
+          <div className="relative max-w-5xl mx-auto mb-12">
             <Carousel opts={{ align: "center", loop: true }} className="w-full">
               <CarouselContent className="-ml-6">
                 {[
@@ -786,6 +777,16 @@ const effectiveSelectedAreas = useMemo(() => {
               <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
               <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
             </Carousel>
+          </div>
+
+          {/* Text content below carousel */}
+          <div className="text-center mt-12">
+            <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
+              Since 2005
+            </h2>
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              We started publishing local magazines in 2005 starting with one magazine delivered to 2,000 homes and now Discover has the largest single circulation of any magazine in South Hampshire. We've perfected the formula for local print media both for advertisers and our readers.
+            </p>
           </div>
         </div>
       </section>
