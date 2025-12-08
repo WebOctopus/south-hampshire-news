@@ -33,6 +33,7 @@ import AdvertisingStepForm from "@/components/AdvertisingStepForm";
 import { useAgencyDiscount } from "@/hooks/useAgencyDiscount";
 import { useQueryClient } from "@tanstack/react-query";
 import QuickQuoteCalculator from "@/components/QuickQuoteCalculator";
+import { EnquiryFormSection } from "@/components/EnquiryFormSection";
 interface FormData {
   name: string;
   email: string;
@@ -880,6 +881,9 @@ const CalculatorTest = () => {
           <AdvertisingStepForm />
         </div>
       </section>
+
+      {/* CTA Enquiry Form Section */}
+      <EnquiryFormSection />
 
       {/* Top Website Features Section */}
 
