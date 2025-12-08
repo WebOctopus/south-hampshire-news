@@ -688,32 +688,132 @@ const CalculatorTest = () => {
   return <div className="min-h-screen bg-gray-50">
       <Navigation />
       
-      {/* Header Section */}
-      <section className="relative bg-community-navy overflow-hidden h-[50vh]">
-        {/* Background Video */}
+      {/* Hero Header Section - Established, Calm, Confident */}
+      <section className="relative bg-community-navy overflow-hidden min-h-[85vh] flex items-center">
+        {/* Background Video with Overlay */}
         <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover object-center">
           <source src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/Monthly-Community-Magazine-In-South-Hampshire-1.mp4" type="video/mp4" />
         </video>
-      </section>
-
-      {/* Key Statistics Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-            {stats.map((stat, index) => {
-            const IconComponent = stat.icon;
-            return <div key={index} className="text-center">
-                  <div className="flex justify-center mb-4">
-                    <IconComponent className="h-12 w-12 text-community-green" />
+        
+        {/* Gradient Overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-community-navy/95 via-community-navy/80 to-community-navy/60" />
+        
+        {/* Radial glow effect */}
+        <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-community-green/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-community-green/5 rounded-full blur-[80px]" />
+        
+        {/* Content */}
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left: Headline + Subcopy */}
+            <div className="space-y-8">
+              {/* Trust badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                <div className="w-2 h-2 bg-community-green rounded-full animate-pulse" />
+                <span className="text-sm text-white/90 font-medium">South Hampshire's Leading Local Magazine Publisher</span>
+              </div>
+              
+              {/* Main headline */}
+              <div className="space-y-4">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white leading-tight">
+                  Reach{' '}
+                  <span className="text-community-green">142,000</span>{' '}
+                  Affluent Homes
+                </h1>
+                <p className="text-xl md:text-2xl text-white/80 leading-relaxed">
+                  Generate brand awareness, create leads, and boost website traffic with South Hampshire's most trusted local magazine network.
+                </p>
+              </div>
+              
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button 
+                  size="lg" 
+                  className="bg-community-green hover:bg-community-green/90 text-white px-8 py-6 text-lg font-semibold shadow-lg shadow-community-green/30 transition-all duration-300 hover:shadow-xl hover:shadow-community-green/40"
+                  onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Get Your Instant Quote
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm"
+                  onClick={() => document.getElementById('quick-quote')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Explore Pricing
+                </Button>
+              </div>
+              
+              {/* Social proof line */}
+              <div className="flex items-center gap-3 pt-2">
+                <div className="flex -space-x-2">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-community-green to-emerald-400 border-2 border-community-navy flex items-center justify-center">
+                      <Users className="h-4 w-4 text-white" />
+                    </div>
+                  ))}
+                </div>
+                <span className="text-white/70 text-sm">
+                  Trusted by <span className="text-white font-semibold">250+ local businesses</span>
+                </span>
+              </div>
+            </div>
+            
+            {/* Right: Floating Stats Panel */}
+            <div className="relative">
+              {/* Glow behind panel */}
+              <div className="absolute -inset-4 bg-community-green/20 rounded-3xl blur-2xl" />
+              
+              <div className="relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 lg:p-8 shadow-2xl">
+                <div className="text-center mb-6">
+                  <Badge className="bg-community-green/20 text-community-green border-community-green/30 px-4 py-1">
+                    <Award className="h-3 w-3 mr-1" />
+                    Celebrating 20 Years
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Main stat - large */}
+                  <div className="col-span-2 bg-white/10 rounded-xl p-6 text-center border border-white/10">
+                    <div className="text-5xl lg:text-6xl font-heading font-bold text-white mb-1">142,000</div>
+                    <div className="text-community-green font-medium">Bi-monthly Circulation</div>
                   </div>
-                  <div className="text-4xl font-heading font-bold text-community-navy mb-2">
-                    {stat.number}
+                  
+                  {/* Secondary stats */}
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="text-3xl font-heading font-bold text-white mb-1">14</div>
+                    <div className="text-white/70 text-sm">Local Editions</div>
                   </div>
-                  <div className="text-gray-600 font-medium text-sm">{stat.label}</div>
-                </div>;
-          })}
+                  
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="text-3xl font-heading font-bold text-white mb-1">72%</div>
+                    <div className="text-white/70 text-sm">Repeat Rate</div>
+                  </div>
+                  
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="text-3xl font-heading font-bold text-white mb-1">250+</div>
+                    <div className="text-white/70 text-sm">Advertisers</div>
+                  </div>
+                  
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
+                    <div className="text-3xl font-heading font-bold text-white mb-1">580k</div>
+                    <div className="text-white/70 text-sm">Leaflets/Year</div>
+                  </div>
+                </div>
+                
+                {/* Bottom trust indicator */}
+                <div className="mt-6 pt-4 border-t border-white/10 text-center">
+                  <p className="text-white/60 text-sm">
+                    <span className="text-community-green">✓</span> Tracked delivery • <span className="text-community-green">✓</span> Premium postcodes • <span className="text-community-green">✓</span> Quality editorial
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        
+        {/* Bottom gradient fade to next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-stone-50 to-transparent" />
       </section>
 
       {/* Our Story & Reach - Merged Section */}
