@@ -817,38 +817,6 @@ const CalculatorTest = () => {
         </div>
       </section>
 
-      {/* Three Service Types Section */}
-      
-
-      {/* Getting Started Process Section */}
-      
-
-      {/* Quick Quote Calculator Section for New Advertisers */}
-      <section id="quick-quote" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <QuickQuoteCalculator />
-        </div>
-      </section>
-
-      {/* Quote Selection Section */}
-      <section id="calculator" className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Get Your Instant Quote
-            </h2>
-            <p className="text-xl text-gray-600">
-              Start by selecting your preferred advertising package
-            </p>
-          </div>
-          
-          <AdvertisingStepForm />
-        </div>
-      </section>
-
-      {/* Top Website Features Section */}
-      
-
       {/* 14 Local Editions Section with Adobe Interactive Embed */}
       <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -883,6 +851,37 @@ const CalculatorTest = () => {
           </div>
         </div>
       </section>
+
+      {/* Three Service Types Section */}
+      
+
+      {/* Getting Started Process Section */}
+      
+
+      {/* Quick Quote Calculator Section for New Advertisers */}
+      <section id="quick-quote" className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <QuickQuoteCalculator />
+        </div>
+      </section>
+
+      {/* Quote Selection Section */}
+      <section id="calculator" className="py-16 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              Get Your Instant Quote
+            </h2>
+            <p className="text-xl text-gray-600">
+              Start by selecting your preferred advertising package
+            </p>
+          </div>
+          
+          <AdvertisingStepForm />
+        </div>
+      </section>
+
+      {/* Top Website Features Section */}
 
       {/* Special Offer Section */}
       
