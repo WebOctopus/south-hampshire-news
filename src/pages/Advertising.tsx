@@ -684,7 +684,7 @@ const CalculatorTest = () => {
       <section className="relative bg-community-navy overflow-hidden min-h-[85vh] flex items-center">
         {/* Background Video with Overlay */}
         <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover object-center">
-          <source src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/Monthly-Community-Magazine-In-South-Hampshire-1.mp4" type="video/mp4" />
+          <source src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/New%20Hero%20Video.mp4" type="video/mp4" />
         </video>
         
         {/* Gradient Overlay for readability */}
