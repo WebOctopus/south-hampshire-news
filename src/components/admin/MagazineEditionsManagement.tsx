@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { useMagazineEditions, useMagazineEditionMutations, MagazineEdition } from '@/hooks/useMagazineEditions';
-import { Plus, Pencil, Trash2, GripVertical, ExternalLink } from 'lucide-react';
+import { useMagazineEditions, useMagazineEditionMutations, useMagazineImageUpload, MagazineEdition } from '@/hooks/useMagazineEditions';
+import { Plus, Pencil, Trash2, GripVertical, ExternalLink, Upload, X, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const MagazineEditionsManagement = () => {
   const { data: editions, isLoading } = useMagazineEditions(true);
   const { createEdition, updateEdition, deleteEdition, toggleActive } = useMagazineEditionMutations();
+  const { uploadCoverImage, isUploading } = useMagazineImageUpload();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEdition, setEditingEdition] = useState<MagazineEdition | null>(null);
@@ -24,6 +25,11 @@ const MagazineEditionsManagement = () => {
     sort_order: 0,
     is_active: true,
   });
+  
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setFormData({
@@ -35,6 +41,8 @@ const MagazineEditionsManagement = () => {
       is_active: true,
     });
     setEditingEdition(null);
+    setSelectedFile(null);
+    setPreviewUrl(null);
   };
 
   const handleOpenDialog = (edition?: MagazineEdition) => {
@@ -48,23 +56,82 @@ const MagazineEditionsManagement = () => {
         sort_order: edition.sort_order,
         is_active: edition.is_active,
       });
+      setPreviewUrl(edition.image_url);
     } else {
       resetForm();
     }
     setIsDialogOpen(true);
   };
 
+  const handleFileSelect = useCallback((file: File) => {
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!validTypes.includes(file.type)) {
+      alert('Please upload a JPG, PNG, or WebP image.');
+      return;
+    }
+
+    if (file.size > maxSize) {
+      alert('File size must be less than 5MB.');
+      return;
+    }
+
+    setSelectedFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+  }, []);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileSelect(file);
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setPreviewUrl(editingEdition?.image_url || null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleSubmit = async () => {
+    let imageUrl = formData.image_url;
+
+    // Upload new file if selected
+    if (selectedFile) {
+      const uploadedUrl = await uploadCoverImage(selectedFile);
+      if (!uploadedUrl) return; // Upload failed
+      imageUrl = uploadedUrl;
+    }
+
     if (editingEdition) {
       await updateEdition.mutateAsync({
         id: editingEdition.id,
         ...formData,
+        image_url: imageUrl,
         alt_text: formData.alt_text || null,
         link_url: formData.link_url || null,
       });
     } else {
       await createEdition.mutateAsync({
         ...formData,
+        image_url: imageUrl,
         alt_text: formData.alt_text || null,
         link_url: formData.link_url || null,
       });
@@ -78,6 +145,8 @@ const MagazineEditionsManagement = () => {
       await deleteEdition.mutateAsync(id);
     }
   };
+
+  const isFormValid = formData.title && (selectedFile || formData.image_url);
 
   if (isLoading) {
     return (
@@ -95,7 +164,10 @@ const MagazineEditionsManagement = () => {
           <h2 className="text-2xl font-bold mb-2">Magazine Editions</h2>
           <p className="text-muted-foreground">Manage the magazine covers displayed on the homepage carousel.</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) resetForm();
+        }}>
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
@@ -116,20 +188,66 @@ const MagazineEditionsManagement = () => {
                   placeholder="e.g., WINCHESTER & SURROUNDS"
                 />
               </div>
+              
+              {/* Drag and Drop Upload Zone */}
               <div>
-                <Label htmlFor="image_url">Image URL</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="/lovable-uploads/..."
-                />
-                {formData.image_url && (
-                  <div className="mt-2 border rounded-lg overflow-hidden w-32">
-                    <img src={formData.image_url} alt="Preview" className="w-full h-auto" />
-                  </div>
-                )}
+                <Label>Cover Image</Label>
+                <div
+                  className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    isDragOver 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-muted-foreground/25 hover:border-primary/50'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleFileInputChange}
+                  />
+                  
+                  {previewUrl ? (
+                    <div className="relative inline-block">
+                      <img 
+                        src={previewUrl} 
+                        alt="Preview" 
+                        className="max-h-40 rounded-lg mx-auto"
+                      />
+                      {selectedFile && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearSelectedFile();
+                          }}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {selectedFile ? selectedFile.name : 'Current image'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Drag & drop an image here, or click to browse
+                      </p>
+                      <p className="text-xs text-muted-foreground/70">
+                        JPG, PNG, or WebP • Max 5MB
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
+
               <div>
                 <Label htmlFor="alt_text">Alt Text (Accessibility)</Label>
                 <Input
@@ -172,9 +290,14 @@ const MagazineEditionsManagement = () => {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
               <Button 
                 onClick={handleSubmit}
-                disabled={!formData.title || !formData.image_url || createEdition.isPending || updateEdition.isPending}
+                disabled={!isFormValid || isUploading || createEdition.isPending || updateEdition.isPending}
               >
-                {editingEdition ? 'Update' : 'Create'}
+                {isUploading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : editingEdition ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>
           </DialogContent>

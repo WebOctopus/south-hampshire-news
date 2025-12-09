@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useState } from 'react';
 
 export interface MagazineEdition {
   id: string;
@@ -118,4 +119,41 @@ export const useMagazineEditionMutations = () => {
   });
 
   return { createEdition, updateEdition, deleteEdition, toggleActive };
+};
+
+export const useMagazineImageUpload = () => {
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
+
+  const uploadCoverImage = async (file: File): Promise<string | null> => {
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `covers/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('magazine-covers')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('magazine-covers')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      toast({ 
+        title: 'Upload failed', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return { uploadCoverImage, isUploading };
 };
