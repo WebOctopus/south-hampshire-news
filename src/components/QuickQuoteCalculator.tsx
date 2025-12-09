@@ -19,15 +19,16 @@ const AD_SIZE_OPTIONS = [
   { label: 'Full', name: 'Full Page' },
 ];
 
-// Default subscription pricing per ad size per number of areas (used for instant display)
+// Default BOGOF pricing per ad size per number of PAID areas (used for instant display)
+// These match the Cost Calculator's BOGOF pricing - you pay for X areas, get 2X free
 const DEFAULT_PRICING: Record<string, Record<number, number>> = {
-  '1/8 Page': { 1: 30, 2: 45, 3: 60, 4: 75, 5: 90, 6: 105, 7: 120 },
-  '1/6 Page': { 1: 35, 2: 55, 3: 72, 4: 90, 5: 108, 6: 126, 7: 144 },
-  '1/4 Page': { 1: 45, 2: 68, 3: 90, 4: 113, 5: 135, 6: 158, 7: 180 },
-  '1/3 Page': { 1: 55, 2: 83, 3: 110, 4: 138, 5: 165, 6: 193, 7: 220 },
-  '1/2 Page Landscape': { 1: 70, 2: 105, 3: 140, 4: 175, 5: 210, 6: 245, 7: 280 },
-  '2/3 Page': { 1: 85, 2: 128, 3: 170, 4: 213, 5: 255, 6: 298, 7: 340 },
-  'Full Page': { 1: 110, 2: 165, 3: 220, 4: 275, 5: 330, 6: 385, 7: 440 },
+  '1/8 Page': { 1: 45, 2: 90, 3: 135, 4: 180, 5: 225, 6: 270, 7: 315 },
+  '1/6 Page': { 1: 50, 2: 100, 3: 150, 4: 200, 5: 250, 6: 300, 7: 350 },
+  '1/4 Page': { 1: 45, 2: 90, 3: 135, 4: 180, 5: 225, 6: 270, 7: 315 },
+  '1/3 Page': { 1: 60, 2: 120, 3: 180, 4: 240, 5: 300, 6: 360, 7: 420 },
+  '1/2 Page Landscape': { 1: 85, 2: 170, 3: 255, 4: 340, 5: 425, 6: 510, 7: 595 },
+  '2/3 Page': { 1: 110, 2: 220, 3: 330, 4: 440, 5: 550, 6: 660, 7: 770 },
+  'Full Page': { 1: 140, 2: 280, 3: 420, 4: 560, 5: 700, 6: 840, 7: 980 },
 };
 
 // Default circulation per area (used when DB not loaded)
