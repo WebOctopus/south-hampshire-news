@@ -9,7 +9,8 @@ import {
   Shield,
   Home,
   AlertTriangle,
-  Image
+  Image,
+  BookOpen
 } from "lucide-react"
 
 import {
@@ -60,6 +61,11 @@ const menuItems = [
     title: "Ad Preview Images",
     icon: Image,
     section: "ad-preview-images"
+  },
+  {
+    title: "Magazine Editions",
+    icon: BookOpen,
+    section: "magazine-editions"
   }
 ]
 
