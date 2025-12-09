@@ -1002,15 +1002,36 @@ const CalculatorTest = () => {
       </section>
 
       {/* Quote Selection Section */}
-      <section id="calculator" className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="calculator" className="py-20 bg-gradient-to-br from-slate-50 via-amber-50/30 to-stone-100 relative overflow-hidden">
+        {/* Decorative blur elements */}
+        <div className="absolute top-20 right-20 w-72 h-72 bg-community-green/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 left-20 w-56 h-56 bg-community-navy/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-100/20 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
+            {/* Eye-catching badge */}
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white rounded-full shadow-md border border-stone-200">
+                <div className="w-2.5 h-2.5 bg-community-green rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-community-navy">Ready to Get Started?</span>
+                <div className="w-2.5 h-2.5 bg-community-green rounded-full animate-pulse" />
+              </div>
+            </div>
+            
             <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
               Get Your Instant Quote & Booking
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-muted-foreground mb-6">
               Start by selecting your preferred advertising package
             </p>
+            
+            {/* Motivational tagline */}
+            <div className="max-w-xl mx-auto p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-stone-200/50">
+              <p className="text-center text-muted-foreground italic">
+                "Join hundreds of local businesses who've grown with Discover Magazine"
+              </p>
+            </div>
           </div>
           
           <AdvertisingStepForm />

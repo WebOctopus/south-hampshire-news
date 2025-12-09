@@ -174,39 +174,72 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {packages.map((option) => {
+        {packages.map((option, packageIndex) => {
           const Icon = getIcon(option.icon);
+          const gradientColors = [
+            'from-slate-600 to-slate-800',
+            'from-community-green to-emerald-600',
+            'from-amber-500 to-orange-600'
+          ];
+          const accentColors = [
+            'border-t-slate-600',
+            'border-t-community-green',
+            'border-t-amber-500'
+          ];
+          const iconBgColors = [
+            'bg-gradient-to-br from-slate-100 to-slate-200',
+            'bg-gradient-to-br from-green-100 to-emerald-200',
+            'bg-gradient-to-br from-amber-100 to-orange-200'
+          ];
           
           return (
             <Card 
               key={option.id}
               className={cn(
-                "relative overflow-hidden transition-all duration-200",
-                option.is_popular && "border-primary shadow-lg scale-105",
-                "hover:shadow-elegant"
+                "relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-white to-slate-50/80 group",
+                "border-t-4 shadow-lg hover:shadow-2xl hover:-translate-y-1",
+                option.is_popular 
+                  ? "border-t-community-green ring-2 ring-community-green/20 scale-105 z-10" 
+                  : accentColors[packageIndex % 3]
               )}
             >
               {option.is_popular && (
-                <div className="absolute top-0 left-0 right-0 bg-gradient-primary text-primary-foreground text-center py-2 text-sm font-medium">
-                  Most Popular Choice
+                <div className={cn(
+                  "absolute top-0 left-0 right-0 bg-gradient-to-r text-white text-center py-3 text-sm font-semibold tracking-wide",
+                  gradientColors[1]
+                )}>
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    Most Popular Choice
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  </span>
                 </div>
               )}
               
-              <CardHeader className={cn("space-y-4", option.is_popular && "pt-12")}>
+              <CardHeader className={cn("space-y-4", option.is_popular && "pt-14")}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-primary" />
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-transform group-hover:scale-110",
+                    option.is_popular ? iconBgColors[1] : iconBgColors[packageIndex % 3]
+                  )}>
+                    <Icon className={cn(
+                      "w-6 h-6",
+                      option.is_popular ? "text-community-green" : "text-community-navy"
+                    )} />
                   </div>
                   {option.badge_text && (
-                    <Badge variant={option.badge_variant as any} className="text-xs">
+                    <Badge 
+                      variant={option.badge_variant as any} 
+                      className="text-xs font-semibold px-3 py-1 shadow-sm"
+                    >
                       {option.badge_text}
                     </Badge>
                   )}
                 </div>
                 
                 <div className="space-y-2">
-                  <CardTitle className="text-xl">{option.title}</CardTitle>
-                  <p className="text-sm font-medium text-primary">{option.subtitle}</p>
+                  <CardTitle className="text-xl font-bold text-community-navy">{option.title}</CardTitle>
+                  <p className="text-sm font-semibold text-community-green">{option.subtitle}</p>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {option.description}
                   </p>
@@ -217,17 +250,17 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
                 <Button
                   onClick={() => handleSelectOption(option.package_id as 'fixed' | 'bogof' | 'leafleting', option)}
                   className={cn(
-                    "w-full",
+                    "w-full font-semibold transition-all duration-300",
                     option.is_popular 
-                      ? "bg-primary hover:bg-primary/90 shadow-glow" 
-                      : "variant-outline hover:bg-primary hover:text-primary-foreground"
+                      ? "bg-community-green hover:bg-community-green/90 text-white shadow-lg hover:shadow-xl" 
+                      : "bg-community-navy hover:bg-community-navy/90 text-white"
                   )}
                   size="lg"
                 >
                   {option.cta_text}
                 </Button>
 
-                <div className="space-y-1">
+                <div className="space-y-1 bg-slate-50/50 rounded-lg p-3 -mx-1">
                   {option.features.map((feature, index) => (
                     <FeatureRow key={index} feature={feature} />
                   ))}
