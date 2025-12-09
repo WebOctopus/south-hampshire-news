@@ -143,10 +143,10 @@ const Navigation = () => {
   ];
 
   const advertisingDropdownItems = [
-    { name: 'View Advertising Options', href: '/advertising', description: 'Explore our advertising packages and rates', icon: Megaphone },
-    { name: 'Cost Calculator', href: '/advertising#calculator', description: 'Calculate your advertising costs instantly', icon: Calculator },
-    { name: 'Distribution Areas', href: '/advertising#areas', description: 'See our 14 areas across South Hampshire', icon: MapPin },
-    { name: 'Special Offers', href: '/advertising#offers', description: 'Current promotional deals and packages', icon: Gift },
+    { name: 'Advertising Overview', href: '/advertising', description: 'Learn about our reach, story, and magazine editions', icon: Megaphone },
+    { name: 'Quick Quote Calculator', href: '/advertising#quick-quote', description: 'Get a quick pricing estimate in seconds', icon: Calculator },
+    { name: '14 Local Editions', href: '/advertising#editions-map', description: 'Explore our interactive distribution map', icon: MapPin },
+    { name: 'Get Your Quote', href: '/advertising#calculator', description: 'Full quote builder with all package options', icon: Gift },
   ];
 
   const allDropdownSections = [
