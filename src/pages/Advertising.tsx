@@ -954,7 +954,7 @@ const CalculatorTest = () => {
       </section>
 
       {/* 14 Local Editions Section with Adobe Interactive Embed */}
-      <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
+      <section id="editions-map" className="py-16 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
