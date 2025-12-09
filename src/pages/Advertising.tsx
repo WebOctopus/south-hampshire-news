@@ -754,7 +754,7 @@ const CalculatorTest = () => {
               </Button>
               <Button size="lg" variant="outline" onClick={() => document.getElementById('quick-quote')?.scrollIntoView({
               behavior: 'smooth'
-            })} className="border-2 border-white/30 hover:bg-white/10 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm text-primary-foreground">
+            })} className="border-2 border-white/30 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm text-primary-foreground bg-primary">
                 Explore Pricing
               </Button>
             </div>
