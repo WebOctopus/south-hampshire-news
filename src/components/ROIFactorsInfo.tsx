@@ -86,12 +86,12 @@ const ROIFactorsInfo: React.FC = () => {
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4">
             The all important question:
           </h2>
-          <p className="text-3xl md:text-4xl lg:text-5xl font-black text-community-green">
-            What will your ROI be?
+          <p className="text-2xl md:text-3xl lg:text-4xl font-black text-community-green leading-tight">
+            How Much Does it Cost to Advertise?<br />
+            And What Could your Return (ROI) be?
           </p>
-          <p className="text-slate-300 text-lg mt-4 max-w-2xl mx-auto">
-            The real question—and impossible to know for sure—is return on investment. 
-            What we do know is that <span className="text-white font-semibold">ROI depends on two key factors:</span>
+          <p className="text-slate-300 text-lg mt-4 max-w-3xl mx-auto">
+            It's difficult to project as there are so many factors that affect ROI. The better these factors are handled the better the end result. The % scales are industry standard. Nothing is guaranteed but we hope this shows we are invested in value for money and results.
           </p>
         </div>
       </div>
