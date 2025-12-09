@@ -99,28 +99,58 @@ const CalculatorTest = () => {
   } = useLeafletCampaignDurations();
 
   // Use magazine editions hook
-  const { data: editions } = useMagazineEditions();
+  const {
+    data: editions
+  } = useMagazineEditions();
 
   // Fallback covers for when database is empty
-  const fallbackCovers = [
-    { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Winchester & Surrounds", title: "WINCHESTER & SURROUNDS", link: null },
-    { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Itchen Valley", title: "ITCHEN VALLEY", link: null },
-    { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Meon Valley & Whiteley", title: "MEON VALLEY & WHITELEY", link: null },
-    { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "New Forest & Waterside", title: "NEW FOREST & WATERSIDE", link: null },
-    { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Southampton West & Totton", title: "SOUTHAMPTON WEST & TOTTON", link: null },
-    { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Test Valley & Romsey", title: "TEST VALLEY & ROMSEY", link: null },
-    { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Winchester & Alresford", title: "WINCHESTER & ALRESFORD", link: null },
-    { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Chandler's Ford & Eastleigh", title: "CHANDLER'S FORD & EASTLEIGH", link: null }
-  ];
-
-  const magazineCovers = editions?.length 
-    ? editions.map(e => ({
-        src: e.image_url,
-        alt: e.alt_text || `Discover Magazine - ${e.title} Edition`,
-        title: e.title,
-        link: e.link_url
-      }))
-    : fallbackCovers;
+  const fallbackCovers = [{
+    src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png",
+    alt: "Winchester & Surrounds",
+    title: "WINCHESTER & SURROUNDS",
+    link: null
+  }, {
+    src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png",
+    alt: "Itchen Valley",
+    title: "ITCHEN VALLEY",
+    link: null
+  }, {
+    src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png",
+    alt: "Meon Valley & Whiteley",
+    title: "MEON VALLEY & WHITELEY",
+    link: null
+  }, {
+    src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png",
+    alt: "New Forest & Waterside",
+    title: "NEW FOREST & WATERSIDE",
+    link: null
+  }, {
+    src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png",
+    alt: "Southampton West & Totton",
+    title: "SOUTHAMPTON WEST & TOTTON",
+    link: null
+  }, {
+    src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png",
+    alt: "Test Valley & Romsey",
+    title: "TEST VALLEY & ROMSEY",
+    link: null
+  }, {
+    src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png",
+    alt: "Winchester & Alresford",
+    title: "WINCHESTER & ALRESFORD",
+    link: null
+  }, {
+    src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png",
+    alt: "Chandler's Ford & Eastleigh",
+    title: "CHANDLER'S FORD & EASTLEIGH",
+    link: null
+  }];
+  const magazineCovers = editions?.length ? editions.map(e => ({
+    src: e.image_url,
+    alt: e.alt_text || `Discover Magazine - ${e.title} Edition`,
+    title: e.title,
+    link: e.link_url
+  })) : fallbackCovers;
 
   // Use agency discount hook
   const {
@@ -717,19 +747,14 @@ const CalculatorTest = () => {
             
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Button 
-                size="lg" 
-                className="bg-community-green hover:bg-community-green/90 text-white px-8 py-6 text-lg font-semibold shadow-lg shadow-community-green/30 transition-all duration-300 hover:shadow-xl hover:shadow-community-green/40"
-                onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}
-              >
+              <Button size="lg" className="bg-community-green hover:bg-community-green/90 text-white px-8 py-6 text-lg font-semibold shadow-lg shadow-community-green/30 transition-all duration-300 hover:shadow-xl hover:shadow-community-green/40" onClick={() => document.getElementById('calculator')?.scrollIntoView({
+              behavior: 'smooth'
+            })}>
                 Get Your Instant Quote
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm"
-                onClick={() => document.getElementById('quick-quote')?.scrollIntoView({ behavior: 'smooth' })}
-              >
+              <Button size="lg" variant="outline" onClick={() => document.getElementById('quick-quote')?.scrollIntoView({
+              behavior: 'smooth'
+            })} className="border-2 border-white/30 hover:bg-white/10 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm text-primary-foreground">
                 Explore Pricing
               </Button>
             </div>
@@ -737,11 +762,9 @@ const CalculatorTest = () => {
             {/* Social proof line */}
             <div className="flex items-center justify-center gap-3">
               <div className="flex -space-x-2">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-community-green to-emerald-400 border-2 border-community-navy flex items-center justify-center">
+                {[...Array(4)].map((_, i) => <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-community-green to-emerald-400 border-2 border-community-navy flex items-center justify-center">
                     <Users className="h-4 w-4 text-white" />
-                  </div>
-                ))}
+                  </div>)}
               </div>
               <span className="text-white/70 text-sm">
                 Trusted by <span className="text-white font-semibold">250+ local businesses</span>
@@ -896,31 +919,22 @@ const CalculatorTest = () => {
                   </Badge>
                 </div>
                 
-                <Carousel opts={{ align: "center", loop: true }} className="w-full">
+                <Carousel opts={{
+                align: "center",
+                loop: true
+              }} className="w-full">
                   <CarouselContent className="-ml-4">
                     {magazineCovers.map((cover, index) => {
-                      const CardWrapper = cover.link ? 'a' : 'div';
-                      const wrapperProps = cover.link ? { 
-                        href: cover.link, 
-                        target: "_blank", 
-                        rel: "noopener noreferrer" 
-                      } : {};
-                      
-                      return (
-                        <CarouselItem key={index} className="pl-4 basis-full">
-                          <CardWrapper 
-                            {...wrapperProps}
-                            className={cn(
-                              "group relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-community-green/50 transition-all duration-500 block",
-                              cover.link && "cursor-pointer"
-                            )}
-                          >
+                    const CardWrapper = cover.link ? 'a' : 'div';
+                    const wrapperProps = cover.link ? {
+                      href: cover.link,
+                      target: "_blank",
+                      rel: "noopener noreferrer"
+                    } : {};
+                    return <CarouselItem key={index} className="pl-4 basis-full">
+                          <CardWrapper {...wrapperProps} className={cn("group relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-community-green/50 transition-all duration-500 block", cover.link && "cursor-pointer")}>
                             <div className="relative overflow-hidden">
-                              <img 
-                                src={cover.src} 
-                                alt={cover.alt} 
-                                className="w-full h-[500px] object-contain transition-transform duration-700 group-hover:scale-105" 
-                              />
+                              <img src={cover.src} alt={cover.alt} className="w-full h-[500px] object-contain transition-transform duration-700 group-hover:scale-105" />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                               <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 className="text-white font-bold text-sm">{cover.title}</h3>
@@ -931,9 +945,8 @@ const CalculatorTest = () => {
                               </div>
                             </div>
                           </CardWrapper>
-                        </CarouselItem>
-                      );
-                    })}
+                        </CarouselItem>;
+                  })}
                   </CarouselContent>
                   <CarouselPrevious className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300 h-10 w-10" />
                   <CarouselNext className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300 h-10 w-10" />
@@ -941,9 +954,7 @@ const CalculatorTest = () => {
                 
                 {/* Carousel dots indicator */}
                 <div className="flex justify-center gap-1.5 mt-4">
-                  {magazineCovers.map((_, i) => (
-                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                  ))}
+                  {magazineCovers.map((_, i) => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/20" />)}
                 </div>
               </div>
             </div>
