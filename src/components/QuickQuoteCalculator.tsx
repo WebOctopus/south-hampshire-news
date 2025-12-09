@@ -356,13 +356,13 @@ const QuickQuoteCalculator: React.FC = () => {
                   <div className="relative">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <TrendingUp className="h-5 w-5 text-white" />
-                      <span className="text-sm font-medium text-white/90">Potential ROI</span>
+                      <span className="text-sm font-medium text-white/90">Potential Revenue</span>
                     </div>
                     <p className="text-3xl font-bold text-white">
-                      {roiCalculations.roi > 0 ? '+' : ''}{roiCalculations.roi}%
+                      {formatPrice(roiCalculations.potentialRevenue)}
                     </p>
                     <p className="text-sm text-white/80 mt-1">
-                      ({formatPrice(roiCalculations.potentialRevenue)} revenue)
+                      potential revenue
                     </p>
                   </div>
                 </div>
