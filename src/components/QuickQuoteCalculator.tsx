@@ -38,7 +38,7 @@ const QuickQuoteCalculator: React.FC = () => {
   const [adSizeIndex, setAdSizeIndex] = useState(2); // Default to 1/4 page
   const [numberOfAreas, setNumberOfAreas] = useState(3); // Default to 3 areas
   const [customerValue, setCustomerValue] = useState(1000); // Default £1000
-  const [responseRate, setResponseRate] = useState(1); // Default 1%
+  const [conversionRate, setConversionRate] = useState(0.05); // Default 0.05% (realistic print conversion)
 
   const { areas, adSizes, subscriptionDurations, isLoading, isError } = usePricingData();
 
@@ -88,19 +88,19 @@ const QuickQuoteCalculator: React.FC = () => {
     return monthlyPrice * 6;
   }, [monthlyPrice]);
 
-  // ROI calculations
+  // ROI calculations - using realistic conversion rates
   const roiCalculations = useMemo(() => {
-    const potentialResponses = Math.round((totalCirculation * responseRate) / 100);
-    const potentialRevenue = potentialResponses * customerValue;
+    const potentialCustomers = Math.round((totalCirculation * conversionRate) / 100);
+    const potentialRevenue = potentialCustomers * customerValue;
     const roi = sixMonthTotal > 0 ? ((potentialRevenue - sixMonthTotal) / sixMonthTotal) * 100 : 0;
     
     return {
-      potentialResponses,
+      potentialCustomers,
       audience: totalCirculation,
       potentialRevenue,
       roi: Math.round(roi)
     };
-  }, [totalCirculation, responseRate, customerValue, sixMonthTotal]);
+  }, [totalCirculation, conversionRate, customerValue, sixMonthTotal]);
 
   return (
     <div className="space-y-8">
@@ -295,17 +295,17 @@ const QuickQuoteCalculator: React.FC = () => {
                 </div>
               </div>
 
-              {/* Response Rate Slider */}
+              {/* Conversion Rate Slider */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-lg font-semibold text-community-navy">Expected Response Rate</label>
+                  <label className="text-lg font-semibold text-community-navy">Conversion Rate</label>
                   <Badge className="text-lg px-4 py-1.5 bg-community-navy text-white border-0 shadow-md">
-                    {responseRate.toFixed(1)}%
+                    {conversionRate.toFixed(2)}%
                   </Badge>
                 </div>
                 <Slider
-                  value={[responseRate * 10]}
-                  onValueChange={(value) => setResponseRate(value[0] / 10)}
+                  value={[conversionRate * 100]}
+                  onValueChange={(value) => setConversionRate(value[0] / 100)}
                   min={1}
                   max={50}
                   step={1}
@@ -313,11 +313,14 @@ const QuickQuoteCalculator: React.FC = () => {
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground px-1">
-                  <span>0.1%</span>
-                  <span>1%</span>
-                  <span>2.5%</span>
-                  <span>5%</span>
+                  <span className="text-center">0.01%<br/><span className="text-[10px]">Conservative</span></span>
+                  <span className="text-center">0.1%<br/><span className="text-[10px]">Typical</span></span>
+                  <span className="text-center">0.25%<br/><span className="text-[10px]">Good</span></span>
+                  <span className="text-center">0.5%<br/><span className="text-[10px]">Excellent</span></span>
                 </div>
+                <p className="text-xs text-muted-foreground italic mt-2">
+                  Print advertising typically sees 0.02-0.1% conversion to action. Even at conservative rates, the ROI can be significant due to high customer values.
+                </p>
               </div>
 
               {/* ROI Results - Contrast Cards */}
@@ -327,10 +330,10 @@ const QuickQuoteCalculator: React.FC = () => {
                   <div className="relative">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <Target className="h-5 w-5 text-community-green" />
-                      <span className="text-sm font-medium text-slate-300">Potential Responses</span>
+                      <span className="text-sm font-medium text-slate-300">Potential Customers</span>
                     </div>
                     <p className="text-3xl font-bold text-white">
-                      {roiCalculations.potentialResponses.toLocaleString()}
+                      {roiCalculations.potentialCustomers.toLocaleString()}
                     </p>
                   </div>
                 </div>
