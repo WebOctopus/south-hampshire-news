@@ -870,7 +870,7 @@ const CalculatorTest = () => {
                   <div className="text-sm text-muted-foreground">Local Editions</div>
                 </div>
                 <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-stone-200">
-                  <div className="text-3xl font-bold text-community-navy">120k+</div>
+                  <div className="text-3xl font-bold text-community-navy">142k+</div>
                   <div className="text-sm text-muted-foreground">Homes Reached</div>
                 </div>
               </div>
