@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StepFormProps {
@@ -143,25 +143,33 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
       <div ref={formRef} className="w-full max-w-none mx-auto px-4">
         {/* Progress Indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-center space-x-4 px-6 xs:px-8 sm:px-0">
+          <div className="flex items-center justify-center space-x-2 sm:space-x-4 px-4 xs:px-6 sm:px-0">
             {Array.from({ length: totalSteps }, (_, index) => (
               <div key={index} className="flex items-center">
                 <button
                   onClick={() => goToStep(index)}
                   className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 hover:scale-105 cursor-pointer",
-                    index <= currentStep
-                      ? "bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground border-2 border-muted hover:bg-muted/80"
+                    "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 cursor-pointer relative",
+                    index < currentStep
+                      ? "bg-community-green text-white shadow-lg hover:bg-community-green/90"
+                      : index === currentStep
+                      ? "bg-community-navy text-white shadow-xl ring-4 ring-community-navy/20 animate-pulse"
+                      : "bg-white text-muted-foreground border-2 border-stone-300 hover:border-community-navy/50 hover:bg-stone-50"
                   )}
                 >
-                  {index + 1}
+                  {index < currentStep ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <span className="text-base">{index + 1}</span>
+                  )}
                 </button>
                 {index < totalSteps - 1 && (
                   <div
                     className={cn(
-                      "w-16 h-0.5 transition-colors duration-200",
-                      index < currentStep ? "bg-primary" : "bg-muted"
+                      "w-8 sm:w-16 h-1 rounded-full transition-all duration-300",
+                      index < currentStep 
+                        ? "bg-gradient-to-r from-community-green to-community-navy" 
+                        : "bg-stone-200"
                     )}
                   />
                 )}
