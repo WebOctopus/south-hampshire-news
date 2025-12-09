@@ -16,6 +16,7 @@ import Footer from '@/components/Footer';
 import CostCalculatorManagement from '@/components/admin/CostCalculatorManagement';
 import AlertsManagement from '@/components/admin/AlertsManagement';
 import AdPreviewImageManagement from '@/components/admin/AdPreviewImageManagement';
+import MagazineEditionsManagement from '@/components/admin/MagazineEditionsManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
@@ -690,6 +691,9 @@ const AdminDashboard = () => {
 
       case 'ad-preview-images':
         return <AdPreviewImageManagement />;
+
+      case 'magazine-editions':
+        return <MagazineEditionsManagement />;
 
       default:
         return <div>Section not found</div>;
