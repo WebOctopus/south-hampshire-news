@@ -26,7 +26,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Heart } from "lucide-react";
+import { MapPin, Phone, Users, Newspaper, Truck, Clock, Target, Award, Mail, Heart, Home, RefreshCcw, FileText } from "lucide-react";
 import AdvertisingAlerts from "@/components/AdvertisingAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import AdvertisingStepForm from "@/components/AdvertisingStepForm";
@@ -695,117 +695,115 @@ const CalculatorTest = () => {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-community-green/5 rounded-full blur-[80px]" />
         
         {/* Content */}
-        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left: Headline + Subcopy */}
-            <div className="space-y-8">
-              {/* Trust badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                <div className="w-2 h-2 bg-community-green rounded-full animate-pulse" />
-                <span className="text-sm text-white/90 font-medium">South Hampshire's Leading Local Magazine Publisher</span>
-              </div>
-              
-              {/* Main headline */}
-              <div className="space-y-4">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white leading-tight">
-                  Reach{' '}
-                  <span className="text-community-green">142,000</span>{' '}
-                  Affluent Homes
-                </h1>
-                <p className="text-xl md:text-2xl text-white/80 leading-relaxed">
-                  Generate brand awareness, create leads, and boost website traffic with South Hampshire's most trusted local magazine network.
-                </p>
-              </div>
-              
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button 
-                  size="lg" 
-                  className="bg-community-green hover:bg-community-green/90 text-white px-8 py-6 text-lg font-semibold shadow-lg shadow-community-green/30 transition-all duration-300 hover:shadow-xl hover:shadow-community-green/40"
-                  onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  Get Your Instant Quote
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm"
-                  onClick={() => document.getElementById('quick-quote')?.scrollIntoView({ behavior: 'smooth' })}
-                >
-                  Explore Pricing
-                </Button>
-              </div>
-              
-              {/* Social proof line */}
-              <div className="flex items-center gap-3 pt-2">
-                <div className="flex -space-x-2">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-community-green to-emerald-400 border-2 border-community-navy flex items-center justify-center">
-                      <Users className="h-4 w-4 text-white" />
-                    </div>
-                  ))}
-                </div>
-                <span className="text-white/70 text-sm">
-                  Trusted by <span className="text-white font-semibold">250+ local businesses</span>
-                </span>
-              </div>
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+          <div className="max-w-3xl mx-auto text-center">
+            {/* Trust badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-8">
+              <div className="w-2 h-2 bg-community-green rounded-full animate-pulse" />
+              <span className="text-sm text-white/90 font-medium">South Hampshire's Leading Local Magazine Publisher</span>
             </div>
             
-            {/* Right: Floating Stats Panel */}
-            <div className="relative">
-              {/* Glow behind panel */}
-              <div className="absolute -inset-4 bg-community-green/20 rounded-3xl blur-2xl" />
-              
-              <div className="relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 lg:p-8 shadow-2xl">
-                <div className="text-center mb-6">
-                  <Badge className="bg-community-green/20 text-community-green border-community-green/30 px-4 py-1">
-                    <Award className="h-3 w-3 mr-1" />
-                    Celebrating 20 Years
-                  </Badge>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Main stat - large */}
-                  <div className="col-span-2 bg-white/10 rounded-xl p-6 text-center border border-white/10">
-                    <div className="text-5xl lg:text-6xl font-heading font-bold text-white mb-1">142,000</div>
-                    <div className="text-community-green font-medium">Bi-monthly Circulation</div>
+            {/* Main headline */}
+            <div className="space-y-4 mb-8">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white leading-tight">
+                Reach{' '}
+                <span className="text-community-green">142,000</span>{' '}
+                Affluent Homes
+              </h1>
+              <p className="text-xl md:text-2xl text-white/80 leading-relaxed max-w-2xl mx-auto">
+                Generate brand awareness, create leads, and boost website traffic with South Hampshire's most trusted local magazine network.
+              </p>
+            </div>
+            
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <Button 
+                size="lg" 
+                className="bg-community-green hover:bg-community-green/90 text-white px-8 py-6 text-lg font-semibold shadow-lg shadow-community-green/30 transition-all duration-300 hover:shadow-xl hover:shadow-community-green/40"
+                onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Get Your Instant Quote
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm"
+                onClick={() => document.getElementById('quick-quote')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Explore Pricing
+              </Button>
+            </div>
+            
+            {/* Social proof line */}
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex -space-x-2">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-community-green to-emerald-400 border-2 border-community-navy flex items-center justify-center">
+                    <Users className="h-4 w-4 text-white" />
                   </div>
-                  
-                  {/* Secondary stats */}
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-heading font-bold text-white mb-1">14</div>
-                    <div className="text-white/70 text-sm">Local Editions</div>
-                  </div>
-                  
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-heading font-bold text-white mb-1">72%</div>
-                    <div className="text-white/70 text-sm">Repeat Rate</div>
-                  </div>
-                  
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-heading font-bold text-white mb-1">250+</div>
-                    <div className="text-white/70 text-sm">Advertisers</div>
-                  </div>
-                  
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-heading font-bold text-white mb-1">580k</div>
-                    <div className="text-white/70 text-sm">Leaflets/Year</div>
-                  </div>
-                </div>
-                
-                {/* Bottom trust indicator */}
-                <div className="mt-6 pt-4 border-t border-white/10 text-center">
-                  <p className="text-white/60 text-sm">
-                    <span className="text-community-green">✓</span> Tracked delivery • <span className="text-community-green">✓</span> Premium postcodes • <span className="text-community-green">✓</span> Quality editorial
-                  </p>
-                </div>
+                ))}
               </div>
+              <span className="text-white/70 text-sm">
+                Trusted by <span className="text-white font-semibold">250+ local businesses</span>
+              </span>
             </div>
           </div>
         </div>
         
         {/* Bottom gradient fade to next section */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-stone-50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-stone-50 to-transparent" />
+      </section>
+
+      {/* Stats Bar - Cards with Icons */}
+      <section className="relative -mt-20 z-10 px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {/* Stat Card 1 - Circulation */}
+            <div className="col-span-2 md:col-span-1 bg-white rounded-2xl shadow-xl p-6 text-center border border-stone-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-community-green to-emerald-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
+                <Home className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">142k</div>
+              <div className="text-sm text-muted-foreground mt-1">Bi-monthly Circulation</div>
+            </div>
+            
+            {/* Stat Card 2 - Editions */}
+            <div className="bg-white rounded-2xl shadow-xl p-6 text-center border border-stone-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-community-navy to-slate-700 rounded-xl mb-4 group-hover:scale-110 transition-transform">
+                <MapPin className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">14</div>
+              <div className="text-sm text-muted-foreground mt-1">Local Editions</div>
+            </div>
+            
+            {/* Stat Card 3 - Repeat Rate */}
+            <div className="bg-white rounded-2xl shadow-xl p-6 text-center border border-stone-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
+                <RefreshCcw className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">72%</div>
+              <div className="text-sm text-muted-foreground mt-1">Repeat Rate</div>
+            </div>
+            
+            {/* Stat Card 4 - Advertisers */}
+            <div className="bg-white rounded-2xl shadow-xl p-6 text-center border border-stone-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">250+</div>
+              <div className="text-sm text-muted-foreground mt-1">Advertisers</div>
+            </div>
+            
+            {/* Stat Card 5 - Leaflets */}
+            <div className="bg-white rounded-2xl shadow-xl p-6 text-center border border-stone-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">580k</div>
+              <div className="text-sm text-muted-foreground mt-1">Leaflets/Year</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Our Story & Reach - Merged Section */}
