@@ -289,8 +289,8 @@ const QuickQuoteCalculator: React.FC = () => {
                 />
                 <div className="flex justify-between text-xs text-muted-foreground px-1">
                   <span>£100</span>
-                  <span>£1,000</span>
-                  <span>£2,500</span>
+                  <span>£1,700</span>
+                  <span>£3,400</span>
                   <span>£5,000+</span>
                 </div>
               </div>
