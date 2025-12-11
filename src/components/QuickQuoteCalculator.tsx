@@ -32,7 +32,7 @@ const DEFAULT_PRICING: Record<string, Record<number, number>> = {
 };
 
 // Default circulation per area (used when DB not loaded)
-const DEFAULT_CIRCULATIONS = [12000, 7500, 8000, 9500, 11000, 6500, 7000, 8500, 10000, 9000, 7500, 8000, 6000, 5500];
+const DEFAULT_CIRCULATIONS = [14700, 9200, 9800, 11600, 13500, 8000, 8600, 10400, 12200, 11000, 9200, 9800, 7400, 6600];
 
 const QuickQuoteCalculator: React.FC = () => {
   const [adSizeIndex, setAdSizeIndex] = useState(2); // Default to 1/4 page
