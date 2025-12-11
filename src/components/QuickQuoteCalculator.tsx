@@ -4,7 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { usePricingData } from '@/hooks/usePricingData';
 import { formatPrice } from '@/lib/pricingCalculator';
-import { Calculator, TrendingUp, Users, Target, Gift, PoundSterling, Sparkles } from 'lucide-react';
+import { Calculator, TrendingUp, Users, Target, Gift, PoundSterling, Sparkles, Home } from 'lucide-react';
 import ROIFactorsInfo from './ROIFactorsInfo';
 import NewAdvertiserPromo from './NewAdvertiserPromo';
 
@@ -223,7 +223,22 @@ const QuickQuoteCalculator: React.FC = () => {
               </div>
 
               {/* Pricing Display - Contrast Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Homes Reached Card */}
+                <div className="relative overflow-hidden rounded-xl bg-slate-800 p-6 text-center shadow-xl">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-community-green/20 rounded-full blur-2xl" />
+                  <div className="relative">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <Home className="h-5 w-5 text-community-green" />
+                      <span className="text-sm font-medium text-slate-300 uppercase tracking-wide">Homes Reached</span>
+                    </div>
+                    <p className="text-5xl font-bold text-white">
+                      {totalCirculation.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-slate-400 mt-2">Bi-monthly</p>
+                  </div>
+                </div>
+
                 <div className="relative overflow-hidden rounded-xl bg-community-navy p-6 text-center shadow-xl">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-community-green/20 rounded-full blur-2xl" />
                   <div className="relative">
