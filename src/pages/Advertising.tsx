@@ -836,20 +836,6 @@ const CalculatorTest = () => {
         <div className="absolute bottom-20 left-10 w-48 h-48 bg-community-navy/5 rounded-full blur-3xl" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header with Timeline Badge */}
-          <div className="flex justify-center mb-12">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-white rounded-full shadow-lg border border-stone-200">
-              <div className="w-3 h-3 bg-community-green rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-muted-foreground">Our Journey</span>
-              <div className="w-px h-4 bg-stone-300" />
-              <Badge className="bg-community-navy text-white border-0 font-bold">
-                Since 2005
-              </Badge>
-              <div className="w-px h-4 bg-stone-300" />
-              <span className="text-sm font-medium text-muted-foreground">Still Growing</span>
-              <div className="w-3 h-3 bg-community-green rounded-full animate-pulse" />
-            </div>
-          </div>
 
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-12 items-center">
