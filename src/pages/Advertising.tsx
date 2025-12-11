@@ -977,21 +977,21 @@ const CalculatorTest = () => {
           {/* Adobe InDesign Interactive Embed - cropped to hide Adobe UI bars */}
           <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
             <div className="relative w-full overflow-hidden" style={{
-            paddingBottom: '56%'
-          }}>
-              <iframe src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=false" className="absolute w-full" style={{
-              height: '135%',
-              top: '-12%',
-              left: '0'
-            }} frameBorder="0" title="14 Local Editions Interactive Map" allowFullScreen={false} />
-              {/* Overlay to block clicks on Adobe UI chrome at top */}
-              <div className="absolute top-0 left-0 right-0 h-4 bg-transparent z-10" style={{
-              pointerEvents: 'auto'
-            }} />
-              {/* Overlay to block clicks on Adobe UI chrome at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-transparent z-10" style={{
-              pointerEvents: 'auto'
-            }} />
+              paddingBottom: '60%'
+            }}>
+              <iframe 
+                src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=false" 
+                className="absolute w-full h-full"
+                style={{
+                  top: '0',
+                  left: '0',
+                  clipPath: 'inset(8% 0 0 0)',
+                  marginTop: '-8%',
+                }} 
+                frameBorder="0" 
+                title="14 Local Editions Interactive Map" 
+                allowFullScreen={false} 
+              />
             </div>
           </div>
         </div>
