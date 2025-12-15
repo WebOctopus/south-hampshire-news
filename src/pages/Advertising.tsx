@@ -707,7 +707,7 @@ const CalculatorTest = () => {
     circulation: "13,500",
     leaflets: "NO, SORRY"
   }];
-  return <div className="min-h-screen bg-gray-50">
+  return <div id="top" className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Hero Header Section - Established, Calm, Confident */}
