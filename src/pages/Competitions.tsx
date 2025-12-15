@@ -140,10 +140,9 @@ const RulesAndTerms = () => {
             </ul>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Good Luck!</strong> All competitions are run fairly and transparently. 
-              Winners are chosen randomly and announced on our social media channels.
+          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <p className="text-sm text-amber-900">
+              Entering the competition consents to Discover Magazines Ltd storing the data supplied and sharing only with the relevant competition prize supplier. Entrants consent to receiving Discover's monthly e-newsletter Discover Extra.
             </p>
           </div>
         </div>
@@ -177,7 +176,7 @@ const Competitions = () => {
           </h1>
           <p className="text-xl text-gray-600 font-body max-w-3xl mx-auto">
             Win amazing prizes from local businesses and discover the best our community has to offer. 
-            New competitions added weekly!
+            New competitions added monthly!
           </p>
         </div>
 
