@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useCompetitions, useCompetitionEntries, useCompetitionMutations, Competition } from '@/hooks/useCompetitions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trophy, Plus, Pencil, Trash2, Users, Calendar, Gift, Eye } from 'lucide-react';
+import { Trophy, Plus, Pencil, Trash2, Users, Calendar, Gift, Eye, Upload, X, Loader2 } from 'lucide-react';
 import { format, formatDistanceToNow, isPast } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const CATEGORIES = [
   { value: 'Travel', label: 'Travel' },
@@ -36,6 +38,9 @@ const getCategoryColor = (category: string) => {
   return colors[category] || colors.Other;
 };
 
+const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 export function CompetitionsManagement() {
   const { data: competitions, isLoading } = useCompetitions(true);
   const { createCompetition, updateCompetition, deleteCompetition, toggleActive } = useCompetitionMutations();
@@ -45,6 +50,8 @@ export function CompetitionsManagement() {
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [competitionToDelete, setCompetitionToDelete] = useState<Competition | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -85,6 +92,79 @@ export function CompetitionsManagement() {
       resetForm();
     }
     setIsDialogOpen(true);
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+      toast.error('Invalid file type. Please upload JPG, PNG, or WebP.');
+      return null;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('File too large. Maximum size is 5MB.');
+      return null;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = fileName;
+
+      const { error: uploadError } = await supabase.storage
+        .from('competition-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('competition-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileSelect = async (file: File) => {
+    const url = await uploadImage(file);
+    if (url) {
+      setFormData({ ...formData, image_url: url });
+    }
+  };
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      await handleFileSelect(file);
+    }
+  }, [formData]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await handleFileSelect(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData({ ...formData, image_url: '' });
   };
 
   const handleSubmit = async () => {
@@ -269,7 +349,7 @@ export function CompetitionsManagement() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedCompetition ? 'Edit Competition' : 'Add Competition'}</DialogTitle>
             <DialogDescription>
@@ -325,15 +405,63 @@ export function CompetitionsManagement() {
                 </Select>
               </div>
             </div>
+
+            {/* Drag & Drop Image Upload */}
             <div className="space-y-2">
-              <Label htmlFor="image_url">Image URL</Label>
-              <Input
-                id="image_url"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-              />
+              <Label>Competition Image</Label>
+              {formData.image_url ? (
+                <div className="relative">
+                  <img
+                    src={formData.image_url}
+                    alt="Competition preview"
+                    className="w-full h-40 object-cover rounded-lg border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8"
+                    onClick={removeImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  className={`
+                    relative border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
+                    ${isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50'}
+                    ${isUploading ? 'pointer-events-none opacity-60' : ''}
+                  `}
+                >
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleFileInputChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={isUploading}
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-10 w-10 text-muted-foreground animate-spin" />
+                        <p className="text-sm text-muted-foreground">Uploading...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-sm font-medium">Drop image here or click to browse</p>
+                        <p className="text-xs text-muted-foreground">JPG, PNG, or WebP (max 5MB)</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="end_date">End Date *</Label>
@@ -362,7 +490,7 @@ export function CompetitionsManagement() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!formData.title || !formData.description || !formData.prize || !formData.end_date}
+              disabled={!formData.title || !formData.description || !formData.prize || !formData.end_date || isUploading}
             >
               {selectedCompetition ? 'Save Changes' : 'Create Competition'}
             </Button>
