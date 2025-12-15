@@ -1,10 +1,19 @@
-import { Phone, Mail, MapPin } from "lucide-react";
+import { useState } from "react";
+import { Phone, Mail, MapPin, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const Footer = () => {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   return (
-    <footer id="contact" className="bg-community-navy text-white py-16">
+    <footer id="contact" className="bg-community-navy text-white py-10 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
+        {/* Desktop Grid Layout */}
+        <div className="hidden md:grid lg:grid-cols-4 md:grid-cols-2 gap-8">
           {/* Brand & Company Info */}
           <div className="lg:col-span-2">
             <h3 className="text-3xl font-heading font-bold mb-2">
@@ -49,31 +58,25 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-heading font-semibold mb-6 text-community-green">Get in Touch</h4>
             <div className="space-y-4 font-body">
-              <div className="flex items-start gap-3">
+              <a href="tel:02380266388" className="flex items-start gap-3 group">
                 <div className="bg-community-green/20 rounded-full p-2 mt-1">
                   <Phone className="h-4 w-4 text-community-green" />
                 </div>
-                <div>
-                  <p className="text-white font-semibold">023 8026 6388</p>
-                </div>
-              </div>
+                <p className="text-white font-semibold group-hover:text-community-green transition-colors">023 8026 6388</p>
+              </a>
               
-              <div className="flex items-start gap-3">
+              <a href="mailto:discover@discovermagazines.co.uk" className="flex items-start gap-3 group">
                 <div className="bg-community-green/20 rounded-full p-2 mt-1">
                   <Mail className="h-4 w-4 text-community-green" />
                 </div>
-                <div>
-                  <p className="text-white font-semibold">discover@discovermagazines.co.uk</p>
-                </div>
-              </div>
+                <p className="text-white font-semibold group-hover:text-community-green transition-colors break-all">discover@discovermagazines.co.uk</p>
+              </a>
               
               <div className="flex items-start gap-3">
                 <div className="bg-community-green/20 rounded-full p-2 mt-1">
                   <MapPin className="h-4 w-4 text-community-green" />
                 </div>
-                <div>
-                  <p className="text-white font-semibold">Eastleigh, Hampshire</p>
-                </div>
+                <p className="text-white font-semibold">Eastleigh, Hampshire</p>
               </div>
               
               <div className="bg-white/5 rounded-lg p-4 mt-6">
@@ -85,10 +88,88 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-600 mt-12 pt-8 text-center">
-          <p className="text-gray-400 font-body">
-            © 2024 Discover Magazines Ltd. All rights reserved. | 
-            <span className="text-community-green"> Proudly serving South Hampshire since 2005</span>
+        {/* Mobile Accordion Layout */}
+        <div className="md:hidden space-y-4">
+          {/* Brand Header - Always visible */}
+          <div className="text-center pb-4 border-b border-white/10">
+            <h3 className="text-2xl font-heading font-bold mb-1">
+              Discover Magazines Ltd
+            </h3>
+            <p className="text-sm text-community-green font-semibold">
+              South Hampshire's Biggest, Little (and Best!) Magazine
+            </p>
+          </div>
+
+          {/* Stats - 2 column grid */}
+          <div className="grid grid-cols-2 gap-3 py-2">
+            <div className="bg-white/5 rounded-lg p-3 text-center">
+              <p className="text-community-green text-xs font-semibold">Circulation</p>
+              <p className="text-white font-bold">142k homes</p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-3 text-center">
+              <p className="text-community-green text-xs font-semibold">Since</p>
+              <p className="text-white font-bold">2005</p>
+            </div>
+          </div>
+
+          {/* Collapsible Quick Links */}
+          <Collapsible open={openSections.links} onOpenChange={() => toggleSection('links')}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-3 border-b border-white/10">
+              <span className="text-lg font-heading font-semibold text-community-green">Quick Links</span>
+              <ChevronDown className={`h-5 w-5 text-community-green transition-transform ${openSections.links ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-3 space-y-3">
+              <a href="/whats-on" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Events & What's On</a>
+              <a href="/competitions" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Competitions</a>
+              <a href="/business-directory" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Directory</a>
+              <a href="/advertising" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Advertising</a>
+              <a href="/apply-to-distribute" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Distribution</a>
+              <a href="/contact" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Contact</a>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Collapsible Contact */}
+          <Collapsible open={openSections.contact} onOpenChange={() => toggleSection('contact')}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-3 border-b border-white/10">
+              <span className="text-lg font-heading font-semibold text-community-green">Contact Us</span>
+              <ChevronDown className={`h-5 w-5 text-community-green transition-transform ${openSections.contact ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-4 space-y-4">
+              <a href="tel:02380266388" className="flex items-center gap-3 py-2 min-h-[44px]">
+                <div className="bg-community-green/20 rounded-full p-2">
+                  <Phone className="h-5 w-5 text-community-green" />
+                </div>
+                <span className="text-white font-semibold">023 8026 6388</span>
+              </a>
+              
+              <a href="mailto:discover@discovermagazines.co.uk" className="flex items-center gap-3 py-2 min-h-[44px]">
+                <div className="bg-community-green/20 rounded-full p-2">
+                  <Mail className="h-5 w-5 text-community-green" />
+                </div>
+                <span className="text-white font-semibold text-sm break-all">discover@discovermagazines.co.uk</span>
+              </a>
+              
+              <div className="flex items-center gap-3 py-2">
+                <div className="bg-community-green/20 rounded-full p-2">
+                  <MapPin className="h-5 w-5 text-community-green" />
+                </div>
+                <span className="text-white font-semibold">Eastleigh, Hampshire</span>
+              </div>
+
+              <div className="bg-white/5 rounded-lg p-4 mt-2">
+                <p className="text-community-green font-semibold mb-1">Business Hours</p>
+                <p className="text-gray-300 text-sm">Mon-Thurs: 9am-5pm | Fri: 9am-3pm</p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+
+        <div className="border-t border-gray-600 mt-8 md:mt-12 pt-6 md:pt-8 text-center">
+          <p className="text-gray-400 font-body text-sm md:text-base">
+            © 2024 Discover Magazines Ltd. All rights reserved.
+          </p>
+          <p className="text-community-green text-sm mt-1">
+            Proudly serving South Hampshire since 2005
           </p>
         </div>
       </div>
