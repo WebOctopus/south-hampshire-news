@@ -193,25 +193,25 @@ const QuickQuoteCalculator: React.FC = () => {
               {/* Celebratory BOGOF Display */}
               <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-community-green via-emerald-500 to-community-green p-[2px] animate-pulse-subtle">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                <div className="relative bg-gradient-to-r from-emerald-50 to-green-50 rounded-[10px] p-5">
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
+                <div className="relative bg-gradient-to-r from-emerald-50 to-green-50 rounded-[10px] p-4 md:p-5">
+                  <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 text-center md:text-left">
+                    <div className="relative flex-shrink-0">
                       <div className="absolute inset-0 bg-community-green/30 rounded-full animate-ping" />
                       <div className="relative p-3 bg-community-green rounded-full">
-                        <Gift className="h-7 w-7 text-white" />
+                        <Gift className="h-6 w-6 md:h-7 md:w-7 text-white" />
                       </div>
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="h-5 w-5 text-yellow-500" />
-                        <p className="font-bold text-community-navy text-lg">
+                      <div className="flex items-center justify-center md:justify-start gap-1.5 md:gap-2 mb-1">
+                        <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
+                        <p className="font-bold text-community-navy text-base md:text-lg">
                           Double Your Reach - FREE!
                         </p>
-                        <Sparkles className="h-5 w-5 text-yellow-500" />
+                        <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
                       </div>
-                      <p className="text-community-navy">
+                      <p className="text-community-navy text-sm md:text-base">
                         You get{' '}
-                        <span className="inline-flex items-center justify-center min-w-[2.5rem] px-2 py-0.5 bg-community-green text-white font-bold text-2xl rounded-lg shadow-lg mx-1 transform scale-110">
+                        <span className="inline-flex items-center justify-center min-w-[2rem] md:min-w-[2.5rem] px-1.5 md:px-2 py-0.5 bg-community-green text-white font-bold text-xl md:text-2xl rounded-lg shadow-lg mx-1">
                           {bogofAreas}
                         </span>{' '}
                         areas for the price of{' '}
