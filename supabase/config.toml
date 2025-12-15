@@ -67,3 +67,9 @@ verify_jwt = false
 
 [functions.test-gocardless-webhook]
 verify_jwt = false
+
+[functions.ghl-business-webhook]
+verify_jwt = false
+
+[functions.sync-business-to-ghl]
+verify_jwt = false

@@ -341,10 +341,13 @@ export type Database = {
           email: string | null
           featured: boolean | null
           featured_image_url: string | null
+          ghl_contact_id: string | null
+          ghl_location_id: string | null
           id: string
           images: string[] | null
           is_active: boolean | null
           is_verified: boolean | null
+          last_synced_at: string | null
           logo_url: string | null
           name: string
           opening_hours: Json | null
@@ -365,10 +368,13 @@ export type Database = {
           email?: string | null
           featured?: boolean | null
           featured_image_url?: string | null
+          ghl_contact_id?: string | null
+          ghl_location_id?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          last_synced_at?: string | null
           logo_url?: string | null
           name: string
           opening_hours?: Json | null
@@ -389,10 +395,13 @@ export type Database = {
           email?: string | null
           featured?: boolean | null
           featured_image_url?: string | null
+          ghl_contact_id?: string | null
+          ghl_location_id?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          last_synced_at?: string | null
           logo_url?: string | null
           name?: string
           opening_hours?: Json | null
