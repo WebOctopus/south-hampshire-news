@@ -35,7 +35,7 @@ const FeaturedAdvertisersSection = () => {
           >
             <CarouselContent className="-ml-3 md:-ml-6">
               {advertisers.map((advertiser, index) => (
-                <CarouselItem key={index} className="pl-3 md:pl-6 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                <CarouselItem key={index} className="pl-3 md:pl-6 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                   <Dialog>
                     <DialogTrigger asChild>
                       <div className="flex items-center justify-center p-4 bg-background rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer min-h-[120px] md:min-h-[160px]">
