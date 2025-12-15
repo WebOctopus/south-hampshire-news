@@ -1,11 +1,12 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 const LatestStoriesGrid = () => {
   const navigate = useNavigate();
+  const [showAll, setShowAll] = useState(false);
   
-  // Mock data - in a real app this would come from a blog feed
   const stories = [
     {
       id: 1,
@@ -57,47 +58,57 @@ const LatestStoriesGrid = () => {
     }
   ];
 
+  // On mobile, show only 3 stories unless expanded
+  const displayedStories = showAll ? stories : stories.slice(0, 3);
+
   return (
-    <section className="py-16 bg-white">
+    <section className="py-12 md:py-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-heading font-bold text-community-navy mb-4">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-heading font-bold text-community-navy mb-3 md:mb-4">
             Latest Stories
           </h2>
-          <p className="text-xl text-gray-600 font-body">
+          <p className="text-base md:text-xl text-muted-foreground font-body">
             Stay updated with the latest news from your community
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {stories.map((story) => (
-            <Card key={story.id} className="group hover:shadow-lg transition-shadow duration-300">
-              <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
+        {/* Mobile: Show limited stories, Desktop: Show all */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {/* Mobile shows displayedStories, desktop shows all */}
+          {stories.map((story, index) => (
+            <Card 
+              key={story.id} 
+              className={`group hover:shadow-lg transition-shadow duration-300 ${
+                !showAll && index >= 3 ? 'hidden md:block' : ''
+              }`}
+            >
+              <div className="aspect-video bg-muted rounded-t-lg overflow-hidden">
                 <img 
                   src={story.image} 
                   alt={story.title}
+                  loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
-              <CardHeader>
+              <CardHeader className="pb-2 md:pb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="px-3 py-1 bg-community-green text-white text-xs font-medium rounded-full">
                     {story.category}
                   </span>
-                  <span className="text-gray-500 text-sm">{story.date}</span>
+                  <span className="text-muted-foreground text-sm">{story.date}</span>
                 </div>
-                <CardTitle className="text-xl font-heading text-community-navy group-hover:text-community-green transition-colors">
+                <CardTitle className="text-lg md:text-xl font-heading text-community-navy group-hover:text-community-green transition-colors line-clamp-2">
                   {story.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 font-body mb-4">
+                <p className="text-muted-foreground font-body mb-4 text-sm md:text-base line-clamp-2">
                   {story.excerpt}
                 </p>
                 <Button 
                   variant="outline" 
-                  size="sm" 
-                  className="text-community-green border-community-green hover:bg-community-green hover:text-white"
+                  className="text-community-green border-community-green hover:bg-community-green hover:text-white min-h-[44px] px-6"
                   onClick={() => navigate(`/story/${story.id}`)}
                 >
                   Read More
@@ -107,10 +118,32 @@ const LatestStoriesGrid = () => {
           ))}
         </div>
         
-        <div className="text-center mt-12">
+        {/* Mobile: Show more / Show less button */}
+        <div className="text-center mt-8 md:hidden">
+          {!showAll ? (
+            <Button 
+              variant="outline"
+              onClick={() => setShowAll(true)}
+              className="min-h-[44px] px-8"
+            >
+              Show More Stories
+            </Button>
+          ) : (
+            <Button 
+              variant="outline"
+              onClick={() => setShowAll(false)}
+              className="min-h-[44px] px-8"
+            >
+              Show Less
+            </Button>
+          )}
+        </div>
+        
+        {/* Desktop: View All button */}
+        <div className="text-center mt-12 hidden md:block">
           <Button 
             size="lg" 
-            className="bg-community-navy hover:bg-slate-700 text-white"
+            className="bg-community-navy hover:bg-slate-700 text-white min-h-[44px]"
             onClick={() => navigate('/stories')}
           >
             View All Stories

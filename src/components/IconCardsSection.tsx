@@ -4,45 +4,96 @@ import { Card, CardContent } from '@/components/ui/card';
 const IconCardsSection = () => {
   const cards = [
     {
+      icon: Clock,
+      title: 'Next Issue Deadline',
+      description: 'Next deadline: 14th May 2025 - Don\'t miss out!',
+      color: 'text-red-600 bg-red-50',
+      priority: true
+    },
+    {
       icon: Calendar,
       title: 'Events',
-      description: 'Discover local happenings and community gatherings',
-      color: 'text-blue-600 bg-blue-50'
+      description: 'Local happenings and community gatherings',
+      color: 'text-blue-600 bg-blue-50',
+      priority: false
     },
     {
       icon: Trophy,
       title: 'Competitions',
-      description: 'Enter exciting contests and win amazing prizes',
-      color: 'text-yellow-600 bg-yellow-50'
-    },
-    {
-      icon: Clock,
-      title: 'Next Issue Deadline',
-      description: 'Next deadline: 14th May 2025 - Don\'t miss out, secure your ad space now!',
-      color: 'text-red-600 bg-red-50'
+      description: 'Enter contests and win amazing prizes',
+      color: 'text-yellow-600 bg-yellow-50',
+      priority: false
     },
     {
       icon: Building2,
       title: 'Trusted Businesses',
       description: 'Find reliable local services and shops',
-      color: 'text-community-green bg-green-50'
+      color: 'text-community-green bg-green-50',
+      priority: false
     },
     {
       icon: FileText,
       title: 'Local Stories',
-      description: 'Read inspiring tales from your community',
-      color: 'text-purple-600 bg-purple-50'
+      description: 'Inspiring tales from your community',
+      color: 'text-purple-600 bg-purple-50',
+      priority: false
     }
   ];
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-8 md:py-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* Mobile: Horizontal scroll */}
+        <div className="md:hidden">
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+            {cards.map((card, index) => {
+              const IconComponent = card.icon;
+              return (
+                <Card 
+                  key={index} 
+                  className={`flex-shrink-0 w-[280px] snap-center group hover:shadow-lg transition-shadow duration-300 cursor-pointer ${
+                    card.priority ? 'ring-2 ring-red-500 ring-offset-2' : ''
+                  }`}
+                >
+                  <CardContent className="p-5 flex items-center gap-4">
+                    <div className={`w-14 h-14 flex-shrink-0 rounded-full flex items-center justify-center ${card.color}`}>
+                      <IconComponent size={28} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-base font-heading font-semibold text-community-navy mb-1">
+                        {card.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground font-body line-clamp-2">
+                        {card.description}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+          {/* Scroll indicator dots */}
+          <div className="flex justify-center gap-1.5 mt-2">
+            {cards.map((_, index) => (
+              <div 
+                key={index} 
+                className="w-2 h-2 rounded-full bg-muted-foreground/30"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop: Grid layout */}
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-6">
           {cards.map((card, index) => {
             const IconComponent = card.icon;
             return (
-              <Card key={index} className="group hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+              <Card 
+                key={index} 
+                className={`group hover:shadow-lg transition-shadow duration-300 cursor-pointer ${
+                  card.priority ? 'ring-2 ring-red-500 ring-offset-2' : ''
+                }`}
+              >
                 <CardContent className="p-6 text-center">
                   <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${card.color}`}>
                     <IconComponent size={32} />
@@ -50,7 +101,7 @@ const IconCardsSection = () => {
                   <h3 className="text-xl font-heading font-semibold text-community-navy mb-2">
                     {card.title}
                   </h3>
-                  <p className="text-gray-600 font-body">
+                  <p className="text-muted-foreground font-body">
                     {card.description}
                   </p>
                 </CardContent>

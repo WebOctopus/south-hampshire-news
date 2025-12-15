@@ -46,34 +46,34 @@ const Index = () => {
       <Navigation />
       <main>
         {/* Magazine Covers Carousel - Now at the top */}
-        <section className="py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
+        <section className="py-12 md:py-20 bg-gradient-to-b from-gray-900 via-slate-800 to-gray-900 relative overflow-hidden">
           {/* Futuristic Background Effects */}
           <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,255,255,0.03)_50%,transparent_75%,transparent_100%)] bg-[length:30px_30px] animate-pulse" />
-          <div className="absolute top-0 left-0 w-96 h-96 bg-community-green/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-community-navy/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-0 w-48 md:w-96 h-48 md:h-96 bg-community-green/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-community-navy/20 rounded-full blur-3xl" />
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-heading font-bold text-white mb-4">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-3 md:mb-4">
                 South Hampshire's Biggest, Little & Best Local Magazine
               </h2>
-              <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              <p className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto">
                 A collection of localised editions delivered to 142,000 letterboxes in SO & PO postcodes. Loved by residents since 2005 and continuing to serve businesses with a cost effective advertising platform.
               </p>
             </div>
 
-            <div className="relative max-w-5xl mx-auto">
+            <div className="relative">
               <Carousel opts={{
                 align: "center",
                 loop: true
-              }} className="w-full">
-                <CarouselContent className="-ml-6">
+              }} className="w-full max-w-5xl mx-auto">
+                <CarouselContent className="-ml-3 md:-ml-6">
                   {magazineCovers.map((cover, index) => (
-                    <CarouselItem key={index} className="pl-6 md:basis-1/2 lg:basis-1/3">
+                    <CarouselItem key={index} className="pl-3 md:pl-6 basis-[85%] md:basis-1/2 lg:basis-1/3">
                       <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
-                        <CardContent className="p-6">
+                        <CardContent className="p-4 md:p-6">
                           <div className="relative overflow-hidden rounded-lg">
-                            <img src={cover.src} alt={cover.alt} className="w-full h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
+                            <img src={cover.src} alt={cover.alt} className="w-full h-64 md:h-80 lg:h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
                             {/* Futuristic Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
@@ -92,22 +92,27 @@ const Index = () => {
                   ))}
                 </CarouselContent>
                 
-                {/* Custom Navigation Buttons */}
-                <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
-                <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
+                {/* Mobile-visible navigation buttons */}
+                <CarouselPrevious className="left-2 md:-left-4 lg:-left-16 h-10 w-10 md:h-12 md:w-12 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
+                <CarouselNext className="right-2 md:-right-4 lg:-right-16 h-10 w-10 md:h-12 md:w-12 bg-white/10 backdrop-blur border-white/20 text-white hover:bg-community-green hover:border-community-green transition-all duration-300" />
               </Carousel>
+              
+              {/* Swipe indicator for mobile */}
+              <p className="text-center text-xs text-gray-400 mt-4 md:hidden">
+                Swipe to explore editions
+              </p>
             </div>
 
             {/* Call to Action */}
-            <div className="text-center mt-12">
-              <div className="inline-flex flex-col sm:flex-row gap-4">
+            <div className="text-center mt-8 md:mt-12">
+              <div className="inline-flex flex-col sm:flex-row gap-3 md:gap-4">
                 <Button 
-                  className="bg-community-green hover:bg-community-green/90 text-white px-8 py-3 font-bold rounded-full border border-community-green/20 hover:shadow-lg hover:shadow-community-green/30 transition-all duration-300"
+                  className="bg-community-green hover:bg-community-green/90 text-white px-6 md:px-8 py-3 font-bold rounded-full border border-community-green/20 hover:shadow-lg hover:shadow-community-green/30 transition-all duration-300 min-h-[44px]"
                   onClick={() => navigate('/advertising')}
                 >
                   ADVERTISING INFO
                 </Button>
-                <Button asChild variant="outline" className="border-white/30 hover:bg-white px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950">
+                <Button asChild variant="outline" className="border-white/30 hover:bg-white px-6 md:px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950 min-h-[44px]">
                   <a href="/advertising#distribution-map">VIEW DISTRIBUTION MAP</a>
                 </Button>
               </div>

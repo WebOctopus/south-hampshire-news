@@ -2,7 +2,6 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const FeaturedAdvertisersSection = () => {
-  // Featured local business advertisers
   const advertisers = [
     { name: 'DJ Summers Plumbing & Heating', logo: '/lovable-uploads/3457943e-ae98-43c0-b6cb-556d1d936472.png' },
     { name: 'Edwards Conservatory & Gutter Cleaning', logo: '/lovable-uploads/f6d05495-f433-4146-a6c5-b4332e7616bf.png' },
@@ -15,32 +14,36 @@ const FeaturedAdvertisersSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-12 md:py-16 bg-muted/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-heading font-bold text-community-navy mb-4">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-heading font-bold text-community-navy mb-3 md:mb-4">
             Featured Advertisers
           </h2>
-          <p className="text-xl text-gray-600 font-body">
+          <p className="text-base md:text-xl text-muted-foreground font-body">
             Supporting local businesses that make our community thrive
           </p>
         </div>
         
-        <div className="relative max-w-5xl mx-auto">
-          <Carousel opts={{
-            align: "center",
-            loop: true
-          }} className="w-full">
-            <CarouselContent className="-ml-6">
+        <div className="relative">
+          <Carousel 
+            opts={{
+              align: "start",
+              loop: true
+            }} 
+            className="w-full"
+          >
+            <CarouselContent className="-ml-3 md:-ml-6">
               {advertisers.map((advertiser, index) => (
-                <CarouselItem key={index} className="pl-6 basis-1/4">
+                <CarouselItem key={index} className="pl-3 md:pl-6 basis-1/2 md:basis-1/3 lg:basis-1/4">
                   <Dialog>
                     <DialogTrigger asChild>
-                      <div className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer">
+                      <div className="flex items-center justify-center p-4 bg-background rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer min-h-[120px] md:min-h-[160px]">
                         <img 
                           src={advertiser.logo} 
                           alt={advertiser.name}
-                          className="max-w-full max-h-48 object-contain hover:scale-105 transition-all duration-300"
+                          loading="lazy"
+                          className="max-w-full max-h-24 md:max-h-36 object-contain hover:scale-105 transition-all duration-300"
                         />
                       </div>
                     </DialogTrigger>
@@ -58,18 +61,27 @@ const FeaturedAdvertisersSection = () => {
               ))}
             </CarouselContent>
             
-            <CarouselPrevious className="absolute -left-16 top-1/2 -translate-y-1/2" />
-            <CarouselNext className="absolute -right-16 top-1/2 -translate-y-1/2" />
+            {/* Mobile-visible navigation */}
+            <CarouselPrevious className="left-0 md:-left-4 lg:-left-12 h-10 w-10 md:h-12 md:w-12" />
+            <CarouselNext className="right-0 md:-right-4 lg:-right-12 h-10 w-10 md:h-12 md:w-12" />
           </Carousel>
+          
+          {/* Swipe hint for mobile */}
+          <p className="text-center text-xs text-muted-foreground mt-4 md:hidden">
+            Swipe to see more advertisers
+          </p>
         </div>
         
-        <div className="text-center mt-12">
-          <p className="text-gray-600 font-body mb-4">
+        <div className="text-center mt-8 md:mt-12">
+          <p className="text-muted-foreground font-body mb-4">
             Want to feature your business here?
           </p>
-          <button className="text-community-green font-semibold hover:text-green-600 transition-colors">
+          <a 
+            href="/advertising" 
+            className="inline-block text-community-green font-semibold hover:text-green-600 transition-colors min-h-[44px] py-2"
+          >
             Learn about our advertising options →
-          </button>
+          </a>
         </div>
       </div>
     </section>
