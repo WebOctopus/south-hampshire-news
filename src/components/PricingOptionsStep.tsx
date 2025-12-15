@@ -173,7 +173,7 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8">
         {packages.map((option, packageIndex) => {
           const Icon = getIcon(option.icon);
           const gradientColors = [
@@ -191,15 +191,20 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
             'bg-gradient-to-br from-green-100 to-emerald-200',
             'bg-gradient-to-br from-amber-100 to-orange-200'
           ];
+
+          // Mobile order: bogof (1), leafleting (2), fixed (3)
+          // Desktop order: fixed (1), bogof (2), leafleting (3) - maintained by database sort_order
+          const mobileOrder = option.package_id === 'bogof' ? 1 : option.package_id === 'leafleting' ? 2 : 3;
           
           return (
             <Card 
               key={option.id}
+              style={{ order: mobileOrder }}
               className={cn(
-                "relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-white to-slate-50/80 group",
+                "relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-white to-slate-50/80 group lg:!order-none",
                 "border-t-4 shadow-lg hover:shadow-2xl hover:-translate-y-1",
                 option.is_popular 
-                  ? "border-t-community-green ring-2 ring-community-green/20 scale-105 z-10" 
+                  ? "border-t-community-green ring-2 ring-community-green/20 lg:scale-105 z-10" 
                   : accentColors[packageIndex % 3]
               )}
             >
