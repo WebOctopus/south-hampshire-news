@@ -21,8 +21,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
 import { Trophy, Loader2 } from 'lucide-react';
+import { Competition, useCreateCompetitionEntry } from '@/hooks/useCompetitions';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -36,17 +36,6 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-interface Competition {
-  id: string;
-  title: string;
-  description: string;
-  prize: string;
-  endDate: string;
-  entryCount: number;
-  category: string;
-  image: string;
-}
-
 interface CompetitionEntryFormProps {
   competition: Competition | null;
   isOpen: boolean;
@@ -54,8 +43,7 @@ interface CompetitionEntryFormProps {
 }
 
 const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntryFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const createEntry = useCreateCompetitionEntry();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -71,28 +59,17 @@ const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntry
   const onSubmit = async (data: FormData) => {
     if (!competition) return;
 
-    setIsSubmitting(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Entry Submitted Successfully!",
-        description: `Your entry for "${competition.title}" has been received. Good luck!`,
-      });
+    await createEntry.mutateAsync({
+      competition_id: competition.id,
+      name: data.name,
+      email: data.email,
+      phone: data.phone || null,
+      message: data.message || null,
+      agreed_to_terms: data.agreeToTerms,
+    });
 
-      form.reset();
-      onClose();
-    } catch (error) {
-      toast({
-        title: "Submission Failed",
-        description: "There was an error submitting your entry. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    form.reset();
+    onClose();
   };
 
   const handleClose = () => {
@@ -205,16 +182,16 @@ const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntry
                 variant="outline"
                 onClick={handleClose}
                 className="flex-1"
-                disabled={isSubmitting}
+                disabled={createEntry.isPending}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="flex-1 bg-community-green hover:bg-community-green/90"
-                disabled={isSubmitting}
+                disabled={createEntry.isPending}
               >
-                {isSubmitting ? (
+                {createEntry.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Submitting...

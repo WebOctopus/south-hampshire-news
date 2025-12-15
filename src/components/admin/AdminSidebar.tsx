@@ -10,7 +10,8 @@ import {
   Home,
   AlertTriangle,
   Image,
-  BookOpen
+  BookOpen,
+  Trophy
 } from "lucide-react"
 
 import {
@@ -66,6 +67,11 @@ const menuItems = [
     title: "Magazine Editions",
     icon: BookOpen,
     section: "magazine-editions"
+  },
+  {
+    title: "Competitions",
+    icon: Trophy,
+    section: "competitions"
   }
 ]
 

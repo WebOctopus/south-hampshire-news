@@ -1,65 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Trophy, Clock, Users, Gift, Calendar } from 'lucide-react';
+import { Trophy, Clock, Users, Gift, Calendar, Loader2 } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import CompetitionEntryForm from '../components/CompetitionEntryForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
-interface Competition {
-  id: string;
-  title: string;
-  description: string;
-  prize: string;
-  endDate: string;
-  entryCount: number;
-  category: string;
-  image: string;
-}
-
-const mockCompetitions: Competition[] = [
-  {
-    id: '1',
-    title: 'Win a Weekend Getaway',
-    description: 'Escape to a luxurious countryside retreat for two. Includes accommodation, breakfast, and spa treatments.',
-    prize: '£500 Weekend Break',
-    endDate: '2025-06-15T23:59:59',
-    entryCount: 1247,
-    category: 'Travel',
-    image: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop'
-  },
-  {
-    id: '2',
-    title: 'Local Restaurant Dining Experience',
-    description: 'Three-course meal for four people at our featured local restaurant with wine pairing.',
-    prize: '£200 Dining Voucher',
-    endDate: '2025-06-12T23:59:59',
-    entryCount: 892,
-    category: 'Food',
-    image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=800&h=600&fit=crop'
-  },
-  {
-    id: '3',
-    title: 'Family Fun Day Out',
-    description: 'Entry tickets for a family of four to the local adventure park, including lunch and activities.',
-    prize: 'Family Day Pass',
-    endDate: '2025-06-20T23:59:59',
-    entryCount: 654,
-    category: 'Family',
-    image: 'https://images.unsplash.com/photo-1438565434616-3ef039228b15?w=800&h=600&fit=crop'
-  },
-  {
-    id: '4',
-    title: 'Monthly Shopping Spree',
-    description: 'Shopping vouchers to spend at participating local businesses in the community.',
-    prize: '£300 Shopping Vouchers',
-    endDate: '2025-06-30T23:59:59',
-    entryCount: 2156,
-    category: 'Shopping',
-    image: 'https://images.unsplash.com/photo-1493962853295-0fd70327578a?w=800&h=600&fit=crop'
-  }
-];
+import { useCompetitions, Competition } from '@/hooks/useCompetitions';
+import { isPast } from 'date-fns';
 
 const CountdownTimer = ({ endDate }: { endDate: string }) => {
   const [timeLeft, setTimeLeft] = useState<{
@@ -152,8 +100,12 @@ const RulesAndTerms = () => {
 };
 
 const Competitions = () => {
+  const { data: competitions, isLoading } = useCompetitions();
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // Filter out expired competitions
+  const activeCompetitions = competitions?.filter(c => !isPast(new Date(c.end_date))) || [];
 
   const handleEnterCompetition = (competition: Competition) => {
     setSelectedCompetition(competition);
@@ -181,59 +133,78 @@ const Competitions = () => {
         </div>
 
         {/* Live Competitions Grid */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {mockCompetitions.map((competition) => (
-            <Card key={competition.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="aspect-video bg-gradient-to-br from-community-green/10 to-community-navy/10 relative">
-                <img 
-                  src={competition.image} 
-                  alt={competition.title}
-                  className="w-full h-full object-cover"
-                />
-                <Badge className="absolute top-4 left-4" variant="secondary">
-                  {competition.category}
-                </Badge>
-              </div>
-              
-              <CardHeader>
-                <div className="flex justify-between items-start mb-2">
-                  <CardTitle className="text-xl text-community-navy">
-                    {competition.title}
-                  </CardTitle>
-                  <CountdownTimer endDate={competition.endDate} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-community-green" />
+            <span className="ml-2 text-gray-600">Loading competitions...</span>
+          </div>
+        ) : activeCompetitions.length === 0 ? (
+          <div className="text-center py-16">
+            <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Active Competitions</h3>
+            <p className="text-gray-500">Check back soon for new competitions!</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {activeCompetitions.map((competition) => (
+              <Card key={competition.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="aspect-video bg-gradient-to-br from-community-green/10 to-community-navy/10 relative">
+                  {competition.image_url ? (
+                    <img 
+                      src={competition.image_url} 
+                      alt={competition.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Trophy className="w-16 h-16 text-community-navy/30" />
+                    </div>
+                  )}
+                  <Badge className="absolute top-4 left-4" variant="secondary">
+                    {competition.category}
+                  </Badge>
                 </div>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {competition.description}
-                </p>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Gift className="w-4 h-4 text-community-green" />
-                      <span className="font-semibold text-community-green">
-                        {competition.prize}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <Users className="w-4 h-4" />
-                      <span>{competition.entryCount.toLocaleString()} entries</span>
-                    </div>
+                
+                <CardHeader>
+                  <div className="flex justify-between items-start mb-2">
+                    <CardTitle className="text-xl text-community-navy">
+                      {competition.title}
+                    </CardTitle>
+                    <CountdownTimer endDate={competition.end_date} />
                   </div>
-                  
-                  <Button 
-                    className="w-full bg-community-green hover:bg-community-green/90"
-                    onClick={() => handleEnterCompetition(competition)}
-                  >
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Enter Competition
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {competition.description}
+                  </p>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-community-green" />
+                        <span className="font-semibold text-community-green">
+                          {competition.prize}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <Users className="w-4 h-4" />
+                        <span>{competition.entry_count.toLocaleString()} entries</span>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      className="w-full bg-community-green hover:bg-community-green/90"
+                      onClick={() => handleEnterCompetition(competition)}
+                    >
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Enter Competition
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Rules and Terms */}
         <RulesAndTerms />

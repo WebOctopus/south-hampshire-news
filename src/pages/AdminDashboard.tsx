@@ -17,6 +17,7 @@ import CostCalculatorManagement from '@/components/admin/CostCalculatorManagemen
 import AlertsManagement from '@/components/admin/AlertsManagement';
 import AdPreviewImageManagement from '@/components/admin/AdPreviewImageManagement';
 import MagazineEditionsManagement from '@/components/admin/MagazineEditionsManagement';
+import { CompetitionsManagement } from '@/components/admin/CompetitionsManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
@@ -694,6 +695,9 @@ const AdminDashboard = () => {
 
       case 'magazine-editions':
         return <MagazineEditionsManagement />;
+
+      case 'competitions':
+        return <CompetitionsManagement />;
 
       default:
         return <div>Section not found</div>;

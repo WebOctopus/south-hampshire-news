@@ -413,6 +413,89 @@ export type Database = {
           },
         ]
       }
+      competition_entries: {
+        Row: {
+          agreed_to_terms: boolean | null
+          competition_id: string
+          created_at: string | null
+          email: string
+          id: string
+          message: string | null
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          agreed_to_terms?: boolean | null
+          competition_id: string
+          created_at?: string | null
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          agreed_to_terms?: boolean | null
+          competition_id?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_entries_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitions: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          end_date: string
+          entry_count: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          prize: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          end_date: string
+          entry_count?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          prize: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          end_date?: string
+          entry_count?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          prize?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       component_settings: {
         Row: {
           component_name: string
