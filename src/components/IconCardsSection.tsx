@@ -1,42 +1,50 @@
 import { Calendar, Trophy, Building2, FileText, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
 
 const IconCardsSection = () => {
+  const navigate = useNavigate();
+
   const cards = [
     {
       icon: Clock,
       title: 'Next Issue Deadline',
       description: 'Next deadline: 14th May 2025 - Don\'t miss out!',
       color: 'text-red-600 bg-red-50',
-      priority: true
+      priority: true,
+      link: '/advertising'
     },
     {
       icon: Calendar,
       title: 'Events',
       description: 'Local happenings and community gatherings',
       color: 'text-blue-600 bg-blue-50',
-      priority: false
+      priority: false,
+      link: '/whats-on'
     },
     {
       icon: Trophy,
       title: 'Competitions',
       description: 'Enter contests and win amazing prizes',
       color: 'text-yellow-600 bg-yellow-50',
-      priority: false
+      priority: false,
+      link: '/competitions'
     },
     {
       icon: Building2,
       title: 'Trusted Businesses',
       description: 'Find reliable local services and shops',
       color: 'text-community-green bg-green-50',
-      priority: false
+      priority: false,
+      link: '/business-directory'
     },
     {
       icon: FileText,
       title: 'Local Stories',
       description: 'Inspiring tales from your community',
       color: 'text-purple-600 bg-purple-50',
-      priority: false
+      priority: false,
+      link: '/stories'
     }
   ];
 
@@ -51,6 +59,7 @@ const IconCardsSection = () => {
               return (
                 <Card 
                   key={index} 
+                  onClick={() => navigate(card.link)}
                   className={`flex-shrink-0 w-[280px] snap-center group hover:shadow-lg transition-shadow duration-300 cursor-pointer ${
                     card.priority ? 'ring-2 ring-red-500 ring-offset-2' : ''
                   }`}
@@ -90,6 +99,7 @@ const IconCardsSection = () => {
             return (
               <Card 
                 key={index} 
+                onClick={() => navigate(card.link)}
                 className={`group hover:shadow-lg transition-shadow duration-300 cursor-pointer ${
                   card.priority ? 'ring-2 ring-red-500 ring-offset-2' : ''
                 }`}
