@@ -38,12 +38,12 @@ const FeaturedAdvertisersSection = () => {
                 <CarouselItem key={index} className="pl-3 md:pl-6 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                   <Dialog>
                     <DialogTrigger asChild>
-                      <div className="flex items-center justify-center p-4 bg-background rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer min-h-[120px] md:min-h-[160px]">
+                      <div className="flex items-center justify-center p-4 bg-background rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer min-h-[200px] md:min-h-[220px]">
                         <img 
                           src={advertiser.logo} 
                           alt={advertiser.name}
                           loading="lazy"
-                          className="max-w-full max-h-24 md:max-h-36 object-contain hover:scale-105 transition-all duration-300"
+                          className="max-w-full max-h-44 md:max-h-48 object-contain hover:scale-105 transition-all duration-300"
                         />
                       </div>
                     </DialogTrigger>
