@@ -143,7 +143,7 @@ const Navigation = () => {
   ];
 
   const advertisingDropdownItems = [
-    { name: 'Advertising Overview', href: '/advertising', description: 'Learn about our reach, story, and magazine editions', icon: Megaphone },
+    { name: 'Advertising Overview', href: '/advertising#top', description: 'Learn about our reach, story, and magazine editions', icon: Megaphone },
     { name: 'Quick Quote Calculator', href: '/advertising#quick-quote', description: 'Get a quick pricing estimate in seconds', icon: Calculator },
     { name: '14 Local Editions', href: '/advertising#editions-map', description: 'Explore our interactive distribution map', icon: MapPin },
     { name: 'Get Your Quote', href: '/advertising#calculator', description: 'Full quote builder with all package options', icon: Gift },
