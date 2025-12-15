@@ -9,6 +9,7 @@ export interface MagazineEdition {
   image_url: string;
   alt_text: string | null;
   link_url: string | null;
+  issue_month: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;

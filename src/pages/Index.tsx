@@ -17,14 +17,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 // Fallback data in case database is empty or loading fails
 const fallbackCovers = [
-  { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Discover Magazine - Winchester & Surrounds Edition", title: "WINCHESTER & SURROUNDS" },
-  { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Discover Magazine - Itchen Valley Edition", title: "ITCHEN VALLEY" },
-  { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Discover Magazine - Meon Valley & Whiteley Edition", title: "MEON VALLEY & WHITELEY" },
-  { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "Discover Magazine - New Forest & Waterside Edition", title: "NEW FOREST & WATERSIDE" },
-  { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Discover Magazine - Southampton West & Totton Edition", title: "SOUTHAMPTON WEST & TOTTON" },
-  { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Discover Magazine - Test Valley & Romsey Edition", title: "TEST VALLEY & ROMSEY" },
-  { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Discover Magazine - Winchester & Alresford Edition", title: "WINCHESTER & ALRESFORD" },
-  { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition", title: "CHANDLER'S FORD & EASTLEIGH" }
+  { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Discover Magazine - Winchester & Surrounds Edition", issueMonth: "January 2025" },
+  { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Discover Magazine - Itchen Valley Edition", issueMonth: "January 2025" },
+  { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Discover Magazine - Meon Valley & Whiteley Edition", issueMonth: "January 2025" },
+  { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "Discover Magazine - New Forest & Waterside Edition", issueMonth: "January 2025" },
+  { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Discover Magazine - Southampton West & Totton Edition", issueMonth: "January 2025" },
+  { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Discover Magazine - Test Valley & Romsey Edition", issueMonth: "January 2025" },
+  { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Discover Magazine - Winchester & Alresford Edition", issueMonth: "January 2025" },
+  { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition", issueMonth: "January 2025" }
 ];
 
 const Index = () => {
@@ -36,7 +36,7 @@ const Index = () => {
     ? editions.map(e => ({
         src: e.image_url,
         alt: e.alt_text || `Discover Magazine - ${e.title} Edition`,
-        title: e.title,
+        issueMonth: e.issue_month || 'Current Edition',
         link: e.link_url
       }))
     : fallbackCovers;
@@ -77,11 +77,7 @@ const Index = () => {
                             {/* Futuristic Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                              <h3 className="text-white font-bold text-sm mb-2">{cover.title}</h3>
-                              <div className="flex items-center gap-2">
-                                <div className="w-1 h-1 bg-community-green rounded-full" />
-                                <span className="text-community-green text-xs font-medium">CURRENT EDITION</span>
-                              </div>
+                              <h3 className="text-white font-bold text-sm">{cover.issueMonth}</h3>
                             </div>
                           </div>
                           {/* Glow Effect */}

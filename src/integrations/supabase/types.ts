@@ -970,6 +970,7 @@ export type Database = {
           id: string
           image_url: string
           is_active: boolean
+          issue_month: string | null
           link_url: string | null
           sort_order: number
           title: string
@@ -981,6 +982,7 @@ export type Database = {
           id?: string
           image_url: string
           is_active?: boolean
+          issue_month?: string | null
           link_url?: string | null
           sort_order?: number
           title: string
@@ -992,6 +994,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean
+          issue_month?: string | null
           link_url?: string | null
           sort_order?: number
           title?: string

@@ -22,6 +22,7 @@ const MagazineEditionsManagement = () => {
     image_url: '',
     alt_text: '',
     link_url: '',
+    issue_month: '',
     sort_order: 0,
     is_active: true,
   });
@@ -37,6 +38,7 @@ const MagazineEditionsManagement = () => {
       image_url: '',
       alt_text: '',
       link_url: '',
+      issue_month: '',
       sort_order: editions?.length ? editions.length + 1 : 1,
       is_active: true,
     });
@@ -53,6 +55,7 @@ const MagazineEditionsManagement = () => {
         image_url: edition.image_url,
         alt_text: edition.alt_text || '',
         link_url: edition.link_url || '',
+        issue_month: edition.issue_month || '',
         sort_order: edition.sort_order,
         is_active: edition.is_active,
       });
@@ -127,6 +130,7 @@ const MagazineEditionsManagement = () => {
         image_url: imageUrl,
         alt_text: formData.alt_text || null,
         link_url: formData.link_url || null,
+        issue_month: formData.issue_month || null,
       });
     } else {
       await createEdition.mutateAsync({
@@ -134,6 +138,7 @@ const MagazineEditionsManagement = () => {
         image_url: imageUrl,
         alt_text: formData.alt_text || null,
         link_url: formData.link_url || null,
+        issue_month: formData.issue_month || null,
       });
     }
     setIsDialogOpen(false);
@@ -249,6 +254,15 @@ const MagazineEditionsManagement = () => {
               </div>
 
               <div>
+                <Label htmlFor="issue_month">Issue Month</Label>
+                <Input
+                  id="issue_month"
+                  value={formData.issue_month}
+                  onChange={(e) => setFormData({ ...formData, issue_month: e.target.value })}
+                  placeholder="e.g., January 2025"
+                />
+              </div>
+              <div>
                 <Label htmlFor="alt_text">Alt Text (Accessibility)</Label>
                 <Input
                   id="alt_text"
@@ -321,6 +335,7 @@ const MagazineEditionsManagement = () => {
                     <TableHead className="w-12">Order</TableHead>
                     <TableHead className="w-24">Preview</TableHead>
                     <TableHead>Title</TableHead>
+                    <TableHead>Issue Month</TableHead>
                     <TableHead>Link</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -345,6 +360,7 @@ const MagazineEditionsManagement = () => {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{edition.title}</TableCell>
+                      <TableCell>{edition.issue_month || '-'}</TableCell>
                       <TableCell>
                         {edition.link_url ? (
                           <a 
