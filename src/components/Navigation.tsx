@@ -307,14 +307,14 @@ const Navigation = () => {
               </Link>
             )}
 
-            {/* Business Login Button */}
+            {/* Customer Login Button */}
             {!user && (
               <Link to="/auth" className="ml-4">
                 <Button 
                   size="sm" 
                   className="bg-community-green hover:bg-green-600 text-white"
                 >
-                  Business Login
+                  Customer Login
                 </Button>
               </Link>
             )}
@@ -423,7 +423,7 @@ const Navigation = () => {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <Button className="w-full bg-community-green hover:bg-green-600 text-white py-3">
-                          Business Login
+                          Customer Login
                         </Button>
                       </Link>
                     )}
