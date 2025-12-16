@@ -76,3 +76,6 @@ verify_jwt = false
 
 [functions.test-ghl-outbound]
 verify_jwt = false
+
+[functions.pull-ghl-contacts]
+verify_jwt = false
