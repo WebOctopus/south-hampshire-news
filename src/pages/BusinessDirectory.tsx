@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Search, Filter } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BusinessCategory {
@@ -16,6 +17,7 @@ interface BusinessCategory {
   icon: string;
   slug: string;
 }
+
 
 interface Business {
   id: string;
@@ -46,70 +48,83 @@ const BusinessDirectory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  useEffect(() => {
-    fetchCategories();
-    fetchBusinesses();
-  }, []);
+  const activeRequestIdRef = useRef(0);
 
-  const fetchCategories = async () => {
-    const { data, error } = await supabase
-      .from('business_categories')
-      .select('*')
-      .order('name');
-    
+  const fetchCategories = useCallback(async () => {
+    const { data, error } = await supabase.from('business_categories').select('*').order('name');
+
     if (error) {
       console.error('Error fetching categories:', error);
-    } else {
-      setCategories(data || []);
+      toast.error('Failed to load categories');
+      return;
     }
-  };
 
-  const fetchBusinesses = async () => {
+    setCategories(data || []);
+  }, []);
+
+  const fetchBusinesses = useCallback(async () => {
+    const requestId = ++activeRequestIdRef.current;
     setLoading(true);
+
+    const params = {
+      category_filter: selectedCategory !== 'all' ? selectedCategory : null,
+      search_term: searchTerm || null,
+      limit_count: 100,
+      offset_count: 0,
+    };
+
     try {
-      // Use secure RPC function for all users - bypasses RLS issues
-      console.log('[BusinessDirectory] fetching businesses', {
-        selectedCategory,
-        searchTerm
+      console.log('[BusinessDirectory] fetching businesses', params);
+
+      const timeoutMs = 15000;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
       });
 
-      const { data, error } = await supabase.rpc('get_public_businesses', {
-        category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-        search_term: searchTerm || null,
-        limit_count: 100,
-        offset_count: 0
-      });
+      const rpcPromise = supabase.rpc('get_public_businesses', params);
+      const { data, error } = (await Promise.race([rpcPromise, timeoutPromise])) as Awaited<
+        typeof rpcPromise
+      >;
+
+      if (requestId !== activeRequestIdRef.current) return;
 
       console.log('[BusinessDirectory] get_public_businesses result', {
         count: Array.isArray(data) ? data.length : null,
-        error
+        error,
       });
 
       if (error) {
         console.error('Error fetching businesses:', error);
+        toast.error('Failed to load businesses');
         setBusinesses([]);
         return;
       }
 
-      // Transform the data to match the expected Business interface
       const transformedData =
         data?.map((business: any) => ({
           ...business,
-          business_categories: business.business_categories || { name: '', icon: '' }
+          business_categories: business.business_categories || { name: '', icon: '' },
         })) || [];
 
       setBusinesses(transformedData);
-    } catch (error) {
-      console.error('Error in fetchBusinesses:', error);
+    } catch (err) {
+      if (requestId !== activeRequestIdRef.current) return;
+      console.error('Error in fetchBusinesses:', err);
+      toast.error('Failed to load businesses');
       setBusinesses([]);
     } finally {
-      setLoading(false);
+      if (requestId === activeRequestIdRef.current) setLoading(false);
     }
-  };
+  }, [searchTerm, selectedCategory]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   useEffect(() => {
     fetchBusinesses();
-  }, [selectedCategory, searchTerm]);
+  }, [fetchBusinesses]);
+
 
   // Filtering is done server-side via the RPC function
   const filteredBusinesses = businesses;
