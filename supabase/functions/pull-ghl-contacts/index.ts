@@ -107,24 +107,53 @@ serve(async (req) => {
         continue;
       }
 
-      // Get sector from custom fields
+      // Get sector and biz_type from custom fields
+      // Known GHL field IDs (case-insensitive matching)
+      const SECTOR_FIELD_ID = '6fem8mlq80ryy3lhxofe';
+      
       let categoryId = null;
-      if (contact.customFields) {
-        const sectorField = contact.customFields.find(
-          (f: any) => f.key === 'sector' || f.id === 'sector'
-        );
-        if (sectorField?.value) {
-          const sectorValue = sectorField.value.toLowerCase();
-          categoryId = categoryMap.get(sectorValue) || null;
+      let bizType = null;
+      let sectorValue = null;
+      
+      if (contact.customFields && Array.isArray(contact.customFields)) {
+        console.log(`Custom fields for ${contact.companyName}:`, JSON.stringify(contact.customFields));
+        
+        for (const field of contact.customFields) {
+          const fieldId = (field.id || '').toLowerCase();
+          const fieldKey = (field.key || field.fieldKey || field.name || '').toLowerCase();
+          const fieldValue = field.value;
+          
+          console.log(`  Field: id="${fieldId}", key="${fieldKey}", value="${fieldValue}"`);
+          
+          // Match sector field by ID or by value pattern (contains ":")
+          if (fieldId === SECTOR_FIELD_ID || (fieldValue && typeof fieldValue === 'string' && fieldValue.includes(':'))) {
+            sectorValue = fieldValue;
+            console.log(`  Found potential sector value: "${sectorValue}"`);
+          }
+          
+          // Match biz type field by key containing relevant terms
+          if ((fieldKey.includes('biz') || fieldKey.includes('business_type')) && fieldValue) {
+            bizType = fieldValue.trim();
+            console.log(`  Found biz_type: "${bizType}"`);
+          }
+        }
+        
+        // Try to match sector value to category
+        if (sectorValue) {
+          const normalizedSector = sectorValue.toLowerCase().trim();
+          categoryId = categoryMap.get(normalizedSector) || null;
           
           // If exact match fails, try partial match
           if (!categoryId) {
             for (const [name, id] of categoryMap) {
-              if (name.includes(sectorValue) || sectorValue.includes(name)) {
+              if (name === normalizedSector || name.includes(normalizedSector) || normalizedSector.includes(name)) {
                 categoryId = id;
+                console.log(`  Matched sector "${sectorValue}" to category "${name}"`);
                 break;
               }
             }
+          } else {
+            console.log(`  Exact match for sector "${sectorValue}"`);
           }
         }
       }
@@ -141,6 +170,7 @@ serve(async (req) => {
         postcode: contact.postalCode || null,
         website: contact.website || null,
         category_id: categoryId,
+        biz_type: bizType,
         is_active: true,
         last_synced_at: new Date().toISOString(),
       };
