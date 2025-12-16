@@ -134,7 +134,7 @@ const ApplyToDistribute = () => {
                     window.open('https://roundcontrol.co.uk/discover-magazines-ltd/join-waiting-list', '_blank');
                   }}
                 >
-                  Join Waiting List
+                  Apply Now
                 </Button>
               </div>
             </CardContent>
