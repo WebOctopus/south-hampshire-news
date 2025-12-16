@@ -45,23 +45,10 @@ const BusinessDirectory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check authentication status
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
     fetchCategories();
     fetchBusinesses();
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const fetchCategories = async () => {
@@ -79,56 +66,23 @@ const BusinessDirectory = () => {
 
   const fetchBusinesses = async () => {
     try {
-      if (user) {
-        // Authenticated users get full information via direct table access
-        let query = supabase
-          .from('businesses')
-          .select(`
-            *,
-            business_categories (
-              id,
-              name,
-              description,
-              icon,
-              slug
-            )
-          `)
-          .eq('is_active', true);
-
-        if (selectedCategory !== 'all') {
-          query = query.eq('category_id', selectedCategory);
-        }
-
-        query = query
-          .order('featured', { ascending: false })
-          .order('name');
-
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error('Error fetching businesses:', error);
-        } else {
-          setBusinesses((data as Business[]) || []);
-        }
+      // Use secure RPC function for all users - bypasses RLS issues
+      const { data, error } = await supabase.rpc('get_public_businesses', {
+        category_filter: selectedCategory !== 'all' ? selectedCategory : null,
+        search_term: searchTerm || null,
+        limit_count: 100,
+        offset_count: 0
+      });
+      
+      if (error) {
+        console.error('Error fetching businesses:', error);
       } else {
-        // Anonymous users get safe information via secure function
-        const { data, error } = await supabase.rpc('get_public_businesses', {
-          category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-          search_term: searchTerm || null,
-          limit_count: 100,
-          offset_count: 0
-        });
-        
-        if (error) {
-          console.error('Error fetching public businesses:', error);
-        } else {
-          // Transform the data to match the expected Business interface
-          const transformedData = data?.map((business: any) => ({
-            ...business,
-            business_categories: business.business_categories || { name: '', icon: '' }
-          })) || [];
-          setBusinesses(transformedData);
-        }
+        // Transform the data to match the expected Business interface
+        const transformedData = data?.map((business: any) => ({
+          ...business,
+          business_categories: business.business_categories || { name: '', icon: '' }
+        })) || [];
+        setBusinesses(transformedData);
       }
     } catch (error) {
       console.error('Error in fetchBusinesses:', error);
@@ -138,18 +92,10 @@ const BusinessDirectory = () => {
 
   useEffect(() => {
     fetchBusinesses();
-  }, [selectedCategory, user, searchTerm]);
+  }, [selectedCategory, searchTerm]);
 
-  // For authenticated users, do client-side filtering
-  // For anonymous users, filtering is already done server-side
-  const filteredBusinesses = user 
-    ? businesses.filter(business =>
-        business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        business.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        business.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        business.postcode?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : businesses;
+  // Filtering is done server-side via the RPC function
+  const filteredBusinesses = businesses;
 
   const CategoryCard = ({ category }: { category: BusinessCategory }) => (
     <Card 
