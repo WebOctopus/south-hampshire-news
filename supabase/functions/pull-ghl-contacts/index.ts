@@ -37,50 +37,6 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Parse optional limit parameter
-    let limit = 100;
-    try {
-      const body = await req.json();
-      if (body.limit) {
-        limit = Math.min(body.limit, 500); // Cap at 500
-      }
-    } catch {
-      // No body or invalid JSON, use default limit
-    }
-
-    console.log(`Fetching contacts from GHL with limit: ${limit}`);
-
-    // Fetch contacts from GHL API
-    const ghlResponse = await fetch(
-      `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&limit=${limit}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${GHL_API_KEY}`,
-          'Version': '2021-07-28',
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (!ghlResponse.ok) {
-      const errorText = await ghlResponse.text();
-      console.error('GHL API error:', ghlResponse.status, errorText);
-      return new Response(JSON.stringify({ 
-        error: 'Failed to fetch contacts from GHL', 
-        status: ghlResponse.status,
-        details: errorText 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const ghlData = await ghlResponse.json();
-    const contacts = ghlData.contacts || [];
-    
-    console.log(`Fetched ${contacts.length} contacts from GHL`);
-
     // Fetch business categories for mapping
     const { data: categories } = await supabase
       .from('business_categories')
@@ -92,109 +48,142 @@ serve(async (req) => {
 
     // Track results
     const results = {
-      total_contacts: contacts.length,
-      businesses_created: 0,
-      businesses_updated: 0,
+      total_contacts_fetched: 0,
+      businesses_processed: 0,
       skipped_no_company: 0,
       errors: [] as string[],
     };
 
-    // Process each contact
-    for (const contact of contacts) {
-      // Skip contacts without a company name
-      if (!contact.companyName || contact.companyName.trim() === '') {
-        results.skipped_no_company++;
-        continue;
+    // Pagination loop - fetch all contacts from GHL
+    const batchSize = 100;
+    let startAfterId: string | null = null;
+    let hasMore = true;
+
+    console.log('Starting to fetch all contacts from GHL...');
+
+    while (hasMore) {
+      const url = `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&limit=${batchSize}${startAfterId ? `&startAfterId=${startAfterId}` : ''}`;
+      
+      console.log(`Fetching batch from GHL... (startAfterId: ${startAfterId || 'none'})`);
+
+      const ghlResponse = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${GHL_API_KEY}`,
+          'Version': '2021-07-28',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!ghlResponse.ok) {
+        const errorText = await ghlResponse.text();
+        console.error('GHL API error:', ghlResponse.status, errorText);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to fetch contacts from GHL', 
+          status: ghlResponse.status,
+          details: errorText,
+          results_so_far: results
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
-      // Get sector and biz_type from custom fields
-      // Known GHL field IDs (case-insensitive matching)
-      const SECTOR_FIELD_ID = '6fem8mlq80ryy3lhxofe';
+      const ghlData = await ghlResponse.json();
+      const contacts = ghlData.contacts || [];
       
-      let categoryId = null;
-      let bizType = null;
-      let sectorValue = null;
-      
-      if (contact.customFields && Array.isArray(contact.customFields)) {
-        console.log(`Custom fields for ${contact.companyName}:`, JSON.stringify(contact.customFields));
-        
-        for (const field of contact.customFields) {
-          const fieldId = (field.id || '').toLowerCase();
-          const fieldKey = (field.key || field.fieldKey || field.name || '').toLowerCase();
-          const fieldValue = field.value;
-          
-          console.log(`  Field: id="${fieldId}", key="${fieldKey}", value="${fieldValue}"`);
-          
-          // Match sector field by ID or by value pattern (contains ":")
-          if (fieldId === SECTOR_FIELD_ID || (fieldValue && typeof fieldValue === 'string' && fieldValue.includes(':'))) {
-            sectorValue = fieldValue;
-            console.log(`  Found potential sector value: "${sectorValue}"`);
-          }
-          
-          // Match biz type field by key containing relevant terms
-          if ((fieldKey.includes('biz') || fieldKey.includes('business_type')) && fieldValue) {
-            bizType = fieldValue.trim();
-            console.log(`  Found biz_type: "${bizType}"`);
-          }
+      results.total_contacts_fetched += contacts.length;
+      console.log(`Fetched ${contacts.length} contacts (total: ${results.total_contacts_fetched})`);
+
+      // Process each contact in this batch
+      for (const contact of contacts) {
+        // Skip contacts without a company name
+        if (!contact.companyName || contact.companyName.trim() === '') {
+          results.skipped_no_company++;
+          continue;
         }
+
+        // Get sector and biz_type from custom fields
+        const SECTOR_FIELD_ID = '6fem8mlq80ryy3lhxofe';
         
-        // Try to match sector value to category
-        if (sectorValue) {
-          const normalizedSector = sectorValue.toLowerCase().trim();
-          categoryId = categoryMap.get(normalizedSector) || null;
+        let categoryId = null;
+        let bizType = null;
+        let sectorValue = null;
+        
+        if (contact.customFields && Array.isArray(contact.customFields)) {
+          for (const field of contact.customFields) {
+            const fieldId = (field.id || '').toLowerCase();
+            const fieldKey = (field.key || field.fieldKey || field.name || '').toLowerCase();
+            const fieldValue = field.value;
+            
+            // Match sector field by ID or by value pattern
+            if (fieldId === SECTOR_FIELD_ID || (fieldValue && typeof fieldValue === 'string' && fieldValue.includes(':'))) {
+              sectorValue = fieldValue;
+            }
+            
+            // Match biz type field by key containing relevant terms
+            if ((fieldKey.includes('biz') || fieldKey.includes('business_type')) && fieldValue) {
+              bizType = fieldValue.trim();
+            }
+          }
           
-          // If exact match fails, try partial match
-          if (!categoryId) {
-            for (const [name, id] of categoryMap) {
-              if (name === normalizedSector || name.includes(normalizedSector) || normalizedSector.includes(name)) {
-                categoryId = id;
-                console.log(`  Matched sector "${sectorValue}" to category "${name}"`);
-                break;
+          // Try to match sector value to category
+          if (sectorValue) {
+            const normalizedSector = sectorValue.toLowerCase().trim();
+            categoryId = categoryMap.get(normalizedSector) || null;
+            
+            // If exact match fails, try partial match
+            if (!categoryId) {
+              for (const [name, id] of categoryMap) {
+                if (name === normalizedSector || name.includes(normalizedSector) || normalizedSector.includes(name)) {
+                  categoryId = id;
+                  break;
+                }
               }
             }
-          } else {
-            console.log(`  Exact match for sector "${sectorValue}"`);
           }
+        }
+
+        // Prepare business data
+        const businessData = {
+          ghl_contact_id: contact.id,
+          ghl_location_id: GHL_LOCATION_ID,
+          name: contact.companyName.trim(),
+          email: contact.email || null,
+          phone: contact.phone || null,
+          address_line1: contact.address1 || null,
+          city: contact.city || null,
+          postcode: contact.postalCode || null,
+          website: contact.website || null,
+          category_id: categoryId,
+          biz_type: bizType,
+          is_active: true,
+          last_synced_at: new Date().toISOString(),
+        };
+
+        // Upsert business using ghl_contact_id as the unique identifier
+        const { error } = await supabase
+          .from('businesses')
+          .upsert(businessData, { 
+            onConflict: 'ghl_contact_id',
+            ignoreDuplicates: false 
+          });
+
+        if (error) {
+          console.error(`Error upserting business ${businessData.name}:`, error);
+          results.errors.push(`${businessData.name}: ${error.message}`);
+        } else {
+          results.businesses_processed++;
         }
       }
 
-      // Prepare business data
-      const businessData = {
-        ghl_contact_id: contact.id,
-        ghl_location_id: GHL_LOCATION_ID,
-        name: contact.companyName.trim(),
-        email: contact.email || null,
-        phone: contact.phone || null,
-        address_line1: contact.address1 || null,
-        city: contact.city || null,
-        postcode: contact.postalCode || null,
-        website: contact.website || null,
-        category_id: categoryId,
-        biz_type: bizType,
-        is_active: true,
-        last_synced_at: new Date().toISOString(),
-      };
-
-      console.log(`Processing business: ${businessData.name} (GHL ID: ${contact.id})`);
-
-      // Upsert business using ghl_contact_id as the unique identifier
-      const { data, error } = await supabase
-        .from('businesses')
-        .upsert(businessData, { 
-          onConflict: 'ghl_contact_id',
-          ignoreDuplicates: false 
-        })
-        .select('id')
-        .single();
-
-      if (error) {
-        console.error(`Error upserting business ${businessData.name}:`, error);
-        results.errors.push(`${businessData.name}: ${error.message}`);
+      // Check if we should continue fetching
+      if (contacts.length < batchSize) {
+        hasMore = false;
+        console.log('Reached end of contacts list');
       } else {
-        // Check if this was an insert or update by seeing if we got a new record
-        // For simplicity, we'll count all successful operations
-        results.businesses_created++;
-        console.log(`Successfully upserted business: ${businessData.name}`);
+        // Set startAfterId to the last contact's ID for next page
+        startAfterId = contacts[contacts.length - 1].id;
       }
     }
 

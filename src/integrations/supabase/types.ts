@@ -1875,6 +1875,10 @@ export type Database = {
           website: string
         }[]
       }
+      get_public_businesses_count: {
+        Args: { category_filter?: string; search_term?: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
