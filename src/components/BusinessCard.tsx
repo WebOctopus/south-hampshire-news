@@ -22,7 +22,8 @@ interface BusinessCardProps {
     logo_url: string;
     featured_image_url: string;
     images: string[];
-    business_categories: {
+    biz_type?: string;
+    business_categories?: {
       name: string;
       icon: string;
     };
@@ -98,6 +99,22 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
             />
           )}
         </div>
+        
+        {/* Category Badges */}
+        {(business.business_categories?.name || business.biz_type) && (
+          <div className="flex flex-wrap gap-2">
+            {business.business_categories?.name && (
+              <Badge variant="secondary" className="bg-community-green/10 text-community-green border-community-green/20">
+                {business.business_categories.name}
+              </Badge>
+            )}
+            {business.biz_type && (
+              <Badge variant="outline" className="text-muted-foreground">
+                {business.biz_type}
+              </Badge>
+            )}
+          </div>
+        )}
       </CardHeader>
 
       {/* Featured Image */}
