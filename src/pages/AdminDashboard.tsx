@@ -18,6 +18,7 @@ import AlertsManagement from '@/components/admin/AlertsManagement';
 import AdPreviewImageManagement from '@/components/admin/AdPreviewImageManagement';
 import MagazineEditionsManagement from '@/components/admin/MagazineEditionsManagement';
 import { CompetitionsManagement } from '@/components/admin/CompetitionsManagement';
+import { GHLSyncManagement } from '@/components/admin/GHLSyncManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
@@ -698,6 +699,9 @@ const AdminDashboard = () => {
 
       case 'competitions':
         return <CompetitionsManagement />;
+
+      case 'ghl-sync':
+        return <GHLSyncManagement />;
 
       default:
         return <div>Section not found</div>;

@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   Image,
   BookOpen,
-  Trophy
+  Trophy,
+  RefreshCw
 } from "lucide-react"
 
 import {
@@ -72,6 +73,11 @@ const menuItems = [
     title: "Competitions",
     icon: Trophy,
     section: "competitions"
+  },
+  {
+    title: "GHL Sync",
+    icon: RefreshCw,
+    section: "ghl-sync"
   }
 ]
 
