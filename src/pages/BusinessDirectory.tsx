@@ -106,21 +106,6 @@ const BusinessDirectory = () => {
 
   const filteredBusinesses = businesses;
 
-  const CategoryCard = ({ category }: { category: BusinessCategory }) => (
-    <Card 
-      className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-      onClick={() => setSelectedCategory(category.id)}
-    >
-      <CardContent className="p-4 md:p-6 text-center">
-        <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 flex items-center justify-center bg-community-green/10 rounded-full">
-          <div className="text-community-green text-xl md:text-2xl">📍</div>
-        </div>
-        <h3 className="font-semibold text-base md:text-lg mb-2">{category.name}</h3>
-        <p className="text-xs md:text-sm text-gray-600">{category.description}</p>
-      </CardContent>
-    </Card>
-  );
-
 
   return (
     <div className="min-h-screen">
@@ -165,23 +150,6 @@ const BusinessDirectory = () => {
             </div>
           </div>
         </section>
-
-        {/* Categories Section */}
-        {selectedCategory === 'all' && (
-          <section className="py-8 md:py-16 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl md:text-3xl font-heading font-bold text-center mb-8 md:mb-12">
-                Browse by Category
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                {categories.map((category) => (
-                  <CategoryCard key={category.id} category={category} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* Business Listings Section */}
         <section className="py-8 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
