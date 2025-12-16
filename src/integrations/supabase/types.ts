@@ -1857,6 +1857,7 @@ export type Database = {
         Returns: {
           address_line1: string
           address_line2: string
+          biz_type: string
           business_categories: Json
           category_id: string
           city: string
