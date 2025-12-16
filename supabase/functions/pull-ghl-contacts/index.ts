@@ -16,7 +16,9 @@ serve(async (req) => {
     // Parse request body for optional parameters
     const body = await req.json().catch(() => ({}));
     const maxContacts = body.limit || 500; // Default to 500 contacts per call
-    const resumeFromTimestamp = body.startAfter || null; // Timestamp-based pagination
+    // Resume parameters from GHL's meta response
+    const resumeStartAfter = body.startAfter || null;
+    const resumeStartAfterId = body.startAfterId || null;
 
     const GHL_API_KEY = Deno.env.get('GHL_API_KEY');
     const GHL_LOCATION_ID = Deno.env.get('GHL_LOCATION_ID');
@@ -59,21 +61,27 @@ serve(async (req) => {
       errors: [] as string[],
     };
 
-    // Pagination loop - fetch contacts from GHL with limit
+    // Pagination using GHL's meta values
     const batchSize = 100;
-    let startAfterTimestamp: number | null = resumeFromTimestamp;
+    let nextStartAfter: number | null = resumeStartAfter;
+    let nextStartAfterId: string | null = resumeStartAfterId;
     let hasMore = true;
 
-    console.log(`Starting to fetch contacts from GHL (limit: ${maxContacts}, resumeFromTimestamp: ${resumeFromTimestamp || 'start'})...`);
+    console.log(`Starting to fetch contacts from GHL (limit: ${maxContacts}, startAfter: ${resumeStartAfter || 'none'}, startAfterId: ${resumeStartAfterId || 'none'})...`);
 
     while (hasMore && results.total_contacts_fetched < maxContacts) {
-      // Build URL with timestamp-based pagination using startAfter parameter
+      // Build URL with GHL's pagination parameters
       let url = `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&limit=${batchSize}`;
-      if (startAfterTimestamp) {
-        url += `&startAfter=${startAfterTimestamp}`;
+      
+      // Use BOTH startAfter and startAfterId from GHL's meta response
+      if (nextStartAfter !== null) {
+        url += `&startAfter=${nextStartAfter}`;
+      }
+      if (nextStartAfterId !== null) {
+        url += `&startAfterId=${nextStartAfterId}`;
       }
       
-      console.log(`Fetching batch from GHL... (startAfter: ${startAfterTimestamp || 'none'})`);
+      console.log(`Fetching batch from GHL... (startAfter: ${nextStartAfter || 'none'}, startAfterId: ${nextStartAfterId || 'none'})`);
 
       const ghlResponse = await fetch(url, {
         method: 'GET',
@@ -100,24 +108,23 @@ serve(async (req) => {
 
       const ghlData = await ghlResponse.json();
       const contacts = ghlData.contacts || [];
+      const meta = ghlData.meta || {};
+      
+      // Log the meta object to understand pagination
+      console.log(`GHL Response meta: ${JSON.stringify(meta)}`);
       
       results.total_contacts_fetched += contacts.length;
       console.log(`Fetched ${contacts.length} contacts (total this run: ${results.total_contacts_fetched})`);
 
-      // Sort contacts by dateAdded to ensure consistent pagination
-      if (contacts.length > 0) {
-        const sortedContacts = [...contacts].sort((a: any, b: any) => {
-          const dateA = new Date(a.dateAdded || 0).getTime();
-          const dateB = new Date(b.dateAdded || 0).getTime();
-          return dateA - dateB;
-        });
-        
-        // Get the timestamp of the last contact for the next batch
-        const lastContact = sortedContacts[sortedContacts.length - 1];
-        const newTimestamp = new Date(lastContact.dateAdded).getTime();
-        console.log(`Advancing cursor from ${startAfterTimestamp} to ${newTimestamp} (last contact dateAdded: ${lastContact.dateAdded})`);
-        startAfterTimestamp = newTimestamp;
+      // Use GHL's meta values for next request - this is the key fix!
+      if (meta.startAfter !== undefined && meta.startAfter !== null) {
+        nextStartAfter = meta.startAfter;
       }
+      if (meta.startAfterId !== undefined && meta.startAfterId !== null) {
+        nextStartAfterId = meta.startAfterId;
+      }
+      
+      console.log(`Next cursor from meta: startAfter=${nextStartAfter}, startAfterId=${nextStartAfterId}`);
 
       // Process each contact in this batch
       for (const contact of contacts) {
@@ -202,21 +209,32 @@ serve(async (req) => {
       }
 
       // Check if we should continue fetching
+      // Stop if: less than full batch returned, OR no meta values for next page
       if (contacts.length < batchSize) {
         hasMore = false;
-        console.log('Reached end of contacts list');
+        console.log('Reached end of contacts list (partial batch)');
+      } else if (meta.startAfter === undefined && meta.startAfterId === undefined) {
+        hasMore = false;
+        console.log('Reached end of contacts list (no meta pagination values)');
       }
     }
 
     // Determine if there are more contacts to process
     const moreContactsAvailable = hasMore && results.total_contacts_fetched >= maxContacts;
 
-    console.log('Pull completed:', { ...results, hasMore: moreContactsAvailable, lastTimestamp: startAfterTimestamp });
+    console.log('Pull completed:', { 
+      ...results, 
+      hasMore: moreContactsAvailable, 
+      nextStartAfter, 
+      nextStartAfterId 
+    });
 
     return new Response(JSON.stringify({
       success: true,
       results,
-      lastTimestamp: startAfterTimestamp,
+      // Return both pagination values for resume capability
+      nextStartAfter,
+      nextStartAfterId,
       hasMore: moreContactsAvailable,
     }), {
       status: 200,
