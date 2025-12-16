@@ -73,3 +73,6 @@ verify_jwt = false
 
 [functions.sync-business-to-ghl]
 verify_jwt = false
+
+[functions.test-ghl-outbound]
+verify_jwt = false

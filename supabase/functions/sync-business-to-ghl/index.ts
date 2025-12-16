@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -15,22 +14,21 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const ghlApiKey = Deno.env.get('GHL_API_KEY')!;
-    const ghlLocationId = Deno.env.get('GHL_LOCATION_ID')!;
+    const ghlWebhookUrl = Deno.env.get('GHL_WEBHOOK_URL');
+
+    if (!ghlWebhookUrl) {
+      console.error('GHL_WEBHOOK_URL not configured');
+      return new Response(JSON.stringify({ error: 'GHL_WEBHOOK_URL not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { business_id, ghl_contact_id, ghl_location_id } = await req.json();
 
     console.log('Sync to GHL triggered for business:', business_id);
-
-    if (!ghl_contact_id) {
-      console.log('No GHL contact ID - skipping sync');
-      return new Response(JSON.stringify({ message: 'No GHL contact ID' }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
     // Fetch the full business data
     const { data: business, error: fetchError } = await supabase
@@ -50,8 +48,8 @@ serve(async (req) => {
       });
     }
 
-    // Map website fields to GHL contact format
-    const ghlContactData: Record<string, any> = {
+    // Build payload using GHL contact field names
+    const webhookPayload: Record<string, any> = {
       companyName: business.name,
       email: business.email,
       phone: business.phone,
@@ -59,50 +57,46 @@ serve(async (req) => {
       address1: business.address_line1,
       city: business.city,
       postalCode: business.postcode,
+      // Include metadata for tracking
+      customField: {
+        discover_business_id: business.id,
+        sector: business.business_categories?.name || null,
+        description: business.description,
+        is_verified: business.is_verified,
+        featured: business.featured,
+      }
     };
 
-    // Add sector custom field if category exists
-    if (business.business_categories?.name) {
-      ghlContactData.customFields = [
-        {
-          key: 'sector',
-          value: business.business_categories.name
-        }
-      ];
+    // If there's an existing GHL contact, include it for updates
+    if (ghl_contact_id) {
+      webhookPayload.ghl_contact_id = ghl_contact_id;
     }
 
-    console.log('Updating GHL contact:', ghl_contact_id, JSON.stringify(ghlContactData, null, 2));
+    console.log('Sending to GHL webhook:', JSON.stringify(webhookPayload, null, 2));
 
-    // Call GHL API to update contact
-    const locationToUse = ghl_location_id || ghlLocationId;
-    const ghlResponse = await fetch(
-      `https://services.leadconnectorhq.com/contacts/${ghl_contact_id}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${ghlApiKey}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28',
-        },
-        body: JSON.stringify(ghlContactData),
-      }
-    );
+    // Send to GHL webhook
+    const ghlResponse = await fetch(ghlWebhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(webhookPayload),
+    });
+
+    const responseText = await ghlResponse.text();
+    console.log('GHL webhook response:', ghlResponse.status, responseText);
 
     if (!ghlResponse.ok) {
-      const errorText = await ghlResponse.text();
-      console.error('GHL API error:', ghlResponse.status, errorText);
+      console.error('GHL webhook error:', ghlResponse.status, responseText);
       return new Response(JSON.stringify({ 
-        error: 'GHL API error', 
+        error: 'GHL webhook error', 
         status: ghlResponse.status,
-        details: errorText 
+        details: responseText 
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const ghlResult = await ghlResponse.json();
-    console.log('GHL contact updated successfully:', ghlResult);
 
     // Update last_synced_at to prevent loop
     await supabase
@@ -112,7 +106,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: 'Business synced to GHL',
+      message: 'Business synced to GHL webhook',
+      business_id,
       ghl_contact_id 
     }), {
       status: 200,
