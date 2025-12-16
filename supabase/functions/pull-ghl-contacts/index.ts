@@ -63,7 +63,6 @@ serve(async (req) => {
     const batchSize = 100;
     let startAfterId: string | null = resumeFromId;
     let hasMore = true;
-    let lastContactId: string | null = null;
 
     console.log(`Starting to fetch contacts from GHL (limit: ${maxContacts}, resumeFrom: ${resumeFromId || 'start'})...`);
 
@@ -97,6 +96,13 @@ serve(async (req) => {
 
       const ghlData = await ghlResponse.json();
       const contacts = ghlData.contacts || [];
+      
+      // IMPORTANT: Update startAfterId BEFORE processing to ensure cursor advances
+      if (contacts.length > 0) {
+        const newStartAfterId = contacts[contacts.length - 1].id;
+        console.log(`Advancing cursor from ${startAfterId} to ${newStartAfterId}`);
+        startAfterId = newStartAfterId;
+      }
       
       results.total_contacts_fetched += contacts.length;
       console.log(`Fetched ${contacts.length} contacts (total this run: ${results.total_contacts_fetched})`);
@@ -190,21 +196,19 @@ serve(async (req) => {
       if (contacts.length < batchSize) {
         hasMore = false;
         console.log('Reached end of contacts list');
-      } else {
-        // Set startAfterId to the last contact's ID for next page
-        startAfterId = contacts[contacts.length - 1].id;
       }
+      // Note: startAfterId is already updated at the start of each batch processing
     }
 
     // Determine if there are more contacts to process
     const moreContactsAvailable = hasMore && results.total_contacts_fetched >= maxContacts;
 
-    console.log('Pull completed:', { ...results, hasMore: moreContactsAvailable, lastContactId });
+    console.log('Pull completed:', { ...results, hasMore: moreContactsAvailable, lastContactId: startAfterId });
 
     return new Response(JSON.stringify({
       success: true,
       results,
-      lastContactId,
+      lastContactId: startAfterId,
       hasMore: moreContactsAvailable,
     }), {
       status: 200,
