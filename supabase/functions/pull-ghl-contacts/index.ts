@@ -109,9 +109,6 @@ serve(async (req) => {
 
       // Process each contact in this batch
       for (const contact of contacts) {
-        // Track last contact ID for resume capability
-        lastContactId = contact.id;
-
         // Skip contacts without a company name
         if (!contact.companyName || contact.companyName.trim() === '') {
           results.skipped_no_company++;
