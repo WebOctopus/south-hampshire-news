@@ -745,17 +745,6 @@ const CalculatorTest = () => {
               </p>
             </div>
             
-            {/* Social proof line */}
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex -space-x-2">
-                {[...Array(4)].map((_, i) => <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-community-green to-emerald-400 border-2 border-community-navy flex items-center justify-center">
-                    <Users className="h-4 w-4 text-white" />
-                  </div>)}
-              </div>
-              <span className="text-white/70 text-sm">
-                <span className="text-white font-semibold">Helped 1,000s of customers since 2005</span>
-              </span>
-            </div>
           </div>
         </div>
         
