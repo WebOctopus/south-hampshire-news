@@ -13,7 +13,7 @@ interface SyncResult {
   skipped: number;
   errors: string[];
   hasMore: boolean;
-  lastContactId: string | null;
+  lastTimestamp: number | null;
 }
 
 interface CumulativeResult {
@@ -27,23 +27,23 @@ export function GHLSyncManagement() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
   const [cumulativeResult, setCumulativeResult] = useState<CumulativeResult | null>(null);
-  const [lastContactId, setLastContactId] = useState<string | null>(null);
+  const [lastTimestamp, setLastTimestamp] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const handleSync = async (resumeFrom?: string | null) => {
+  const handleSync = async (resumeFrom?: number | null) => {
     setIsSyncing(true);
     
     // If starting fresh, reset cumulative results
     if (!resumeFrom) {
       setCumulativeResult(null);
-      setLastContactId(null);
+      setLastTimestamp(null);
     }
 
     try {
       const { data, error } = await supabase.functions.invoke('pull-ghl-contacts', {
         body: {
           limit: 500,
-          startAfterId: resumeFrom || null,
+          startAfter: resumeFrom || null,
         }
       });
 
@@ -58,11 +58,11 @@ export function GHLSyncManagement() {
         skipped: data?.results?.skipped_no_company || 0,
         errors: data?.results?.errors || [],
         hasMore: data?.hasMore || false,
-        lastContactId: data?.lastContactId || null,
+        lastTimestamp: data?.lastTimestamp || null,
       };
 
       setLastSyncResult(result);
-      setLastContactId(result.lastContactId);
+      setLastTimestamp(result.lastTimestamp);
 
       // Update cumulative results
       setCumulativeResult(prev => ({
@@ -88,7 +88,7 @@ export function GHLSyncManagement() {
         skipped: 0,
         errors: [error.message || 'Unknown error occurred'],
         hasMore: false,
-        lastContactId: null,
+        lastTimestamp: null,
       });
 
       toast({
@@ -147,9 +147,9 @@ export function GHLSyncManagement() {
               )}
             </Button>
 
-            {lastSyncResult?.hasMore && lastContactId && !isSyncing && (
+            {lastSyncResult?.hasMore && lastTimestamp && !isSyncing && (
               <Button 
-                onClick={() => handleSync(lastContactId)} 
+                onClick={() => handleSync(lastTimestamp)} 
                 variant="secondary"
                 size="lg"
               >

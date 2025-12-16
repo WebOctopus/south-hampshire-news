@@ -16,7 +16,7 @@ serve(async (req) => {
     // Parse request body for optional parameters
     const body = await req.json().catch(() => ({}));
     const maxContacts = body.limit || 500; // Default to 500 contacts per call
-    const resumeFromId = body.startAfterId || null;
+    const resumeFromTimestamp = body.startAfter || null; // Timestamp-based pagination
 
     const GHL_API_KEY = Deno.env.get('GHL_API_KEY');
     const GHL_LOCATION_ID = Deno.env.get('GHL_LOCATION_ID');
@@ -61,15 +61,19 @@ serve(async (req) => {
 
     // Pagination loop - fetch contacts from GHL with limit
     const batchSize = 100;
-    let startAfterId: string | null = resumeFromId;
+    let startAfterTimestamp: number | null = resumeFromTimestamp;
     let hasMore = true;
 
-    console.log(`Starting to fetch contacts from GHL (limit: ${maxContacts}, resumeFrom: ${resumeFromId || 'start'})...`);
+    console.log(`Starting to fetch contacts from GHL (limit: ${maxContacts}, resumeFromTimestamp: ${resumeFromTimestamp || 'start'})...`);
 
     while (hasMore && results.total_contacts_fetched < maxContacts) {
-      const url = `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&limit=${batchSize}${startAfterId ? `&startAfterId=${startAfterId}` : ''}`;
+      // Build URL with timestamp-based pagination using startAfter parameter
+      let url = `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&limit=${batchSize}`;
+      if (startAfterTimestamp) {
+        url += `&startAfter=${startAfterTimestamp}`;
+      }
       
-      console.log(`Fetching batch from GHL... (startAfterId: ${startAfterId || 'none'})`);
+      console.log(`Fetching batch from GHL... (startAfter: ${startAfterTimestamp || 'none'})`);
 
       const ghlResponse = await fetch(url, {
         method: 'GET',
@@ -97,15 +101,23 @@ serve(async (req) => {
       const ghlData = await ghlResponse.json();
       const contacts = ghlData.contacts || [];
       
-      // IMPORTANT: Update startAfterId BEFORE processing to ensure cursor advances
-      if (contacts.length > 0) {
-        const newStartAfterId = contacts[contacts.length - 1].id;
-        console.log(`Advancing cursor from ${startAfterId} to ${newStartAfterId}`);
-        startAfterId = newStartAfterId;
-      }
-      
       results.total_contacts_fetched += contacts.length;
       console.log(`Fetched ${contacts.length} contacts (total this run: ${results.total_contacts_fetched})`);
+
+      // Sort contacts by dateAdded to ensure consistent pagination
+      if (contacts.length > 0) {
+        const sortedContacts = [...contacts].sort((a: any, b: any) => {
+          const dateA = new Date(a.dateAdded || 0).getTime();
+          const dateB = new Date(b.dateAdded || 0).getTime();
+          return dateA - dateB;
+        });
+        
+        // Get the timestamp of the last contact for the next batch
+        const lastContact = sortedContacts[sortedContacts.length - 1];
+        const newTimestamp = new Date(lastContact.dateAdded).getTime();
+        console.log(`Advancing cursor from ${startAfterTimestamp} to ${newTimestamp} (last contact dateAdded: ${lastContact.dateAdded})`);
+        startAfterTimestamp = newTimestamp;
+      }
 
       // Process each contact in this batch
       for (const contact of contacts) {
@@ -194,18 +206,17 @@ serve(async (req) => {
         hasMore = false;
         console.log('Reached end of contacts list');
       }
-      // Note: startAfterId is already updated at the start of each batch processing
     }
 
     // Determine if there are more contacts to process
     const moreContactsAvailable = hasMore && results.total_contacts_fetched >= maxContacts;
 
-    console.log('Pull completed:', { ...results, hasMore: moreContactsAvailable, lastContactId: startAfterId });
+    console.log('Pull completed:', { ...results, hasMore: moreContactsAvailable, lastTimestamp: startAfterTimestamp });
 
     return new Response(JSON.stringify({
       success: true,
       results,
-      lastContactId: startAfterId,
+      lastTimestamp: startAfterTimestamp,
       hasMore: moreContactsAvailable,
     }), {
       status: 200,
