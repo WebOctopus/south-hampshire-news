@@ -745,20 +745,6 @@ const CalculatorTest = () => {
               </p>
             </div>
             
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Button size="lg" className="bg-community-green hover:bg-community-green/90 text-white px-8 py-6 text-lg font-semibold shadow-lg shadow-community-green/30 transition-all duration-300 hover:shadow-xl hover:shadow-community-green/40" onClick={() => document.getElementById('calculator')?.scrollIntoView({
-              behavior: 'smooth'
-            })}>
-                Get Your Instant Quote
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => document.getElementById('quick-quote')?.scrollIntoView({
-              behavior: 'smooth'
-            })} className="border-2 border-white/30 hover:border-white/50 px-8 py-6 text-lg font-medium backdrop-blur-sm text-primary-foreground bg-primary">
-                Explore Pricing
-              </Button>
-            </div>
-            
             {/* Social proof line */}
             <div className="flex items-center justify-center gap-3">
               <div className="flex -space-x-2">
@@ -767,7 +753,7 @@ const CalculatorTest = () => {
                   </div>)}
               </div>
               <span className="text-white/70 text-sm">
-                Trusted by <span className="text-white font-semibold">250+ local businesses</span>
+                <span className="text-white font-semibold">Helped 1,000s of customers since 2005</span>
               </span>
             </div>
           </div>
