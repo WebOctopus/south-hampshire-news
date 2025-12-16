@@ -794,13 +794,13 @@ const CalculatorTest = () => {
               <div className="text-sm text-muted-foreground mt-1">Repeat Rate</div>
             </div>
             
-            {/* Stat Card 4 - Advertisers */}
+            {/* Stat Card 4 - Customers */}
             <div className="bg-white rounded-2xl shadow-xl p-6 text-center border border-stone-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
                 <Users className="h-6 w-6 text-white" />
               </div>
-              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">250+</div>
-              <div className="text-sm text-muted-foreground mt-1">Advertisers</div>
+              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">1,000s</div>
+              <div className="text-sm text-muted-foreground mt-1">Customers since 2005</div>
             </div>
             
             {/* Stat Card 5 - Leaflets */}
