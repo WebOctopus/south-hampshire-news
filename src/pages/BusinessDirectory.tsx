@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Search, Filter } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from '@/components/ui/sonner';
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface BusinessCategory {
@@ -47,73 +47,52 @@ const BusinessDirectory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-
-  const activeRequestIdRef = useRef(0);
+  const [error, setError] = useState(false);
 
   const fetchCategories = useCallback(async () => {
     const { data, error } = await supabase.from('business_categories').select('*').order('name');
-
     if (error) {
       console.error('Error fetching categories:', error);
-      toast.error('Failed to load categories');
       return;
     }
-
     setCategories(data || []);
   }, []);
 
   const fetchBusinesses = useCallback(async () => {
-    const requestId = ++activeRequestIdRef.current;
     setLoading(true);
-
-    const params = {
-      category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-      search_term: searchTerm || null,
-      limit_count: 100,
-      offset_count: 0,
-    };
+    setError(false);
 
     try {
-      console.log('[BusinessDirectory] fetching businesses', params);
+      console.log('[BusinessDirectory] fetching businesses...');
 
-      const timeoutMs = 15000;
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        window.setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+      const { data, error } = await supabase.rpc('get_public_businesses', {
+        category_filter: selectedCategory !== 'all' ? selectedCategory : null,
+        search_term: searchTerm || null,
+        limit_count: 100,
+        offset_count: 0,
       });
 
-      const rpcPromise = supabase.rpc('get_public_businesses', params);
-      const { data, error } = (await Promise.race([rpcPromise, timeoutPromise])) as Awaited<
-        typeof rpcPromise
-      >;
-
-      if (requestId !== activeRequestIdRef.current) return;
-
-      console.log('[BusinessDirectory] get_public_businesses result', {
-        count: Array.isArray(data) ? data.length : null,
-        error,
-      });
+      console.log('[BusinessDirectory] result', { count: data?.length, error });
 
       if (error) {
         console.error('Error fetching businesses:', error);
-        toast.error('Failed to load businesses');
+        setError(true);
         setBusinesses([]);
         return;
       }
 
-      const transformedData =
-        data?.map((business: any) => ({
-          ...business,
-          business_categories: business.business_categories || { name: '', icon: '' },
-        })) || [];
+      const transformedData = data?.map((business: any) => ({
+        ...business,
+        business_categories: business.business_categories || { name: '', icon: '' },
+      })) || [];
 
       setBusinesses(transformedData);
     } catch (err) {
-      if (requestId !== activeRequestIdRef.current) return;
       console.error('Error in fetchBusinesses:', err);
-      toast.error('Failed to load businesses');
+      setError(true);
       setBusinesses([]);
     } finally {
-      if (requestId === activeRequestIdRef.current) setLoading(false);
+      setLoading(false);
     }
   }, [searchTerm, selectedCategory]);
 
@@ -125,8 +104,6 @@ const BusinessDirectory = () => {
     fetchBusinesses();
   }, [fetchBusinesses]);
 
-
-  // Filtering is done server-side via the RPC function
   const filteredBusinesses = businesses;
 
   const CategoryCard = ({ category }: { category: BusinessCategory }) => (
@@ -223,6 +200,16 @@ const BusinessDirectory = () => {
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-community-green"></div>
                 <p className="mt-4 text-gray-600">Loading businesses...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg mb-4">Failed to load businesses. Please try again.</p>
+                <Button 
+                  onClick={fetchBusinesses}
+                  className="bg-community-green hover:bg-green-600"
+                >
+                  Retry
+                </Button>
               </div>
             ) : filteredBusinesses.length === 0 ? (
               <div className="text-center py-12">
