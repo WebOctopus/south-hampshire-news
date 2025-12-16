@@ -65,29 +65,46 @@ const BusinessDirectory = () => {
   };
 
   const fetchBusinesses = async () => {
+    setLoading(true);
     try {
       // Use secure RPC function for all users - bypasses RLS issues
+      console.log('[BusinessDirectory] fetching businesses', {
+        selectedCategory,
+        searchTerm
+      });
+
       const { data, error } = await supabase.rpc('get_public_businesses', {
         category_filter: selectedCategory !== 'all' ? selectedCategory : null,
         search_term: searchTerm || null,
         limit_count: 100,
         offset_count: 0
       });
-      
+
+      console.log('[BusinessDirectory] get_public_businesses result', {
+        count: Array.isArray(data) ? data.length : null,
+        error
+      });
+
       if (error) {
         console.error('Error fetching businesses:', error);
-      } else {
-        // Transform the data to match the expected Business interface
-        const transformedData = data?.map((business: any) => ({
+        setBusinesses([]);
+        return;
+      }
+
+      // Transform the data to match the expected Business interface
+      const transformedData =
+        data?.map((business: any) => ({
           ...business,
           business_categories: business.business_categories || { name: '', icon: '' }
         })) || [];
-        setBusinesses(transformedData);
-      }
+
+      setBusinesses(transformedData);
     } catch (error) {
       console.error('Error in fetchBusinesses:', error);
+      setBusinesses([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
