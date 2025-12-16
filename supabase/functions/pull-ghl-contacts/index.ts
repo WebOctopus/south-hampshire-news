@@ -13,6 +13,11 @@ serve(async (req) => {
   }
 
   try {
+    // Parse request body for optional parameters
+    const body = await req.json().catch(() => ({}));
+    const maxContacts = body.limit || 500; // Default to 500 contacts per call
+    const resumeFromId = body.startAfterId || null;
+
     const GHL_API_KEY = Deno.env.get('GHL_API_KEY');
     const GHL_LOCATION_ID = Deno.env.get('GHL_LOCATION_ID');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
@@ -54,14 +59,15 @@ serve(async (req) => {
       errors: [] as string[],
     };
 
-    // Pagination loop - fetch all contacts from GHL
+    // Pagination loop - fetch contacts from GHL with limit
     const batchSize = 100;
-    let startAfterId: string | null = null;
+    let startAfterId: string | null = resumeFromId;
     let hasMore = true;
+    let lastContactId: string | null = null;
 
-    console.log('Starting to fetch all contacts from GHL...');
+    console.log(`Starting to fetch contacts from GHL (limit: ${maxContacts}, resumeFrom: ${resumeFromId || 'start'})...`);
 
-    while (hasMore) {
+    while (hasMore && results.total_contacts_fetched < maxContacts) {
       const url = `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&limit=${batchSize}${startAfterId ? `&startAfterId=${startAfterId}` : ''}`;
       
       console.log(`Fetching batch from GHL... (startAfterId: ${startAfterId || 'none'})`);
@@ -93,10 +99,13 @@ serve(async (req) => {
       const contacts = ghlData.contacts || [];
       
       results.total_contacts_fetched += contacts.length;
-      console.log(`Fetched ${contacts.length} contacts (total: ${results.total_contacts_fetched})`);
+      console.log(`Fetched ${contacts.length} contacts (total this run: ${results.total_contacts_fetched})`);
 
       // Process each contact in this batch
       for (const contact of contacts) {
+        // Track last contact ID for resume capability
+        lastContactId = contact.id;
+
         // Skip contacts without a company name
         if (!contact.companyName || contact.companyName.trim() === '') {
           results.skipped_no_company++;
@@ -187,11 +196,16 @@ serve(async (req) => {
       }
     }
 
-    console.log('Pull completed:', results);
+    // Determine if there are more contacts to process
+    const moreContactsAvailable = hasMore && results.total_contacts_fetched >= maxContacts;
+
+    console.log('Pull completed:', { ...results, hasMore: moreContactsAvailable, lastContactId });
 
     return new Response(JSON.stringify({
       success: true,
       results,
+      lastContactId,
+      hasMore: moreContactsAvailable,
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
