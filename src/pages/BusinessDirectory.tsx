@@ -35,7 +35,8 @@ interface Business {
   is_verified: boolean;
   featured: boolean;
   owner_id?: string; // Optional for public users
-  business_categories: BusinessCategory;
+  biz_type?: string;
+  business_categories?: BusinessCategory;
 }
 
 const BusinessDirectory = () => {
