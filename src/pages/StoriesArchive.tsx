@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { STORY_CATEGORIES, STORY_AREAS } from '@/hooks/useStories';
+import { STORY_CATEGORIES, useStoryAreas, cleanAreaName } from '@/hooks/useStories';
 
 interface Story {
   id: string;
@@ -28,6 +28,7 @@ const StoriesArchive = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
+  const { areas } = useStoryAreas();
 
   useEffect(() => {
     const fetchStories = async () => {
@@ -126,9 +127,9 @@ const StoriesArchive = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Areas</SelectItem>
-                    {STORY_AREAS.map(area => (
-                      <SelectItem key={area} value={area}>
-                        {area}
+                    {areas.map(area => (
+                      <SelectItem key={area.id} value={area.name}>
+                        {area.cleanName}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -205,7 +206,7 @@ const StoriesArchive = () => {
                           {story.category}
                         </span>
                         <span className="px-3 py-1 bg-community-navy text-white text-xs font-medium rounded-full">
-                          {story.area}
+                          {cleanAreaName(story.area)}
                         </span>
                         <span className="text-gray-500 text-sm">{formatDate(story.created_at)}</span>
                       </div>

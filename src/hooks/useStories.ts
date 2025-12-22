@@ -236,16 +236,46 @@ export const STORY_CATEGORIES = [
   'Other'
 ];
 
-export const STORY_AREAS = [
-  'SOUTHAMPTON SUBURBS',
-  "CHANDLER'S FORD & NORTH BADDESLEY",
-  'EASTLEIGH & VILLAGES',
-  'HEDGE END & SURROUNDS',
-  'LOCKS HEATH & SURROUNDS',
-  'FAREHAM & SURROUNDS',
-  "WICKHAM & BISHOP'S WALTHAM",
-  'WINCHESTER & VILLAGES',
-  'ROMSEY & TEST VALLEY',
-  'WATERSIDE & TOTTON',
-  'NEW FOREST TO LYMINGTON'
-];
+// Helper function to clean area names - removes "Area X - " prefix
+export const cleanAreaName = (areaName: string): string => {
+  return areaName.replace(/^Area\s+\d+\s*-\s*/i, '').trim();
+};
+
+// Hook to fetch areas from pricing_areas table
+export function useStoryAreas() {
+  const [areas, setAreas] = useState<{ id: string; name: string; cleanName: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pricing_areas')
+          .select('id, name')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (error) throw error;
+
+        const formattedAreas = (data || []).map(area => ({
+          id: area.id,
+          name: area.name,
+          cleanName: cleanAreaName(area.name)
+        }));
+
+        setAreas(formattedAreas);
+      } catch (error) {
+        console.error('Error fetching areas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAreas();
+  }, []);
+
+  return { areas, loading };
+}
+
+// Legacy export for backwards compatibility (will be empty array until fetched)
+export const STORY_AREAS: string[] = [];

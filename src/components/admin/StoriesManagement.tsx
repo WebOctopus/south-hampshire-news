@@ -23,12 +23,13 @@ import {
   StarOff,
   MapPin
 } from 'lucide-react';
-import { useStories, Story, StoryFormData, STORY_CATEGORIES, STORY_AREAS } from '@/hooks/useStories';
+import { useStories, Story, StoryFormData, STORY_CATEGORIES, useStoryAreas, cleanAreaName } from '@/hooks/useStories';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 export function StoriesManagement() {
   const { stories, loading, fetchStories, createStory, updateStory, deleteStory, togglePublished, toggleFeatured, bulkCreateStories } = useStories();
+  const { areas } = useStoryAreas();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -356,8 +357,8 @@ export function StoriesManagement() {
                               <SelectValue placeholder="Select area" />
                             </SelectTrigger>
                             <SelectContent>
-                              {STORY_AREAS.map(area => (
-                                <SelectItem key={area} value={area}>{area}</SelectItem>
+                              {areas.map(area => (
+                                <SelectItem key={area.id} value={area.name}>{area.cleanName}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
