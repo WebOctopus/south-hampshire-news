@@ -103,9 +103,13 @@ const AdvertisingAlerts = () => {
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-orange-600">
-                  {alert.message}
-                </p>
+                <div className="text-xs text-orange-600 space-y-1">
+                  {alert.message.split('\n').map((line, index) => (
+                    <p key={index} className={index === 0 ? "font-medium" : ""}>
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </div>
             ))}
           </CollapsibleContent>
