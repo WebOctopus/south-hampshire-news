@@ -23,7 +23,13 @@ import {
   Star,
   StarOff,
   Link as LinkIcon,
-  X
+  X,
+  Inbox,
+  CheckCircle,
+  XCircle,
+  ExternalLink,
+  Clock,
+  Mail
 } from 'lucide-react';
 import { useEvents, Event, EventFormData, EventLink, EVENT_CATEGORIES, EVENT_TYPES } from '@/hooks/useEvents';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +42,7 @@ export function EventsManagement() {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'submissions'>('all');
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
@@ -64,6 +71,40 @@ export function EventsManagement() {
   const [csvPreviewData, setCsvPreviewData] = useState<EventFormData[]>([]);
   const [showCsvPreview, setShowCsvPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Filter for pending user submissions (not published AND has user_id OR contact_email from public submission)
+  const pendingSubmissions = events.filter(e => !e.is_published && (e.user_id || e.contact_email));
+  const adminEvents = events.filter(e => e.is_published || (!e.user_id && !e.contact_email));
+
+  const handleApprove = async (event: Event) => {
+    const result = await updateEvent(event.id, { is_published: true });
+    if (result) {
+      toast({
+        title: 'Event Approved',
+        description: `"${event.title}" has been published.`,
+      });
+      fetchEvents();
+    }
+  };
+
+  const handleReject = async (event: Event) => {
+    if (confirm(`Are you sure you want to reject and delete "${event.title}"? This cannot be undone.`)) {
+      const result = await deleteEvent(event.id);
+      if (result) {
+        toast({
+          title: 'Event Rejected',
+          description: 'The submission has been removed.',
+        });
+        fetchEvents();
+      }
+    }
+  };
+
+  const handleEditAndApprove = (event: Event) => {
+    openEditDialog(event);
+    // Set is_published to true so it will be published when saved
+    setFormData(prev => ({ ...prev, is_published: true }));
+  };
 
   const resetForm = () => {
     setFormData({
@@ -281,7 +322,8 @@ export function EventsManagement() {
     total: events.length,
     published: events.filter(e => e.is_published).length,
     upcoming: events.filter(e => new Date(e.date) >= new Date()).length,
-    featured: events.filter(e => e.featured).length
+    featured: events.filter(e => e.featured).length,
+    pending: pendingSubmissions.length
   };
 
   const formatDate = (dateStr: string) => {
@@ -300,7 +342,7 @@ export function EventsManagement() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -341,6 +383,20 @@ export function EventsManagement() {
               <div>
                 <p className="text-sm text-muted-foreground">Featured</p>
                 <p className="text-2xl font-bold">{stats.featured}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card 
+          className={`cursor-pointer transition-colors ${stats.pending > 0 ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20' : ''}`}
+          onClick={() => stats.pending > 0 && setActiveTab('submissions')}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Inbox className={`h-8 w-8 ${stats.pending > 0 ? 'text-amber-600' : 'text-muted-foreground'}`} />
+              <div>
+                <p className="text-sm text-muted-foreground">Pending Approval</p>
+                <p className="text-2xl font-bold">{stats.pending}</p>
               </div>
             </div>
           </CardContent>
@@ -708,133 +764,296 @@ export function EventsManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Events Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Events</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading events...</div>
-          ) : events.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No events found. Create your first event!</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {events.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {event.image && (
-                            <img 
-                              src={event.image} 
-                              alt={event.title}
-                              className="w-12 h-12 object-cover rounded"
-                            />
-                          )}
-                          <div>
-                            <p className="font-medium">{event.title}</p>
-                            <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {event.excerpt || event.description || 'No description'}
+      {/* Main Content Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'submissions')}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="all">All Events</TabsTrigger>
+          <TabsTrigger value="submissions" className="relative">
+            Pending Submissions
+            {stats.pending > 0 && (
+              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-amber-500 rounded-full">
+                {stats.pending}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* All Events Tab */}
+        <TabsContent value="all">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Events</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading events...</div>
+              ) : events.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No events found. Create your first event!</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Event</TableHead>
+                        <TableHead>Date & Time</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {events.map((event) => (
+                        <TableRow key={event.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              {event.image && (
+                                <img 
+                                  src={event.image} 
+                                  alt={event.title}
+                                  className="w-12 h-12 object-cover rounded"
+                                />
+                              )}
+                              <div>
+                                <p className="font-medium">{event.title}</p>
+                                <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                  {event.excerpt || event.description || 'No description'}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p>{formatDate(event.date)}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {event.time}{event.end_time && ` - ${event.end_time}`}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p>{event.location}</p>
+                                <p className="text-sm text-muted-foreground">{event.area}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{event.category}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <Badge variant={event.is_published ? "default" : "secondary"}>
+                                {event.is_published ? 'Published' : 'Draft'}
+                              </Badge>
+                              {event.featured && (
+                                <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+                                  Featured
+                                </Badge>
+                              )}
+                              {!event.is_published && (event.user_id || event.contact_email) && (
+                                <Badge variant="outline" className="border-amber-500 text-amber-600">
+                                  User Submission
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditDialog(event)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  await togglePublished(event.id, event.is_published);
+                                  fetchEvents();
+                                }}
+                              >
+                                {event.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  await toggleFeatured(event.id, event.featured);
+                                  fetchEvents();
+                                }}
+                              >
+                                {event.featured ? <StarOff className="h-4 w-4" /> : <Star className="h-4 w-4" />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(event.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Pending Submissions Tab */}
+        <TabsContent value="submissions">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Inbox className="h-5 w-5 text-amber-600" />
+                Pending Event Submissions
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Review and approve events submitted by users. These events will not appear publicly until approved.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading submissions...</div>
+              ) : pendingSubmissions.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500 opacity-70" />
+                  <p className="text-lg font-medium">All caught up!</p>
+                  <p className="text-sm">No pending submissions to review.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingSubmissions.map((event) => (
+                    <div 
+                      key={event.id} 
+                      className="border rounded-lg p-4 bg-card hover:border-amber-300 transition-colors"
+                    >
+                      <div className="flex flex-col lg:flex-row gap-4">
+                        {/* Event Image */}
+                        {event.image && (
+                          <img 
+                            src={event.image} 
+                            alt={event.title}
+                            className="w-full lg:w-32 h-32 object-cover rounded-lg"
+                          />
+                        )}
+                        
+                        {/* Event Details */}
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h3 className="font-semibold text-lg">{event.title}</h3>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                <Badge variant="outline" className="border-amber-500 text-amber-600">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  Pending Review
+                                </Badge>
+                                <Badge variant="outline">{event.category}</Badge>
+                                <Badge variant="secondary">{event.type}</Badge>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              <span>{formatDate(event.date)} at {event.time}{event.end_time && ` - ${event.end_time}`}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <MapPin className="h-4 w-4" />
+                              <span>{event.location}, {event.area}</span>
+                            </div>
+                            {event.organizer && (
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <span className="font-medium">Organizer:</span>
+                                <span>{event.organizer}</span>
+                              </div>
+                            )}
+                            {event.contact_email && (
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Mail className="h-4 w-4" />
+                                <a href={`mailto:${event.contact_email}`} className="text-primary hover:underline">
+                                  {event.contact_email}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {(event.excerpt || event.description) && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {event.excerpt || event.description}
                             </p>
+                          )}
+                          
+                          <div className="text-xs text-muted-foreground">
+                            Submitted: {new Date(event.created_at).toLocaleDateString('en-GB', { 
+                              day: 'numeric', 
+                              month: 'short', 
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p>{formatDate(event.date)}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {event.time}{event.end_time && ` - ${event.end_time}`}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p>{event.location}</p>
-                            <p className="text-sm text-muted-foreground">{event.area}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{event.category}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Badge variant={event.is_published ? "default" : "secondary"}>
-                            {event.is_published ? 'Published' : 'Draft'}
-                          </Badge>
-                          {event.featured && (
-                            <Badge variant="outline" className="border-yellow-500 text-yellow-600">
-                              Featured
-                            </Badge>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex lg:flex-col gap-2 lg:min-w-[140px]">
+                          <Button 
+                            onClick={() => handleApprove(event)}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Approve
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleEditAndApprove(event)}
+                            className="flex-1"
+                          >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit & Approve
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleReject(event)}
+                            className="flex-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Reject
+                          </Button>
+                          {event.ticket_url && (
+                            <Button 
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(event.ticket_url!, '_blank')}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              View Link
+                            </Button>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditDialog(event)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              await togglePublished(event.id, event.is_published);
-                              fetchEvents();
-                            }}
-                          >
-                            {event.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              await toggleFeatured(event.id, event.featured);
-                              fetchEvents();
-                            }}
-                          >
-                            {event.featured ? <StarOff className="h-4 w-4" /> : <Star className="h-4 w-4" />}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(event.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
