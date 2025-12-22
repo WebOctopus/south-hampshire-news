@@ -420,6 +420,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                           onCheckedChange={(checked) => {
                             if (checked) {
                               setBogofPaidAreas([...bogofPaidAreas, area.id]);
+                              // Remove from free areas if it was there
+                              setBogofFreeAreas(bogofFreeAreas.filter(id => id !== area.id));
                             } else {
                               setBogofPaidAreas(bogofPaidAreas.filter(id => id !== area.id));
                             }
@@ -431,12 +433,21 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                       </div>
                     ))}
                   </div>
-                  <Badge variant="outline">{bogofPaidAreas.length} selected</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={bogofPaidAreas.length >= 3 ? "default" : "outline"}>{bogofPaidAreas.length} selected</Badge>
+                    {bogofPaidAreas.length < 3 && (
+                      <span className="text-xs text-amber-600">Select at least {3 - bogofPaidAreas.length} more</span>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Free Areas (min. 3)</Label>
                   <div className="space-y-2 max-h-64 overflow-y-auto border rounded-md p-3">
-                    {areas?.map((area) => (
+                    {/* Filter out areas already selected as paid */}
+                    {bogofPaidAreas.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">Select paid areas first - those areas will not appear here</p>
+                    )}
+                    {areas?.filter(area => !bogofPaidAreas.includes(area.id)).map((area) => (
                       <div key={area.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`free-${area.id}`}
@@ -455,7 +466,12 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                       </div>
                     ))}
                   </div>
-                  <Badge variant="outline">{bogofFreeAreas.length} selected</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={bogofFreeAreas.length >= 3 ? "default" : "outline"}>{bogofFreeAreas.length} selected</Badge>
+                    {bogofFreeAreas.length < 3 && bogofPaidAreas.length >= 3 && (
+                      <span className="text-xs text-amber-600">Select at least {3 - bogofFreeAreas.length} more</span>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
