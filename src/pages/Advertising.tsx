@@ -873,11 +873,7 @@ const CalculatorTest = () => {
               <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-community-navy rounded-2xl p-6 shadow-2xl">
                 {/* Carousel Header */}
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-slate-400">Current Editions</span>
-                  <Badge variant="outline" className="border-community-green/50 text-community-green bg-community-green/10">
-                    <Newspaper className="h-3 w-3 mr-1" />
-                    14 Magazines
-                  </Badge>
+                  <span className="text-sm font-medium text-slate-400 uppercase tracking-wider">Online Edition</span>
                 </div>
                 
                 <Carousel opts={{
