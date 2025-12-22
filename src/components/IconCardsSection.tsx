@@ -1,15 +1,48 @@
 import { Calendar, Trophy, Building2, FileText, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
+import { usePricingData } from '@/hooks/usePricingData';
+import { parseISO, format, isAfter } from 'date-fns';
 
 const IconCardsSection = () => {
   const navigate = useNavigate();
+  const { areas } = usePricingData();
+
+  // Find the next upcoming deadline from all area schedules
+  const getNextDeadline = (): Date | null => {
+    if (!areas || areas.length === 0) return null;
+    
+    const today = new Date();
+    let nextDeadline: Date | null = null;
+    
+    areas.forEach(area => {
+      const schedule = area.schedule as Array<{ copy_deadline?: string; copyDeadline?: string }> | undefined;
+      schedule?.forEach((issue) => {
+        const deadlineStr = issue.copy_deadline || issue.copyDeadline;
+        if (deadlineStr && typeof deadlineStr === 'string' && deadlineStr.match(/\d{4}-\d{2}-\d{2}/)) {
+          const deadline = parseISO(deadlineStr);
+          if (isAfter(deadline, today)) {
+            if (!nextDeadline || deadline < nextDeadline) {
+              nextDeadline = deadline;
+            }
+          }
+        }
+      });
+    });
+    
+    return nextDeadline;
+  };
+
+  const nextDeadline = getNextDeadline();
+  const deadlineText = nextDeadline 
+    ? `Next deadline: ${format(nextDeadline, "do MMMM yyyy")} - Don't miss out!`
+    : "Check our schedule for upcoming deadlines";
 
   const cards = [
     {
       icon: Clock,
       title: 'Next Issue Deadline',
-      description: 'Next deadline: 14th May 2025 - Don\'t miss out!',
+      description: deadlineText,
       color: 'text-red-600 bg-red-50',
       priority: true,
       link: '/advertising'
