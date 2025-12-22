@@ -13,9 +13,9 @@ const Footer = () => {
     <footer id="contact" className="bg-community-navy text-white py-10 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Desktop Grid Layout */}
-        <div className="hidden md:grid lg:grid-cols-4 md:grid-cols-2 gap-8">
+        <div className="hidden md:grid lg:grid-cols-[2fr_1fr_1.5fr] md:grid-cols-2 gap-8">
           {/* Brand & Company Info */}
-          <div className="lg:col-span-2">
+          <div>
             <h3 className="text-3xl font-heading font-bold mb-2">
               Discover Magazines Ltd
             </h3>
