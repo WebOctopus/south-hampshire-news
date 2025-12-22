@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Calendar, Trophy, Building2, FileText, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
@@ -35,42 +36,63 @@ const parseDateString = (dateStr: string, yearHint?: string | number): Date | nu
 
 const IconCardsSection = () => {
   const navigate = useNavigate();
-  const { areas } = usePricingData();
+  const { areas, isLoading, isError } = usePricingData();
 
-  // Find the next upcoming deadline from all area schedules
-  const getNextDeadline = (): Date | null => {
+  useEffect(() => {
+    // Diagnostics to confirm schedule is loading in the browser
+    console.debug('[IconCardsSection] pricing areas loaded:', {
+      isLoading,
+      isError,
+      areasCount: areas?.length ?? 0,
+      firstAreaName: areas?.[0]?.name,
+      firstScheduleItem: (areas?.[0]?.schedule as any)?.[0],
+    });
+  }, [areas, isLoading, isError]);
+
+  // Find the next upcoming PRINT date (preferred) from all area schedules
+  const getNextIssuePrintDate = (): Date | null => {
     if (!areas || areas.length === 0) return null;
-    
+
     const today = new Date();
-    let nextDeadline: Date | null = null;
-    
-    areas.forEach(area => {
-      const schedule = area.schedule as Array<{ 
-        copy_deadline?: string; 
-        copyDeadline?: string;
-        year?: string | number;
-      }> | undefined;
-      
+    let nextFuture: Date | null = null;
+    let mostRecentPast: Date | null = null;
+
+    areas.forEach((area) => {
+      const schedule = area.schedule as
+        | Array<{
+            // DB currently stores both snake_case and camelCase keys
+            print_deadline?: string;
+            printDeadline?: string;
+            copy_deadline?: string;
+            copyDeadline?: string;
+            year?: string | number;
+          }>
+        | undefined;
+
       schedule?.forEach((issue) => {
-        const deadlineStr = issue.copy_deadline || issue.copyDeadline;
-        if (deadlineStr && typeof deadlineStr === 'string') {
-          const deadline = parseDateString(deadlineStr, issue.year);
-          if (deadline && isAfter(deadline, today)) {
-            if (!nextDeadline || deadline < nextDeadline) {
-              nextDeadline = deadline;
-            }
-          }
+        const printStr = issue.print_deadline || issue.printDeadline;
+        const copyStr = issue.copy_deadline || issue.copyDeadline;
+        const raw = printStr || copyStr;
+        if (!raw || typeof raw !== 'string') return;
+
+        const date = parseDateString(raw, issue.year);
+        if (!date) return;
+
+        if (isAfter(date, today)) {
+          if (!nextFuture || date < nextFuture) nextFuture = date;
+        } else {
+          if (!mostRecentPast || date > mostRecentPast) mostRecentPast = date;
         }
       });
     });
-    
-    return nextDeadline;
+
+    return nextFuture || mostRecentPast;
   };
 
-  const nextDeadline = getNextDeadline();
-  const deadlineText = nextDeadline 
-    ? `Next deadline: ${format(nextDeadline, "do MMMM yyyy")} - Don't miss out!`
-    : "Check our schedule for upcoming deadlines";
+  const nextPrintDate = getNextIssuePrintDate();
+  const deadlineText = nextPrintDate
+    ? `Next issue prints: ${format(nextPrintDate, 'do MMMM yyyy')}`
+    : 'Next issue prints: —';
 
   const cards = [
     {
