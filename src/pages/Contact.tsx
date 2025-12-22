@@ -107,10 +107,10 @@ const Contact = () => {
           </h2>
           
           <Tabs defaultValue="advertising" className="w-full">
-            <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3 bg-white border border-community-green/20 rounded-lg mb-6">
+            <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3 bg-white border border-gray-200 rounded-lg mb-6">
               <TabsTrigger 
                 value="advertising" 
-                className="flex items-center gap-2 data-[state=active]:bg-community-green data-[state=active]:text-white"
+                className="flex items-center gap-2 bg-community-green/20 text-community-green hover:bg-community-green/30 data-[state=active]:bg-community-green data-[state=active]:text-white"
               >
                 <Megaphone className="h-4 w-4" />
                 <span className="hidden sm:inline">Advertising Enquiry</span>
@@ -118,7 +118,7 @@ const Contact = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="editorial" 
-                className="flex items-center gap-2 data-[state=active]:bg-community-green data-[state=active]:text-white"
+                className="flex items-center gap-2 bg-blue-100 text-blue-700 hover:bg-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
               >
                 <PenLine className="h-4 w-4" />
                 <span className="hidden sm:inline">Editorial Submission</span>
@@ -126,7 +126,7 @@ const Contact = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="distributor" 
-                className="flex items-center gap-2 data-[state=active]:bg-community-green data-[state=active]:text-white"
+                className="flex items-center gap-2 bg-orange-100 text-orange-700 hover:bg-orange-200 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
               >
                 <Truck className="h-4 w-4" />
                 <span className="hidden sm:inline">Apply to be a Distributor</span>
@@ -134,7 +134,7 @@ const Contact = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="discover" 
-                className="flex items-center gap-2 data-[state=active]:bg-community-green data-[state=active]:text-white"
+                className="flex items-center gap-2 bg-purple-100 text-purple-700 hover:bg-purple-200 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
               >
                 <Mail className="h-4 w-4" />
                 <span className="hidden sm:inline">Subscribe to Discover Extra</span>
@@ -142,7 +142,7 @@ const Contact = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="think" 
-                className="flex items-center gap-2 data-[state=active]:bg-community-green data-[state=active]:text-white"
+                className="flex items-center gap-2 bg-community-yellow/30 text-community-navy hover:bg-community-yellow/50 data-[state=active]:bg-community-yellow data-[state=active]:text-community-navy"
               >
                 <Lightbulb className="h-4 w-4" />
                 <span className="hidden sm:inline">Subscribe to THINK Advertising</span>
