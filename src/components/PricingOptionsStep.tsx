@@ -135,7 +135,10 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
     nextStep();
   };
 
-  if (isLoading && !forceError) {
+  // Show loading state when: actively loading, OR packages not yet fetched and no error
+  const isInitialLoading = isLoading || (!packages && !isError && !forceError);
+  
+  if (isInitialLoading && !forceError) {
     return (
       <div className="text-center py-12">
         <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
@@ -144,7 +147,8 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
     );
   }
 
-  if (isError || forceError || !packages || packages.length === 0) {
+  // Only show error if we're NOT loading AND there's actually an error or no data
+  if (!isLoading && (isError || forceError || !packages || packages.length === 0)) {
     return (
       <div className="text-center py-12 space-y-4">
         <AlertCircle className="w-8 h-8 mx-auto text-destructive" />
