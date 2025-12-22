@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AddEvent from "./pages/AddEvent";
+import EventDetail from "./pages/EventDetail";
 import Story from "./pages/Story";
 import StoriesArchive from "./pages/StoriesArchive";
 import BusinessDetail from "./pages/BusinessDetail";
@@ -34,6 +35,7 @@ const App = () => (
         <Route path="/" element={<Index />} />
         
         <Route path="/whats-on" element={<WhatsOn />} />
+        <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/competitions" element={<Competitions />} />
         <Route path="/advertising" element={<Advertising />} />
         <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
