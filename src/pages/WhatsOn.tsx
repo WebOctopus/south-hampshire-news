@@ -1,28 +1,28 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays, ChevronDown } from 'lucide-react';
+import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { format } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { EventCard } from '@/components/EventCard';
+import { Event } from '@/hooks/useEvents';
+
+type QuickFilter = 'all' | 'week' | 'month';
 
 const WhatsOn = () => {
-  // Mounted ref to prevent state updates after unmount
   const mountedRef = useRef(true);
   
-  // State management
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -31,6 +31,7 @@ const WhatsOn = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedArea, setSelectedArea] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
   
   // View and date filter state
   const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
@@ -45,58 +46,46 @@ const WhatsOn = () => {
   const [areas, setAreas] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       mountedRef.current = false;
     };
   }, []);
 
-  // Fetch events with filters
   const fetchEvents = useCallback(async () => {
     try {
-      console.log('Fetching events...');
       if (mountedRef.current) {
         setLoading(true);
         setError(null);
       }
 
-      console.log('Supabase client:', supabase);
-      
       let query = supabase
         .from('events')
         .select('*')
+        .eq('is_published', true) // Only show published events
         .order('date', { ascending: true });
-      
-      console.log('Query built, executing...', query);
 
-      // Apply search filter
       if (searchTerm) {
         query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`);
       }
 
-      // Apply category filter
       if (selectedCategory !== 'all') {
         query = query.eq('category', selectedCategory);
       }
 
-      // Apply area filter
       if (selectedArea !== 'all') {
         query = query.eq('area', selectedArea);
       }
 
-      // Apply type filter
       if (selectedType !== 'all') {
         query = query.eq('type', selectedType);
       }
 
-      // Apply date filter
       if (dateFilter) {
         const filterDateStr = dateFilter.toISOString().split('T')[0];
         query = query.eq('date', filterDateStr);
       }
 
-      // Apply date range filter
       if (dateRange.from) {
         const fromDateStr = dateRange.from.toISOString().split('T')[0];
         query = query.gte('date', fromDateStr);
@@ -106,20 +95,18 @@ const WhatsOn = () => {
         query = query.lte('date', toDateStr);
       }
 
-      console.log('About to execute query...');
       const { data, error } = await query;
-      console.log('Query executed. Raw response:', { data, error });
-      console.log('Data length:', data?.length);
-      console.log('Error details:', error);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Setting events with data:', data);
+      // Map data to Event type with proper type casting
+      const mappedEvents = (data || []).map(event => ({
+        ...event,
+        links: Array.isArray(event.links) ? event.links : []
+      })) as unknown as Event[];
+
       if (mountedRef.current) {
-        setEvents(data || []);
+        setEvents(mappedEvents);
       }
     } catch (err) {
       console.error('Error fetching events:', err);
@@ -138,12 +125,12 @@ const WhatsOn = () => {
     }
   }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange.from, dateRange.to]);
 
-  // Fetch filter metadata
   const fetchFilterMetadata = async () => {
     try {
       const { data, error } = await supabase
         .from('events')
-        .select('category, area, type');
+        .select('category, area, type')
+        .eq('is_published', true);
 
       if (error) throw error;
 
@@ -161,14 +148,11 @@ const WhatsOn = () => {
     }
   };
 
-  // Fetch events when filters change
   useEffect(() => {
     fetchEvents();
     
-    // Safeguard: ensure loading state is cleared after 10 seconds
     const timeoutId = setTimeout(() => {
       if (mountedRef.current && loading) {
-        console.warn('Loading state timeout - forcing loading to false');
         setLoading(false);
       }
     }, 10000);
@@ -176,10 +160,39 @@ const WhatsOn = () => {
     return () => clearTimeout(timeoutId);
   }, [fetchEvents]);
 
-  // Initial load
   useEffect(() => {
     fetchFilterMetadata();
   }, []);
+
+  // Get featured events
+  const featuredEvents = events.filter(e => e.featured);
+
+  // Apply quick filter
+  const getFilteredEvents = () => {
+    const today = new Date();
+    
+    if (quickFilter === 'week') {
+      const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+      return events.filter(event => {
+        const eventDate = new Date(event.date);
+        return isWithinInterval(eventDate, { start: weekStart, end: weekEnd });
+      });
+    }
+    
+    if (quickFilter === 'month') {
+      const monthStart = startOfMonth(today);
+      const monthEnd = endOfMonth(today);
+      return events.filter(event => {
+        const eventDate = new Date(event.date);
+        return isWithinInterval(eventDate, { start: monthStart, end: monthEnd });
+      });
+    }
+    
+    return events;
+  };
+
+  const filteredEvents = getFilteredEvents();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -191,25 +204,25 @@ const WhatsOn = () => {
     });
   };
 
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-community-navy to-blue-800 text-white py-16">
+      <section className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl lg:text-6xl font-heading font-bold mb-6">
               What's On
             </h1>
-            <p className="text-xl lg:text-2xl font-body mb-8 max-w-3xl mx-auto">
+            <p className="text-xl lg:text-2xl font-body mb-8 max-w-3xl mx-auto opacity-90">
               Discover the best events, activities, and entertainment in your local area
             </p>
             <Link to="/add-event">
               <Button 
                 size="lg" 
-                className="bg-community-green hover:bg-green-600 text-white font-semibold px-8 py-3"
+                variant="secondary"
+                className="font-semibold px-8 py-3"
               >
                 <Plus className="mr-2 h-5 w-5" />
                 Add Your Event
@@ -219,26 +232,70 @@ const WhatsOn = () => {
         </div>
       </section>
 
+      {/* Featured Events Section */}
+      {featuredEvents.length > 0 && (
+        <section className="py-12 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2 mb-6">
+              <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+              <h2 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
+                Featured Events
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredEvents.slice(0, 3).map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Events Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-heading font-bold text-community-navy mb-4">
+              <h2 className="text-2xl lg:text-3xl font-heading font-bold text-foreground mb-2">
                 Upcoming Events
               </h2>
-              <p className="text-gray-600 font-body">
-                {loading ? 'Loading events...' : `Don't miss out on these exciting local events (${events.length} found)`}
+              <p className="text-muted-foreground font-body">
+                {loading ? 'Loading events...' : `${filteredEvents.length} events found`}
               </p>
+            </div>
+            
+            {/* Quick Filter Pills */}
+            <div className="flex gap-2">
+              <Button
+                variant={quickFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setQuickFilter('all')}
+              >
+                All Events
+              </Button>
+              <Button
+                variant={quickFilter === 'week' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setQuickFilter('week')}
+              >
+                This Week
+              </Button>
+              <Button
+                variant={quickFilter === 'month' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setQuickFilter('month')}
+              >
+                This Month
+              </Button>
             </div>
           </div>
 
           {/* Filters Section */}
-          <div className="bg-white rounded-lg shadow-sm mb-8">
-            {/* Always Visible Search on Mobile */}
-            <div className="p-4 border-b border-gray-100 md:hidden">
+          <div className="bg-card rounded-lg shadow-sm border mb-8">
+            {/* Mobile Search */}
+            <div className="p-4 border-b md:hidden">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search events..."
                   value={searchTerm}
@@ -254,22 +311,19 @@ const WhatsOn = () => {
                 <AccordionItem value="filters" className="border-none">
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-2">
-                      <Filter className="h-5 w-5 text-community-navy" />
-                      <span className="text-base font-heading font-semibold text-community-navy">
+                      <Filter className="h-5 w-5 text-primary" />
+                      <span className="text-base font-heading font-semibold">
                         More Filters
                       </span>
-                      {(selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
-                        <Badge variant="secondary" className="ml-2 text-xs">
-                          Active
-                        </Badge>
+                      {(selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all') && (
+                        <Badge variant="secondary" className="ml-2 text-xs">Active</Badge>
                       )}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
                     <div className="space-y-4">
-                      {/* Category Filter */}
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Category</label>
+                        <label className="text-sm font-medium mb-2 block">Category</label>
                         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                           <SelectTrigger className="h-12">
                             <Tag className="h-4 w-4 mr-2" />
@@ -278,17 +332,14 @@ const WhatsOn = () => {
                           <SelectContent>
                             <SelectItem value="all">All Categories</SelectItem>
                             {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
+                              <SelectItem key={category} value={category}>{category}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
-                      {/* Area Filter */}
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Area</label>
+                        <label className="text-sm font-medium mb-2 block">Area</label>
                         <Select value={selectedArea} onValueChange={setSelectedArea}>
                           <SelectTrigger className="h-12">
                             <MapPin className="h-4 w-4 mr-2" />
@@ -297,17 +348,14 @@ const WhatsOn = () => {
                           <SelectContent>
                             <SelectItem value="all">All Areas</SelectItem>
                             {areas.map((area) => (
-                              <SelectItem key={area} value={area}>
-                                {area}
-                              </SelectItem>
+                              <SelectItem key={area} value={area}>{area}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
-                      {/* Type Filter */}
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Type</label>
+                        <label className="text-sm font-medium mb-2 block">Type</label>
                         <Select value={selectedType} onValueChange={setSelectedType}>
                           <SelectTrigger className="h-12">
                             <Calendar className="h-4 w-4 mr-2" />
@@ -316,80 +364,13 @@ const WhatsOn = () => {
                           <SelectContent>
                             <SelectItem value="all">All Types</SelectItem>
                             {types.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
+                              <SelectItem key={type} value={type}>{type}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
-                      {/* Date Filters */}
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Date</label>
-                        <div className="space-y-3">
-                          {/* Single Date Filter */}
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full h-12 justify-start text-left font-normal">
-                                <CalendarDays className="mr-2 h-4 w-4" />
-                                {dateFilter ? format(dateFilter, "PPP") : "Pick a specific date"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <CalendarComponent
-                                mode="single"
-                                selected={dateFilter}
-                                onSelect={setDateFilter}
-                                initialFocus
-                                className="p-3"
-                              />
-                            </PopoverContent>
-                          </Popover>
-
-                          {/* Date Range */}
-                          <div className="grid grid-cols-2 gap-2">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button variant="outline" className="h-12 justify-start text-left font-normal text-xs">
-                                  <CalendarDays className="mr-1 h-4 w-4" />
-                                  {dateRange.from ? format(dateRange.from, "MMM dd") : "From"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <CalendarComponent
-                                  mode="single"
-                                  selected={dateRange.from}
-                                  onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
-                                  initialFocus
-                                  className="p-3"
-                                />
-                              </PopoverContent>
-                            </Popover>
-
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button variant="outline" className="h-12 justify-start text-left font-normal text-xs">
-                                  <CalendarDays className="mr-1 h-4 w-4" />
-                                  {dateRange.to ? format(dateRange.to, "MMM dd") : "To"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <CalendarComponent
-                                  mode="single"
-                                  selected={dateRange.to}
-                                  onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
-                                  initialFocus
-                                  className="p-3"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Clear Filters */}
-                      {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
+                      {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all') && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -398,8 +379,7 @@ const WhatsOn = () => {
                             setSelectedCategory('all');
                             setSelectedArea('all');
                             setSelectedType('all');
-                            setDateFilter(undefined);
-                            setDateRange({ from: undefined, to: undefined });
+                            setQuickFilter('all');
                           }}
                           className="w-full"
                         >
@@ -415,14 +395,13 @@ const WhatsOn = () => {
             {/* Desktop Filters */}
             <div className="hidden md:block p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Filter className="h-5 w-5 text-community-navy" />
-                <h3 className="text-lg font-heading font-semibold text-community-navy">Filter Events</h3>
+                <Filter className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-heading font-semibold">Filter Events</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Search */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     placeholder="Search events..."
                     value={searchTerm}
@@ -431,7 +410,6 @@ const WhatsOn = () => {
                   />
                 </div>
 
-                {/* Category Filter */}
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger>
                     <Tag className="h-4 w-4 mr-2" />
@@ -440,14 +418,11 @@ const WhatsOn = () => {
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                {/* Area Filter */}
                 <Select value={selectedArea} onValueChange={setSelectedArea}>
                   <SelectTrigger>
                     <MapPin className="h-4 w-4 mr-2" />
@@ -456,14 +431,11 @@ const WhatsOn = () => {
                   <SelectContent>
                     <SelectItem value="all">All Areas</SelectItem>
                     {areas.map((area) => (
-                      <SelectItem key={area} value={area}>
-                        {area}
-                      </SelectItem>
+                      <SelectItem key={area} value={area}>{area}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                {/* Type Filter */}
                 <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger>
                     <Calendar className="h-4 w-4 mr-2" />
@@ -472,89 +444,23 @@ const WhatsOn = () => {
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
                     {types.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Date Filter */}
-              <div className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Single Date Filter */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="justify-start text-left font-normal">
-                        <CalendarDays className="mr-2 h-4 w-4" />
-                        {dateFilter ? format(dateFilter, "PPP") : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={dateFilter}
-                        onSelect={setDateFilter}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Date Range From */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="justify-start text-left font-normal">
-                        <CalendarDays className="mr-2 h-4 w-4" />
-                        {dateRange.from ? format(dateRange.from, "PPP") : "From date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={dateRange.from}
-                        onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Date Range To */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="justify-start text-left font-normal">
-                        <CalendarDays className="mr-2 h-4 w-4" />
-                        {dateRange.to ? format(dateRange.to, "PPP") : "To date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={dateRange.to}
-                        onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              {/* Clear Filters */}
-              {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all' || dateFilter || dateRange.from || dateRange.to) && (
-                <div className="mt-4">
+              {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all') && (
+                <div className="mt-4 flex justify-end">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => {
                       setSearchTerm('');
                       setSelectedCategory('all');
                       setSelectedArea('all');
                       setSelectedType('all');
-                      setDateFilter(undefined);
-                      setDateRange({ from: undefined, to: undefined });
+                      setQuickFilter('all');
                     }}
                   >
                     Clear All Filters
@@ -564,8 +470,8 @@ const WhatsOn = () => {
             </div>
           </div>
 
-          {/* View Toggle and Calendar Controls */}
-          <div className="flex justify-between items-center mb-6">
+          {/* View Toggle */}
+          <div className="flex justify-end items-center mb-6">
             <div className="flex items-center gap-2">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
@@ -573,7 +479,7 @@ const WhatsOn = () => {
                 onClick={() => setViewMode('grid')}
               >
                 <Grid className="mr-2 h-4 w-4" />
-                Grid View
+                Grid
               </Button>
               <Button
                 variant={viewMode === 'calendar' ? 'default' : 'outline'}
@@ -581,7 +487,7 @@ const WhatsOn = () => {
                 onClick={() => setViewMode('calendar')}
               >
                 <CalendarDays className="mr-2 h-4 w-4" />
-                Calendar View
+                List
               </Button>
             </div>
           </div>
@@ -590,166 +496,102 @@ const WhatsOn = () => {
           {loading ? (
             <div className="text-center py-12">
               <div className="max-w-md mx-auto">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-community-green mx-auto mb-4"></div>
-                <h3 className="text-xl font-heading font-semibold text-gray-600 mb-2">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+                <h3 className="text-xl font-heading font-semibold text-muted-foreground mb-2">
                   Loading Events...
                 </h3>
-                <p className="text-gray-500">
-                  Please wait while we fetch the latest events for you.
-                </p>
               </div>
             </div>
           ) : error ? (
-            /* Error State */
             <div className="text-center py-12">
               <div className="max-w-md mx-auto">
-                <Calendar className="h-16 w-16 text-red-300 mx-auto mb-4" />
-                <h3 className="text-xl font-heading font-semibold text-red-600 mb-2">
+                <Calendar className="h-16 w-16 text-destructive/30 mx-auto mb-4" />
+                <h3 className="text-xl font-heading font-semibold text-destructive mb-2">
                   Error Loading Events
                 </h3>
-                <p className="text-gray-500 mb-6">
-                  {error}
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => fetchEvents()}
-                >
+                <p className="text-muted-foreground mb-6">{error}</p>
+                <Button variant="outline" onClick={() => fetchEvents()}>
                   Try Again
                 </Button>
               </div>
             </div>
-          ) : events.length > 0 ? (
+          ) : filteredEvents.length > 0 ? (
             viewMode === 'grid' ? (
-              /* Grid View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {events.map((event) => (
-                  <Card key={event.id} className="h-full hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
-                    {/* Event Image */}
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={event.image} 
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-3 left-3">
-                        <Badge className="bg-community-green text-white">
-                          {event.category}
-                        </Badge>
-                      </div>
-                      <div className="absolute top-3 right-3">
-                        <Badge variant="secondary" className="bg-white/90 text-community-navy">
-                          {event.type}
-                        </Badge>
-                      </div>
-                      {/* Date Badge */}
-                      <div className="absolute bottom-3 left-3 bg-white rounded-lg p-2 text-center shadow-md">
-                        <div className="text-lg font-bold text-community-navy">
-                          {new Date(event.date).getDate()}
-                        </div>
-                        <div className="text-xs text-gray-600 uppercase">
-                          {new Date(event.date).toLocaleDateString('en-GB', { month: 'short' })}
-                        </div>
-                      </div>
-                    </div>
-
-                    <CardHeader>
-                      <CardTitle className="text-xl text-community-navy hover:text-community-green transition-colors">
-                        {event.title}
-                      </CardTitle>
-                    </CardHeader>
-                    
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Clock className="h-4 w-4" />
-                          <span>{event.time}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="h-4 w-4" />
-                          <span>{event.location}, {event.area}</span>
-                        </div>
-                        <p className="text-gray-700 font-body leading-relaxed line-clamp-3">
-                          {event.description}
-                        </p>
-                        <div className="pt-2 border-t border-gray-100">
-                          <p className="text-xs text-gray-500">
-                            Organized by {event.organizer}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
                 ))}
               </div>
             ) : (
-              /* Calendar View */
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                {/* Events listing */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-heading font-semibold text-community-navy mb-4">
-                    Events
-                  </h3>
-                   <div className="grid gap-4">
-                     {events.map((event) => (
-                      <Card key={event.id} className="p-4 hover:shadow-md transition-shadow duration-200">
-                        <div className="flex items-start gap-4">
-                          <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+              <div className="space-y-4">
+                {filteredEvents.map((event) => (
+                  <Link key={event.id} to={`/events/${event.id}`} className="block">
+                    <Card className="p-4 hover:shadow-md transition-shadow duration-200">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">
+                          {event.image ? (
                             <img 
                               src={event.image} 
                               alt={event.title}
                               className="w-full h-full object-cover"
                             />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h4 className="text-lg font-heading font-semibold text-community-navy mb-1">
-                                  {event.title}
-                                </h4>
-                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                                  <div className="flex items-center gap-1">
-                                    <CalendarDays className="h-4 w-4" />
-                                    {formatDate(event.date)}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="h-4 w-4" />
-                                    {event.time}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    {event.area}
-                                  </div>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Calendar className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <h4 className="text-lg font-heading font-semibold mb-1 hover:text-primary transition-colors">
+                                {event.title}
+                              </h4>
+                              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-2">
+                                <div className="flex items-center gap-1">
+                                  <CalendarDays className="h-4 w-4" />
+                                  {formatDate(event.date)}
                                 </div>
-                                <p className="text-sm text-gray-700 line-clamp-2">
-                                  {event.description}
-                                </p>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  {event.time}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {event.area}
+                                </div>
                               </div>
-                              <div className="flex flex-col gap-2 ml-4">
-                                <Badge className="bg-community-green text-white text-xs">
-                                  {event.category}
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {event.excerpt || event.description}
+                              </p>
+                            </div>
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                              <Badge variant="secondary" className="text-xs">
+                                {event.category}
+                              </Badge>
+                              {event.featured && (
+                                <Badge className="bg-yellow-500 hover:bg-yellow-500 text-yellow-950 text-xs">
+                                  <Star className="h-3 w-3 mr-1 fill-current" />
+                                  Featured
                                 </Badge>
-                                <Badge variant="secondary" className="text-xs">
-                                  {event.type}
-                                </Badge>
-                              </div>
+                              )}
                             </div>
                           </div>
                         </div>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
               </div>
             )
           ) : (
-            /* No Results */
             <div className="text-center py-12">
               <div className="max-w-md mx-auto">
-                <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-heading font-semibold text-gray-600 mb-2">
+                <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-xl font-heading font-semibold text-muted-foreground mb-2">
                   No Events Found
                 </h3>
-                <p className="text-gray-500 mb-6">
+                <p className="text-muted-foreground mb-6">
                   Try adjusting your filters or search terms to find more events.
                 </p>
                 <Button
@@ -759,8 +601,7 @@ const WhatsOn = () => {
                     setSelectedCategory('all');
                     setSelectedArea('all');
                     setSelectedType('all');
-                    setDateFilter(undefined);
-                    setDateRange({ from: undefined, to: undefined });
+                    setQuickFilter('all');
                   }}
                 >
                   Clear All Filters
@@ -773,14 +614,14 @@ const WhatsOn = () => {
           <div className="text-center mt-12">
             <Card className="max-w-md mx-auto">
               <CardContent className="p-8">
-                <h3 className="text-xl font-heading font-bold text-community-navy mb-4">
+                <h3 className="text-xl font-heading font-bold mb-4">
                   Have an Event to Share?
                 </h3>
-                <p className="text-gray-600 font-body mb-6">
+                <p className="text-muted-foreground font-body mb-6">
                   Submit your local event and reach hundreds of community members
                 </p>
                 <Link to="/add-event">
-                  <Button className="w-full bg-community-green hover:bg-green-600">
+                  <Button className="w-full">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Your Event
                   </Button>
