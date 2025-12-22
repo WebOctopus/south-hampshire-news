@@ -14,6 +14,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { useNavigate } from 'react-router-dom';
 import { useMagazineEditions } from '@/hooks/useMagazineEditions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BookOpen } from 'lucide-react';
 
 // Fallback data in case database is empty or loading fails
 const fallbackCovers = [
@@ -53,13 +54,23 @@ const Index = () => {
           <div className="absolute bottom-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-community-navy/20 rounded-full blur-3xl" />
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-3 md:mb-4">
-                South Hampshire's Biggest, Little & Best Local Magazine
-              </h2>
-              <p className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto">
-                A collection of localised editions delivered to 142,000 letterboxes in SO & PO postcodes. Loved by residents since 2005 and continuing to serve businesses with a cost effective advertising platform.
-              </p>
+            {/* Header with badge */}
+            <div className="flex items-start justify-between mb-8 md:mb-12">
+              <div className="text-left flex-1">
+                <p className="text-sm text-gray-400 mb-2">Current Editions</p>
+                <h2 className="text-2xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-3 md:mb-4">
+                  South Hampshire's Biggest, Little & Best Local Magazine
+                </h2>
+                <p className="text-base md:text-xl text-gray-300 max-w-2xl">
+                  A collection of localised editions delivered to 142,000 letterboxes in SO & PO postcodes. Loved by residents since 2005 and continuing to serve businesses with a cost effective advertising platform.
+                </p>
+              </div>
+              <div className="flex-shrink-0 ml-4">
+                <div className="flex items-center gap-2 bg-community-green/20 border border-community-green/40 text-community-green px-3 py-1.5 rounded-full text-sm font-medium">
+                  <BookOpen className="w-4 h-4" />
+                  <span>{magazineCovers.length} Magazines</span>
+                </div>
+              </div>
             </div>
 
             <div className="relative">
