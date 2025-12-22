@@ -103,6 +103,9 @@ const AddEvent = () => {
     setIsSubmitting(true);
 
     try {
+      // Get current user (optional - events can be submitted anonymously)
+      const { data: { user } } = await supabase.auth.getUser();
+      
       let imageUrl: string | null = null;
       
       // Upload image if provided
@@ -138,7 +141,8 @@ const AddEvent = () => {
         image: imageUrl,
         is_published: false, // Pending admin approval
         featured: false,
-        links: []
+        links: [],
+        user_id: user?.id || null
       };
 
       const { error } = await supabase
