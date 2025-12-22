@@ -892,14 +892,6 @@ const CalculatorTest = () => {
                           <CardWrapper {...wrapperProps} className={cn("group relative overflow-hidden rounded-xl bg-white/5 border border-white/10 hover:border-community-green/50 transition-all duration-500 block", cover.link && "cursor-pointer")}>
                             <div className="relative overflow-hidden">
                               <img src={cover.src} alt={cover.alt} className="w-full h-[500px] object-contain transition-transform duration-700 group-hover:scale-105" />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                              <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                                <h3 className="text-white font-bold text-sm">{cover.title}</h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <div className="w-1.5 h-1.5 bg-community-green rounded-full" />
-                                  <span className="text-community-green text-xs font-medium">CURRENT EDITION</span>
-                                </div>
-                              </div>
                             </div>
                           </CardWrapper>
                         </CarouselItem>;
