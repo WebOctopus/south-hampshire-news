@@ -4,6 +4,35 @@ import { useNavigate } from 'react-router-dom';
 import { usePricingData } from '@/hooks/usePricingData';
 import { parseISO, format, isAfter } from 'date-fns';
 
+// Parse various date formats from schedule data
+const parseDateString = (dateStr: string, yearHint?: string | number): Date | null => {
+  if (!dateStr || dateStr.toLowerCase() === 'tbc') return null;
+  
+  // Try ISO format first (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return parseISO(dateStr);
+  }
+  
+  // Try DD.MM.YYYY format
+  const fullMatch = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (fullMatch) {
+    const [, day, month, year] = fullMatch;
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  }
+  
+  // Try DD.MM or DD.M format with year hint
+  const shortMatch = dateStr.match(/^(\d{1,2})\.(\d{1,2})$/);
+  if (shortMatch && yearHint) {
+    const [, day, month] = shortMatch;
+    const year = typeof yearHint === 'string' ? parseInt(yearHint) : yearHint;
+    if (!isNaN(year)) {
+      return new Date(year, parseInt(month) - 1, parseInt(day));
+    }
+  }
+  
+  return null;
+};
+
 const IconCardsSection = () => {
   const navigate = useNavigate();
   const { areas } = usePricingData();
@@ -16,12 +45,17 @@ const IconCardsSection = () => {
     let nextDeadline: Date | null = null;
     
     areas.forEach(area => {
-      const schedule = area.schedule as Array<{ copy_deadline?: string; copyDeadline?: string }> | undefined;
+      const schedule = area.schedule as Array<{ 
+        copy_deadline?: string; 
+        copyDeadline?: string;
+        year?: string | number;
+      }> | undefined;
+      
       schedule?.forEach((issue) => {
         const deadlineStr = issue.copy_deadline || issue.copyDeadline;
-        if (deadlineStr && typeof deadlineStr === 'string' && deadlineStr.match(/\d{4}-\d{2}-\d{2}/)) {
-          const deadline = parseISO(deadlineStr);
-          if (isAfter(deadline, today)) {
+        if (deadlineStr && typeof deadlineStr === 'string') {
+          const deadline = parseDateString(deadlineStr, issue.year);
+          if (deadline && isAfter(deadline, today)) {
             if (!nextDeadline || deadline < nextDeadline) {
               nextDeadline = deadline;
             }
