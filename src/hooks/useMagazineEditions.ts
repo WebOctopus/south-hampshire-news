@@ -119,7 +119,28 @@ export const useMagazineEditionMutations = () => {
     },
   });
 
-  return { createEdition, updateEdition, deleteEdition, toggleActive };
+  const updateSortOrder = useMutation({
+    mutationFn: async (updates: { id: string; sort_order: number }[]) => {
+      const promises = updates.map(({ id, sort_order }) =>
+        supabase
+          .from('magazine_editions')
+          .update({ sort_order })
+          .eq('id', id)
+      );
+      const results = await Promise.all(promises);
+      const error = results.find(r => r.error)?.error;
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['magazine-editions'] });
+      toast({ title: 'Success', description: 'Order updated successfully' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  return { createEdition, updateEdition, deleteEdition, toggleActive, updateSortOrder };
 };
 
 export const useMagazineImageUpload = () => {

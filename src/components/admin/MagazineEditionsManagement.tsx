@@ -9,10 +9,120 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { useMagazineEditions, useMagazineEditionMutations, useMagazineImageUpload, MagazineEdition } from '@/hooks/useMagazineEditions';
 import { Plus, Pencil, Trash2, GripVertical, ExternalLink, Upload, X, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface SortableRowProps {
+  edition: MagazineEdition;
+  onEdit: (edition: MagazineEdition) => void;
+  onDelete: (id: string) => void;
+  onToggleActive: (id: string, isActive: boolean) => void;
+}
+
+const SortableRow = ({ edition, onEdit, onDelete, onToggleActive }: SortableRowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: edition.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    backgroundColor: isDragging ? 'hsl(var(--muted))' : undefined,
+  };
+
+  return (
+    <TableRow ref={setNodeRef} style={style}>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="cursor-grab active:cursor-grabbing touch-none p-1 hover:bg-muted rounded"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <span>{edition.sort_order}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="w-16 h-20 rounded overflow-hidden bg-muted">
+          <img 
+            src={edition.image_url} 
+            alt={edition.alt_text || edition.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </TableCell>
+      <TableCell className="font-medium">{edition.title}</TableCell>
+      <TableCell>{edition.issue_month || '-'}</TableCell>
+      <TableCell>
+        {edition.link_url ? (
+          <a 
+            href={edition.link_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-primary hover:underline"
+          >
+            <ExternalLink className="h-3 w-3" />
+            Link
+          </a>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <Switch
+          checked={edition.is_active}
+          onCheckedChange={(checked) => onToggleActive(edition.id, checked)}
+        />
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(edition)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onDelete(edition.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
 
 const MagazineEditionsManagement = () => {
   const { data: editions, isLoading } = useMagazineEditions(true);
-  const { createEdition, updateEdition, deleteEdition, toggleActive } = useMagazineEditionMutations();
+  const { createEdition, updateEdition, deleteEdition, toggleActive, updateSortOrder } = useMagazineEditionMutations();
   const { uploadCoverImage, isUploading } = useMagazineImageUpload();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -31,6 +141,13 @@ const MagazineEditionsManagement = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const resetForm = () => {
     setFormData({
@@ -151,6 +268,25 @@ const MagazineEditionsManagement = () => {
     }
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && editions) {
+      const oldIndex = editions.findIndex((e) => e.id === active.id);
+      const newIndex = editions.findIndex((e) => e.id === over.id);
+      
+      const reordered = arrayMove(editions, oldIndex, newIndex);
+      
+      // Create updates with new sort_order values
+      const updates = reordered.map((edition, index) => ({
+        id: edition.id,
+        sort_order: index + 1,
+      }));
+      
+      updateSortOrder.mutate(updates);
+    }
+  };
+
   const isFormValid = formData.title && (selectedFile || formData.image_url);
 
   if (isLoading) {
@@ -167,7 +303,7 @@ const MagazineEditionsManagement = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold mb-2">Magazine Editions</h2>
-          <p className="text-muted-foreground">Manage the magazine covers displayed on the homepage carousel.</p>
+          <p className="text-muted-foreground">Manage the magazine covers displayed on the homepage carousel. Drag to reorder.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
@@ -329,81 +465,41 @@ const MagazineEditionsManagement = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">Order</TableHead>
-                    <TableHead className="w-24">Preview</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Issue Month</TableHead>
-                    <TableHead>Link</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {editions.map((edition) => (
-                    <TableRow key={edition.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <GripVertical className="h-4 w-4 text-muted-foreground" />
-                          <span>{edition.sort_order}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="w-16 h-20 rounded overflow-hidden bg-muted">
-                          <img 
-                            src={edition.image_url} 
-                            alt={edition.alt_text || edition.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">{edition.title}</TableCell>
-                      <TableCell>{edition.issue_month || '-'}</TableCell>
-                      <TableCell>
-                        {edition.link_url ? (
-                          <a 
-                            href={edition.link_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-primary hover:underline"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Link
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Switch
-                          checked={edition.is_active}
-                          onCheckedChange={(checked) => toggleActive.mutate({ id: edition.id, is_active: checked })}
-                        />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenDialog(edition)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDelete(edition.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">Order</TableHead>
+                      <TableHead className="w-24">Preview</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Issue Month</TableHead>
+                      <TableHead>Link</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    <SortableContext
+                      items={editions.map(e => e.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {editions.map((edition) => (
+                        <SortableRow
+                          key={edition.id}
+                          edition={edition}
+                          onEdit={handleOpenDialog}
+                          onDelete={handleDelete}
+                          onToggleActive={(id, isActive) => toggleActive.mutate({ id, is_active: isActive })}
+                        />
+                      ))}
+                    </SortableContext>
+                  </TableBody>
+                </Table>
+              </DndContext>
             </div>
           )}
         </CardContent>
