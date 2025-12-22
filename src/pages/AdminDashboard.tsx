@@ -21,7 +21,6 @@ import { CompetitionsManagement } from '@/components/admin/CompetitionsManagemen
 import { GHLSyncManagement } from '@/components/admin/GHLSyncManagement';
 import { EventsManagement } from '@/components/admin/EventsManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
 
