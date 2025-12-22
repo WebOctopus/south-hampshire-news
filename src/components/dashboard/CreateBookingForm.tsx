@@ -67,7 +67,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   // Ad size and design
   const [selectedAdSize, setSelectedAdSize] = useState<string>('');
   const [includeDesign, setIncludeDesign] = useState(false);
-  const [selectedPaymentOption, setSelectedPaymentOption] = useState<string>('monthly');
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState<string>('');
   const [selectedLeafletSize, setSelectedLeafletSize] = useState<string>('');
   
   // Load data
@@ -160,12 +160,15 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, leafletAreas, leafletDurations]);
 
   const isFormValid = () => {
+    // Payment option is required for all booking types
+    const hasPaymentOption = selectedPaymentOption && selectedPaymentOption.length > 0;
+    
     if (pricingModel === 'leafleting') {
-      return selectedAreas.length > 0 && selectedLeafletDuration && selectedLeafletSize;
+      return selectedAreas.length > 0 && selectedLeafletDuration && selectedLeafletSize && hasPaymentOption;
     } else if (pricingModel === 'bogof') {
-      return bogofPaidAreas.length >= 3 && bogofFreeAreas.length >= 3 && selectedAdSize && selectedDuration;
+      return bogofPaidAreas.length >= 3 && bogofFreeAreas.length >= 3 && selectedAdSize && selectedDuration && hasPaymentOption;
     } else {
-      return selectedAreas.length > 0 && selectedAdSize && selectedDuration;
+      return selectedAreas.length > 0 && selectedAdSize && selectedDuration && hasPaymentOption;
     }
   };
 
@@ -205,7 +208,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
           months: selectedMonths,
           includeDesign,
           leafletSize: selectedLeafletSize,
-          leafletDuration: selectedLeafletDuration
+          leafletDuration: selectedLeafletDuration,
+          payment_option_id: selectedPaymentOption
         },
         status: 'draft'
       };
@@ -267,7 +271,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
           months: selectedMonths,
           includeDesign,
           leafletSize: selectedLeafletSize,
-          leafletDuration: selectedLeafletDuration
+          leafletDuration: selectedLeafletDuration,
+          payment_option_id: selectedPaymentOption
         },
         status: 'pending',
         payment_status: 'pending',
@@ -619,7 +624,11 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             <CardTitle className="flex items-center gap-2 text-primary">
               <PoundSterling className="h-5 w-5" />
               3 Payment Options
+              <span className="text-destructive">*</span>
             </CardTitle>
+            {!selectedPaymentOption && (
+              <p className="text-sm text-amber-600 mt-1">Please select a payment option to continue</p>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             {(() => {
