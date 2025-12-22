@@ -142,7 +142,7 @@ const Contact = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="think" 
-                className="flex items-center gap-2 bg-community-yellow/30 text-community-navy hover:bg-community-yellow/50 data-[state=active]:bg-community-yellow data-[state=active]:text-community-navy"
+                className="flex items-center gap-2 bg-rose-100 text-rose-700 hover:bg-rose-200 data-[state=active]:bg-rose-600 data-[state=active]:text-white"
               >
                 <Lightbulb className="h-4 w-4" />
                 <span className="hidden sm:inline">Subscribe to THINK Advertising</span>
