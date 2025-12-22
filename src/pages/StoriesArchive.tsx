@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
@@ -7,6 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { STORY_CATEGORIES, STORY_AREAS } from '@/hooks/useStories';
+
+interface Story {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  featured_image_url: string | null;
+  created_at: string;
+  category: string;
+  area: string;
+}
 
 const StoriesArchive = () => {
   const navigate = useNavigate();
@@ -14,111 +26,47 @@ const StoriesArchive = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedArea, setSelectedArea] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - in a real app this would come from a blog feed/API
-  const allStories = [
-    {
-      id: 1,
-      title: 'New Community Garden Opens in Fareham',
-      excerpt: 'Local residents celebrate the opening of a beautiful new community garden that brings neighbors together.',
-      image: '/placeholder.svg',
-      date: '2024-06-01',
-      category: 'Community',
-      area: 'FAREHAM & SURROUNDS'
-    },
-    {
-      id: 2,
-      title: 'Local Business Wins Regional Award',
-      excerpt: 'Southampton-based bakery receives recognition for outstanding customer service and community involvement.',
-      image: '/placeholder.svg',
-      date: '2024-05-28',
-      category: 'Business',
-      area: 'SOUTHAMPTON SUBURBS'
-    },
-    {
-      id: 3,
-      title: 'Charity Walk Raises £15,000',
-      excerpt: 'Annual charity walk through Hampshire countryside exceeds fundraising goals for local hospice.',
-      image: '/placeholder.svg',
-      date: '2024-05-25',
-      category: 'Events',
-      area: 'WINCHESTER & VILLAGES'
-    },
-    {
-      id: 4,
-      title: 'School Art Project Brightens High Street',
-      excerpt: 'Students create stunning mural that transforms local shopping area and celebrates community diversity.',
-      image: '/placeholder.svg',
-      date: '2024-05-22',
-      category: 'Education',
-      area: 'EASTLEIGH & VILLAGES'
-    },
-    {
-      id: 5,
-      title: 'New Cycling Route Connects Villages',
-      excerpt: 'Hampshire County Council opens safe cycling path linking rural communities with market towns.',
-      image: '/placeholder.svg',
-      date: '2024-05-20',
-      category: 'Transport',
-      area: 'ROMSEY & TEST VALLEY'
-    },
-    {
-      id: 6,
-      title: 'Local Hero Honored for Volunteer Work',
-      excerpt: 'Grandmother of four receives community award for decades of service to local food bank.',
-      image: '/placeholder.svg',
-      date: '2024-05-18',
-      category: 'People',
-      area: 'WATERSIDE & TOTTON'
-    },
-    {
-      id: 7,
-      title: 'New Library Branch Opens Downtown',
-      excerpt: 'Modern library facility offers digital resources and community meeting spaces for all ages.',
-      image: '/placeholder.svg',
-      date: '2024-05-15',
-      category: 'Community',
-      area: 'CHANDLER\'S FORD & NORTH BADDESLEY'
-    },
-    {
-      id: 8,
-      title: 'Local Restaurant Wins Sustainability Award',
-      excerpt: 'Family-owned restaurant recognized for innovative eco-friendly practices and local sourcing.',
-      image: '/placeholder.svg',
-      date: '2024-05-12',
-      category: 'Business',
-      area: 'HEDGE END & SURROUNDS'
-    },
-    {
-      id: 9,
-      title: 'Youth Football Team Reaches Finals',
-      excerpt: 'Local under-16s team makes it to county championships after impressive season performance.',
-      image: '/placeholder.svg',
-      date: '2024-05-08',
-      category: 'Events',
-      area: 'LOCKS HEATH & SURROUNDS'
-    }
-  ];
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('stories')
+          .select('id, title, excerpt, featured_image_url, created_at, category, area')
+          .eq('is_published', true)
+          .order('created_at', { ascending: sortBy === 'oldest' });
 
-  const categories = ['all', 'Community', 'Business', 'Events', 'Education', 'Transport', 'People'];
-  const areas = ['all', 'SOUTHAMPTON SUBURBS', 'CHANDLER\'S FORD & NORTH BADDESLEY', 'EASTLEIGH & VILLAGES', 'HEDGE END & SURROUNDS', 'LOCKS HEATH & SURROUNDS', 'FAREHAM & SURROUNDS', 'WICKHAM & BISHOP\'S WALTHAM', 'WINCHESTER & VILLAGES', 'ROMSEY & TEST VALLEY', 'WATERSIDE & TOTTON', 'NEW FOREST TO LYMINGTON'];
-
-  // Filter and sort stories
-  const filteredStories = allStories
-    .filter(story => {
-      const matchesSearch = story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           story.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || story.category === selectedCategory;
-      const matchesArea = selectedArea === 'all' || story.area === selectedArea;
-      return matchesSearch && matchesCategory && matchesArea;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'newest') {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      } else {
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
+        if (error) throw error;
+        setStories(data || []);
+      } catch (error) {
+        console.error('Error fetching stories:', error);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchStories();
+  }, [sortBy]);
+
+  // Filter stories
+  const filteredStories = stories.filter(story => {
+    const matchesSearch = story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (story.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesCategory = selectedCategory === 'all' || story.category === selectedCategory;
+    const matchesArea = selectedArea === 'all' || story.area === selectedArea;
+    return matchesSearch && matchesCategory && matchesArea;
+  });
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
     });
+  };
 
   return (
     <div className="min-h-screen">
@@ -152,7 +100,7 @@ const StoriesArchive = () => {
                 />
               </div>
               
-              <div className="flex gap-4 items-center">
+              <div className="flex flex-wrap gap-4 items-center">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-600" />
                   <span className="text-sm font-medium text-gray-600">Filter by:</span>
@@ -163,9 +111,10 @@ const StoriesArchive = () => {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map(category => (
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {STORY_CATEGORIES.map(category => (
                       <SelectItem key={category} value={category}>
-                        {category === 'all' ? 'All Categories' : category}
+                        {category}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -176,9 +125,10 @@ const StoriesArchive = () => {
                     <SelectValue placeholder="Select area" />
                   </SelectTrigger>
                   <SelectContent>
-                    {areas.map(area => (
+                    <SelectItem value="all">All Areas</SelectItem>
+                    {STORY_AREAS.map(area => (
                       <SelectItem key={area} value={area}>
-                        {area === 'all' ? 'All Areas' : area}
+                        {area}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -199,7 +149,7 @@ const StoriesArchive = () => {
             {/* Results count */}
             <div className="mt-4">
               <p className="text-gray-600 text-sm">
-                Showing {filteredStories.length} of {allStories.length} stories
+                Showing {filteredStories.length} of {stories.length} stories
               </p>
             </div>
           </div>
@@ -208,7 +158,20 @@ const StoriesArchive = () => {
         {/* Stories Grid */}
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {filteredStories.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="aspect-video bg-gray-200 rounded-lg"></div>
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredStories.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-xl text-gray-600 font-body">
                   No stories found matching your criteria.
@@ -231,7 +194,7 @@ const StoriesArchive = () => {
                   <Card key={story.id} className="group hover:shadow-lg transition-shadow duration-300">
                     <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
                       <img 
-                        src={story.image} 
+                        src={story.featured_image_url || '/placeholder.svg'} 
                         alt={story.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -244,7 +207,7 @@ const StoriesArchive = () => {
                         <span className="px-3 py-1 bg-community-navy text-white text-xs font-medium rounded-full">
                           {story.area}
                         </span>
-                        <span className="text-gray-500 text-sm">{story.date}</span>
+                        <span className="text-gray-500 text-sm">{formatDate(story.created_at)}</span>
                       </div>
                       <CardTitle className="text-xl font-heading text-community-navy group-hover:text-community-green transition-colors">
                         {story.title}

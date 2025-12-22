@@ -1655,6 +1655,7 @@ export type Database = {
           content: string
           created_at: string
           excerpt: string | null
+          featured: boolean | null
           featured_image_url: string | null
           id: string
           is_published: boolean
@@ -1670,6 +1671,7 @@ export type Database = {
           content: string
           created_at?: string
           excerpt?: string | null
+          featured?: boolean | null
           featured_image_url?: string | null
           id?: string
           is_published?: boolean
@@ -1685,6 +1687,7 @@ export type Database = {
           content?: string
           created_at?: string
           excerpt?: string | null
+          featured?: boolean | null
           featured_image_url?: string | null
           id?: string
           is_published?: boolean
