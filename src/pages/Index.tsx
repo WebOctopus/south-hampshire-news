@@ -106,7 +106,7 @@ const Index = () => {
                   ADVERTISING INFO
                 </Button>
                 <Button asChild variant="outline" className="border-white/30 hover:bg-white px-6 md:px-8 py-3 font-bold rounded-full backdrop-blur transition-all duration-300 text-slate-950 min-h-[44px]">
-                  <a href="/advertising#distribution-map">VIEW DISTRIBUTION MAP</a>
+                  <a href="/contact">CONTACT US</a>
                 </Button>
               </div>
             </div>
