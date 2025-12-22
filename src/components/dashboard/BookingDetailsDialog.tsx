@@ -541,13 +541,21 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                     </div>}
                 </div> : <div className="space-y-4">
-                  {/* Show only the selected payment option from step 4 */}
+                  {/* Show payment options - if none selected, show all available options */}
                   <p className="text-sm text-muted-foreground">
-                    Your selected payment method:
+                    {booking.selections?.payment_option_id 
+                      ? 'Your selected payment method:' 
+                      : 'Select your payment method:'}
                   </p>
 
                   <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
-                    {paymentOptions.filter(option => option.option_type === booking.selections?.payment_option_id).map(option => {
+                    {paymentOptions
+                      .filter(option => 
+                        // If a payment option was previously selected, show only that one
+                        // Otherwise, show all available options so user can select
+                        !booking.selections?.payment_option_id || option.option_type === booking.selections.payment_option_id
+                      )
+                      .map(option => {
                   // Use the same calculation logic as the booking summary
                   const baseTotal = booking.final_total || booking.monthly_price;
                   const pricingModel = booking.pricing_model || 'fixed';
