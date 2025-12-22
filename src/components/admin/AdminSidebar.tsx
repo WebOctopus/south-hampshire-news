@@ -12,7 +12,8 @@ import {
   Image,
   BookOpen,
   Trophy,
-  RefreshCw
+  RefreshCw,
+  Calendar
 } from "lucide-react"
 
 import {
@@ -48,6 +49,11 @@ const menuItems = [
     title: "Stories",
     icon: FileText,
     section: "stories"
+  },
+  {
+    title: "Events",
+    icon: Calendar,
+    section: "events"
   },
   {
     title: "Alerts",

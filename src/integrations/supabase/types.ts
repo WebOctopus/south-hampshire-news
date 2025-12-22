@@ -578,14 +578,23 @@ export type Database = {
         Row: {
           area: string
           category: string
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
           date: string
           description: string | null
+          end_time: string | null
+          excerpt: string | null
+          featured: boolean | null
+          full_description: string | null
           id: string
           image: string | null
+          is_published: boolean | null
+          links: Json | null
           location: string
           organizer: string | null
           postcode: string | null
+          ticket_url: string | null
           time: string
           title: string
           type: string
@@ -595,14 +604,23 @@ export type Database = {
         Insert: {
           area: string
           category: string
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           date: string
           description?: string | null
+          end_time?: string | null
+          excerpt?: string | null
+          featured?: boolean | null
+          full_description?: string | null
           id?: string
           image?: string | null
+          is_published?: boolean | null
+          links?: Json | null
           location: string
           organizer?: string | null
           postcode?: string | null
+          ticket_url?: string | null
           time: string
           title: string
           type: string
@@ -612,14 +630,23 @@ export type Database = {
         Update: {
           area?: string
           category?: string
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           date?: string
           description?: string | null
+          end_time?: string | null
+          excerpt?: string | null
+          featured?: boolean | null
+          full_description?: string | null
           id?: string
           image?: string | null
+          is_published?: boolean | null
+          links?: Json | null
           location?: string
           organizer?: string | null
           postcode?: string | null
+          ticket_url?: string | null
           time?: string
           title?: string
           type?: string
