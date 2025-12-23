@@ -29,9 +29,16 @@ export interface AdvertisingData {
   advertising_how_heard: string;
 }
 
-export interface NewsletterData {
-  interests: string[];
-  frequency_preference: string;
+export interface DiscoverExtraData {
+  newsletter_discover_keep_use_frequency: string;
+  newsletter_discover_interests: string[];
+  newsletter_discover_source_local_business: string;
+  newsletter_discover_rating: string;
+  newsletter_discover_comments: string;
+}
+
+export interface ThinkMonthlyData {
+  newsletter_think_feedback: string;
 }
 
 export interface DistributorData {
@@ -49,6 +56,8 @@ export interface Consents {
   privacy_accepted: boolean;
   consent_email_contact_required: boolean;
   consent_think_monthly_optional: boolean;
+  discover_extra: boolean;
+  think_monthly: boolean;
 }
 
 export interface MetaData {
@@ -65,7 +74,7 @@ export interface DiscoverFormsState {
   journey_type: JourneyType;
   current_step: number;
   contact: ContactDetails;
-  data: EditorialData | AdvertisingData | NewsletterData | DistributorData | Record<string, unknown>;
+  data: EditorialData | AdvertisingData | DiscoverExtraData | ThinkMonthlyData | DistributorData | Record<string, unknown>;
   consents: Consents;
   meta: MetaData;
 }
@@ -84,7 +93,9 @@ export const initialConsents: Consents = {
   terms_accepted: false,
   privacy_accepted: false,
   consent_email_contact_required: false,
-  consent_think_monthly_optional: false
+  consent_think_monthly_optional: false,
+  discover_extra: false,
+  think_monthly: false
 };
 
 export const getRequiredContactFields = (journeyType: JourneyType): (keyof ContactDetails)[] => {

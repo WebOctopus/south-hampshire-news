@@ -1,137 +1,265 @@
-import { NewsletterData, JourneyType } from './types';
+import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Mail, Lightbulb, Heart } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Mail, Newspaper } from 'lucide-react';
+import { JourneyType, DiscoverExtraData, ThinkMonthlyData, Consents } from './types';
 
 interface NewsletterJourneyProps {
-  data: Partial<NewsletterData>;
-  onChange: (updates: Partial<NewsletterData>) => void;
+  data: Partial<DiscoverExtraData> | Partial<ThinkMonthlyData>;
+  onChange: (updates: Record<string, unknown>) => void;
   journeyType: JourneyType;
+  consents: Consents;
+  onConsentsChange: (updates: Partial<Consents>) => void;
 }
 
-const discoverExtraInterests = [
-  { id: 'local_news', label: 'Local News & Updates' },
-  { id: 'events', label: 'Events & What\'s On' },
-  { id: 'food_drink', label: 'Food & Drink' },
-  { id: 'competitions', label: 'Competitions & Giveaways' },
-  { id: 'business', label: 'Local Business News' },
-  { id: 'community', label: 'Community Stories' }
-];
-
-const thinkInterests = [
-  { id: 'marketing_tips', label: 'Marketing Tips & Strategies' },
-  { id: 'case_studies', label: 'Local Business Case Studies' },
-  { id: 'industry_news', label: 'Industry News & Trends' },
-  { id: 'special_offers', label: 'Special Advertising Offers' },
-  { id: 'events', label: 'Business Events & Networking' }
-];
-
 const frequencyOptions = [
-  { value: 'weekly', label: 'Weekly digest', description: 'All the best content once a week' },
-  { value: 'daily', label: 'Daily updates', description: 'Stay on top of everything' },
-  { value: 'monthly', label: 'Monthly highlights', description: 'Just the essentials' }
+  { value: 'every_issue', label: 'Every issue' },
+  { value: 'most_issues', label: 'Most issues' },
+  { value: 'occasionally', label: 'Occasionally' },
+  { value: 'rarely', label: 'Rarely' },
+  { value: 'first_time', label: 'First time seeing it' }
 ];
 
-const NewsletterJourney = ({ data, onChange, journeyType }: NewsletterJourneyProps) => {
-  const isDiscoverExtra = journeyType === 'discover_extra';
-  const interests = isDiscoverExtra ? discoverExtraInterests : thinkInterests;
-  
-  const currentInterests = data.interests || [];
-  
-  const toggleInterest = (interestId: string) => {
-    const newInterests = currentInterests.includes(interestId)
-      ? currentInterests.filter(i => i !== interestId)
-      : [...currentInterests, interestId];
-    onChange({ interests: newInterests });
+const interestOptions = [
+  { value: 'competitions', label: 'Competitions' },
+  { value: 'whats_on', label: "What's On" },
+  { value: 'on_the_grapevine_local_stories', label: 'On the Grapevine (Local Stories)' },
+  { value: 'theatre_listings', label: 'Theatre Listings' },
+  { value: 'puzzles', label: 'Puzzles' },
+  { value: 'recipe', label: 'Recipe' },
+  { value: 'editors_letter', label: "Editor's Letter" },
+  { value: 'lifestyle_articles', label: 'Lifestyle Articles' }
+];
+
+const sourceBusinessOptions = [
+  { value: 'yes_definitely', label: 'Yes, definitely' },
+  { value: 'yes_already_have', label: 'Yes, I already have' },
+  { value: 'maybe', label: 'Maybe' },
+  { value: 'unlikely', label: 'Unlikely' }
+];
+
+const ratingOptions = [
+  { value: 'much_better', label: 'Much better' },
+  { value: 'better', label: 'Better' },
+  { value: 'about_same', label: 'About the same' },
+  { value: 'not_as_good', label: 'Not as good' },
+  { value: 'only_one_receive', label: "It's the only one I receive" }
+];
+
+const NewsletterJourney: React.FC<NewsletterJourneyProps> = ({ 
+  data, 
+  onChange, 
+  journeyType,
+  consents,
+  onConsentsChange
+}) => {
+  const discoverData = data as Partial<DiscoverExtraData>;
+  const thinkData = data as Partial<ThinkMonthlyData>;
+
+  const toggleInterest = (interest: string) => {
+    const currentInterests = discoverData.newsletter_discover_interests || [];
+    const newInterests = currentInterests.includes(interest)
+      ? currentInterests.filter(i => i !== interest)
+      : [...currentInterests, interest];
+    onChange({ newsletter_discover_interests: newInterests });
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <div className={cn(
-          "inline-flex items-center justify-center w-16 h-16 rounded-full mb-4",
-          isDiscoverExtra ? "bg-purple-100" : "bg-rose-100"
-        )}>
-          {isDiscoverExtra 
-            ? <Mail className="h-8 w-8 text-purple-600" />
-            : <Lightbulb className="h-8 w-8 text-rose-600" />
-          }
+  if (journeyType === 'discover_extra') {
+    return (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-full bg-primary/10">
+            <Newspaper className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Discover EXTRA Feedback</h2>
+            <p className="text-sm text-muted-foreground">Help us improve your Discover experience</p>
+          </div>
         </div>
-        <h2 className="text-2xl font-heading font-bold text-community-navy mb-2">
-          {isDiscoverExtra ? 'Discover EXTRA' : 'THINK Advertising'}
-        </h2>
-        <p className="text-gray-600 text-sm">
-          {isDiscoverExtra 
-            ? 'Choose your interests to personalize your newsletter'
-            : 'Select topics you\'d like to learn about'
-          }
-        </p>
-      </div>
 
-      <div className="space-y-4">
-        <Label className="text-base font-medium flex items-center gap-2">
-          <Heart className="h-4 w-4 text-gray-400" />
-          What interests you? <span className="text-gray-400 text-sm font-normal">(optional)</span>
-        </Label>
-        
-        <div className="grid gap-3 sm:grid-cols-2">
-          {interests.map((interest) => (
-            <label
-              key={interest.id}
-              className={cn(
-                "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
-                currentInterests.includes(interest.id)
-                  ? isDiscoverExtra 
-                    ? "bg-purple-50 border-purple-300"
-                    : "bg-rose-50 border-rose-300"
-                  : "bg-white border-gray-200 hover:border-gray-300"
-              )}
-            >
-              <Checkbox
-                checked={currentInterests.includes(interest.id)}
-                onCheckedChange={() => toggleInterest(interest.id)}
-              />
-              <span className="text-sm font-medium text-gray-700">{interest.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {isDiscoverExtra && (
-        <div className="space-y-4 pt-4 border-t">
+        {/* Keep/Use Frequency */}
+        <div className="space-y-3">
           <Label className="text-base font-medium">
-            How often would you like to hear from us?
+            How often do you keep and use Discover? <span className="text-destructive">*</span>
           </Label>
-          
-          <RadioGroup
-            value={data.frequency_preference || 'weekly'}
-            onValueChange={(value) => onChange({ frequency_preference: value })}
-            className="space-y-3"
+          <Select
+            value={discoverData.newsletter_discover_keep_use_frequency || ''}
+            onValueChange={(value) => onChange({ newsletter_discover_keep_use_frequency: value })}
           >
-            {frequencyOptions.map((option) => (
-              <label
-                key={option.value}
-                className={cn(
-                  "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
-                  data.frequency_preference === option.value
-                    ? "bg-purple-50 border-purple-300"
-                    : "bg-white border-gray-200 hover:border-gray-300"
-                )}
-              >
-                <RadioGroupItem value={option.value} className="mt-0.5" />
-                <div>
-                  <span className="text-sm font-medium text-gray-700">{option.label}</span>
-                  <p className="text-xs text-gray-500">{option.description}</p>
-                </div>
-              </label>
-            ))}
-          </RadioGroup>
+            <SelectTrigger>
+              <SelectValue placeholder="Select frequency..." />
+            </SelectTrigger>
+            <SelectContent>
+              {frequencyOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      )}
-    </div>
-  );
+
+        {/* Interests */}
+        <div className="space-y-4">
+          <Label className="text-base font-medium">
+            Which sections interest you most? (optional)
+          </Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {interestOptions.map(option => {
+              const isSelected = (discoverData.newsletter_discover_interests || []).includes(option.value);
+              return (
+                <div
+                  key={option.value}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                    isSelected 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                  onClick={() => toggleInterest(option.value)}
+                >
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => toggleInterest(option.value)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="text-sm">{option.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Source Local Business */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">
+            Would you use Discover to source a local business? <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={discoverData.newsletter_discover_source_local_business || ''}
+            onValueChange={(value) => onChange({ newsletter_discover_source_local_business: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option..." />
+            </SelectTrigger>
+            <SelectContent>
+              {sourceBusinessOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Rating Comparison */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">
+            How does Discover rate compared to other community magazines you get? <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={discoverData.newsletter_discover_rating || ''}
+            onValueChange={(value) => onChange({ newsletter_discover_rating: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select rating..." />
+            </SelectTrigger>
+            <SelectContent>
+              {ratingOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Comments */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">
+            Any other comments? (optional)
+          </Label>
+          <Textarea
+            placeholder="Share your thoughts about Discover..."
+            value={discoverData.newsletter_discover_comments || ''}
+            onChange={(e) => onChange({ newsletter_discover_comments: e.target.value })}
+            rows={4}
+          />
+        </div>
+
+        {/* Consent */}
+        <div className="p-4 bg-muted/50 rounded-lg border">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="discover_extra_consent"
+              checked={consents.discover_extra}
+              onCheckedChange={(checked) => onConsentsChange({ discover_extra: checked as boolean })}
+            />
+            <Label htmlFor="discover_extra_consent" className="text-sm leading-relaxed cursor-pointer">
+              <span className="font-medium">Yes, I'd like to receive Discover EXTRA emails</span> <span className="text-destructive">*</span>
+              <p className="text-muted-foreground mt-1">
+                Get exclusive content, competitions, and local news delivered to your inbox.
+              </p>
+            </Label>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (journeyType === 'think_advertising') {
+    return (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-full bg-primary/10">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">THINK Monthly Newsletter</h2>
+            <p className="text-sm text-muted-foreground">Stay updated with advertising tips and offers</p>
+          </div>
+        </div>
+
+        {/* Feedback */}
+        <div className="space-y-3">
+          <Label className="text-base font-medium">
+            Feedback / what you'd like to see (optional)
+          </Label>
+          <Textarea
+            placeholder="Tell us what topics or content you'd like us to cover..."
+            value={thinkData.newsletter_think_feedback || ''}
+            onChange={(e) => onChange({ newsletter_think_feedback: e.target.value })}
+            rows={5}
+          />
+          <p className="text-sm text-muted-foreground">
+            Your feedback helps us create content that's valuable to you.
+          </p>
+        </div>
+
+        {/* Consent */}
+        <div className="p-4 bg-muted/50 rounded-lg border">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="think_monthly_consent"
+              checked={consents.think_monthly}
+              onCheckedChange={(checked) => onConsentsChange({ think_monthly: checked as boolean })}
+            />
+            <Label htmlFor="think_monthly_consent" className="text-sm leading-relaxed cursor-pointer">
+              <span className="font-medium">Yes, I'd like to receive THINK monthly emails</span> <span className="text-destructive">*</span>
+              <p className="text-muted-foreground mt-1">
+                Get advertising tips, special offers, and business insights delivered monthly.
+              </p>
+            </Label>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default NewsletterJourney;
