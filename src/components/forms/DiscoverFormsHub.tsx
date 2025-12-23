@@ -1,7 +1,7 @@
 import { useDiscoverForms } from '@/hooks/useDiscoverForms';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Loader2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, RotateCcw, AlertCircle } from 'lucide-react';
 import JourneySelectionStep from './JourneySelectionStep';
 import SharedContactStep from './SharedContactStep';
 import EditorialJourney from './EditorialJourney';
@@ -17,6 +17,7 @@ const DiscoverFormsHub = () => {
     formState,
     isSubmitting,
     isSubmitted,
+    submissionError,
     setJourneyType,
     updateContact,
     updateData,
@@ -25,7 +26,8 @@ const DiscoverFormsHub = () => {
     prevStep,
     resetForm,
     getStepNames,
-    submitForm
+    submitForm,
+    retrySubmit
   } = useDiscoverForms();
 
   const { journey_type, current_step, contact, data, consents } = formState;
@@ -111,7 +113,11 @@ const DiscoverFormsHub = () => {
 
   const handleNext = async () => {
     if (isLastStep) {
-      await submitForm();
+      try {
+        await submitForm();
+      } catch {
+        // Error is handled in the hook and displayed via submissionError
+      }
     } else {
       nextStep();
     }
@@ -164,6 +170,33 @@ const DiscoverFormsHub = () => {
         <div className="min-h-[400px]">
           {renderCurrentStep()}
         </div>
+
+        {/* Error Display */}
+        {submissionError && !isSubmitted && (
+          <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-destructive font-medium">Submission Failed</p>
+              <p className="text-sm text-muted-foreground mt-1">{submissionError}</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={retrySubmit}
+              disabled={isSubmitting}
+              className="flex-shrink-0"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  Retry
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
         {/* Navigation Buttons */}
         {!isSubmitted ? (
