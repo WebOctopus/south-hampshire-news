@@ -10,7 +10,7 @@ import NewsletterJourney from './NewsletterJourney';
 import DistributorJourney from './DistributorJourney';
 import ConfirmationStep from './ConfirmationStep';
 import ProgressIndicator from './ProgressIndicator';
-import { EditorialData, AdvertisingData, NewsletterData, DistributorData } from './types';
+import { EditorialData, AdvertisingData, DiscoverExtraData, ThinkMonthlyData, DistributorData } from './types';
 
 const DiscoverFormsHub = () => {
   const {
@@ -68,9 +68,23 @@ const DiscoverFormsHub = () => {
       if (current_step === 3) return consents.terms_accepted && consents.privacy_accepted;
     }
     
-    if (journey_type === 'discover_extra' || journey_type === 'think_advertising') {
+    if (journey_type === 'discover_extra') {
       if (current_step === 1) return !!(contact.first_name && contact.email);
-      if (current_step === 2) return true; // Interests are optional
+      if (current_step === 2) {
+        const d = data as Partial<DiscoverExtraData>;
+        return !!(
+          d.newsletter_discover_keep_use_frequency &&
+          d.newsletter_discover_source_local_business &&
+          d.newsletter_discover_rating &&
+          consents.discover_extra
+        );
+      }
+      if (current_step === 3) return consents.terms_accepted && consents.privacy_accepted;
+    }
+    
+    if (journey_type === 'think_advertising') {
+      if (current_step === 1) return !!(contact.first_name && contact.email);
+      if (current_step === 2) return consents.think_monthly;
       if (current_step === 3) return consents.terms_accepted && consents.privacy_accepted;
     }
     
@@ -125,7 +139,7 @@ const DiscoverFormsHub = () => {
       case 'discover_extra':
       case 'think_advertising':
         if (current_step === 1) return <SharedContactStep contact={contact} journeyType={journey_type} onChange={updateContact} />;
-        if (current_step === 2) return <NewsletterJourney data={data as Partial<NewsletterData>} onChange={updateData} journeyType={journey_type} />;
+        if (current_step === 2) return <NewsletterJourney data={data as Partial<DiscoverExtraData | ThinkMonthlyData>} onChange={updateData} journeyType={journey_type} consents={consents} onConsentsChange={updateConsents} />;
         if (current_step === 3) return <ConfirmationStep journeyType={journey_type} consents={consents} onConsentChange={updateConsents} isSubmitted={false} />;
         break;
       
