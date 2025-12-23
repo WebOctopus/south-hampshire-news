@@ -1,8 +1,8 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Phone, Clock, MapPin, Megaphone, PenLine, Truck, Mail, Lightbulb } from "lucide-react";
+import { Phone, Clock, MapPin, Truck } from "lucide-react";
+import DiscoverFormsHub from "@/components/forms/DiscoverFormsHub";
 
 const Contact = () => {
   return (
@@ -89,127 +89,13 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* Contact Forms Section */}
+      {/* Discover Forms Hub */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl font-heading font-bold text-community-navy text-center mb-8">
-            Get In Touch
+            Discover Forms Hub
           </h2>
-          
-          <Tabs defaultValue="advertising" className="w-full">
-            <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3 bg-white border border-gray-200 rounded-lg mb-6">
-              <TabsTrigger 
-                value="advertising" 
-                className="flex items-center gap-2 bg-community-green/20 text-community-green hover:bg-community-green/30 data-[state=active]:bg-community-green data-[state=active]:text-white"
-              >
-                <Megaphone className="h-4 w-4" />
-                <span className="hidden sm:inline">Advertising Enquiry</span>
-                <span className="sm:hidden">Advertising</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="editorial" 
-                className="flex items-center gap-2 bg-blue-100 text-blue-700 hover:bg-blue-200 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-              >
-                <PenLine className="h-4 w-4" />
-                <span className="hidden sm:inline">Editorial Submission</span>
-                <span className="sm:hidden">Editorial</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="distributor" 
-                className="flex items-center gap-2 bg-orange-100 text-orange-700 hover:bg-orange-200 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
-              >
-                <Truck className="h-4 w-4" />
-                <span className="hidden sm:inline">Apply to be a Distributor</span>
-                <span className="sm:hidden">Distributor</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="discover" 
-                className="flex items-center gap-2 bg-purple-100 text-purple-700 hover:bg-purple-200 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-              >
-                <Mail className="h-4 w-4" />
-                <span className="hidden sm:inline">Subscribe to Discover Extra</span>
-                <span className="sm:hidden">Discover Extra</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="think" 
-                className="flex items-center gap-2 bg-rose-100 text-rose-700 hover:bg-rose-200 data-[state=active]:bg-rose-600 data-[state=active]:text-white"
-              >
-                <Lightbulb className="h-4 w-4" />
-                <span className="hidden sm:inline">Subscribe to THINK Advertising</span>
-                <span className="sm:hidden">THINK</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="advertising">
-              <Card className="border-community-green/20 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-community-green/10 to-community-yellow/10">
-                  <CardTitle className="flex items-center gap-3 text-xl text-community-navy">
-                    <Megaphone className="h-5 w-5 text-community-green" />
-                    Advertising Enquiry Form
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 min-h-[500px] flex items-center justify-center">
-                  <p className="text-gray-500 italic">Advertising enquiry form will be embedded here</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="editorial">
-              <Card className="border-community-green/20 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-community-green/10 to-community-yellow/10">
-                  <CardTitle className="flex items-center gap-3 text-xl text-community-navy">
-                    <PenLine className="h-5 w-5 text-community-green" />
-                    Editorial Submission Form
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 min-h-[500px] flex items-center justify-center">
-                  <p className="text-gray-500 italic">Editorial submission form will be embedded here</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="distributor">
-              <Card className="border-community-green/20 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-community-green/10 to-community-yellow/10">
-                  <CardTitle className="flex items-center gap-3 text-xl text-community-navy">
-                    <Truck className="h-5 w-5 text-community-green" />
-                    Apply to be a Distributor
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 min-h-[500px] flex items-center justify-center">
-                  <p className="text-gray-500 italic">Distributor application form will be embedded here</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="discover">
-              <Card className="border-community-green/20 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-community-green/10 to-community-yellow/10">
-                  <CardTitle className="flex items-center gap-3 text-xl text-community-navy">
-                    <Mail className="h-5 w-5 text-community-green" />
-                    Subscribe to Discover Extra
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 min-h-[500px] flex items-center justify-center">
-                  <p className="text-gray-500 italic">Discover Extra subscription form will be embedded here</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="think">
-              <Card className="border-community-green/20 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-community-green/10 to-community-yellow/10">
-                  <CardTitle className="flex items-center gap-3 text-xl text-community-navy">
-                    <Lightbulb className="h-5 w-5 text-community-green" />
-                    Subscribe to THINK Advertising
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 min-h-[500px] flex items-center justify-center">
-                  <p className="text-gray-500 italic">THINK Advertising subscription form will be embedded here</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <DiscoverFormsHub />
         </div>
       </section>
 
