@@ -233,7 +233,7 @@ const QuickQuoteCalculator: React.FC = () => {
                       <span className="text-sm font-medium text-slate-300 uppercase tracking-wide">Homes Reached</span>
                     </div>
                     <p className="text-5xl font-bold text-white">
-                      {totalCirculation.toLocaleString()}
+                      {(Math.round(totalCirculation / 1000) * 1000).toLocaleString()}
                     </p>
                     <p className="text-sm text-slate-400 mt-2">Bi-monthly</p>
                   </div>
