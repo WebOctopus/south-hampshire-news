@@ -42,12 +42,12 @@ export interface ThinkMonthlyData {
 }
 
 export interface DistributorData {
-  available_days: string[];
-  preferred_areas: string[];
-  vehicle_type: string;
-  has_experience: boolean;
-  experience_details: string;
-  hours_per_week: string;
+  distribution_address_1: string;
+  distribution_address_2: string;
+  distribution_city: string;
+  distribution_safe_storage: string;
+  distribution_areas_interested: string[];
+  distribution_age_band: string;
 }
 
 export interface Consents {
@@ -58,6 +58,7 @@ export interface Consents {
   consent_think_monthly_optional: boolean;
   discover_extra: boolean;
   think_monthly: boolean;
+  email_contact: boolean;
 }
 
 export interface MetaData {
@@ -95,7 +96,8 @@ export const initialConsents: Consents = {
   consent_email_contact_required: false,
   consent_think_monthly_optional: false,
   discover_extra: false,
-  think_monthly: false
+  think_monthly: false,
+  email_contact: false
 };
 
 export const getRequiredContactFields = (journeyType: JourneyType): (keyof ContactDetails)[] => {
@@ -124,7 +126,7 @@ export const getStepsForJourney = (journeyType: JourneyType): string[] => {
     case 'think_advertising':
       return ['Journey Selection', 'Contact Information', 'Interests', 'Confirm Subscription'];
     case 'distributor':
-      return ['Journey Selection', 'Contact Information', 'Availability', 'Experience', 'Review & Submit'];
+      return ['Journey Selection', 'Contact Information', 'Distribution Details', 'Review & Submit'];
     default:
       return ['Journey Selection'];
   }
