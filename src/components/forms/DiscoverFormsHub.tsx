@@ -92,13 +92,16 @@ const DiscoverFormsHub = () => {
       if (current_step === 1) return !!(contact.first_name && contact.last_name && contact.email && contact.phone && contact.postcode);
       if (current_step === 2) {
         const d = data as Partial<DistributorData>;
-        return !!(d.available_days?.length && d.preferred_areas?.length);
+        return !!(
+          d.distribution_address_1 &&
+          d.distribution_city &&
+          d.distribution_safe_storage &&
+          (d.distribution_areas_interested?.length ?? 0) > 0 &&
+          d.distribution_age_band &&
+          consents.email_contact
+        );
       }
-      if (current_step === 3) {
-        const d = data as Partial<DistributorData>;
-        return !!d.vehicle_type;
-      }
-      if (current_step === 4) return consents.terms_accepted && consents.privacy_accepted;
+      if (current_step === 3) return consents.terms_accepted && consents.privacy_accepted;
     }
     
     return true;
@@ -145,9 +148,8 @@ const DiscoverFormsHub = () => {
       
       case 'distributor':
         if (current_step === 1) return <SharedContactStep contact={contact} journeyType={journey_type} onChange={updateContact} />;
-        if (current_step === 2) return <DistributorJourney data={data as Partial<DistributorData>} onChange={updateData} step="availability" />;
-        if (current_step === 3) return <DistributorJourney data={data as Partial<DistributorData>} onChange={updateData} step="experience" />;
-        if (current_step === 4) return <ConfirmationStep journeyType={journey_type} consents={consents} onConsentChange={updateConsents} isSubmitted={false} />;
+        if (current_step === 2) return <DistributorJourney data={data as Partial<DistributorData>} onChange={updateData} consents={consents} onConsentsChange={updateConsents} />;
+        if (current_step === 3) return <ConfirmationStep journeyType={journey_type} consents={consents} onConsentChange={updateConsents} isSubmitted={false} />;
         break;
     }
 
