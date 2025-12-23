@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   DiscoverFormsState, 
   JourneyType, 
@@ -8,9 +9,6 @@ import {
   initialConsents,
   getStepsForJourney
 } from '@/components/forms/types';
-
-// Configurable webhook URL - change this to your endpoint
-export const WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/your-webhook-id';
 
 const captureUTMParams = () => {
   const params = new URLSearchParams(window.location.search);
@@ -132,16 +130,12 @@ export const useDiscoverForms = () => {
     };
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
+      const { data, error } = await supabase.functions.invoke('submit-discover-form', {
+        body: payload
       });
 
-      if (!response.ok) {
-        throw new Error(`Submission failed: ${response.status}`);
+      if (error) {
+        throw new Error(error.message || 'Submission failed');
       }
 
       console.log('Form submitted successfully:', payload);
