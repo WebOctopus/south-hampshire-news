@@ -79,3 +79,6 @@ verify_jwt = false
 
 [functions.pull-ghl-contacts]
 verify_jwt = false
+
+[functions.submit-discover-form]
+verify_jwt = false
