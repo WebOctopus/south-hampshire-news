@@ -18,11 +18,15 @@ export interface EditorialData {
 }
 
 export interface AdvertisingData {
-  business_type: string;
-  advertising_goal: string;
-  budget_range: string;
-  timeline: string;
-  additional_info: string;
+  advertising_business_name: string;
+  advertising_landline: string;
+  advertising_seen_hard_copy: string;
+  advertising_current_situation: string;
+  advertising_leaflet_interest: string;
+  advertising_editions_interested: string[];
+  advertising_ad_sizes: string[];
+  advertising_extra_info: string;
+  advertising_how_heard: string;
 }
 
 export interface NewsletterData {
@@ -43,6 +47,8 @@ export interface Consents {
   marketing_email: boolean;
   terms_accepted: boolean;
   privacy_accepted: boolean;
+  consent_email_contact_required: boolean;
+  consent_think_monthly_optional: boolean;
 }
 
 export interface MetaData {
@@ -76,7 +82,9 @@ export const initialContactDetails: ContactDetails = {
 export const initialConsents: Consents = {
   marketing_email: false,
   terms_accepted: false,
-  privacy_accepted: false
+  privacy_accepted: false,
+  consent_email_contact_required: false,
+  consent_think_monthly_optional: false
 };
 
 export const getRequiredContactFields = (journeyType: JourneyType): (keyof ContactDetails)[] => {
