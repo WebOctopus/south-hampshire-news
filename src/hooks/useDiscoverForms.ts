@@ -9,9 +9,13 @@ import {
   getStepsForJourney
 } from '@/components/forms/types';
 
+// Configurable webhook URL - change this to your endpoint
+export const WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/your-webhook-id';
+
 const captureUTMParams = () => {
   const params = new URLSearchParams(window.location.search);
   return {
+    source: 'discover_combined_form',
     utm_source: params.get('utm_source'),
     utm_medium: params.get('utm_medium'),
     utm_campaign: params.get('utm_campaign'),
@@ -34,6 +38,7 @@ export const useDiscoverForms = () => {
   const [formState, setFormState] = useState<DiscoverFormsState>(getInitialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Recapture UTM params on mount
   useEffect(() => {
@@ -47,8 +52,8 @@ export const useDiscoverForms = () => {
     setFormState(prev => ({
       ...prev,
       journey_type: type,
-      current_step: 1, // Move to first step after selection
-      data: {} // Reset journey-specific data
+      current_step: 1,
+      data: {}
     }));
   }, []);
 
@@ -98,6 +103,7 @@ export const useDiscoverForms = () => {
     setFormState(getInitialState());
     setIsSubmitted(false);
     setIsSubmitting(false);
+    setSubmissionError(null);
   }, []);
 
   const getTotalSteps = useCallback(() => {
@@ -110,31 +116,60 @@ export const useDiscoverForms = () => {
 
   const submitForm = useCallback(async () => {
     setIsSubmitting(true);
+    setSubmissionError(null);
     
-    const submissionData = {
-      ...formState,
+    const payload = {
+      journey_type: formState.journey_type,
+      contact: formState.contact,
+      data: formState.data,
+      consents: formState.consents,
       meta: {
         ...formState.meta,
+        source: 'discover_combined_form',
+        page_url: window.location.href,
         submitted_at: new Date().toISOString()
       }
     };
 
-    // For now, just log the submission - can integrate with Supabase later
-    console.log('Form Submission:', JSON.stringify(submissionData, null, 2));
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    
-    return submissionData;
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Submission failed: ${response.status}`);
+      }
+
+      console.log('Form submitted successfully:', payload);
+      setIsSubmitted(true);
+      setSubmissionError(null);
+      return payload;
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setSubmissionError(
+        error instanceof Error 
+          ? 'Unable to submit your form. Please check your connection and try again.' 
+          : 'An unexpected error occurred. Please try again.'
+      );
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
   }, [formState]);
+
+  const retrySubmit = useCallback(() => {
+    return submitForm();
+  }, [submitForm]);
 
   return {
     formState,
     isSubmitting,
     isSubmitted,
+    submissionError,
     setJourneyType,
     updateContact,
     updateData,
@@ -145,6 +180,7 @@ export const useDiscoverForms = () => {
     resetForm,
     getTotalSteps,
     getStepNames,
-    submitForm
+    submitForm,
+    retrySubmit
   };
 };

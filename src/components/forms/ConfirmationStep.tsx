@@ -19,7 +19,8 @@ const getJourneyInfo = (journeyType: JourneyType) => {
         color: 'text-blue-600',
         bgColor: 'bg-blue-100',
         title: 'Story Submission',
-        successMessage: 'Your story has been submitted! Our editorial team will review it and get back to you soon.'
+        successTitle: 'Story Submitted!',
+        successMessage: 'Thank you for sharing your story with us. Our editorial team will review your submission and get back to you within 5-7 working days. Keep an eye on your inbox for updates!'
       };
     case 'advertising':
       return { 
@@ -27,7 +28,8 @@ const getJourneyInfo = (journeyType: JourneyType) => {
         color: 'text-community-green',
         bgColor: 'bg-community-green/20',
         title: 'Advertising Quote Request',
-        successMessage: 'Your quote request has been received! A member of our sales team will contact you within 24 hours.'
+        successTitle: 'Quote Request Received!',
+        successMessage: 'Thanks for your interest in advertising with Discover. A member of our sales team will contact you within 24 hours to discuss your advertising options and provide a tailored quote.'
       };
     case 'discover_extra':
       return { 
@@ -35,7 +37,8 @@ const getJourneyInfo = (journeyType: JourneyType) => {
         color: 'text-purple-600',
         bgColor: 'bg-purple-100',
         title: 'Discover EXTRA Subscription',
-        successMessage: 'Welcome to Discover EXTRA! Check your inbox for a confirmation email.'
+        successTitle: 'Welcome to Discover EXTRA!',
+        successMessage: 'You\'re now subscribed to our exclusive digital newsletter. Check your inbox for a confirmation email – your first edition will arrive soon with local news, offers, and community updates.'
       };
     case 'think_advertising':
       return { 
@@ -43,7 +46,8 @@ const getJourneyInfo = (journeyType: JourneyType) => {
         color: 'text-rose-600',
         bgColor: 'bg-rose-100',
         title: 'THINK Advertising Subscription',
-        successMessage: 'Welcome to THINK! You\'ll receive your first newsletter soon.'
+        successTitle: 'Welcome to THINK!',
+        successMessage: 'You\'re now subscribed to THINK, our monthly marketing insights newsletter. Expect expert tips, advertising trends, and success stories delivered straight to your inbox.'
       };
     case 'distributor':
       return { 
@@ -51,7 +55,8 @@ const getJourneyInfo = (journeyType: JourneyType) => {
         color: 'text-orange-600',
         bgColor: 'bg-orange-100',
         title: 'Distributor Application',
-        successMessage: 'Thank you for applying! Our distribution team will review your application and contact you soon.'
+        successTitle: 'Application Received!',
+        successMessage: 'Thank you for applying to become a Discover distributor. Our distribution team will review your application and contact you within 3-5 working days to discuss next steps.'
       };
     default:
       return { 
@@ -59,7 +64,8 @@ const getJourneyInfo = (journeyType: JourneyType) => {
         color: 'text-gray-600',
         bgColor: 'bg-gray-100',
         title: 'Form Submission',
-        successMessage: 'Thank you for your submission!'
+        successTitle: 'Thank You!',
+        successMessage: 'Your submission has been received. We\'ll be in touch soon.'
       };
   }
 };
@@ -78,9 +84,9 @@ const ConfirmationStep = ({ journeyType, consents, onConsentChange, isSubmitted 
           <CheckCircle2 className={cn("h-10 w-10", journeyInfo.color)} />
         </div>
         <h2 className="text-2xl font-heading font-bold text-community-navy mb-4">
-          Thank You!
+          {journeyInfo.successTitle}
         </h2>
-        <p className="text-gray-600 max-w-md mx-auto">
+        <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
           {journeyInfo.successMessage}
         </p>
       </div>
