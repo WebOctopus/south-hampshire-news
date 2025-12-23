@@ -53,7 +53,16 @@ const DiscoverFormsHub = () => {
     if (journey_type === 'advertising') {
       if (current_step === 1) {
         const d = data as Partial<AdvertisingData>;
-        return !!(d.business_type && d.advertising_goal);
+        return !!(
+          d.advertising_business_name &&
+          d.advertising_seen_hard_copy &&
+          d.advertising_current_situation &&
+          d.advertising_leaflet_interest &&
+          (d.advertising_editions_interested?.length ?? 0) > 0 &&
+          (d.advertising_ad_sizes?.length ?? 0) > 0 &&
+          d.advertising_how_heard &&
+          consents.consent_email_contact_required
+        );
       }
       if (current_step === 2) return !!(contact.first_name && contact.last_name && contact.email && contact.phone);
       if (current_step === 3) return consents.terms_accepted && consents.privacy_accepted;
@@ -108,7 +117,7 @@ const DiscoverFormsHub = () => {
         break;
       
       case 'advertising':
-        if (current_step === 1) return <AdvertisingJourney data={data as Partial<AdvertisingData>} onChange={updateData} />;
+        if (current_step === 1) return <AdvertisingJourney data={data as AdvertisingData} onChange={updateData} consents={consents} onConsentsChange={updateConsents} />;
         if (current_step === 2) return <SharedContactStep contact={contact} journeyType={journey_type} onChange={updateContact} />;
         if (current_step === 3) return <ConfirmationStep journeyType={journey_type} consents={consents} onConsentChange={updateConsents} isSubmitted={false} />;
         break;
