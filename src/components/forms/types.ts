@@ -10,11 +10,11 @@ export interface ContactDetails {
 }
 
 export interface EditorialData {
-  story_title: string;
-  story_summary: string;
-  story_content: string;
-  area: string;
-  category: string;
+  editorial_organisation: string;
+  editorial_story_summary: string;
+  editorial_category: string;
+  editorial_story_text: string;
+  editorial_attachments: File[];
 }
 
 export interface AdvertisingData {

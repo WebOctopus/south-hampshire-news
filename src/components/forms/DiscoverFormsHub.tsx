@@ -38,7 +38,13 @@ const DiscoverFormsHub = () => {
     if (journey_type === 'editorial') {
       if (current_step === 1) {
         const d = data as Partial<EditorialData>;
-        return !!(d.story_title && d.area && d.category && d.story_summary && d.story_content);
+        const summaryWords = (d.editorial_story_summary || '').trim().split(/\s+/).filter(Boolean).length;
+        return !!(
+          d.editorial_story_summary && 
+          summaryWords <= 30 &&
+          d.editorial_category && 
+          d.editorial_story_text
+        );
       }
       if (current_step === 2) return !!(contact.first_name && contact.last_name && contact.email && contact.phone);
       if (current_step === 3) return consents.terms_accepted && consents.privacy_accepted;
