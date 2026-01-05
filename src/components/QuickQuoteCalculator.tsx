@@ -74,8 +74,7 @@ const QuickQuoteCalculator: React.FC = () => {
       if (typeof subscriptionPricing === 'object') {
         const priceKey = numberOfAreas.toString();
         if (subscriptionPricing[priceKey]) {
-          // BOGOF: price is stored for total areas, but we only charge for half
-          return subscriptionPricing[priceKey] / 2;
+          return subscriptionPricing[priceKey];
         }
       }
     }
