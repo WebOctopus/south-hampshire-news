@@ -17,14 +17,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 // Fallback data in case database is empty or loading fails
 const fallbackCovers = [
-  { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Discover Magazine - Winchester & Surrounds Edition", issueMonth: "January 2025" },
-  { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Discover Magazine - Itchen Valley Edition", issueMonth: "January 2025" },
-  { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Discover Magazine - Meon Valley & Whiteley Edition", issueMonth: "January 2025" },
-  { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "Discover Magazine - New Forest & Waterside Edition", issueMonth: "January 2025" },
-  { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Discover Magazine - Southampton West & Totton Edition", issueMonth: "January 2025" },
-  { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Discover Magazine - Test Valley & Romsey Edition", issueMonth: "January 2025" },
-  { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Discover Magazine - Winchester & Alresford Edition", issueMonth: "January 2025" },
-  { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition", issueMonth: "January 2025" }
+  { src: "/lovable-uploads/0ee7cdb0-f6e6-4dd5-9492-8136e247b6ab.png", alt: "Discover Magazine - Winchester & Surrounds Edition", issueMonth: "January 2025", link: null as string | null },
+  { src: "/lovable-uploads/3734fd45-4163-4f5c-b495-06604192d54c.png", alt: "Discover Magazine - Itchen Valley Edition", issueMonth: "January 2025", link: null as string | null },
+  { src: "/lovable-uploads/c4490b9b-94ad-42c9-a7d4-80ba8a52d3eb.png", alt: "Discover Magazine - Meon Valley & Whiteley Edition", issueMonth: "January 2025", link: null as string | null },
+  { src: "/lovable-uploads/d554421b-d268-40db-8d87-a66cd858a71a.png", alt: "Discover Magazine - New Forest & Waterside Edition", issueMonth: "January 2025", link: null as string | null },
+  { src: "/lovable-uploads/92f70bb1-98a7-464d-a511-5eb7eef51998.png", alt: "Discover Magazine - Southampton West & Totton Edition", issueMonth: "January 2025", link: null as string | null },
+  { src: "/lovable-uploads/25b8b054-62d4-42b8-858b-d8c91da6dc93.png", alt: "Discover Magazine - Test Valley & Romsey Edition", issueMonth: "January 2025", link: null as string | null },
+  { src: "/lovable-uploads/f98d0aa9-985f-4d69-85b9-193bf1934a18.png", alt: "Discover Magazine - Winchester & Alresford Edition", issueMonth: "January 2025", link: null as string | null },
+  { src: "/lovable-uploads/d4b20a63-65ea-4dec-b4b7-f1e1a6748979.png", alt: "Discover Magazine - Chandler's Ford & Eastleigh Edition", issueMonth: "January 2025", link: null as string | null }
 ];
 
 const Index = () => {
@@ -68,21 +68,32 @@ const Index = () => {
                 loop: true
               }} className="w-full max-w-5xl mx-auto">
                 <CarouselContent className="-ml-3 md:-ml-6">
-                  {magazineCovers.map((cover, index) => (
-                    <CarouselItem key={index} className="pl-3 md:pl-6 basis-[85%] md:basis-1/2 lg:basis-1/3">
-                      <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
-                        <CardContent className="p-4 md:p-6">
-                          <div className="relative overflow-hidden rounded-lg">
-                            <img src={cover.src} alt={cover.alt} className="w-full h-64 md:h-80 lg:h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
-                            {/* Futuristic Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          </div>
-                          {/* Glow Effect */}
-                          <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        </CardContent>
-                      </Card>
-                    </CarouselItem>
-                  ))}
+                  {magazineCovers.map((cover, index) => {
+                    const CardWrapper = cover.link ? 'a' : 'div';
+                    const wrapperProps = cover.link ? {
+                      href: cover.link,
+                      target: "_blank",
+                      rel: "noopener noreferrer"
+                    } : {};
+                    
+                    return (
+                      <CarouselItem key={index} className="pl-3 md:pl-6 basis-[85%] md:basis-1/2 lg:basis-1/3">
+                        <CardWrapper {...wrapperProps} className={cover.link ? "cursor-pointer block" : ""}>
+                          <Card className="group relative overflow-hidden bg-white/5 backdrop-blur border border-white/10 hover:border-community-green/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-community-green/20">
+                            <CardContent className="p-4 md:p-6">
+                              <div className="relative overflow-hidden rounded-lg">
+                                <img src={cover.src} alt={cover.alt} className="w-full h-64 md:h-80 lg:h-96 object-contain transition-transform duration-700 group-hover:scale-110" />
+                                {/* Futuristic Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                              </div>
+                              {/* Glow Effect */}
+                              <div className="absolute inset-0 rounded-lg border border-community-green/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            </CardContent>
+                          </Card>
+                        </CardWrapper>
+                      </CarouselItem>
+                    );
+                  })}
                 </CarouselContent>
                 
                 {/* Mobile-visible navigation buttons */}
