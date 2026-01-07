@@ -839,12 +839,10 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                             <div className="space-y-2 text-muted-foreground">
                               <p>By using our advertising services, you agree to the following terms:</p>
                               <ul className="list-disc list-inside space-y-1 ml-4">
-                                <li>Payment terms: Full payment required before campaign launch</li>
+                                <li>Payment terms: Full payment required before print date</li>
                                 <li>Campaign specifications are final once approved</li>
-                                <li>Cancellation policy: 48 hours notice required for cancellations</li>
                                 <li>We reserve the right to refuse advertising content that violates our content policy</li>
                                 <li>Delivery dates are estimates and may vary due to external factors</li>
-                                <li>Refunds are subject to our refund policy terms</li>
                               </ul>
                             </div>
                           </div>
