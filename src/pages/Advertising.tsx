@@ -911,6 +911,33 @@ const CalculatorTest = () => {
         </div>
       </section>
 
+      {/* Media Pack Flipbook Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
+              Our Media Pack
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Browse our complete media pack to learn about advertising opportunities
+            </p>
+          </div>
+          
+          {/* Adobe InDesign Media Pack Embed */}
+          <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
+            <div className="relative w-full overflow-hidden" style={{ paddingBottom: '56%' }}>
+              <iframe 
+                src="https://indd.adobe.com/embed/9865914e-1a16-4cd5-a8f2-bc11e6c80f3c?startpage=1&allowFullscreen=true" 
+                className="absolute w-full h-full top-0 left-0"
+                frameBorder="0" 
+                title="Discover Media Pack" 
+                allowFullScreen 
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 14 Local Editions Section with Adobe Interactive Embed */}
       <section id="editions-map" className="py-16 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
