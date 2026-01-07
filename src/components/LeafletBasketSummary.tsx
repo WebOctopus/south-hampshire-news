@@ -107,25 +107,9 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     }
     const months = selectedMonths[areaId] || [];
     return months.map((month) => {
-      // Normalize to "Month YYYY"
+      // Normalize to "Month YYYY" - full month names for better readability
       const display = formatMonthDisplay(month);
-      const parts = display.split(' ');
-      if (parts.length === 2) {
-        const [fullMonth, fullYear] = parts;
-        const monthAbbr = fullMonth.slice(0, 3);
-        const shortYear = fullYear.slice(-2);
-        return `${monthAbbr} '${shortYear}`;
-      }
-      // Fallback: try YYYY-MM pattern
-      if (month.includes('-')) {
-        const [year, monthNum] = month.split('-');
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const idx = parseInt(monthNum, 10) - 1;
-        if (!isNaN(idx) && idx >= 0 && idx < 12) {
-          return `${monthNames[idx]} '${year.slice(2)}`;
-        }
-      }
-      return month; // as-is if unknown format
+      return display;
     }).join(', ');
   };
 
@@ -214,8 +198,8 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                           {areaNumber ? `Area ${areaNumber} - ` : ''}{areaName}
                         </span>
                       </div>
-                      <div className="text-xs text-muted-foreground ml-16">
-                        Selected issues: {formattedMonths}
+                      <div className="text-sm ml-16">
+                        <span className="font-medium">Issues:</span> {formattedMonths}
                       </div>
                     </div>
                   );
