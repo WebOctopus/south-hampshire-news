@@ -331,9 +331,76 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
           const area = (pricingModel === 'leafleting' ? areas : areas)?.find(a => a.id === areaId);
           if (!area) return null;
 
-          const availableMonths = area.schedule || [];
+          const allMonths = area.schedule || [];
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // Filter out months where the copy deadline has passed
+          const availableMonths = allMonths.filter((monthData: any) => {
+            // Get the deadline date - prefer ISO format copy_deadline, fallback to copyDeadline
+            const deadlineStr = monthData.copy_deadline || monthData.copyDeadline;
+            if (!deadlineStr || deadlineStr.toLowerCase() === 'tbc') {
+              // If no deadline or TBC, still show the month but it won't have a deadline displayed
+              return true;
+            }
+            
+            let deadlineDate: Date | null = null;
+            
+            // Try ISO format first (YYYY-MM-DD)
+            if (/^\d{4}-\d{2}-\d{2}$/.test(deadlineStr)) {
+              deadlineDate = new Date(deadlineStr);
+            } 
+            // Try DD.MM.YYYY format
+            else if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(deadlineStr)) {
+              const [day, month, year] = deadlineStr.split('.');
+              deadlineDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            }
+            // Try DD.MM or DD.M format with year hint
+            else if (/^\d{1,2}\.\d{1,2}$/.test(deadlineStr) && monthData.year) {
+              const [day, month] = deadlineStr.split('.');
+              const year = typeof monthData.year === 'string' ? parseInt(monthData.year) : monthData.year;
+              if (!isNaN(year)) {
+                deadlineDate = new Date(year, parseInt(month) - 1, parseInt(day));
+              }
+            }
+            
+            // If we couldn't parse the date, keep the month visible
+            if (!deadlineDate) return true;
+            
+            // Only show if deadline is today or in the future
+            return deadlineDate >= today;
+          });
+          
           const areaSelectedMonths = selectedMonths[areaId] || [];
           const maxSelectableMonths = (durationData as any)?.duration_value || (durationData as any)?.months || 1;
+
+          // Helper to get formatted deadline for display
+          const getDeadlineDisplay = (monthData: any): string | null => {
+            const isoDeadline = monthData.copy_deadline;
+            if (isoDeadline && /^\d{4}-\d{2}-\d{2}$/.test(isoDeadline)) {
+              return formatDateUK(isoDeadline);
+            }
+            
+            const fallbackDeadline = monthData.copyDeadline;
+            if (fallbackDeadline && fallbackDeadline.toLowerCase() !== 'tbc') {
+              // Try to parse and format DD.MM.YYYY
+              if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(fallbackDeadline)) {
+                const [day, month, year] = fallbackDeadline.split('.');
+                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                return formatDateUK(date.toISOString().split('T')[0]);
+              }
+              // Try DD.MM with year hint
+              if (/^\d{1,2}\.\d{1,2}$/.test(fallbackDeadline) && monthData.year) {
+                const [day, month] = fallbackDeadline.split('.');
+                const year = typeof monthData.year === 'string' ? parseInt(monthData.year) : monthData.year;
+                if (!isNaN(year)) {
+                  const date = new Date(year, parseInt(month) - 1, parseInt(day));
+                  return formatDateUK(date.toISOString().split('T')[0]);
+                }
+              }
+            }
+            return null;
+          };
 
           return (
             <div key={areaId} className="border rounded-lg p-6">
@@ -348,6 +415,7 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
                 {availableMonths.map((monthData: any, index: number) => {
                   const isSelected = areaSelectedMonths.includes(monthData.month);
                   const isDisabled = !isSelected && areaSelectedMonths.length >= maxSelectableMonths;
+                  const deadlineDisplay = getDeadlineDisplay(monthData);
                   
                   return (
                     <div key={index} className={`
@@ -377,9 +445,9 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
                           <div className="font-medium text-sm">
                             {formatMonthDisplay(monthData.month)}
                           </div>
-                          {monthData.copy_deadline && (
+                          {deadlineDisplay && (
                             <div className="text-xs text-muted-foreground">
-                              Copy deadline: {formatDateUK(monthData.copy_deadline)}
+                              Copy deadline: {deadlineDisplay}
                             </div>
                           )}
                         </div>
