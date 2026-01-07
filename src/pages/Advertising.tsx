@@ -927,11 +927,26 @@ const CalculatorTest = () => {
           <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
             <div className="relative w-full overflow-hidden" style={{ paddingBottom: '56%' }}>
               <iframe 
-                src="https://indd.adobe.com/embed/9865914e-1a16-4cd5-a8f2-bc11e6c80f3c?startpage=1&allowFullscreen=true" 
-                className="absolute w-full h-full top-0 left-0"
+                src="https://indd.adobe.com/embed/9865914e-1a16-4cd5-a8f2-bc11e6c80f3c?startpage=1&allowFullscreen=false" 
+                className="absolute w-full" 
+                style={{
+                  height: '135%',
+                  top: '-12%',
+                  left: '0'
+                }}
                 frameBorder="0" 
                 title="Discover Media Pack" 
-                allowFullScreen 
+                allowFullScreen={false} 
+              />
+              {/* Overlay to block clicks on Adobe UI chrome at top */}
+              <div 
+                className="absolute top-0 left-0 right-0 h-4 bg-transparent z-10" 
+                style={{ pointerEvents: 'auto' }} 
+              />
+              {/* Overlay to block clicks on Adobe UI chrome at bottom */}
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-4 bg-transparent z-10" 
+                style={{ pointerEvents: 'auto' }} 
               />
             </div>
           </div>
