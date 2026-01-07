@@ -154,6 +154,7 @@ export type Database = {
           contact_name: string
           created_at: string
           device_fingerprint: string | null
+          distribution_start_date: string | null
           duration_discount_percent: number | null
           duration_id: string | null
           duration_multiplier: number | null
@@ -163,6 +164,7 @@ export type Database = {
           id: string
           invoice_generated: boolean | null
           ip_address_hash: string | null
+          leaflets_required_by: string | null
           monthly_price: number
           notes: string | null
           payment_status: string | null
@@ -190,6 +192,7 @@ export type Database = {
           contact_name: string
           created_at?: string
           device_fingerprint?: string | null
+          distribution_start_date?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
@@ -199,6 +202,7 @@ export type Database = {
           id?: string
           invoice_generated?: boolean | null
           ip_address_hash?: string | null
+          leaflets_required_by?: string | null
           monthly_price?: number
           notes?: string | null
           payment_status?: string | null
@@ -226,6 +230,7 @@ export type Database = {
           contact_name?: string
           created_at?: string
           device_fingerprint?: string | null
+          distribution_start_date?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
@@ -235,6 +240,7 @@ export type Database = {
           id?: string
           invoice_generated?: boolean | null
           ip_address_hash?: string | null
+          leaflets_required_by?: string | null
           monthly_price?: number
           notes?: string | null
           payment_status?: string | null
@@ -1386,12 +1392,14 @@ export type Database = {
           company: string | null
           contact_name: string
           created_at: string
+          distribution_start_date: string | null
           duration_discount_percent: number | null
           duration_id: string | null
           duration_multiplier: number | null
           email: string
           final_total: number | null
           id: string
+          leaflets_required_by: string | null
           monthly_price: number
           notes: string | null
           phone: string | null
@@ -1416,12 +1424,14 @@ export type Database = {
           company?: string | null
           contact_name: string
           created_at?: string
+          distribution_start_date?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
           email: string
           final_total?: number | null
           id?: string
+          leaflets_required_by?: string | null
           monthly_price?: number
           notes?: string | null
           phone?: string | null
@@ -1446,12 +1456,14 @@ export type Database = {
           company?: string | null
           contact_name?: string
           created_at?: string
+          distribution_start_date?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
           email?: string
           final_total?: number | null
           id?: string
+          leaflets_required_by?: string | null
           monthly_price?: number
           notes?: string | null
           phone?: string | null
@@ -1493,12 +1505,14 @@ export type Database = {
           company: string | null
           contact_name: string | null
           created_at: string
+          distribution_start_date: string | null
           duration_discount_percent: number | null
           duration_id: string | null
           duration_multiplier: number | null
           email: string
           final_total: number | null
           id: string
+          leaflets_required_by: string | null
           monthly_price: number
           notes: string | null
           phone: string | null
@@ -1522,12 +1536,14 @@ export type Database = {
           company?: string | null
           contact_name?: string | null
           created_at?: string
+          distribution_start_date?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
           email: string
           final_total?: number | null
           id?: string
+          leaflets_required_by?: string | null
           monthly_price?: number
           notes?: string | null
           phone?: string | null
@@ -1551,12 +1567,14 @@ export type Database = {
           company?: string | null
           contact_name?: string | null
           created_at?: string
+          distribution_start_date?: string | null
           duration_discount_percent?: number | null
           duration_id?: string | null
           duration_multiplier?: number | null
           email?: string
           final_total?: number | null
           id?: string
+          leaflets_required_by?: string | null
           monthly_price?: number
           notes?: string | null
           phone?: string | null
