@@ -927,7 +927,7 @@ const CalculatorTest = () => {
           <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
             <div className="relative w-full overflow-hidden" style={{ paddingBottom: '75%' }}>
               <iframe 
-                src="https://indd.adobe.com/embed/9865914e-1a16-4cd5-a8f2-bc11e6c80f3c?startpage=1&allowFullscreen=false" 
+                src="https://indd.adobe.com/embed/0cffeb07-c98f-42bf-9c6b-7661f5c82240?startpage=1&allowFullscreen=false"
                 className="absolute w-full" 
                 style={{
                   height: '115%',
