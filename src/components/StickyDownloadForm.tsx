@@ -46,7 +46,7 @@ const StickyDownloadForm = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-heading text-community-navy flex items-center gap-2">
                   <Download size={18} className="text-community-green" />
-                  2025 Advertising Info
+                  2026 Advertising Info
                 </CardTitle>
                 <Button
                   variant="ghost"
@@ -136,7 +136,7 @@ const StickyDownloadForm = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-heading text-community-navy flex items-center gap-2">
                 <Download size={20} className="text-community-green" />
-                2025 Advertising Info
+                2026 Advertising Info
               </CardTitle>
               <Button
                 variant="ghost"
