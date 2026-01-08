@@ -470,7 +470,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
         
         {/* Trust Badges */}
         <div className="flex flex-wrap justify-center gap-3 mt-8">
-          <TrustBadge icon={<Phone className="h-4 w-4" />} text="023 8000 0000" />
+          <TrustBadge icon={<Phone className="h-4 w-4" />} text="023 8026 6388" />
           <TrustBadge icon={<Calendar className="h-4 w-4" />} text="Since 2005" />
           <TrustBadge icon={<Shield className="h-4 w-4" />} text="No Hidden Fees" />
           <TrustBadge icon={<Clock className="h-4 w-4" />} text="Quick Setup" />
@@ -956,7 +956,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
         <div className="flex flex-wrap items-center justify-center gap-4 mt-8 pt-6 border-t border-slate-100">
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Phone className="h-4 w-4 text-community-green" />
-            <span>Questions? <strong className="text-community-navy">023 8000 0000</strong></span>
+            <span>Questions? <strong className="text-community-navy">023 8026 6388</strong></span>
           </div>
           <div className="hidden md:block w-1 h-1 rounded-full bg-slate-300" />
           <div className="flex items-center gap-2 text-sm text-slate-600">
