@@ -68,17 +68,8 @@ verify_jwt = false
 [functions.test-gocardless-webhook]
 verify_jwt = false
 
-[functions.ghl-business-webhook]
-verify_jwt = false
-
-[functions.sync-business-to-ghl]
-verify_jwt = false
-
-[functions.test-ghl-outbound]
-verify_jwt = false
-
-[functions.pull-ghl-contacts]
-verify_jwt = false
-
 [functions.submit-discover-form]
+verify_jwt = false
+
+[functions.import-businesses-csv]
 verify_jwt = false

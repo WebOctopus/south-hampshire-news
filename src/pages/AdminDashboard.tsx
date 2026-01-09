@@ -18,7 +18,7 @@ import AlertsManagement from '@/components/admin/AlertsManagement';
 import AdPreviewImageManagement from '@/components/admin/AdPreviewImageManagement';
 import MagazineEditionsManagement from '@/components/admin/MagazineEditionsManagement';
 import { CompetitionsManagement } from '@/components/admin/CompetitionsManagement';
-import { GHLSyncManagement } from '@/components/admin/GHLSyncManagement';
+import { CSVImportManagement } from '@/components/admin/CSVImportManagement';
 import { EventsManagement } from '@/components/admin/EventsManagement';
 import { StoriesManagement } from '@/components/admin/StoriesManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -519,8 +519,8 @@ const AdminDashboard = () => {
       case 'competitions':
         return <CompetitionsManagement />;
 
-      case 'ghl-sync':
-        return <GHLSyncManagement />;
+      case 'csv-import':
+        return <CSVImportManagement />;
 
       case 'events':
         return <EventsManagement />;
