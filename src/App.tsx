@@ -23,15 +23,15 @@ import Support from "./pages/Support";
 import PaymentSetup from "./pages/PaymentSetup";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound";
-
-
 
 const App = () => (
   <TooltipProvider>
     <Toaster />
     <Sonner />
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Index />} />
         
