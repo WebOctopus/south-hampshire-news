@@ -12,7 +12,7 @@ import {
   Image,
   BookOpen,
   Trophy,
-  RefreshCw,
+  Upload,
   Calendar
 } from "lucide-react"
 
@@ -81,9 +81,9 @@ const menuItems = [
     section: "competitions"
   },
   {
-    title: "GHL Sync",
-    icon: RefreshCw,
-    section: "ghl-sync"
+    title: "CSV Import",
+    icon: Upload,
+    section: "csv-import"
   }
 ]
 

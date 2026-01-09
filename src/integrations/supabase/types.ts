@@ -345,22 +345,21 @@ export type Database = {
           city: string | null
           created_at: string
           description: string | null
+          edition_area: string | null
           email: string | null
           featured: boolean | null
           featured_image_url: string | null
-          ghl_contact_id: string | null
-          ghl_location_id: string | null
           id: string
           images: string[] | null
           is_active: boolean | null
           is_verified: boolean | null
-          last_synced_at: string | null
           logo_url: string | null
           name: string
           opening_hours: Json | null
           owner_id: string | null
           phone: string | null
           postcode: string | null
+          sector: string | null
           slug: string | null
           updated_at: string
           website: string | null
@@ -373,22 +372,21 @@ export type Database = {
           city?: string | null
           created_at?: string
           description?: string | null
+          edition_area?: string | null
           email?: string | null
           featured?: boolean | null
           featured_image_url?: string | null
-          ghl_contact_id?: string | null
-          ghl_location_id?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
           is_verified?: boolean | null
-          last_synced_at?: string | null
           logo_url?: string | null
           name: string
           opening_hours?: Json | null
           owner_id?: string | null
           phone?: string | null
           postcode?: string | null
+          sector?: string | null
           slug?: string | null
           updated_at?: string
           website?: string | null
@@ -401,22 +399,21 @@ export type Database = {
           city?: string | null
           created_at?: string
           description?: string | null
+          edition_area?: string | null
           email?: string | null
           featured?: boolean | null
           featured_image_url?: string | null
-          ghl_contact_id?: string | null
-          ghl_location_id?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean | null
           is_verified?: boolean | null
-          last_synced_at?: string | null
           logo_url?: string | null
           name?: string
           opening_hours?: Json | null
           owner_id?: string | null
           phone?: string | null
           postcode?: string | null
+          sector?: string | null
           slug?: string | null
           updated_at?: string
           website?: string | null
