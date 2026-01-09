@@ -30,6 +30,7 @@ export interface CompetitionEntry {
   competition_id: string;
   name: string;
   email: string;
+  postcode: string;
   phone: string | null;
   message: string | null;
   agreed_to_terms: boolean;

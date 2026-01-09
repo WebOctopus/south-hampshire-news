@@ -25,10 +25,14 @@ import { Trophy, Loader2 } from 'lucide-react';
 import { Competition, useCreateCompetitionEntry } from '@/hooks/useCompetitions';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be less than 100 characters'),
+  email: z.string().email('Please enter a valid email address').max(255, 'Email must be less than 255 characters'),
+  postcode: z.string()
+    .min(5, 'Please enter a valid postcode')
+    .max(10, 'Postcode must be less than 10 characters')
+    .regex(/^[A-Za-z0-9\s]+$/, 'Postcode can only contain letters, numbers and spaces'),
   phone: z.string().optional(),
-  message: z.string().optional(),
+  message: z.string().max(1000, 'Message must be less than 1000 characters').optional(),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions',
   }),
@@ -50,6 +54,7 @@ const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntry
     defaultValues: {
       name: '',
       email: '',
+      postcode: '',
       phone: '',
       message: '',
       agreeToTerms: false,
@@ -63,6 +68,7 @@ const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntry
       competition_id: competition.id,
       name: data.name,
       email: data.email,
+      postcode: data.postcode,
       phone: data.phone || null,
       message: data.message || null,
       agreed_to_terms: data.agreeToTerms,
@@ -116,6 +122,20 @@ const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntry
                   <FormLabel>Email Address *</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your email address" type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="postcode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Postcode *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your postcode" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
