@@ -1892,38 +1892,77 @@ export type Database = {
           website: string
         }[]
       }
-      get_public_businesses: {
-        Args: {
-          category_filter?: string
-          limit_count?: number
-          offset_count?: number
-          search_term?: string
-        }
-        Returns: {
-          address_line1: string
-          address_line2: string
-          biz_type: string
-          business_categories: Json
-          category_id: string
-          city: string
-          created_at: string
-          description: string
-          featured: boolean
-          featured_image_url: string
-          id: string
-          images: string[]
-          is_verified: boolean
-          logo_url: string
-          name: string
-          postcode: string
-          updated_at: string
-          website: string
-        }[]
-      }
-      get_public_businesses_count: {
-        Args: { category_filter?: string; search_term?: string }
-        Returns: number
-      }
+      get_public_businesses:
+        | {
+            Args: {
+              category_filter?: string
+              limit_count?: number
+              offset_count?: number
+              search_term?: string
+            }
+            Returns: {
+              address_line1: string
+              address_line2: string
+              biz_type: string
+              business_categories: Json
+              category_id: string
+              city: string
+              created_at: string
+              description: string
+              featured: boolean
+              featured_image_url: string
+              id: string
+              images: string[]
+              is_verified: boolean
+              logo_url: string
+              name: string
+              postcode: string
+              updated_at: string
+              website: string
+            }[]
+          }
+        | {
+            Args: {
+              category_filter?: string
+              edition_area_filter?: string
+              limit_count?: number
+              offset_count?: number
+              search_term?: string
+            }
+            Returns: {
+              address_line1: string
+              address_line2: string
+              biz_type: string
+              business_categories: Json
+              category_id: string
+              city: string
+              created_at: string
+              description: string
+              featured: boolean
+              featured_image_url: string
+              id: string
+              images: string[]
+              is_verified: boolean
+              logo_url: string
+              name: string
+              postcode: string
+              updated_at: string
+              website: string
+            }[]
+          }
+      get_public_businesses_count:
+        | {
+            Args: { category_filter?: string; search_term?: string }
+            Returns: number
+          }
+        | {
+            Args: {
+              category_filter?: string
+              edition_area_filter?: string
+              search_term?: string
+            }
+            Returns: number
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
