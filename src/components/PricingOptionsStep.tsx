@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, AlertCircle, Loader2, FileText, BookOpen, Phone } from 'lucide-react';
+import { Check, X, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStepForm } from './StepForm';
 import { useProductPackages, type ProductPackageFeature } from '@/hooks/useProductPackages';
@@ -293,33 +293,6 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
             </Card>
           );
         })}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-6">
-        <Button
-          className="bg-community-green hover:bg-community-green/90 text-white font-semibold px-6 py-3 rounded-full"
-          onClick={() => window.open('/contact#advertising', '_blank')}
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          ENQUIRY FORM
-        </Button>
-        <Button
-          variant="outline"
-          className="bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold px-6 py-3 rounded-full"
-          onClick={() => window.open('/contact#media-pack', '_blank')}
-        >
-          <BookOpen className="w-4 h-4 mr-2" />
-          REQUEST A MEDIA PACK
-        </Button>
-        <Button
-          variant="outline"
-          className="bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold px-6 py-3 rounded-full"
-          onClick={() => window.location.href = 'tel:02380123456'}
-        >
-          <Phone className="w-4 h-4 mr-2" />
-          CONTACT US
-        </Button>
       </div>
     </div>
   );
