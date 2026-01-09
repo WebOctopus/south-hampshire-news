@@ -5,12 +5,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
 const NewsletterSignup = () => {
+  const [firstName, setFirstName] = useState('');
+  const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
   const [postcode, setPostcode] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Newsletter signup:', { email, postcode });
+    // Form submission logic here
+    setFirstName('');
+    setSurname('');
     setEmail('');
     setPostcode('');
   };
@@ -47,6 +51,38 @@ const NewsletterSignup = () => {
               {/* Form */}
               <div className="lg:w-96">
                 <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="newsletter-firstname" className="text-sm font-medium text-foreground">
+                        First Name
+                      </Label>
+                      <Input
+                        id="newsletter-firstname"
+                        type="text"
+                        placeholder="First name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                        maxLength={50}
+                        className="w-full h-11 md:h-12 text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newsletter-surname" className="text-sm font-medium text-foreground">
+                        Surname
+                      </Label>
+                      <Input
+                        id="newsletter-surname"
+                        type="text"
+                        placeholder="Surname"
+                        value={surname}
+                        onChange={(e) => setSurname(e.target.value)}
+                        required
+                        maxLength={50}
+                        className="w-full h-11 md:h-12 text-base"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <Label htmlFor="newsletter-email" className="text-sm font-medium text-foreground">
                       Email Address
@@ -58,6 +94,7 @@ const NewsletterSignup = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      maxLength={255}
                       className="w-full h-11 md:h-12 text-base"
                     />
                   </div>
