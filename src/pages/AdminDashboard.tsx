@@ -22,20 +22,28 @@ import { CSVImportManagement } from '@/components/admin/CSVImportManagement';
 import { EventsManagement } from '@/components/admin/EventsManagement';
 import { StoriesManagement } from '@/components/admin/StoriesManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { BusinessEditForm } from '@/components/admin/BusinessEditForm';
+import { ClaimRequestsManagement } from '@/components/admin/ClaimRequestsManagement';
 import { User } from '@supabase/supabase-js';
-import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3 } from 'lucide-react';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [businesses, setBusinesses] = useState<any[]>([]);
+  const [businessCount, setBusinessCount] = useState(0);
   const [users, setUsers] = useState<any[]>([]);
   const [stories, setStories] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState('overview');
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
   const [isUserEditDialogOpen, setIsUserEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingBusiness, setEditingBusiness] = useState<any>(null);
+  const [isBusinessEditOpen, setIsBusinessEditOpen] = useState(false);
+  const [businessSearchTerm, setBusinessSearchTerm] = useState('');
+  const [businessPage, setBusinessPage] = useState(0);
+  const BUSINESSES_PER_PAGE = 25;
   const [storyForm, setStoryForm] = useState({
     title: '',
     content: '',
@@ -85,7 +93,15 @@ const AdminDashboard = () => {
   }, [navigate, toast]);
 
   const loadBusinesses = async () => {
-    const { data } = await supabase
+    // Get total count first
+    const { count } = await supabase
+      .from('businesses')
+      .select('*', { count: 'exact', head: true });
+    
+    setBusinessCount(count || 0);
+
+    // Build query with search and pagination
+    let query = supabase
       .from('businesses')
       .select(`
         *,
@@ -93,7 +109,15 @@ const AdminDashboard = () => {
           name
         )
       `)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(businessPage * BUSINESSES_PER_PAGE, (businessPage + 1) * BUSINESSES_PER_PAGE - 1);
+
+    // Apply search filter if term exists
+    if (businessSearchTerm.trim()) {
+      query = query.or(`name.ilike.%${businessSearchTerm}%,email.ilike.%${businessSearchTerm}%,postcode.ilike.%${businessSearchTerm}%,city.ilike.%${businessSearchTerm}%`);
+    }
+
+    const { data } = await query;
     
     if (data) {
       setBusinesses(data);
@@ -252,6 +276,13 @@ const AdminDashboard = () => {
     }
   }, [isAdmin]);
 
+  // Reload businesses when page changes
+  useEffect(() => {
+    if (isAdmin) {
+      loadBusinesses();
+    }
+  }, [businessPage]);
+
   const toggleBusinessStatus = async (businessId: string, currentStatus: boolean) => {
     const { error } = await supabase
       .from('businesses')
@@ -337,13 +368,36 @@ const AdminDashboard = () => {
         );
 
       case 'businesses':
+        const totalPages = Math.ceil(businessCount / BUSINESSES_PER_PAGE);
         return (
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">Business Management</h2>
-              <p className="text-muted-foreground">Manage business listings and their status.</p>
+              <p className="text-muted-foreground">Manage business listings. Total: {businessCount.toLocaleString()} businesses</p>
             </div>
             
+            {/* Search */}
+            <div className="flex gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, email, postcode, city..."
+                  value={businessSearchTerm}
+                  onChange={(e) => {
+                    setBusinessSearchTerm(e.target.value);
+                    setBusinessPage(0);
+                  }}
+                  className="pl-10"
+                />
+              </div>
+              <Button variant="outline" onClick={() => { setBusinessSearchTerm(''); setBusinessPage(0); loadBusinesses(); }}>
+                Clear
+              </Button>
+              <Button onClick={loadBusinesses}>
+                <Search className="h-4 w-4 mr-2" /> Search
+              </Button>
+            </div>
+
             <Card>
               <CardHeader>
                 <CardTitle>Business Listings</CardTitle>
@@ -351,62 +405,84 @@ const AdminDashboard = () => {
               <CardContent>
                 {businesses.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>No business listings found.</p>
+                    <p>No businesses found.</p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Business Name</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Created</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {businesses.map((business) => (
-                          <TableRow key={business.id}>
-                            <TableCell className="font-medium">{business.name}</TableCell>
-                            <TableCell>
-                              {business.business_categories?.name || 'No category'}
-                            </TableCell>
-                            <TableCell>
-                              {business.city ? `${business.city}${business.postcode ? ', ' + business.postcode : ''}` : 'No location'}
-                            </TableCell>
-                            <TableCell>
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                business.is_active 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {business.is_active ? 'Active' : 'Inactive'}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(business.created_at).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant={business.is_active ? "destructive" : "default"}
-                                size="sm"
-                                onClick={() => toggleBusinessStatus(business.id, business.is_active)}
-                              >
-                                {business.is_active ? 'Deactivate' : 'Activate'}
-                              </Button>
-                            </TableCell>
+                  <>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Business Name</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        </TableHeader>
+                        <TableBody>
+                          {businesses.map((business) => (
+                            <TableRow key={business.id}>
+                              <TableCell 
+                                className="font-medium cursor-pointer hover:text-primary"
+                                onClick={() => { setEditingBusiness(business); setIsBusinessEditOpen(true); }}
+                              >
+                                {business.name}
+                              </TableCell>
+                              <TableCell>{business.business_categories?.name || '-'}</TableCell>
+                              <TableCell>{business.city || business.postcode || '-'}</TableCell>
+                              <TableCell>
+                                <span className={`px-2 py-1 rounded-full text-xs ${business.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                  {business.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <Button size="sm" variant="outline" onClick={() => { setEditingBusiness(business); setIsBusinessEditOpen(true); }}>
+                                  <Edit className="h-4 w-4 mr-1" /> Edit
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex items-center justify-between mt-4">
+                      <p className="text-sm text-muted-foreground">
+                        Page {businessPage + 1} of {totalPages || 1}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" disabled={businessPage === 0} onClick={() => setBusinessPage(p => p - 1)}>
+                          <ChevronLeft className="h-4 w-4" /> Previous
+                        </Button>
+                        <Button variant="outline" size="sm" disabled={businessPage >= totalPages - 1} onClick={() => setBusinessPage(p => p + 1)}>
+                          Next <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
+
+            {/* Business Edit Dialog */}
+            <Dialog open={isBusinessEditOpen} onOpenChange={setIsBusinessEditOpen}>
+              <DialogContent className="max-w-3xl max-h-[90vh]">
+                {editingBusiness && (
+                  <BusinessEditForm
+                    business={editingBusiness}
+                    onClose={() => setIsBusinessEditOpen(false)}
+                    onSave={() => { setIsBusinessEditOpen(false); loadBusinesses(); }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         );
+
+      case 'claim-requests':
+        return <ClaimRequestsManagement />;
 
       case 'users':
         return (

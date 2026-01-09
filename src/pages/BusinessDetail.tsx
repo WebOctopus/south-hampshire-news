@@ -8,14 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
+import { BusinessClaimButton } from '@/components/BusinessClaimButton';
 
 interface Business {
   id: string;
   name: string;
   description: string;
   category_id: string;
-  email?: string; // Optional for public users
-  phone?: string; // Optional for public users
+  email?: string;
+  phone?: string;
   website: string;
   address_line1: string;
   address_line2: string;
@@ -27,6 +28,7 @@ interface Business {
   is_verified: boolean;
   featured: boolean;
   opening_hours: any;
+  owner_id: string | null;
   business_categories: {
     name: string;
     icon: string;
@@ -441,6 +443,13 @@ const BusinessDetail = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Claim Business */}
+          <BusinessClaimButton
+            businessId={business.id}
+            businessName={business.name}
+            ownerId={business.owner_id}
+          />
 
           {/* Opening Hours */}
           <Card>
