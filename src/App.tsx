@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import BusinessDirectory from "./pages/BusinessDirectory";
 import WhatsOn from "./pages/WhatsOn";
+import EventsArchive from "./pages/EventsArchive";
 import Competitions from "./pages/Competitions";
 import Advertising from "./pages/Advertising";
 import ApplyToDistribute from "./pages/ApplyToDistribute";
@@ -35,6 +36,7 @@ const App = () => (
         <Route path="/" element={<Index />} />
         
         <Route path="/whats-on" element={<WhatsOn />} />
+        <Route path="/whats-on/archive" element={<EventsArchive />} />
         <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/competitions" element={<Competitions />} />
         <Route path="/advertising" element={<Advertising />} />
