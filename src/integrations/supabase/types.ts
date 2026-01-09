@@ -394,12 +394,15 @@ export type Database = {
           description: string | null
           edition_area: string | null
           email: string | null
+          facebook_url: string | null
           featured: boolean | null
           featured_image_url: string | null
           id: string
           images: string[] | null
+          instagram_url: string | null
           is_active: boolean | null
           is_verified: boolean | null
+          linkedin_url: string | null
           logo_url: string | null
           name: string
           opening_hours: Json | null
@@ -408,8 +411,11 @@ export type Database = {
           postcode: string | null
           sector: string | null
           slug: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
           updated_at: string
           website: string | null
+          youtube_url: string | null
         }
         Insert: {
           address_line1?: string | null
@@ -421,12 +427,15 @@ export type Database = {
           description?: string | null
           edition_area?: string | null
           email?: string | null
+          facebook_url?: string | null
           featured?: boolean | null
           featured_image_url?: string | null
           id?: string
           images?: string[] | null
+          instagram_url?: string | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          linkedin_url?: string | null
           logo_url?: string | null
           name: string
           opening_hours?: Json | null
@@ -435,8 +444,11 @@ export type Database = {
           postcode?: string | null
           sector?: string | null
           slug?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           website?: string | null
+          youtube_url?: string | null
         }
         Update: {
           address_line1?: string | null
@@ -448,12 +460,15 @@ export type Database = {
           description?: string | null
           edition_area?: string | null
           email?: string | null
+          facebook_url?: string | null
           featured?: boolean | null
           featured_image_url?: string | null
           id?: string
           images?: string[] | null
+          instagram_url?: string | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          linkedin_url?: string | null
           logo_url?: string | null
           name?: string
           opening_hours?: Json | null
@@ -462,8 +477,11 @@ export type Database = {
           postcode?: string | null
           sector?: string | null
           slug?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           website?: string | null
+          youtube_url?: string | null
         }
         Relationships: [
           {
