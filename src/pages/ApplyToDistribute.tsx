@@ -1,11 +1,11 @@
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, MapPin, Clock, DollarSign, Users } from 'lucide-react';
+import { CheckCircle, MapPin, Clock, PoundSterling, Users } from 'lucide-react';
 
 const ApplyToDistribute = () => {
   const perks = [
-    { icon: DollarSign, title: "Competitive Pay", description: "Earn £9.18 per 100 magazines delivered, plus other bonuses and top ups" },
+    { icon: PoundSterling, title: "Competitive Pay", description: "Earn £9.18 per 100 magazines delivered, plus other bonuses and top ups" },
     { icon: Clock, title: "Flexible Hours", description: "Work around your schedule as long as they are delivered within 7 days" },
     { icon: MapPin, title: "Local Routes", description: "Deliver in your neighborhood or preferred areas" },
     { icon: Users, title: "Great Team", description: "Join a supportive community of distributors" },
