@@ -1064,6 +1064,7 @@ export type Database = {
       magazine_editions: {
         Row: {
           alt_text: string | null
+          content_type: string
           created_at: string | null
           id: string
           image_url: string
@@ -1076,6 +1077,7 @@ export type Database = {
         }
         Insert: {
           alt_text?: string | null
+          content_type?: string
           created_at?: string | null
           id?: string
           image_url: string
@@ -1088,6 +1090,7 @@ export type Database = {
         }
         Update: {
           alt_text?: string | null
+          content_type?: string
           created_at?: string | null
           id?: string
           image_url?: string

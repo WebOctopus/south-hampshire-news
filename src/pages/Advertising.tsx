@@ -101,7 +101,7 @@ const CalculatorTest = () => {
   // Use magazine editions hook
   const {
     data: editions
-  } = useMagazineEditions();
+  } = useMagazineEditions(false, 'online_content');
 
   // Fallback covers for when database is empty
   const fallbackCovers = [{

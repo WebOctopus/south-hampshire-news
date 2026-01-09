@@ -29,7 +29,7 @@ const fallbackCovers = [
 
 const Index = () => {
   const navigate = useNavigate();
-  const { data: editions, isLoading } = useMagazineEditions();
+  const { data: editions, isLoading } = useMagazineEditions(false, 'front_cover');
   
   // Map database editions to carousel format, or use fallback
   const magazineCovers = editions?.length 
