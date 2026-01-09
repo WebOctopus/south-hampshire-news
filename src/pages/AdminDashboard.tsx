@@ -376,8 +376,8 @@ const AdminDashboard = () => {
               <p className="text-muted-foreground">Manage business listings. Total: {businessCount.toLocaleString()} businesses</p>
             </div>
             
-            {/* Search */}
-            <div className="flex gap-4">
+            {/* Search and Add */}
+            <div className="flex gap-4 flex-wrap">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -395,6 +395,9 @@ const AdminDashboard = () => {
               </Button>
               <Button onClick={loadBusinesses}>
                 <Search className="h-4 w-4 mr-2" /> Search
+              </Button>
+              <Button onClick={() => { setEditingBusiness(null); setIsBusinessEditOpen(true); }}>
+                <Plus className="h-4 w-4 mr-2" /> Add Business
               </Button>
             </div>
 
@@ -466,16 +469,14 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Business Edit Dialog */}
+            {/* Business Edit/Add Dialog */}
             <Dialog open={isBusinessEditOpen} onOpenChange={setIsBusinessEditOpen}>
               <DialogContent className="max-w-3xl max-h-[90vh]">
-                {editingBusiness && (
-                  <BusinessEditForm
-                    business={editingBusiness}
-                    onClose={() => setIsBusinessEditOpen(false)}
-                    onSave={() => { setIsBusinessEditOpen(false); loadBusinesses(); }}
-                  />
-                )}
+                <BusinessEditForm
+                  business={editingBusiness}
+                  onClose={() => setIsBusinessEditOpen(false)}
+                  onSave={() => { setIsBusinessEditOpen(false); loadBusinesses(); }}
+                />
               </DialogContent>
             </Dialog>
           </div>
