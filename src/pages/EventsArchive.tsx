@@ -1,14 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, Calendar, MapPin, Clock, Tag, Filter, Search, Grid, CalendarDays, Star, Archive } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Clock, Tag, Filter, Search, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Link } from 'react-router-dom';
@@ -17,9 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { EventCard } from '@/components/EventCard';
 import { Event } from '@/hooks/useEvents';
 
-type QuickFilter = 'all' | 'week' | 'month';
-
-const WhatsOn = () => {
+const EventsArchive = () => {
   const mountedRef = useRef(true);
   
   const [events, setEvents] = useState<Event[]>([]);
@@ -31,15 +25,7 @@ const WhatsOn = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedArea, setSelectedArea] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
-  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
-  
-  // View and date filter state
-  const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
-  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined
-  });
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   // Filter metadata
   const [categories, setCategories] = useState<string[]>([]);
@@ -64,9 +50,9 @@ const WhatsOn = () => {
       let query = supabase
         .from('events')
         .select('*')
-        .eq('is_published', true) // Only show published events
-        .gte('date', today) // Only show today and future events
-        .order('date', { ascending: true });
+        .eq('is_published', true)
+        .lt('date', today) // Only show past events
+        .order('date', { ascending: sortOrder === 'oldest' });
 
       if (searchTerm) {
         query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`);
@@ -84,25 +70,10 @@ const WhatsOn = () => {
         query = query.eq('type', selectedType);
       }
 
-      if (dateFilter) {
-        const filterDateStr = dateFilter.toISOString().split('T')[0];
-        query = query.eq('date', filterDateStr);
-      }
-
-      if (dateRange.from) {
-        const fromDateStr = dateRange.from.toISOString().split('T')[0];
-        query = query.gte('date', fromDateStr);
-      }
-      if (dateRange.to) {
-        const toDateStr = dateRange.to.toISOString().split('T')[0];
-        query = query.lte('date', toDateStr);
-      }
-
       const { data, error } = await query;
 
       if (error) throw error;
 
-      // Map data to Event type with proper type casting
       const mappedEvents = (data || []).map(event => ({
         ...event,
         links: Array.isArray(event.links) ? event.links : []
@@ -112,12 +83,12 @@ const WhatsOn = () => {
         setEvents(mappedEvents);
       }
     } catch (err) {
-      console.error('Error fetching events:', err);
+      console.error('Error fetching past events:', err);
       if (mountedRef.current) {
-        setError('Failed to load events. Please try again.');
+        setError('Failed to load past events. Please try again.');
         toast({
           title: "Error",
-          description: "Failed to load events. Please try again.",
+          description: "Failed to load past events. Please try again.",
           variant: "destructive",
         });
       }
@@ -126,7 +97,7 @@ const WhatsOn = () => {
         setLoading(false);
       }
     }
-  }, [searchTerm, selectedCategory, selectedArea, selectedType, dateFilter, dateRange.from, dateRange.to]);
+  }, [searchTerm, selectedCategory, selectedArea, selectedType, sortOrder]);
 
   const fetchFilterMetadata = async () => {
     try {
@@ -136,7 +107,7 @@ const WhatsOn = () => {
         .from('events')
         .select('category, area, type')
         .eq('is_published', true)
-        .gte('date', today); // Only get metadata from current/future events
+        .lt('date', today); // Only get metadata from past events
 
       if (error) throw error;
 
@@ -170,36 +141,6 @@ const WhatsOn = () => {
     fetchFilterMetadata();
   }, []);
 
-  // Get featured events
-  const featuredEvents = events.filter(e => e.featured);
-
-  // Apply quick filter
-  const getFilteredEvents = () => {
-    const today = new Date();
-    
-    if (quickFilter === 'week') {
-      const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-      return events.filter(event => {
-        const eventDate = new Date(event.date);
-        return isWithinInterval(eventDate, { start: weekStart, end: weekEnd });
-      });
-    }
-    
-    if (quickFilter === 'month') {
-      const monthStart = startOfMonth(today);
-      const monthEnd = endOfMonth(today);
-      return events.filter(event => {
-        const eventDate = new Date(event.date);
-        return isWithinInterval(eventDate, { start: monthStart, end: monthEnd });
-      });
-    }
-    
-    return events;
-  };
-
-  const filteredEvents = getFilteredEvents();
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
@@ -215,59 +156,22 @@ const WhatsOn = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-16">
+      <section className="bg-gradient-to-r from-muted to-muted/80 text-foreground py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
+            <Link to="/whats-on" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 mb-4 transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="font-medium">Back to Upcoming Events</span>
+            </Link>
             <h1 className="text-4xl lg:text-6xl font-heading font-bold mb-6">
-              What's On
+              Events Archive
             </h1>
-            <p className="text-xl lg:text-2xl font-body mb-8 max-w-3xl mx-auto opacity-90">
-              Discover the best events, activities, and entertainment in your local area
+            <p className="text-xl lg:text-2xl font-body mb-4 max-w-3xl mx-auto text-muted-foreground">
+              Browse past events from our community
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/add-event">
-                <Button 
-                  size="lg" 
-                  variant="secondary"
-                  className="font-semibold px-8 py-3"
-                >
-                  <Plus className="mr-2 h-5 w-5" />
-                  Add Your Event
-                </Button>
-              </Link>
-              <Link to="/whats-on/archive">
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="font-semibold px-8 py-3 bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
-                >
-                  <Archive className="mr-2 h-5 w-5" />
-                  View Past Events
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       </section>
-
-      {/* Featured Events Section */}
-      {featuredEvents.length > 0 && (
-        <section className="py-12 bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
-              <h2 className="text-2xl lg:text-3xl font-heading font-bold text-foreground">
-                Featured Events
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredEvents.slice(0, 3).map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Events Section */}
       <section className="py-12">
@@ -275,35 +179,28 @@ const WhatsOn = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
               <h2 className="text-2xl lg:text-3xl font-heading font-bold text-foreground mb-2">
-                Upcoming Events
+                Past Events
               </h2>
               <p className="text-muted-foreground font-body">
-                {loading ? 'Loading events...' : `${filteredEvents.length} events found`}
+                {loading ? 'Loading events...' : `${events.length} past events found`}
               </p>
             </div>
             
-            {/* Quick Filter Pills */}
+            {/* Sort Order */}
             <div className="flex gap-2">
               <Button
-                variant={quickFilter === 'all' ? 'default' : 'outline'}
+                variant={sortOrder === 'newest' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setQuickFilter('all')}
+                onClick={() => setSortOrder('newest')}
               >
-                All Events
+                Most Recent
               </Button>
               <Button
-                variant={quickFilter === 'week' ? 'default' : 'outline'}
+                variant={sortOrder === 'oldest' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setQuickFilter('week')}
+                onClick={() => setSortOrder('oldest')}
               >
-                This Week
-              </Button>
-              <Button
-                variant={quickFilter === 'month' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setQuickFilter('month')}
-              >
-                This Month
+                Oldest First
               </Button>
             </div>
           </div>
@@ -315,7 +212,7 @@ const WhatsOn = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search events..."
+                  placeholder="Search past events..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 h-12 text-base"
@@ -397,7 +294,6 @@ const WhatsOn = () => {
                             setSelectedCategory('all');
                             setSelectedArea('all');
                             setSelectedType('all');
-                            setQuickFilter('all');
                           }}
                           className="w-full"
                         >
@@ -414,14 +310,14 @@ const WhatsOn = () => {
             <div className="hidden md:block p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Filter className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-heading font-semibold">Filter Events</h3>
+                <h3 className="text-lg font-heading font-semibold">Filter Past Events</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    placeholder="Search events..."
+                    placeholder="Search past events..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -471,14 +367,13 @@ const WhatsOn = () => {
               {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all') && (
                 <div className="mt-4 flex justify-end">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setSearchTerm('');
                       setSelectedCategory('all');
                       setSelectedArea('all');
                       setSelectedType('all');
-                      setQuickFilter('all');
                     }}
                   >
                     Clear All Filters
@@ -488,130 +383,58 @@ const WhatsOn = () => {
             </div>
           </div>
 
-          {/* View Toggle */}
-          <div className="flex justify-end items-center mb-6">
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid className="mr-2 h-4 w-4" />
-                Grid
-              </Button>
-              <Button
-                variant={viewMode === 'calendar' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('calendar')}
-              >
-                <CalendarDays className="mr-2 h-4 w-4" />
-                List
-              </Button>
-            </div>
-          </div>
-
           {/* Loading State */}
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="max-w-md mx-auto">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-                <h3 className="text-xl font-heading font-semibold text-muted-foreground mb-2">
-                  Loading Events...
-                </h3>
-              </div>
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-card rounded-lg shadow-sm border animate-pulse">
+                  <div className="h-48 bg-muted rounded-t-lg"></div>
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-muted rounded w-1/4"></div>
+                    <div className="h-6 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ) : error ? (
+          )}
+
+          {/* Error State */}
+          {error && !loading && (
             <div className="text-center py-12">
-              <div className="max-w-md mx-auto">
-                <Calendar className="h-16 w-16 text-destructive/30 mx-auto mb-4" />
-                <h3 className="text-xl font-heading font-semibold text-destructive mb-2">
-                  Error Loading Events
-                </h3>
-                <p className="text-muted-foreground mb-6">{error}</p>
-                <Button variant="outline" onClick={() => fetchEvents()}>
+              <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg inline-block mb-4">
+                {error}
+              </div>
+              <div>
+                <Button onClick={() => fetchEvents()}>
                   Try Again
                 </Button>
               </div>
             </div>
-          ) : filteredEvents.length > 0 ? (
-            viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredEvents.map((event) => (
-                  <Link key={event.id} to={`/events/${event.id}`} className="block">
-                    <Card className="p-4 hover:shadow-md transition-shadow duration-200">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">
-                          {event.image ? (
-                            <img 
-                              src={event.image} 
-                              alt={event.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Calendar className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <h4 className="text-lg font-heading font-semibold mb-1 hover:text-primary transition-colors">
-                                {event.title}
-                              </h4>
-                              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-2">
-                                <div className="flex items-center gap-1">
-                                  <CalendarDays className="h-4 w-4" />
-                                  {formatDate(event.date)}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  {event.time}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4" />
-                                  {event.area}
-                                </div>
-                              </div>
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {event.excerpt || event.description}
-                              </p>
-                            </div>
-                            <div className="flex flex-col gap-2 flex-shrink-0">
-                              <Badge variant="secondary" className="text-xs">
-                                {event.category}
-                              </Badge>
-                              {event.featured && (
-                                <Badge className="bg-yellow-500 hover:bg-yellow-500 text-yellow-950 text-xs">
-                                  <Star className="h-3 w-3 mr-1 fill-current" />
-                                  Featured
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            )
-          ) : (
-            <div className="text-center py-12">
-              <div className="max-w-md mx-auto">
-                <Calendar className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-xl font-heading font-semibold text-muted-foreground mb-2">
-                  No Events Found
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  Try adjusting your filters or search terms to find more events.
-                </p>
+          )}
+
+          {/* Events Grid */}
+          {!loading && !error && events.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )}
+
+          {/* No Events Found */}
+          {!loading && !error && events.length === 0 && (
+            <div className="text-center py-16 bg-muted/30 rounded-lg">
+              <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-heading font-semibold text-foreground mb-2">
+                No Past Events Found
+              </h3>
+              <p className="text-muted-foreground font-body mb-6 max-w-md mx-auto">
+                {searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all'
+                  ? "Try adjusting your filters to find what you're looking for."
+                  : "There are no past events in the archive yet."}
+              </p>
+              {(searchTerm || selectedCategory !== 'all' || selectedArea !== 'all' || selectedType !== 'all') && (
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -619,34 +442,13 @@ const WhatsOn = () => {
                     setSelectedCategory('all');
                     setSelectedArea('all');
                     setSelectedType('all');
-                    setQuickFilter('all');
                   }}
                 >
-                  Clear All Filters
+                  Clear Filters
                 </Button>
-              </div>
+              )}
             </div>
           )}
-
-          {/* Call to Action */}
-          <div className="text-center mt-12">
-            <Card className="max-w-md mx-auto">
-              <CardContent className="p-8">
-                <h3 className="text-xl font-heading font-bold mb-4">
-                  Have an Event to Share?
-                </h3>
-                <p className="text-muted-foreground font-body mb-6">
-                  Submit your local event and reach hundreds of community members
-                </p>
-                <Link to="/add-event">
-                  <Button className="w-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Your Event
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
 
@@ -655,4 +457,4 @@ const WhatsOn = () => {
   );
 };
 
-export default WhatsOn;
+export default EventsArchive;
