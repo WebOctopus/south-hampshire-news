@@ -22,10 +22,14 @@ export interface DbArea {
   half_page_multiplier: number;
   full_page_multiplier: number;
   schedule?: Array<{ 
+    year?: number;
     month: string; 
-    copyDeadline: string; 
-    printDeadline: string; 
-    deliveryDate: string; 
+    copyDeadline: string;
+    copy_deadline?: string; 
+    printDeadline: string;
+    print_deadline?: string; 
+    deliveryDate: string;
+    delivery_date?: string;
   }>;
 }
 

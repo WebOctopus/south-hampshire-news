@@ -1,6 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface LeafletScheduleItem {
+  year: number;
+  month: string;
+  copyDeadline: string;
+  copy_deadline?: string;
+  printDeadline: string;
+  print_deadline?: string;
+  deliveryDate: string;
+  delivery_date?: string;
+}
+
 export interface LeafletArea {
   id: string;
   area_number: number;
@@ -11,7 +22,7 @@ export interface LeafletArea {
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
-  schedule?: any[];
+  schedule?: LeafletScheduleItem[];
 }
 
 export interface LeafletDuration {
@@ -53,7 +64,15 @@ export function useLeafletAreas() {
           throw error;
         }
         
-        return (data || []) as LeafletArea[];
+        // Process the data to properly type the schedule field
+        const processedData = (data || []).map(area => ({
+          ...area,
+          schedule: Array.isArray(area.schedule) 
+            ? (area.schedule as unknown as LeafletScheduleItem[]) 
+            : []
+        })) as LeafletArea[];
+        
+        return processedData;
       } catch (error) {
         throw error;
       }
@@ -63,7 +82,7 @@ export function useLeafletAreas() {
       return failureCount < 1; // Only retry once
     }
   });
-};
+}
 
 // Hook to fetch leaflet campaign durations
 export function useLeafletCampaignDurations() {
