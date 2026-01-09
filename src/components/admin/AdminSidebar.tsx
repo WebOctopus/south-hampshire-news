@@ -13,7 +13,8 @@ import {
   BookOpen,
   Trophy,
   Upload,
-  Calendar
+  Calendar,
+  ClipboardCheck
 } from "lucide-react"
 
 import {
@@ -39,6 +40,11 @@ const menuItems = [
     title: "Businesses",
     icon: Building2,
     section: "businesses"
+  },
+  {
+    title: "Claim Requests",
+    icon: ClipboardCheck,
+    section: "claim-requests"
   },
   {
     title: "Users",

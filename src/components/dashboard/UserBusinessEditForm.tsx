@@ -1,0 +1,313 @@
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { Building2, MapPin, Phone, Globe, Clock, Save, X } from 'lucide-react';
+
+interface UserBusinessEditFormProps {
+  business: any;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+const DAYS_OF_WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusinessEditFormProps) {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    name: business?.name || '',
+    description: business?.description || '',
+    category_id: business?.category_id || '',
+    email: business?.email || '',
+    phone: business?.phone || '',
+    website: business?.website || '',
+    address_line1: business?.address_line1 || '',
+    address_line2: business?.address_line2 || '',
+    city: business?.city || '',
+    postcode: business?.postcode || '',
+    logo_url: business?.logo_url || '',
+    featured_image_url: business?.featured_image_url || '',
+  });
+
+  const [openingHours, setOpeningHours] = useState<Record<string, string>>(
+    business?.opening_hours || {}
+  );
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const { data } = await supabase
+        .from('business_categories')
+        .select('*')
+        .order('name');
+      if (data) setCategories(data);
+    };
+    loadCategories();
+  }, []);
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleHoursChange = (day: string, value: string) => {
+    setOpeningHours(prev => ({ ...prev, [day]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const updateData = {
+        ...formData,
+        category_id: formData.category_id || null,
+        opening_hours: openingHours,
+      };
+
+      const { error } = await supabase
+        .from('businesses')
+        .update(updateData)
+        .eq('id', business.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Your business listing has been updated."
+      });
+      onSave();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Basic Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Building2 className="h-5 w-5" />
+            Basic Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Business Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category_id">Category</Label>
+              <Select
+                value={formData.category_id}
+                onValueChange={(value) => handleChange('category_id', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              rows={4}
+              placeholder="Tell customers about your business..."
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Phone className="h-5 w-5" />
+            Contact Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              value={formData.website}
+              onChange={(e) => handleChange('website', e.target.value)}
+              placeholder="https://www.example.com"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Address */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <MapPin className="h-5 w-5" />
+            Address
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="address_line1">Address Line 1</Label>
+            <Input
+              id="address_line1"
+              value={formData.address_line1}
+              onChange={(e) => handleChange('address_line1', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="address_line2">Address Line 2</Label>
+            <Input
+              id="address_line2"
+              value={formData.address_line2}
+              onChange={(e) => handleChange('address_line2', e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                value={formData.city}
+                onChange={(e) => handleChange('city', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="postcode">Postcode</Label>
+              <Input
+                id="postcode"
+                value={formData.postcode}
+                onChange={(e) => handleChange('postcode', e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Images */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Globe className="h-5 w-5" />
+            Images
+          </CardTitle>
+          <CardDescription>
+            Add image URLs for your business logo and featured image.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="logo_url">Logo URL</Label>
+              <Input
+                id="logo_url"
+                value={formData.logo_url}
+                onChange={(e) => handleChange('logo_url', e.target.value)}
+                placeholder="https://example.com/logo.png"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="featured_image_url">Featured Image URL</Label>
+              <Input
+                id="featured_image_url"
+                value={formData.featured_image_url}
+                onChange={(e) => handleChange('featured_image_url', e.target.value)}
+                placeholder="https://example.com/featured.jpg"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Opening Hours */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Clock className="h-5 w-5" />
+            Opening Hours
+          </CardTitle>
+          <CardDescription>
+            Enter your opening hours for each day (e.g., "9:00 - 17:00" or "Closed").
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {DAYS_OF_WEEK.map((day) => (
+              <div key={day} className="flex items-center gap-2">
+                <Label htmlFor={day} className="w-24 capitalize">{day}</Label>
+                <Input
+                  id={day}
+                  value={openingHours[day] || ''}
+                  onChange={(e) => handleHoursChange(day, e.target.value)}
+                  placeholder="e.g., 9:00 - 17:00"
+                />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Actions */}
+      <div className="flex gap-2 justify-end">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          <X className="h-4 w-4 mr-2" />
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading}>
+          <Save className="h-4 w-4 mr-2" />
+          {loading ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </div>
+    </form>
+  );
+}
