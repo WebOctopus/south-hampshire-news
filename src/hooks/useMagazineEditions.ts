@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useState } from 'react';
 
+export type ContentType = 'front_cover' | 'online_content';
+
 export interface MagazineEdition {
   id: string;
   title: string;
@@ -12,13 +14,17 @@ export interface MagazineEdition {
   issue_month: string | null;
   sort_order: number;
   is_active: boolean;
+  content_type: ContentType;
   created_at: string;
   updated_at: string;
 }
 
-export const useMagazineEditions = (includeInactive = false) => {
+export const useMagazineEditions = (
+  includeInactive = false,
+  contentType?: ContentType
+) => {
   return useQuery({
-    queryKey: ['magazine-editions', includeInactive],
+    queryKey: ['magazine-editions', includeInactive, contentType],
     queryFn: async () => {
       let query = supabase
         .from('magazine_editions')
@@ -27,6 +33,10 @@ export const useMagazineEditions = (includeInactive = false) => {
       
       if (!includeInactive) {
         query = query.eq('is_active', true);
+      }
+
+      if (contentType) {
+        query = query.eq('content_type', contentType);
       }
       
       const { data, error } = await query;

@@ -6,9 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { useMagazineEditions, useMagazineEditionMutations, useMagazineImageUpload, MagazineEdition } from '@/hooks/useMagazineEditions';
-import { Plus, Pencil, Trash2, GripVertical, ExternalLink, Upload, X, Loader2 } from 'lucide-react';
+import { useMagazineEditions, useMagazineEditionMutations, useMagazineImageUpload, MagazineEdition, ContentType } from '@/hooks/useMagazineEditions';
+import { Plus, Pencil, Trash2, GripVertical, ExternalLink, Upload, X, Loader2, Home, Newspaper } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   DndContext,
   closestCenter,
@@ -76,6 +78,19 @@ const SortableRow = ({ edition, onEdit, onDelete, onToggleActive }: SortableRowP
         </div>
       </TableCell>
       <TableCell className="font-medium">{edition.title}</TableCell>
+      <TableCell>
+        {edition.content_type === 'front_cover' ? (
+          <Badge variant="default" className="gap-1">
+            <Home className="h-3 w-3" />
+            Front Cover
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="gap-1">
+            <Newspaper className="h-3 w-3" />
+            Online Content
+          </Badge>
+        )}
+      </TableCell>
       <TableCell>{edition.issue_month || '-'}</TableCell>
       <TableCell>
         {edition.link_url ? (
@@ -135,6 +150,7 @@ const MagazineEditionsManagement = () => {
     issue_month: '',
     sort_order: 0,
     is_active: true,
+    content_type: 'front_cover' as ContentType,
   });
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -158,6 +174,7 @@ const MagazineEditionsManagement = () => {
       issue_month: '',
       sort_order: editions?.length ? editions.length + 1 : 1,
       is_active: true,
+      content_type: 'front_cover' as ContentType,
     });
     setEditingEdition(null);
     setSelectedFile(null);
@@ -175,6 +192,7 @@ const MagazineEditionsManagement = () => {
         issue_month: edition.issue_month || '',
         sort_order: edition.sort_order,
         is_active: edition.is_active,
+        content_type: edition.content_type || 'front_cover',
       });
       setPreviewUrl(edition.image_url);
     } else {
@@ -416,6 +434,42 @@ const MagazineEditionsManagement = () => {
                   placeholder="https://..."
                 />
               </div>
+
+              {/* Content Type Toggle */}
+              <div>
+                <Label className="mb-3 block">Display Location</Label>
+                <RadioGroup
+                  value={formData.content_type}
+                  onValueChange={(value: ContentType) => setFormData({ ...formData, content_type: value })}
+                  className="grid grid-cols-1 gap-3"
+                >
+                  <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                    <RadioGroupItem value="front_cover" id="front_cover" className="mt-0.5" />
+                    <div className="flex-1">
+                      <Label htmlFor="front_cover" className="flex items-center gap-2 cursor-pointer font-medium">
+                        <Home className="h-4 w-4 text-primary" />
+                        Front Cover (Homepage)
+                      </Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Displays in the hero carousel on the homepage
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                    <RadioGroupItem value="online_content" id="online_content" className="mt-0.5" />
+                    <div className="flex-1">
+                      <Label htmlFor="online_content" className="flex items-center gap-2 cursor-pointer font-medium">
+                        <Newspaper className="h-4 w-4 text-secondary-foreground" />
+                        Online Content (Advertising Page)
+                      </Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Displays in the Online Edition box on the advertising page
+                      </p>
+                    </div>
+                  </div>
+                </RadioGroup>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sort_order">Sort Order</Label>
@@ -476,6 +530,7 @@ const MagazineEditionsManagement = () => {
                       <TableHead className="w-12">Order</TableHead>
                       <TableHead className="w-24">Preview</TableHead>
                       <TableHead>Title</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Issue Month</TableHead>
                       <TableHead>Link</TableHead>
                       <TableHead>Status</TableHead>
