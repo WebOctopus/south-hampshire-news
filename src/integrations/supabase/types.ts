@@ -1892,6 +1892,12 @@ export type Database = {
           website: string
         }[]
       }
+      get_distinct_edition_areas: {
+        Args: never
+        Returns: {
+          edition_area: string
+        }[]
+      }
       get_public_businesses: {
         Args: {
           category_filter?: string

@@ -71,21 +71,15 @@ const BusinessDirectory = () => {
   }, []);
 
   const fetchLocations = useCallback(async () => {
-    // Use a direct query with distinct to get unique edition_area values
-    const { data, error } = await supabase
-      .from('businesses')
-      .select('edition_area')
-      .not('edition_area', 'is', null)
-      .eq('is_active', true)
-      .order('edition_area');
+    // Use RPC function to get distinct edition areas efficiently
+    const { data, error } = await supabase.rpc('get_distinct_edition_areas');
     
     if (error) {
       console.error('Error fetching locations:', error);
       return;
     }
     
-    // Get unique locations from the result (Supabase doesn't support DISTINCT directly)
-    const uniqueLocations = [...new Set(data?.map(b => b.edition_area).filter(Boolean))] as string[];
+    const uniqueLocations = (data?.map((row: { edition_area: string }) => row.edition_area) || []) as string[];
     uniqueLocations.sort((a, b) => cleanAreaName(a).localeCompare(cleanAreaName(b)));
     setLocations(uniqueLocations);
   }, []);
