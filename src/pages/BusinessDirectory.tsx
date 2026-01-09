@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { Search, Filter, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
@@ -58,6 +58,7 @@ const BusinessDirectory = () => {
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const requestIdRef = useRef(0);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
@@ -100,6 +101,9 @@ const BusinessDirectory = () => {
   }, [searchTerm, selectedCategory, selectedLocation]);
 
   const fetchBusinesses = useCallback(async () => {
+    // Increment request ID to track this specific request
+    const thisRequestId = ++requestIdRef.current;
+    
     setLoading(true);
     setError(false);
 
@@ -117,6 +121,12 @@ const BusinessDirectory = () => {
           edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
         })
       ]);
+
+      // Stale request protection: ignore results if a newer request was made
+      if (thisRequestId !== requestIdRef.current) {
+        console.log('[BusinessDirectory] Ignoring stale response');
+        return;
+      }
 
       setTotalCount(count);
 
@@ -137,10 +147,14 @@ const BusinessDirectory = () => {
       setBusinesses(transformedData);
     } catch (err) {
       console.error('Error in fetchBusinesses:', err);
-      setError(true);
-      setBusinesses([]);
+      if (thisRequestId === requestIdRef.current) {
+        setError(true);
+        setBusinesses([]);
+      }
     } finally {
-      setLoading(false);
+      if (thisRequestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [searchTerm, selectedCategory, selectedLocation, currentPage, fetchTotalCount]);
 
@@ -152,11 +166,6 @@ const BusinessDirectory = () => {
   useEffect(() => {
     fetchBusinesses();
   }, [fetchBusinesses]);
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedCategory, selectedLocation]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -226,10 +235,16 @@ const BusinessDirectory = () => {
                   placeholder="Search businesses, services..."
                   className="pl-10 h-12 text-black"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
                 />
               </div>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory} onValueChange={(value) => {
+                setSelectedCategory(value);
+                setCurrentPage(1);
+              }}>
                 <SelectTrigger className="w-full md:w-48 h-12 text-black">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
@@ -242,7 +257,10 @@ const BusinessDirectory = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+              <Select value={selectedLocation} onValueChange={(value) => {
+                setSelectedLocation(value);
+                setCurrentPage(1);
+              }}>
                 <SelectTrigger className="w-full md:w-56 h-12 text-black">
                   <div className="flex items-center gap-2">
                     <MapPin size={16} className="text-gray-500" />
