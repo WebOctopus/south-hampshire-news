@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths, isWithinInterval } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Link } from 'react-router-dom';
@@ -17,7 +17,7 @@ import { toast } from '@/hooks/use-toast';
 import { EventCard } from '@/components/EventCard';
 import { Event } from '@/hooks/useEvents';
 
-type QuickFilter = 'all' | 'week' | 'month';
+type QuickFilter = 'all' | 'week' | 'month' | 'next_month';
 
 const WhatsOn = () => {
   const mountedRef = useRef(true);
@@ -194,6 +194,16 @@ const WhatsOn = () => {
         return isWithinInterval(eventDate, { start: monthStart, end: monthEnd });
       });
     }
+
+    if (quickFilter === 'next_month') {
+      const nextMonth = addMonths(today, 1);
+      const nextMonthStart = startOfMonth(nextMonth);
+      const nextMonthEnd = endOfMonth(nextMonth);
+      return events.filter(event => {
+        const eventDate = new Date(event.date);
+        return isWithinInterval(eventDate, { start: nextMonthStart, end: nextMonthEnd });
+      });
+    }
     
     return events;
   };
@@ -304,6 +314,13 @@ const WhatsOn = () => {
                 onClick={() => setQuickFilter('month')}
               >
                 This Month
+              </Button>
+              <Button
+                variant={quickFilter === 'next_month' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setQuickFilter('next_month')}
+              >
+                Next Month
               </Button>
             </div>
           </div>
