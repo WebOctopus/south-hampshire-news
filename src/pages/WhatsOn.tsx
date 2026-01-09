@@ -59,10 +59,13 @@ const WhatsOn = () => {
         setError(null);
       }
 
+      const today = new Date().toISOString().split('T')[0];
+      
       let query = supabase
         .from('events')
         .select('*')
         .eq('is_published', true) // Only show published events
+        .gte('date', today) // Only show today and future events
         .order('date', { ascending: true });
 
       if (searchTerm) {
@@ -127,10 +130,13 @@ const WhatsOn = () => {
 
   const fetchFilterMetadata = async () => {
     try {
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('events')
         .select('category, area, type')
-        .eq('is_published', true);
+        .eq('is_published', true)
+        .gte('date', today); // Only get metadata from current/future events
 
       if (error) throw error;
 
