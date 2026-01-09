@@ -2,6 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export interface CompetitionCategory {
+  id: string;
+  name: string;
+  label: string;
+  color_class: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Competition {
   id: string;
   title: string;
@@ -171,6 +180,49 @@ export function useCreateCompetitionEntry() {
     },
     onError: (error) => {
       toast.error('Failed to submit entry: ' + error.message);
+    },
+  });
+}
+
+export function useCompetitionCategories() {
+  return useQuery({
+    queryKey: ['competition-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('competition_categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      return data as CompetitionCategory[];
+    },
+  });
+}
+
+export function useCreateCompetitionCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (category: { name: string; label: string; color_class?: string }) => {
+      const { data, error } = await supabase
+        .from('competition_categories')
+        .insert({
+          name: category.name,
+          label: category.label,
+          color_class: category.color_class || 'bg-gray-100 text-gray-800',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competition-categories'] });
+      toast.success('Category created successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to create category: ' + error.message);
     },
   });
 }

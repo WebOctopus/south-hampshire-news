@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useCompetitions, useCompetitionEntries, useCompetitionMutations, Competition } from '@/hooks/useCompetitions';
+import { useCompetitions, useCompetitionEntries, useCompetitionMutations, Competition, useCompetitionCategories, useCreateCompetitionCategory, CompetitionCategory } from '@/hooks/useCompetitions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,33 +9,16 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trophy, Plus, Pencil, Trash2, Users, Calendar, Gift, Eye, Upload, X, Loader2 } from 'lucide-react';
 import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const CATEGORIES = [
-  { value: 'Travel', label: 'Travel' },
-  { value: 'Food', label: 'Food & Dining' },
-  { value: 'Family', label: 'Family' },
-  { value: 'Shopping', label: 'Shopping' },
-  { value: 'Entertainment', label: 'Entertainment' },
-  { value: 'Beauty', label: 'Beauty & Wellness' },
-  { value: 'Other', label: 'Other' },
-];
-
-const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    Travel: 'bg-blue-100 text-blue-800',
-    Food: 'bg-orange-100 text-orange-800',
-    Family: 'bg-purple-100 text-purple-800',
-    Shopping: 'bg-pink-100 text-pink-800',
-    Entertainment: 'bg-green-100 text-green-800',
-    Beauty: 'bg-rose-100 text-rose-800',
-    Other: 'bg-gray-100 text-gray-800',
-  };
-  return colors[category] || colors.Other;
+const getCategoryColor = (category: string, categories: CompetitionCategory[] | undefined) => {
+  const cat = categories?.find(c => c.name === category);
+  return cat?.color_class || 'bg-gray-100 text-gray-800';
 };
 
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -43,7 +26,9 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export function CompetitionsManagement() {
   const { data: competitions, isLoading } = useCompetitions(true);
+  const { data: categories, isLoading: categoriesLoading } = useCompetitionCategories();
   const { createCompetition, updateCompetition, deleteCompetition, toggleActive } = useCompetitionMutations();
+  const createCategory = useCreateCompetitionCategory();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEntriesDialogOpen, setIsEntriesDialogOpen] = useState(false);
@@ -52,6 +37,9 @@ export function CompetitionsManagement() {
   const [competitionToDelete, setCompetitionToDelete] = useState<Competition | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryLabel, setNewCategoryLabel] = useState('');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -279,7 +267,7 @@ export function CompetitionsManagement() {
                     </TableCell>
                     <TableCell className="font-medium">{competition.title}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={getCategoryColor(competition.category)}>
+                      <Badge variant="secondary" className={getCategoryColor(competition.category, categories)}>
                         {competition.category}
                       </Badge>
                     </TableCell>
@@ -388,21 +376,91 @@ export function CompetitionsManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Popover open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="icon" type="button">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80" align="end">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <h4 className="font-medium leading-none">Add New Category</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Create a custom category for competitions.
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-category-name">Category Name</Label>
+                          <Input
+                            id="new-category-name"
+                            placeholder="e.g., Sports"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-category-label">Display Label</Label>
+                          <Input
+                            id="new-category-label"
+                            placeholder="e.g., Sports & Fitness"
+                            value={newCategoryLabel}
+                            onChange={(e) => setNewCategoryLabel(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setIsAddCategoryOpen(false);
+                              setNewCategoryName('');
+                              setNewCategoryLabel('');
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            disabled={!newCategoryName || !newCategoryLabel || createCategory.isPending}
+                            onClick={async () => {
+                              await createCategory.mutateAsync({
+                                name: newCategoryName,
+                                label: newCategoryLabel,
+                              });
+                              setFormData({ ...formData, category: newCategoryName });
+                              setIsAddCategoryOpen(false);
+                              setNewCategoryName('');
+                              setNewCategoryLabel('');
+                            }}
+                          >
+                            {createCategory.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              'Add'
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
 

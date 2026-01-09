@@ -493,6 +493,33 @@ export type Database = {
           },
         ]
       }
+      competition_categories: {
+        Row: {
+          color_class: string | null
+          created_at: string | null
+          id: string
+          label: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          color_class?: string | null
+          created_at?: string | null
+          id?: string
+          label: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          color_class?: string | null
+          created_at?: string | null
+          id?: string
+          label?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       competition_entries: {
         Row: {
           agreed_to_terms: boolean | null
