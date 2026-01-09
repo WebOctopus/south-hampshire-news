@@ -10,7 +10,9 @@ import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/di
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, MapPin, Phone, Globe, User, Settings } from 'lucide-react';
+import { Building2, MapPin, Phone, Globe, Settings, Share2, Image as ImageIcon } from 'lucide-react';
+import { ImageDropzone } from '@/components/ui/image-dropzone';
+import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 
 interface BusinessEditFormProps {
   business: any;
@@ -22,6 +24,8 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const { uploadImage, isUploading } = useBusinessImageUpload();
+  
   const [formData, setFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
@@ -42,6 +46,13 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     is_verified: business?.is_verified ?? false,
     featured: business?.featured ?? false,
     owner_id: business?.owner_id || '',
+    // Social media
+    facebook_url: business?.facebook_url || '',
+    instagram_url: business?.instagram_url || '',
+    twitter_url: business?.twitter_url || '',
+    linkedin_url: business?.linkedin_url || '',
+    tiktok_url: business?.tiktok_url || '',
+    youtube_url: business?.youtube_url || '',
   });
 
   useEffect(() => {
@@ -57,6 +68,22 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLogoUpload = async (file: File): Promise<string | null> => {
+    const url = await uploadImage(file, business.id, 'logo');
+    if (url) {
+      handleChange('logo_url', url);
+    }
+    return url;
+  };
+
+  const handleFeaturedUpload = async (file: File): Promise<string | null> => {
+    const url = await uploadImage(file, business.id, 'featured');
+    if (url) {
+      handleChange('featured_image_url', url);
+    }
+    return url;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -268,25 +295,88 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
           {/* Images */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Globe className="h-4 w-4" /> Images
+              <ImageIcon className="h-4 w-4" /> Images
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ImageDropzone
+                label="Logo"
+                value={formData.logo_url}
+                onUpload={handleLogoUpload}
+                onClear={() => handleChange('logo_url', '')}
+                aspectRatio="square"
+                disabled={isUploading}
+              />
+              <ImageDropzone
+                label="Featured Image"
+                value={formData.featured_image_url}
+                onUpload={handleFeaturedUpload}
+                onClear={() => handleChange('featured_image_url', '')}
+                aspectRatio="landscape"
+                disabled={isUploading}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Social Media */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Share2 className="h-4 w-4" /> Social Media Links
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="logo_url">Logo URL</Label>
+                <Label htmlFor="facebook_url">Facebook</Label>
                 <Input
-                  id="logo_url"
-                  value={formData.logo_url}
-                  onChange={(e) => handleChange('logo_url', e.target.value)}
-                  placeholder="https://"
+                  id="facebook_url"
+                  value={formData.facebook_url}
+                  onChange={(e) => handleChange('facebook_url', e.target.value)}
+                  placeholder="https://facebook.com/yourbusiness"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="featured_image_url">Featured Image URL</Label>
+                <Label htmlFor="instagram_url">Instagram</Label>
                 <Input
-                  id="featured_image_url"
-                  value={formData.featured_image_url}
-                  onChange={(e) => handleChange('featured_image_url', e.target.value)}
-                  placeholder="https://"
+                  id="instagram_url"
+                  value={formData.instagram_url}
+                  onChange={(e) => handleChange('instagram_url', e.target.value)}
+                  placeholder="https://instagram.com/yourbusiness"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="twitter_url">Twitter / X</Label>
+                <Input
+                  id="twitter_url"
+                  value={formData.twitter_url}
+                  onChange={(e) => handleChange('twitter_url', e.target.value)}
+                  placeholder="https://x.com/yourbusiness"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="linkedin_url">LinkedIn</Label>
+                <Input
+                  id="linkedin_url"
+                  value={formData.linkedin_url}
+                  onChange={(e) => handleChange('linkedin_url', e.target.value)}
+                  placeholder="https://linkedin.com/company/yourbusiness"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tiktok_url">TikTok</Label>
+                <Input
+                  id="tiktok_url"
+                  value={formData.tiktok_url}
+                  onChange={(e) => handleChange('tiktok_url', e.target.value)}
+                  placeholder="https://tiktok.com/@yourbusiness"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="youtube_url">YouTube</Label>
+                <Input
+                  id="youtube_url"
+                  value={formData.youtube_url}
+                  onChange={(e) => handleChange('youtube_url', e.target.value)}
+                  placeholder="https://youtube.com/@yourbusiness"
                 />
               </div>
             </div>
@@ -341,7 +431,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
           </div>
 
           <div className="flex gap-2 pt-4 border-t sticky bottom-0 bg-background">
-            <Button type="submit" disabled={loading} className="flex-1">
+            <Button type="submit" disabled={loading || isUploading} className="flex-1">
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>

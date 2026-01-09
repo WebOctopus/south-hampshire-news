@@ -5,10 +5,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Building2, MapPin, Phone, Globe, Clock, Save, X } from 'lucide-react';
+import { Building2, MapPin, Phone, Globe, Clock, Save, X, Share2, Image as ImageIcon } from 'lucide-react';
+import { ImageDropzone } from '@/components/ui/image-dropzone';
+import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 
 interface UserBusinessEditFormProps {
   business: any;
@@ -22,6 +23,8 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const { uploadImage, isUploading } = useBusinessImageUpload();
+  
   const [formData, setFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
@@ -35,6 +38,13 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
     postcode: business?.postcode || '',
     logo_url: business?.logo_url || '',
     featured_image_url: business?.featured_image_url || '',
+    // Social media
+    facebook_url: business?.facebook_url || '',
+    instagram_url: business?.instagram_url || '',
+    twitter_url: business?.twitter_url || '',
+    linkedin_url: business?.linkedin_url || '',
+    tiktok_url: business?.tiktok_url || '',
+    youtube_url: business?.youtube_url || '',
   });
 
   const [openingHours, setOpeningHours] = useState<Record<string, string>>(
@@ -58,6 +68,22 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
 
   const handleHoursChange = (day: string, value: string) => {
     setOpeningHours(prev => ({ ...prev, [day]: value }));
+  };
+
+  const handleLogoUpload = async (file: File): Promise<string | null> => {
+    const url = await uploadImage(file, business.id, 'logo');
+    if (url) {
+      handleChange('logo_url', url);
+    }
+    return url;
+  };
+
+  const handleFeaturedUpload = async (file: File): Promise<string | null> => {
+    const url = await uploadImage(file, business.id, 'featured');
+    if (url) {
+      handleChange('featured_image_url', url);
+    }
+    return url;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -238,31 +264,100 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Globe className="h-5 w-5" />
+            <ImageIcon className="h-5 w-5" />
             Images
           </CardTitle>
           <CardDescription>
-            Add image URLs for your business logo and featured image.
+            Drag and drop or click to upload your business logo and featured image.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ImageDropzone
+              label="Logo"
+              value={formData.logo_url}
+              onUpload={handleLogoUpload}
+              onClear={() => handleChange('logo_url', '')}
+              aspectRatio="square"
+              disabled={isUploading}
+            />
+            <ImageDropzone
+              label="Featured Image"
+              value={formData.featured_image_url}
+              onUpload={handleFeaturedUpload}
+              onClear={() => handleChange('featured_image_url', '')}
+              aspectRatio="landscape"
+              disabled={isUploading}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Social Media */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Share2 className="h-5 w-5" />
+            Social Media Links
+          </CardTitle>
+          <CardDescription>
+            Add links to your social media profiles to help customers connect with you.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="logo_url">Logo URL</Label>
+              <Label htmlFor="facebook_url">Facebook</Label>
               <Input
-                id="logo_url"
-                value={formData.logo_url}
-                onChange={(e) => handleChange('logo_url', e.target.value)}
-                placeholder="https://example.com/logo.png"
+                id="facebook_url"
+                value={formData.facebook_url}
+                onChange={(e) => handleChange('facebook_url', e.target.value)}
+                placeholder="https://facebook.com/yourbusiness"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="featured_image_url">Featured Image URL</Label>
+              <Label htmlFor="instagram_url">Instagram</Label>
               <Input
-                id="featured_image_url"
-                value={formData.featured_image_url}
-                onChange={(e) => handleChange('featured_image_url', e.target.value)}
-                placeholder="https://example.com/featured.jpg"
+                id="instagram_url"
+                value={formData.instagram_url}
+                onChange={(e) => handleChange('instagram_url', e.target.value)}
+                placeholder="https://instagram.com/yourbusiness"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="twitter_url">Twitter / X</Label>
+              <Input
+                id="twitter_url"
+                value={formData.twitter_url}
+                onChange={(e) => handleChange('twitter_url', e.target.value)}
+                placeholder="https://x.com/yourbusiness"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="linkedin_url">LinkedIn</Label>
+              <Input
+                id="linkedin_url"
+                value={formData.linkedin_url}
+                onChange={(e) => handleChange('linkedin_url', e.target.value)}
+                placeholder="https://linkedin.com/company/yourbusiness"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tiktok_url">TikTok</Label>
+              <Input
+                id="tiktok_url"
+                value={formData.tiktok_url}
+                onChange={(e) => handleChange('tiktok_url', e.target.value)}
+                placeholder="https://tiktok.com/@yourbusiness"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="youtube_url">YouTube</Label>
+              <Input
+                id="youtube_url"
+                value={formData.youtube_url}
+                onChange={(e) => handleChange('youtube_url', e.target.value)}
+                placeholder="https://youtube.com/@yourbusiness"
               />
             </div>
           </div>
@@ -303,7 +398,7 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
           <X className="h-4 w-4 mr-2" />
           Cancel
         </Button>
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading || isUploading}>
           <Save className="h-4 w-4 mr-2" />
           {loading ? 'Saving...' : 'Save Changes'}
         </Button>
