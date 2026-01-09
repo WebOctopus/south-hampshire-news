@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Loader2, AlertCircle, MapPin, Calendar, Clock, Users } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
-import { formatDateUK } from '@/lib/utils';
+import { formatDateUK, cn } from '@/lib/utils';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
@@ -763,14 +763,27 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
       {/* Duration Selection - Hidden for BOGOF as it's fixed to 6 months */}
       {effectiveSelectedAreas.length > 0 && pricingModel !== 'bogof' && (
-        <div className="space-y-4">
+        <div className={cn(
+          "space-y-4 p-4 rounded-lg border-2 transition-colors",
+          !selectedDuration ? "border-destructive/50 bg-destructive/5" : "border-transparent"
+        )}>
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Clock className="h-5 w-5" />
             Campaign Duration
+            <span className="text-destructive">*</span>
           </h3>
           
+          {!selectedDuration && (
+            <p className="text-sm text-destructive">
+              Please select a campaign duration to continue
+            </p>
+          )}
+          
           <Select value={selectedDuration} onValueChange={onDurationChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className={cn(
+              "w-full",
+              !selectedDuration && "border-destructive"
+            )}>
               <SelectValue placeholder="Select campaign duration" />
             </SelectTrigger>
             <SelectContent>
