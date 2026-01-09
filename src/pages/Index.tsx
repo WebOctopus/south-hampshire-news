@@ -6,7 +6,8 @@ import TestimonialsCarousel from '../components/TestimonialsCarousel';
 import LatestStoriesGrid from '../components/LatestStoriesGrid';
 import FeaturedAdvertisersSection from '../components/FeaturedAdvertisersSection';
 import NewsletterSignup from '../components/NewsletterSignup';
-import StickyDownloadForm from '../components/StickyDownloadForm';
+// StickyDownloadForm hidden temporarily - may be replaced later
+// import StickyDownloadForm from '../components/StickyDownloadForm';
 import Footer from '../components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -142,7 +143,7 @@ const Index = () => {
         <NewsletterSignup />
       </main>
       <Footer />
-      <StickyDownloadForm />
+      {/* StickyDownloadForm hidden temporarily - may be replaced later */}
     </div>
   );
 };
