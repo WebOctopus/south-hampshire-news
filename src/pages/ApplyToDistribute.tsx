@@ -110,20 +110,20 @@ const ApplyToDistribute = () => {
             <CardContent>
               <div className="prose prose-gray max-w-none">
                 <p className="text-gray-600 mb-4">
-                  As a magazine distributor, you'll be responsible for delivering our community magazines to households in your assigned area. Here's what you need to know:
+                  This is a great opportunity to earn money while getting exercise and helping connect your local community with important information and local business promotions. As a magazine distributor, you'll be responsible for delivering Discover to households in your assigned area every other month. Here's what you need to know:
                 </p>
                 <ul className="space-y-2 text-gray-600">
-                  <li>• Collect magazines from designated collection points</li>
+                  <li>• Distributors must have a suitable location at their property for several boxes to be left by delivery manager in a safe and dry location. Otherwise, collection from depot at your own expense is available.</li>
+                  <li>• Agree to have a GPS tracking app on your mobile phone and use the app every time you deliver.</li>
                   <li>• Deliver to every household in your assigned route</li>
                   <li>• Complete deliveries within 7 days of collection</li>
                   <li>• Handle magazines with care to ensure quality delivery</li>
+                  <li>• Be respectful of residents' property and comply with their requests on junk mail, gates and driveways etc</li>
                   <li>• Report any issues or problems to your area coordinator</li>
-                  <li>• Maintain accurate delivery records</li>
+                  <li>• Inform yourself from the app of all delivery dates and be available for those dates in the year.</li>
+                  <li>• Advise of illness, absence or inability to carry out duties with as much notice as possible</li>
                   <li>• Follow health and safety guidelines at all times</li>
                 </ul>
-                <p className="text-gray-600 mt-4">
-                  This is a great opportunity to earn money while getting exercise and helping connect your local community with important information and local business promotions.
-                </p>
               </div>
               
               <div className="mt-6 text-center">
