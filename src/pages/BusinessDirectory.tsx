@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import BusinessCard from '../components/BusinessCard';
@@ -8,6 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { supabase } from '@/integrations/supabase/client';
+
+// Helper to clean area names (remove "Area X - " prefix)
+const cleanAreaName = (areaName: string): string => {
+  return areaName.replace(/^Area \d+\s*-\s*/, '').trim();
+};
 
 interface BusinessCategory {
   id: string;
@@ -45,9 +50,11 @@ const ITEMS_PER_PAGE = 100;
 const BusinessDirectory = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -63,10 +70,29 @@ const BusinessDirectory = () => {
     setCategories(data || []);
   }, []);
 
+  const fetchLocations = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('edition_area')
+      .not('edition_area', 'is', null)
+      .eq('is_active', true);
+    
+    if (error) {
+      console.error('Error fetching locations:', error);
+      return;
+    }
+    
+    // Get unique locations and sort them
+    const uniqueLocations = [...new Set(data?.map(b => b.edition_area).filter(Boolean))] as string[];
+    uniqueLocations.sort((a, b) => cleanAreaName(a).localeCompare(cleanAreaName(b)));
+    setLocations(uniqueLocations);
+  }, []);
+
   const fetchTotalCount = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_public_businesses_count', {
       category_filter: selectedCategory !== 'all' ? selectedCategory : null,
       search_term: searchTerm || null,
+      edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
     });
 
     if (error) {
@@ -75,7 +101,7 @@ const BusinessDirectory = () => {
     }
 
     return data || 0;
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, selectedLocation]);
 
   const fetchBusinesses = useCallback(async () => {
     setLoading(true);
@@ -92,6 +118,7 @@ const BusinessDirectory = () => {
           search_term: searchTerm || null,
           limit_count: ITEMS_PER_PAGE,
           offset_count: (currentPage - 1) * ITEMS_PER_PAGE,
+          edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
         })
       ]);
 
@@ -119,11 +146,12 @@ const BusinessDirectory = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, selectedCategory, currentPage, fetchTotalCount]);
+  }, [searchTerm, selectedCategory, selectedLocation, currentPage, fetchTotalCount]);
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+    fetchLocations();
+  }, [fetchCategories, fetchLocations]);
 
   useEffect(() => {
     fetchBusinesses();
@@ -132,7 +160,7 @@ const BusinessDirectory = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, selectedLocation]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -194,7 +222,7 @@ const BusinessDirectory = () => {
             </p>
             
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto space-y-4 md:space-y-0 md:flex md:gap-4 mb-6">
+            <div className="max-w-4xl mx-auto space-y-4 md:space-y-0 md:flex md:gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <Input
@@ -214,6 +242,22 @@ const BusinessDirectory = () => {
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                <SelectTrigger className="w-full md:w-56 h-12 text-black">
+                  <div className="flex items-center gap-2">
+                    <MapPin size={16} className="text-gray-500" />
+                    <SelectValue placeholder="All Locations" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {cleanAreaName(location)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -254,7 +298,7 @@ const BusinessDirectory = () => {
               <div className="text-center py-12">
                 <p className="text-gray-600 text-lg">No businesses found matching your criteria.</p>
                 <Button 
-                  onClick={() => { setSearchTerm(''); setSelectedCategory('all'); }}
+                  onClick={() => { setSearchTerm(''); setSelectedCategory('all'); setSelectedLocation('all'); }}
                   className="mt-4 bg-community-green hover:bg-green-600"
                 >
                   Clear Filters
