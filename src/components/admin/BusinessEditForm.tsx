@@ -15,7 +15,7 @@ import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 
 interface BusinessEditFormProps {
-  business: any;
+  business?: any | null;
   onClose: () => void;
   onSave: () => void;
 }
@@ -25,6 +25,9 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const { uploadImage, isUploading } = useBusinessImageUpload();
+  const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(business?.id || null);
+  
+  const isCreateMode = !business?.id;
   
   const [formData, setFormData] = useState({
     name: business?.name || '',
@@ -71,7 +74,16 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   };
 
   const handleLogoUpload = async (file: File): Promise<string | null> => {
-    const url = await uploadImage(file, business.id, 'logo');
+    const businessId = createdBusinessId || business?.id;
+    if (!businessId) {
+      toast({
+        title: "Save First",
+        description: "Please save the business first before uploading images.",
+        variant: "destructive"
+      });
+      return null;
+    }
+    const url = await uploadImage(file, businessId, 'logo');
     if (url) {
       handleChange('logo_url', url);
     }
@@ -79,7 +91,16 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   };
 
   const handleFeaturedUpload = async (file: File): Promise<string | null> => {
-    const url = await uploadImage(file, business.id, 'featured');
+    const businessId = createdBusinessId || business?.id;
+    if (!businessId) {
+      toast({
+        title: "Save First",
+        description: "Please save the business first before uploading images.",
+        variant: "destructive"
+      });
+      return null;
+    }
+    const url = await uploadImage(file, businessId, 'featured');
     if (url) {
       handleChange('featured_image_url', url);
     }
@@ -91,24 +112,42 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     setLoading(true);
 
     try {
-      const updateData = {
+      const saveData = {
         ...formData,
         owner_id: formData.owner_id || null,
         category_id: formData.category_id || null,
       };
 
-      const { error } = await supabase
-        .from('businesses')
-        .update(updateData)
-        .eq('id', business.id);
+      if (isCreateMode && !createdBusinessId) {
+        // CREATE new business
+        const { data, error } = await supabase
+          .from('businesses')
+          .insert(saveData)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Business updated successfully."
-      });
-      onSave();
+        setCreatedBusinessId(data.id);
+        toast({
+          title: "Business Created",
+          description: "Business created successfully. You can now upload images."
+        });
+      } else {
+        // UPDATE existing business
+        const { error } = await supabase
+          .from('businesses')
+          .update(saveData)
+          .eq('id', createdBusinessId || business?.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Business updated successfully."
+        });
+        onSave();
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -125,10 +164,12 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
       <DialogHeader className="pb-4">
         <DialogTitle className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />
-          Edit Business: {business?.name}
+          {isCreateMode && !createdBusinessId ? 'Add New Business' : `Edit Business: ${formData.name || business?.name}`}
         </DialogTitle>
         <DialogDescription>
-          Update all business information. Changes are saved immediately.
+          {isCreateMode && !createdBusinessId 
+            ? 'Fill in the business details below. Save to enable image uploads.' 
+            : 'Update all business information. Changes are saved immediately.'}
         </DialogDescription>
       </DialogHeader>
 
@@ -297,24 +338,30 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <ImageIcon className="h-4 w-4" /> Images
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ImageDropzone
-                label="Logo"
-                value={formData.logo_url}
-                onUpload={handleLogoUpload}
-                onClear={() => handleChange('logo_url', '')}
-                aspectRatio="square"
-                disabled={isUploading}
-              />
-              <ImageDropzone
-                label="Featured Image"
-                value={formData.featured_image_url}
-                onUpload={handleFeaturedUpload}
-                onClear={() => handleChange('featured_image_url', '')}
-                aspectRatio="landscape"
-                disabled={isUploading}
-              />
-            </div>
+            {isCreateMode && !createdBusinessId ? (
+              <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                Save the business first to enable image uploads.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ImageDropzone
+                  label="Logo"
+                  value={formData.logo_url}
+                  onUpload={handleLogoUpload}
+                  onClear={() => handleChange('logo_url', '')}
+                  aspectRatio="square"
+                  disabled={isUploading}
+                />
+                <ImageDropzone
+                  label="Featured Image"
+                  value={formData.featured_image_url}
+                  onUpload={handleFeaturedUpload}
+                  onClear={() => handleChange('featured_image_url', '')}
+                  aspectRatio="landscape"
+                  disabled={isUploading}
+                />
+              </div>
+            )}
           </div>
 
           <Separator />
@@ -432,8 +479,13 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
 
           <div className="flex gap-2 pt-4 border-t sticky bottom-0 bg-background">
             <Button type="submit" disabled={loading || isUploading} className="flex-1">
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? 'Saving...' : (isCreateMode && !createdBusinessId ? 'Create Business' : 'Save Changes')}
             </Button>
+            {createdBusinessId && isCreateMode && (
+              <Button type="button" variant="secondary" onClick={onSave}>
+                Done
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
