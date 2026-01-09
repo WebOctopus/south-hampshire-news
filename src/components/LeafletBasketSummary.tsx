@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { useStepForm } from '@/components/StepForm';
-import { Separator } from '@/components/ui/separator';
+import { parse } from 'date-fns';
 
 interface LeafletBasketSummaryProps {
   selectedAreas: string[];
@@ -17,55 +17,59 @@ interface LeafletBasketSummaryProps {
   onMonthsChange?: (months: Record<string, string[]>) => void;
 }
 
-// Helper function to format month display
+// Helper function to format month display to full "Month YYYY" format
 const formatMonthDisplay = (monthString: string) => {
   if (!monthString) return 'Invalid Date';
   
-  let year: string, month: string;
-  
-  if (monthString.includes('-')) {
-    [year, month] = monthString.split('-');
-  } else if (monthString.includes(' ')) {
-    const parts = monthString.split(' ');
-    if (parts.length === 2) {
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ];
-      const monthIndex = monthNames.findIndex(name => name.toLowerCase() === parts[0].toLowerCase());
-      if (monthIndex !== -1) {
-        month = String(monthIndex + 1).padStart(2, '0');
-        year = parts[1];
-      } else {
-        return monthString;
-      }
-    } else {
-      return monthString;
-    }
-  } else {
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthString.toLowerCase());
-    if (monthIndex !== -1) {
-      return monthString;
-    } else {
-      return monthString;
-    }
-  }
-  
-  const monthNumber = parseInt(month, 10);
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   
-  if (monthNumber < 1 || monthNumber > 12 || !year) {
-    return monthString;
+  let year: string, month: string;
+  
+  if (monthString.includes('-')) {
+    [year, month] = monthString.split('-');
+    const monthNumber = parseInt(month, 10);
+    if (monthNumber >= 1 && monthNumber <= 12 && year) {
+      return `${monthNames[monthNumber - 1]} ${year}`;
+    }
+  } else if (monthString.includes(' ')) {
+    const parts = monthString.split(' ');
+    if (parts.length === 2) {
+      const monthIndex = monthNames.findIndex(name => name.toLowerCase() === parts[0].toLowerCase());
+      if (monthIndex !== -1) {
+        return `${monthNames[monthIndex]} ${parts[1]}`;
+      }
+    }
   }
   
-  return `${monthNames[monthNumber - 1]} ${year}`;
+  return monthString;
+};
+
+// Helper function to parse and format dates from the schedule
+const parseScheduleDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    // Try parsing DD.MM.YYYY format first
+    if (dateStr.includes('.')) {
+      const parsed = parse(dateStr, 'dd.MM.yyyy', new Date());
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      }
+    }
+    // Try ISO date format (YYYY-MM-DD)
+    if (dateStr.includes('-') && dateStr.length > 7) {
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      }
+    }
+    // Fallback to returning the original string
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
 };
 
 export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
@@ -101,21 +105,14 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     return area?.area_number || '';
   };
 
-  const formatSelectedMonths = (areaId: string) => {
-    if (!selectedMonths || !selectedMonths[areaId]) {
-      return '';
-    }
-    const months = selectedMonths[areaId] || [];
-    return months.map((month) => {
-      // Normalize to "Month YYYY" - full month names for better readability
-      const display = formatMonthDisplay(month);
-      return display;
-    }).join(', ');
-  };
-
   const getDurationValue = () => {
     const duration = leafletDurations?.find(d => d.id === selectedDuration);
     return duration?.issues || 0;
+  };
+
+  const getDurationMonths = () => {
+    const duration = leafletDurations?.find(d => d.id === selectedDuration);
+    return duration?.months || 0;
   };
 
   // Sanitize selected areas to only include valid leaflet area IDs and remove duplicates
@@ -127,7 +124,6 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     ?.filter(area => uniqueSelectedLeafletAreas.includes(area.id))
     .reduce((sum, area) => sum + (area.bimonthly_circulation || 0), 0) || 0;
 
-  const totalImpressions = totalCirculation * getDurationValue();
   const baseTotal = pricingBreakdown?.finalTotal || 0;
 
   const handleNext = () => {
@@ -138,7 +134,7 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold">YOUR BASKET</h2>
-        <p className="text-muted-foreground">Review your leafleting campaign details</p>
+        <p className="text-muted-foreground">Review your selection and choose your payment option</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -149,73 +145,123 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
             <CardHeader>
               <CardTitle className="text-xl">Booking Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Leaflet Size</Label>
-                  <p className="font-medium">{getLeafletSizeName()}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
-                  <p className="font-medium">{getDurationName()}</p>
-                </div>
+            <CardContent className="space-y-6">
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">Leaflet Size</Label>
+                <p className="font-medium">{getLeafletSizeName()}</p>
               </div>
               
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
-                <p className="font-medium">Leaflet Distribution</p>
+                <p className="font-medium">Leaflet Distribution Campaign</p>
               </div>
-
-              <Separator />
 
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Number of Issues</Label>
-                <p className="font-medium">{getDurationValue()}</p>
+                <Label className="text-sm font-medium text-muted-foreground">Minimum Duration</Label>
+                <p className="font-medium">{getDurationValue()} issues = {getDurationMonths()} months</p>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Selected Areas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Selected Distribution Areas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+              {/* Campaign Schedule Section */}
+              <div className="space-y-4 pt-4 border-t">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Campaign Schedule</h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    A full schedule with copy deadlines, print and delivery dates will be available to download in your account
+                  </p>
+                </div>
+
                 {uniqueSelectedLeafletAreas.map((areaId) => {
+                  const area = leafletAreas?.find(a => a.id === areaId);
+                  if (!area) return null;
+                  
                   const areaNumber = getAreaNumber(areaId);
                   const areaName = getAreaName(areaId);
-                  const formattedMonths = formatSelectedMonths(areaId);
+                  const areaMonths = selectedMonths?.[areaId] || [];
                   
                   // Skip areas with no months selected
-                  if (!formattedMonths) return null;
+                  if (areaMonths.length === 0) return null;
+                  
+                  // Get schedule data for this area
+                  const schedule = (area as any).schedule || [];
+                  
+                  // Format months as "February 2026, April 2026, June 2026"
+                  const formattedMonths = areaMonths.map(month => formatMonthDisplay(month)).join(', ');
+                  
+                  // Try to get deadline info from the first selected month's schedule
+                  const firstMonth = areaMonths[0];
+                  let copyDeadline = '';
+                  let printDeadline = '';
+                  let deliveryDate = '';
+                  
+                  if (schedule && schedule.length > 0) {
+                    const scheduleItem = schedule.find((s: any) => {
+                      if (s.month && firstMonth) {
+                        if (s.month.includes('-') && firstMonth.includes('-')) {
+                          return s.month === firstMonth;
+                        }
+                        // Try matching by month name
+                        const monthParts = firstMonth.split('-');
+                        if (monthParts.length === 2) {
+                          const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                              'July', 'August', 'September', 'October', 'November', 'December'];
+                          const monthNum = parseInt(monthParts[1], 10);
+                          const monthName = monthNames[monthNum - 1];
+                          return s.month === monthName && s.year === monthParts[0];
+                        }
+                      }
+                      return false;
+                    });
+                    
+                    if (scheduleItem) {
+                      copyDeadline = scheduleItem.copyDeadline || scheduleItem.copy_deadline || '';
+                      printDeadline = scheduleItem.printDeadline || scheduleItem.print_deadline || '';
+                      deliveryDate = scheduleItem.deliveryDate || scheduleItem.delivery_date || '';
+                    }
+                  }
                   
                   return (
-                    <div key={areaId} className="space-y-1">
+                    <div key={areaId} className="space-y-2 pb-3">
                       <div className="flex items-center gap-2">
                         <Badge variant="default" className="bg-primary">Paid</Badge>
-                        <span className="text-sm font-medium">
-                          {areaNumber ? `Area ${areaNumber} - ` : ''}{areaName}
-                        </span>
+                        <p className="font-medium">
+                          {areaNumber ? `Area ${areaNumber}—` : ''}{areaName.toUpperCase()}
+                        </p>
                       </div>
-                      <div className="text-sm ml-16">
-                        <span className="font-medium">Issues:</span> {formattedMonths}
-                      </div>
+                      <p className="text-sm">
+                        <span className="font-medium">Issues: </span>
+                        {formattedMonths}
+                      </p>
+                      {copyDeadline && (
+                        <p className="text-sm">
+                          <span className="font-medium">Copy deadline: </span>
+                          {parseScheduleDate(copyDeadline)}
+                        </p>
+                      )}
+                      {printDeadline && (
+                        <p className="text-sm">
+                          <span className="font-medium">Print deadline: </span>
+                          {parseScheduleDate(printDeadline)}
+                        </p>
+                      )}
+                      {deliveryDate && (
+                        <p className="text-sm">
+                          <span className="font-medium">Week Commencing: </span>
+                          {parseScheduleDate(deliveryDate)}
+                        </p>
+                      )}
                     </div>
                   );
                 })}
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Circulation Total */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <Label className="text-sm font-medium text-muted-foreground">Total Number of Homes Reached</Label>
-                <p className="text-2xl font-bold text-primary">
-                  {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
-                </p>
+              {/* Total Circulation */}
+              <div className="pt-4 border-t">
+                <div className="text-center">
+                  <Label className="text-sm font-medium text-muted-foreground">Total Number of Homes Reached</Label>
+                  <p className="text-2xl font-bold text-primary">
+                    {pricingBreakdown?.totalCirculation?.toLocaleString() || 0} homes
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
