@@ -275,32 +275,31 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
                 const isSelected = globalStartDate === month;
                 
                 return (
-                  <div key={index} className={`
-                    border rounded-lg p-4 cursor-pointer transition-all
-                    ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-muted hover:border-primary/50'}
-                  `}>
+                  <div 
+                    key={index} 
+                    className={`
+                      border rounded-lg p-4 cursor-pointer transition-all
+                      ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-muted hover:border-primary/50'}
+                    `}
+                    onClick={() => {
+                      const newSelectedMonths: { [key: string]: string[] } = {};
+                      [...bogofPaidAreas, ...bogofFreeAreas].forEach(areaId => {
+                        newSelectedMonths[areaId] = [month];
+                      });
+                      onMonthsChange(newSelectedMonths);
+                    }}
+                  >
                     <div className="flex items-start space-x-3">
                       <input
                         type="radio"
                         id={`global-start-${index}`}
                         name="global-start-date"
                         checked={isSelected}
-                        onChange={() => {
-                          const newSelectedMonths: { [key: string]: string[] } = {};
-                          [...bogofPaidAreas, ...bogofFreeAreas].forEach(areaId => {
-                            newSelectedMonths[areaId] = [month];
-                          });
-                          onMonthsChange(newSelectedMonths);
-                        }}
-                        className="mt-1"
+                        onChange={() => {}}
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-1 pointer-events-none"
                       />
-                      <div className="flex-1 space-y-2" onClick={() => {
-                        const newSelectedMonths: { [key: string]: string[] } = {};
-                        [...bogofPaidAreas, ...bogofFreeAreas].forEach(areaId => {
-                          newSelectedMonths[areaId] = [month];
-                        });
-                        onMonthsChange(newSelectedMonths);
-                      }}>
+                      <div className="flex-1 space-y-2 pointer-events-none">
                         <div className="font-medium text-sm">
                           {formatMonthDisplay(month)}
                         </div>
@@ -418,30 +417,36 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
                   const deadlineDisplay = getDeadlineDisplay(monthData);
                   
                   return (
-                    <div key={index} className={`
-                      border rounded-lg p-4 cursor-pointer transition-all
-                      ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-muted hover:border-primary/50'}
-                      ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}>
+                    <div 
+                      key={index} 
+                      className={`
+                        border rounded-lg p-4 cursor-pointer transition-all
+                        ${isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-muted hover:border-primary/50'}
+                        ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                      onClick={() => {
+                        if (isDisabled) return;
+                        const newAreaMonths = !isSelected
+                          ? [...areaSelectedMonths, monthData.month]
+                          : areaSelectedMonths.filter(m => m !== monthData.month);
+                        
+                        onMonthsChange({
+                          ...selectedMonths,
+                          [areaId]: newAreaMonths
+                        });
+                      }}
+                    >
                       <div className="flex items-start space-x-3">
                         <input
                           type="checkbox"
                           id={`month-${areaId}-${index}`}
                           checked={isSelected}
                           disabled={isDisabled}
-                          onChange={(e) => {
-                            const newAreaMonths = e.target.checked
-                              ? [...areaSelectedMonths, monthData.month]
-                              : areaSelectedMonths.filter(m => m !== monthData.month);
-                            
-                            onMonthsChange({
-                              ...selectedMonths,
-                              [areaId]: newAreaMonths
-                            });
-                          }}
-                          className="mt-1"
+                          onChange={() => {}}
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-1 pointer-events-none"
                         />
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 space-y-2 pointer-events-none">
                           <div className="font-medium text-sm">
                             {formatMonthDisplay(monthData.month)}
                           </div>

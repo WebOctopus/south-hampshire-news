@@ -270,17 +270,15 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                         id={`paid-${area.id}`}
                         checked={bogofPaidAreas.includes(area.id)}
                         disabled={!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7}
-                        onCheckedChange={(checked) => {
-                          if (!bogofPaidAreas.includes(area.id) && bogofPaidAreas.length >= 7) return;
-                          handleBogofPaidAreaChange(area.id, checked as boolean);
-                        }}
-                        className="mt-1"
+                        onCheckedChange={() => {}}
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-1 pointer-events-none"
                       />
-                      <div className="flex-1 space-y-1">
+                      <div className="flex-1 space-y-1 pointer-events-none">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor={`paid-${area.id}`} className="text-sm font-medium cursor-pointer leading-tight">
+                          <span className="text-sm font-medium leading-tight">
                             {area.name}
-                          </Label>
+                          </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <Badge variant="outline" className="text-xs">
@@ -338,14 +336,15 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                             id={`free-${area.id}`}
                             checked={isSelected}
                             disabled={isDisabled}
-                            onCheckedChange={(checked) => handleBogofFreeAreaChange(area.id, checked as boolean)}
-                            className="mt-1"
+                            onCheckedChange={() => {}}
+                            onClick={(e) => e.stopPropagation()}
+                            className="mt-1 pointer-events-none"
                           />
-                          <div className="flex-1 space-y-1">
+                          <div className="flex-1 space-y-1 pointer-events-none">
                             <div className="flex items-center justify-between">
-                              <Label htmlFor={`free-${area.id}`} className="text-sm font-medium cursor-pointer leading-tight">
+                              <span className="text-sm font-medium leading-tight">
                                 {area.name}
-                              </Label>
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge variant="outline" className="text-xs">
@@ -387,14 +386,15 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                   <Checkbox
                     id={area.id}
                     checked={selectedAreas.includes(area.id)}
-                    onCheckedChange={(checked) => handleAreaChange(area.id, checked as boolean)}
-                    className="mt-1"
+                    onCheckedChange={() => {}}
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-1 pointer-events-none"
                   />
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 space-y-2 pointer-events-none">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor={area.id} className="text-sm font-medium cursor-pointer">
+                      <span className="text-sm font-medium">
                         {area.name}
-                      </Label>
+                      </span>
                       <Badge variant="outline" className="text-xs">
                         {pricingModel === 'leafleting' 
                           ? (area as any).bimonthly_circulation?.toLocaleString() || 0
