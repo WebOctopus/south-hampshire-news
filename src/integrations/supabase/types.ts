@@ -530,6 +530,7 @@ export type Database = {
           message: string | null
           name: string
           phone: string | null
+          postcode: string
         }
         Insert: {
           agreed_to_terms?: boolean | null
@@ -540,6 +541,7 @@ export type Database = {
           message?: string | null
           name: string
           phone?: string | null
+          postcode?: string
         }
         Update: {
           agreed_to_terms?: boolean | null
@@ -550,6 +552,7 @@ export type Database = {
           message?: string | null
           name?: string
           phone?: string | null
+          postcode?: string
         }
         Relationships: [
           {
