@@ -253,14 +253,65 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleStepTransition = (currentStep: number, nextStep: () => void) => {
-    // Intercept transition from area selection (step 2) to ad size (step 3) for Fixed Term
-    // Show FreePlus offer when user has selected 3 or more areas - every time they meet this condition
-    if (currentStep === 2 && selectedPricingModel === 'fixed' && campaignData.selectedAreas.length >= 3) {
-      // Show dialog asking if they want to switch to BOGOF instead
-      setPendingNextStep(() => nextStep);
-      setShowFixedTermConfirmation(true);
-      return; // Don't proceed to next step yet
+    // Step 2 is AreaAndScheduleStep (index 2 in the form)
+    if (currentStep === 2) {
+      // Validate for leafleting - require duration AND month selections
+      if (selectedPricingModel === 'leafleting') {
+        if (!campaignData.selectedDuration) {
+          toast({
+            title: "Campaign Duration Required",
+            description: "Please select a campaign duration before continuing.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Also validate that months are selected for each area
+        const hasAllMonthsSelected = campaignData.selectedAreas.every(
+          areaId => campaignData.selectedMonths[areaId]?.length > 0
+        );
+        if (!hasAllMonthsSelected && campaignData.selectedAreas.length > 0) {
+          toast({
+            title: "Schedule Selection Required",
+            description: "Please select delivery months for all selected areas.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      
+      // Validate for fixed term - require duration AND month selections
+      if (selectedPricingModel === 'fixed') {
+        if (!campaignData.selectedDuration) {
+          toast({
+            title: "Campaign Duration Required",
+            description: "Please select a campaign duration before continuing.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        const hasAllMonthsSelected = campaignData.selectedAreas.every(
+          areaId => campaignData.selectedMonths[areaId]?.length > 0
+        );
+        if (!hasAllMonthsSelected && campaignData.selectedAreas.length > 0) {
+          toast({
+            title: "Schedule Selection Required",
+            description: "Please select publication months for all selected areas.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Existing BOGOF switch dialog for 3+ areas
+        if (campaignData.selectedAreas.length >= 3) {
+          setPendingNextStep(() => nextStep);
+          setShowFixedTermConfirmation(true);
+          return;
+        }
+      }
     }
+    
     nextStep(); // Proceed normally for other cases
   };
 
