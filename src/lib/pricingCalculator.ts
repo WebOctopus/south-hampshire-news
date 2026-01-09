@@ -231,6 +231,16 @@ export function formatPrice(price: number | undefined): string {
 }
 
 /**
+ * Format price for display without decimal places (whole numbers only)
+ */
+export function formatPriceWholeNumber(price: number | undefined): string {
+  if (price === undefined || price === null || isNaN(price)) {
+    return '£0';
+  }
+  return `£${Math.round(price).toLocaleString('en-GB')}`;
+}
+
+/**
  * Calculate cost per thousand (CPM) for circulation reach
  */
 export function calculateCPM(totalPrice: number, totalCirculation: number): number {

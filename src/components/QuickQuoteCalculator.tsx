@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { usePricingData } from '@/hooks/usePricingData';
-import { formatPrice } from '@/lib/pricingCalculator';
+import { formatPriceWholeNumber } from '@/lib/pricingCalculator';
 import { Calculator, TrendingUp, Users, Target, Gift, PoundSterling, Sparkles, Home } from 'lucide-react';
 import ROIFactorsInfo from './ROIFactorsInfo';
 import NewAdvertiserPromo from './NewAdvertiserPromo';
@@ -247,7 +247,7 @@ const QuickQuoteCalculator: React.FC = () => {
                       <span className="text-sm font-medium text-white/80 uppercase tracking-wide">Cost per month</span>
                     </div>
                     <p className="text-5xl font-bold text-white">
-                      {formatPrice(monthlyPrice)}
+                      {formatPriceWholeNumber(monthlyPrice)}
                     </p>
                     <p className="text-sm text-white/70 mt-2">+ VAT</p>
                   </div>
@@ -262,7 +262,7 @@ const QuickQuoteCalculator: React.FC = () => {
                       <span className="text-sm font-medium text-slate-300 uppercase tracking-wide">6 Month Campaign</span>
                     </div>
                     <p className="text-5xl font-bold text-white">
-                      {formatPrice(sixMonthTotal)}
+                      {formatPriceWholeNumber(sixMonthTotal)}
                     </p>
                     <p className="text-sm text-slate-400 mt-2">+ VAT (Total)</p>
                   </div>
@@ -291,7 +291,7 @@ const QuickQuoteCalculator: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <label className="text-lg font-semibold text-community-navy">Average Customer Value</label>
                   <Badge className="text-lg px-4 py-1.5 bg-community-navy text-white border-0 shadow-md">
-                    {formatPrice(customerValue)}
+                    {formatPriceWholeNumber(customerValue)}
                   </Badge>
                 </div>
                 <Slider
@@ -378,7 +378,7 @@ const QuickQuoteCalculator: React.FC = () => {
                       <span className="text-sm font-medium text-white/90">Potential Revenue</span>
                     </div>
                     <p className="text-3xl font-bold text-white">
-                      {formatPrice(roiCalculations.potentialRevenue)}
+                      {formatPriceWholeNumber(roiCalculations.potentialRevenue)}
                     </p>
                     <p className="text-sm text-white/80 mt-1">
                       potential revenue
