@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 export interface LeafletScheduleItem {
   year: number;
   month: string;
-  copyDeadline: string;
+  copyDeadline: string;       // "Leaflets req'd by"
   copy_deadline?: string;
-  printDeadline: string;
-  print_deadline?: string;
-  deliveryDate: string;
+  deliveryDate: string;       // "w/c delivery"
   delivery_date?: string;
+  // Legacy field - kept for backwards compatibility with existing data
+  printDeadline?: string;
+  print_deadline?: string;
 }
 
 export interface LeafletArea {

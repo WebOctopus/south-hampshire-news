@@ -108,16 +108,14 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
   // Schedule management functions
   const addScheduleItem = (year: number, monthName: string) => {
     const monthIndex = allMonths.indexOf(monthName);
-    // Set default dates: 15th for copy, 20th for print, 25th for delivery
+    // Set default dates: 15th for leaflets req'd by, 25th for w/c delivery
     const copyDate = new Date(year, monthIndex, 15);
-    const printDate = new Date(year, monthIndex, 20);
     const deliveryDate = new Date(year, monthIndex, 25);
     
     const newScheduleItem: LeafletScheduleItem = {
       year,
       month: monthName,
       copyDeadline: format(copyDate, 'dd.MM.yyyy'),
-      printDeadline: format(printDate, 'dd.MM.yyyy'),
       deliveryDate: format(deliveryDate, 'dd.MM.yyyy')
     };
     const newSchedule = [...areaSchedule, newScheduleItem].sort((a, b) => {
@@ -491,7 +489,6 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                         <div className="space-y-3 max-h-96 overflow-y-auto border rounded-md p-4 bg-muted/20">
                           {areaSchedule.map((scheduleItem, index) => {
                             const copyDate = parseDate(scheduleItem.copyDeadline, scheduleItem.year, scheduleItem.month);
-                            const printDate = parseDate(scheduleItem.printDeadline, scheduleItem.year, scheduleItem.month);
                             const deliveryDate = parseDate(scheduleItem.deliveryDate, scheduleItem.year, scheduleItem.month);
 
                             return (
@@ -512,10 +509,10 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                                   </Button>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-3">
-                                  {/* Copy Deadline */}
+                                <div className="grid grid-cols-2 gap-3">
+                                  {/* Leaflets req'd by */}
                                   <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-muted-foreground">Copy Deadline</Label>
+                                    <Label className="text-xs font-medium text-muted-foreground">Leaflets req'd by</Label>
                                     <Popover>
                                       <PopoverTrigger asChild>
                                         <Button
@@ -549,45 +546,9 @@ const LeafletingManagement: React.FC<LeafletingManagementProps> = ({ onStatsUpda
                                     </Popover>
                                   </div>
 
-                                  {/* Print Deadline */}
+                                  {/* w/c delivery */}
                                   <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-muted-foreground">Print Deadline</Label>
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          className={cn(
-                                            "w-full justify-start text-left font-normal text-sm h-9",
-                                            !printDate && "text-muted-foreground"
-                                          )}
-                                        >
-                                          <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                                          {printDate ? format(printDate, 'dd.MM.yyyy') : "Pick date"}
-                                        </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                          mode="single"
-                                          selected={printDate}
-                                          onSelect={(date) => {
-                                            const newSchedule = [...areaSchedule];
-                                            newSchedule[index] = { 
-                                              ...scheduleItem, 
-                                              printDeadline: date ? format(date, 'dd.MM.yyyy') : '' 
-                                            };
-                                            setAreaSchedule(newSchedule);
-                                          }}
-                                          initialFocus
-                                          className="pointer-events-auto"
-                                        />
-                                      </PopoverContent>
-                                    </Popover>
-                                  </div>
-
-                                  {/* Week Commencing */}
-                                  <div className="space-y-1.5">
-                                    <Label className="text-xs font-medium text-muted-foreground">Week Commencing</Label>
+                                    <Label className="text-xs font-medium text-muted-foreground">w/c delivery</Label>
                                     <Popover>
                                       <PopoverTrigger asChild>
                                         <Button
