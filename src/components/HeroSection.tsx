@@ -1,8 +1,51 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import AuthPromptDialog from '@/components/AuthPromptDialog';
+import type { User } from '@supabase/supabase-js';
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [authRedirectPath, setAuthRedirectPath] = useState('/add-event');
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+    
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSubmitEvent = () => {
+    if (user) {
+      navigate('/add-event');
+    } else {
+      setAuthRedirectPath('/add-event');
+      setShowAuthDialog(true);
+    }
+  };
+
+  const handleSubmitStory = () => {
+    if (user) {
+      navigate('/contact');
+    } else {
+      setAuthRedirectPath('/contact');
+      setShowAuthDialog(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    navigate(authRedirectPath);
+  };
 
   return (
     <section id="home" className="relative py-16 lg:py-24 overflow-hidden">
@@ -29,14 +72,14 @@ const HeroSection = () => {
             <Button 
               size="lg" 
               className="bg-community-green hover:bg-green-600 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg"
-              onClick={() => navigate('/add-event')}
+              onClick={handleSubmitEvent}
             >
               Submit an Event
             </Button>
             <Button 
               size="lg"
               className="bg-community-navy hover:bg-slate-700 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg"
-              onClick={() => navigate('/contact')}
+              onClick={handleSubmitStory}
             >
               Submit a Story
             </Button>
@@ -51,6 +94,13 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
+      <AuthPromptDialog
+        open={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+        onSuccess={handleAuthSuccess}
+        redirectPath={authRedirectPath}
+      />
     </section>
   );
 };

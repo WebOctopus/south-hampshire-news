@@ -11,20 +11,27 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths, isWithinInterval } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { EventCard } from '@/components/EventCard';
 import { Event } from '@/hooks/useEvents';
+import AuthPromptDialog from '@/components/AuthPromptDialog';
+import type { User } from '@supabase/supabase-js';
 
 type QuickFilter = 'all' | 'week' | 'month' | 'next_month';
 
 const WhatsOn = () => {
   const mountedRef = useRef(true);
+  const navigate = useNavigate();
   
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,6 +52,33 @@ const WhatsOn = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [areas, setAreas] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
+
+  // Auth listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+    
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAddEvent = () => {
+    if (user) {
+      navigate('/add-event');
+    } else {
+      setShowAuthDialog(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    navigate('/add-event');
+  };
 
   useEffect(() => {
     return () => {
@@ -235,16 +269,15 @@ const WhatsOn = () => {
               Discover the best events, activities, and entertainment in your local area
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/add-event">
-                <Button 
-                  size="lg" 
-                  variant="secondary"
-                  className="font-semibold px-8 py-3"
-                >
-                  <Plus className="mr-2 h-5 w-5" />
-                  Add Your Event
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                variant="secondary"
+                className="font-semibold px-8 py-3"
+                onClick={handleAddEvent}
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Add Your Event
+              </Button>
               <Link to="/whats-on/archive">
                 <Button 
                   size="lg" 
@@ -655,12 +688,10 @@ const WhatsOn = () => {
                 <p className="text-muted-foreground font-body mb-6">
                   Submit your local event and reach hundreds of community members
                 </p>
-                <Link to="/add-event">
-                  <Button className="w-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Your Event
-                  </Button>
-                </Link>
+                <Button className="w-full" onClick={handleAddEvent}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Your Event
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -668,6 +699,13 @@ const WhatsOn = () => {
       </section>
 
       <Footer />
+
+      <AuthPromptDialog
+        open={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+        onSuccess={handleAuthSuccess}
+        redirectPath="/add-event"
+      />
     </div>
   );
 };
