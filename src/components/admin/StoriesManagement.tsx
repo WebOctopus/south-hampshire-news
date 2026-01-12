@@ -95,6 +95,11 @@ export function StoriesManagement() {
     setEditingStory(null);
   };
 
+  const handleAddStory = () => {
+    resetForm();
+    setIsDialogOpen(true);
+  };
+
   const openEditDialog = (story: Story) => {
     setEditingStory(story);
     
@@ -327,12 +332,10 @@ export function StoriesManagement() {
               setIsDialogOpen(open);
               if (!open) resetForm();
             }}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Story
-                </Button>
-              </DialogTrigger>
+              <Button onClick={handleAddStory}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Story
+              </Button>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingStory ? 'Edit Story' : 'Add New Story'}</DialogTitle>
