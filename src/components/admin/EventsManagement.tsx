@@ -29,8 +29,16 @@ import {
   XCircle,
   ExternalLink,
   Clock,
-  Mail
+  Mail,
+  Share2,
+  Globe,
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  Youtube
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import { useEvents, Event, EventFormData, EventLink, EVENT_CATEGORIES, EVENT_TYPES } from '@/hooks/useEvents';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,6 +70,13 @@ export function EventsManagement() {
     ticket_url: '',
     contact_email: '',
     contact_phone: '',
+    website_url: '',
+    facebook_url: '',
+    instagram_url: '',
+    twitter_url: '',
+    linkedin_url: '',
+    tiktok_url: '',
+    youtube_url: '',
     is_published: false,
     featured: false
   });
@@ -126,6 +141,13 @@ export function EventsManagement() {
       ticket_url: '',
       contact_email: '',
       contact_phone: '',
+      website_url: '',
+      facebook_url: '',
+      instagram_url: '',
+      twitter_url: '',
+      linkedin_url: '',
+      tiktok_url: '',
+      youtube_url: '',
       is_published: false,
       featured: false
     });
@@ -153,6 +175,13 @@ export function EventsManagement() {
       ticket_url: event.ticket_url || '',
       contact_email: event.contact_email || '',
       contact_phone: event.contact_phone || '',
+      website_url: event.website_url || '',
+      facebook_url: event.facebook_url || '',
+      instagram_url: event.instagram_url || '',
+      twitter_url: event.twitter_url || '',
+      linkedin_url: event.linkedin_url || '',
+      tiktok_url: event.tiktok_url || '',
+      youtube_url: event.youtube_url || '',
       is_published: event.is_published,
       featured: event.featured
     });
@@ -619,15 +648,29 @@ export function EventsManagement() {
                     </TabsContent>
 
                     <TabsContent value="links" className="space-y-4 mt-4">
-                      <div>
-                        <Label htmlFor="ticket_url">Ticket/Booking URL</Label>
-                        <Input
-                          id="ticket_url"
-                          type="url"
-                          value={formData.ticket_url}
-                          onChange={(e) => setFormData(prev => ({ ...prev, ticket_url: e.target.value }))}
-                          placeholder="https://..."
-                        />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="ticket_url">Ticket/Booking URL</Label>
+                          <Input
+                            id="ticket_url"
+                            type="url"
+                            value={formData.ticket_url}
+                            onChange={(e) => setFormData(prev => ({ ...prev, ticket_url: e.target.value }))}
+                            placeholder="https://tickets.example.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="website_url" className="flex items-center gap-1">
+                            <Globe className="h-3 w-3" /> Website URL
+                          </Label>
+                          <Input
+                            id="website_url"
+                            type="url"
+                            value={formData.website_url}
+                            onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
+                            placeholder="https://www.example.com"
+                          />
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -651,6 +694,92 @@ export function EventsManagement() {
                         </div>
                       </div>
 
+                      <Separator />
+
+                      <div className="space-y-4">
+                        <h4 className="text-sm font-semibold flex items-center gap-2">
+                          <Share2 className="h-4 w-4" /> Social Media Links
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="facebook_url" className="flex items-center gap-1">
+                              <Facebook className="h-3 w-3" /> Facebook
+                            </Label>
+                            <Input
+                              id="facebook_url"
+                              type="url"
+                              value={formData.facebook_url}
+                              onChange={(e) => setFormData(prev => ({ ...prev, facebook_url: e.target.value }))}
+                              placeholder="https://facebook.com/..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="instagram_url" className="flex items-center gap-1">
+                              <Instagram className="h-3 w-3" /> Instagram
+                            </Label>
+                            <Input
+                              id="instagram_url"
+                              type="url"
+                              value={formData.instagram_url}
+                              onChange={(e) => setFormData(prev => ({ ...prev, instagram_url: e.target.value }))}
+                              placeholder="https://instagram.com/..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="twitter_url" className="flex items-center gap-1">
+                              <Twitter className="h-3 w-3" /> Twitter / X
+                            </Label>
+                            <Input
+                              id="twitter_url"
+                              type="url"
+                              value={formData.twitter_url}
+                              onChange={(e) => setFormData(prev => ({ ...prev, twitter_url: e.target.value }))}
+                              placeholder="https://twitter.com/..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="linkedin_url" className="flex items-center gap-1">
+                              <Linkedin className="h-3 w-3" /> LinkedIn
+                            </Label>
+                            <Input
+                              id="linkedin_url"
+                              type="url"
+                              value={formData.linkedin_url}
+                              onChange={(e) => setFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                              placeholder="https://linkedin.com/..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="tiktok_url" className="flex items-center gap-1">
+                              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+                              </svg> TikTok
+                            </Label>
+                            <Input
+                              id="tiktok_url"
+                              type="url"
+                              value={formData.tiktok_url}
+                              onChange={(e) => setFormData(prev => ({ ...prev, tiktok_url: e.target.value }))}
+                              placeholder="https://tiktok.com/@..."
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="youtube_url" className="flex items-center gap-1">
+                              <Youtube className="h-3 w-3" /> YouTube
+                            </Label>
+                            <Input
+                              id="youtube_url"
+                              type="url"
+                              value={formData.youtube_url}
+                              onChange={(e) => setFormData(prev => ({ ...prev, youtube_url: e.target.value }))}
+                              placeholder="https://youtube.com/..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
                       <div className="space-y-2">
                         <Label>Additional Links</Label>
                         {links.map((link, index) => (
@@ -671,7 +800,7 @@ export function EventsManagement() {
                         
                         <div className="flex gap-2">
                           <Input
-                            placeholder="Label (e.g., Website)"
+                            placeholder="Label (e.g., Menu, Flyer)"
                             value={newLinkLabel}
                             onChange={(e) => setNewLinkLabel(e.target.value)}
                           />

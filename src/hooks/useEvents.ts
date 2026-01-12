@@ -27,6 +27,13 @@ export interface Event {
   ticket_url: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  website_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  linkedin_url: string | null;
+  tiktok_url: string | null;
+  youtube_url: string | null;
   is_published: boolean;
   featured: boolean;
   user_id: string | null;
@@ -53,6 +60,13 @@ export interface EventFormData {
   ticket_url?: string;
   contact_email?: string;
   contact_phone?: string;
+  website_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  twitter_url?: string;
+  linkedin_url?: string;
+  tiktok_url?: string;
+  youtube_url?: string;
   is_published?: boolean;
   featured?: boolean;
 }
