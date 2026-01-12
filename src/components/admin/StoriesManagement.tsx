@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Plus, 
   Upload, 
@@ -26,6 +28,7 @@ import {
 import { useStories, Story, StoryFormData, STORY_CATEGORIES, useStoryAreas, cleanAreaName } from '@/hooks/useStories';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 export function StoriesManagement() {
   const { stories, loading, fetchStories, createStory, updateStory, deleteStory, togglePublished, toggleFeatured, bulkCreateStories } = useStories();
@@ -46,9 +49,34 @@ export function StoriesManagement() {
     is_published: false,
     featured: false
   });
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [allAreasSelected, setAllAreasSelected] = useState(false);
   const [csvPreviewData, setCsvPreviewData] = useState<StoryFormData[]>([]);
   const [showCsvPreview, setShowCsvPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const handleAllAreasToggle = (checked: boolean) => {
+    setAllAreasSelected(checked);
+    if (checked) {
+      setSelectedAreas([]);
+      setFormData(prev => ({ ...prev, area: 'All Areas' }));
+    } else {
+      setFormData(prev => ({ ...prev, area: '' }));
+    }
+  };
+
+  const handleAreaToggle = (areaName: string, checked: boolean) => {
+    if (allAreasSelected) return;
+    
+    let newAreas: string[];
+    if (checked) {
+      newAreas = [...selectedAreas, areaName];
+    } else {
+      newAreas = selectedAreas.filter(a => a !== areaName);
+    }
+    setSelectedAreas(newAreas);
+    setFormData(prev => ({ ...prev, area: newAreas.join(', ') }));
+  };
 
   const resetForm = () => {
     setFormData({
@@ -62,11 +90,21 @@ export function StoriesManagement() {
       is_published: false,
       featured: false
     });
+    setSelectedAreas([]);
+    setAllAreasSelected(false);
     setEditingStory(null);
   };
 
   const openEditDialog = (story: Story) => {
     setEditingStory(story);
+    
+    // Parse area - could be "All Areas" or comma-separated list
+    const isAllAreas = story.area === 'All Areas';
+    const parsedAreas = isAllAreas ? [] : story.area.split(',').map(a => a.trim()).filter(Boolean);
+    
+    setAllAreasSelected(isAllAreas);
+    setSelectedAreas(parsedAreas);
+    
     setFormData({
       title: story.title,
       excerpt: story.excerpt || '',
@@ -348,20 +386,54 @@ export function StoriesManagement() {
                         </div>
 
                         <div>
-                          <Label htmlFor="area">Area *</Label>
-                          <Select
-                            value={formData.area}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, area: value }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select area" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {areas.map(area => (
-                                <SelectItem key={area.id} value={area.name}>{area.cleanName}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Label>Area(s) *</Label>
+                          <div className="border rounded-md p-3 space-y-3 bg-background">
+                            {/* All Areas checkbox */}
+                            <div className="flex items-center space-x-2 pb-2 border-b">
+                              <Checkbox
+                                id="all-areas"
+                                checked={allAreasSelected}
+                                onCheckedChange={(checked) => handleAllAreasToggle(checked as boolean)}
+                              />
+                              <label htmlFor="all-areas" className="text-sm font-medium cursor-pointer">
+                                All Areas ({areas.length} editions)
+                              </label>
+                            </div>
+                            
+                            {/* Individual area checkboxes */}
+                            <ScrollArea className="h-48">
+                              <div className="space-y-2">
+                                {areas.map(area => (
+                                  <div key={area.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`area-${area.id}`}
+                                      checked={allAreasSelected || selectedAreas.includes(area.name)}
+                                      disabled={allAreasSelected}
+                                      onCheckedChange={(checked) => handleAreaToggle(area.name, checked as boolean)}
+                                    />
+                                    <label 
+                                      htmlFor={`area-${area.id}`} 
+                                      className={cn(
+                                        "text-sm cursor-pointer",
+                                        allAreasSelected && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {area.cleanName}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                            
+                            {/* Selection summary */}
+                            <div className="text-xs text-muted-foreground pt-2 border-t">
+                              {allAreasSelected 
+                                ? `Story will appear in all ${areas.length} editions` 
+                                : selectedAreas.length > 0 
+                                  ? `Selected: ${selectedAreas.length} area(s)` 
+                                  : "Please select at least one area"}
+                            </div>
+                          </div>
                         </div>
                       </div>
 
