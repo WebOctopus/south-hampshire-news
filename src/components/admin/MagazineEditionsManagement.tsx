@@ -333,11 +333,11 @@ const MagazineEditionsManagement = () => {
               Add Edition
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
+          <DialogContent className="max-w-lg max-h-[90vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>{editingEdition ? 'Edit Edition' : 'Add New Edition'}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 pr-2">
               <div>
                 <Label htmlFor="title">Edition Title</Label>
                 <Input
@@ -490,7 +490,7 @@ const MagazineEditionsManagement = () => {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
               <Button 
                 onClick={handleSubmit}
