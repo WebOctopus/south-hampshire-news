@@ -23,7 +23,8 @@ import {
   EyeOff,
   Star,
   StarOff,
-  MapPin
+  MapPin,
+  Phone
 } from 'lucide-react';
 import { useStories, Story, StoryFormData, STORY_CATEGORIES, useStoryAreas, cleanAreaName } from '@/hooks/useStories';
 import { useToast } from '@/hooks/use-toast';
@@ -46,6 +47,7 @@ export function StoriesManagement() {
     area: '',
     featured_image_url: '',
     author_name: '',
+    author_phone: '',
     is_published: false,
     featured: false
   });
@@ -87,6 +89,7 @@ export function StoriesManagement() {
       area: '',
       featured_image_url: '',
       author_name: '',
+      author_phone: '',
       is_published: false,
       featured: false
     });
@@ -118,6 +121,7 @@ export function StoriesManagement() {
       area: story.area,
       featured_image_url: story.featured_image_url || '',
       author_name: story.author_name || '',
+      author_phone: story.author_phone || '',
       is_published: story.is_published,
       featured: story.featured
     });
@@ -440,13 +444,28 @@ export function StoriesManagement() {
                         </div>
                       </div>
 
-                      <div>
-                        <Label htmlFor="author_name">Author Name</Label>
-                        <Input
-                          id="author_name"
-                          value={formData.author_name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, author_name: e.target.value }))}
-                        />
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="author_name">Author Name</Label>
+                          <Input
+                            id="author_name"
+                            value={formData.author_name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, author_name: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="author_phone" className="flex items-center gap-2">
+                            <Phone className="h-4 w-4" />
+                            Contact Phone
+                          </Label>
+                          <Input
+                            id="author_phone"
+                            type="tel"
+                            value={formData.author_phone}
+                            onChange={(e) => setFormData(prev => ({ ...prev, author_phone: e.target.value }))}
+                            placeholder="07700 900000"
+                          />
+                        </div>
                       </div>
                     </TabsContent>
 
