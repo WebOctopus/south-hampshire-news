@@ -303,12 +303,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           return;
         }
         
-        // Existing BOGOF switch dialog for 3+ areas
-        if (campaignData.selectedAreas.length >= 3) {
-          setPendingNextStep(() => nextStep);
-          setShowFixedTermConfirmation(true);
-          return;
-        }
+        // BOGOF switch dialog is now shown after ad size selection (step 3)
+        // See onStepTransition in stepLabels
       }
     }
     
@@ -809,9 +805,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
-      // Intercept transition from area selection (step 2) to ad size (step 3) for Fixed Term
-      // Show FreePlus offer when user has selected 3 or more areas - every time they meet this condition
-      if (currentStep === 1 && selectedPricingModel === 'fixed' && (campaignData.selectedAreas?.length || 0) >= 3) {
+      // Intercept transition from ad size selection (step 3) to next step for Fixed Term
+      // Show FreePlus offer when user has selected 3+ areas AND an ad size (so we can calculate price)
+      if (currentStep === 3 && selectedPricingModel === 'fixed' && (campaignData.selectedAreas?.length || 0) >= 3 && campaignData.selectedAdSize) {
         setPendingNextStep(() => nextStep);
         setShowFixedTermConfirmation(true);
         return; // Don't proceed to next step yet
