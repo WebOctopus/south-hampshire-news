@@ -1785,6 +1785,7 @@ export type Database = {
           area: string
           author_id: string | null
           author_name: string | null
+          author_phone: string | null
           category: string
           content: string
           created_at: string
@@ -1801,6 +1802,7 @@ export type Database = {
           area: string
           author_id?: string | null
           author_name?: string | null
+          author_phone?: string | null
           category: string
           content: string
           created_at?: string
@@ -1817,6 +1819,7 @@ export type Database = {
           area?: string
           author_id?: string | null
           author_name?: string | null
+          author_phone?: string | null
           category?: string
           content?: string
           created_at?: string

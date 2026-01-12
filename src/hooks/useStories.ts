@@ -11,6 +11,7 @@ export interface Story {
   area: string;
   featured_image_url: string | null;
   author_name: string | null;
+  author_phone: string | null;
   author_id: string | null;
   is_published: boolean;
   featured: boolean;
@@ -27,6 +28,7 @@ export interface StoryFormData {
   area: string;
   featured_image_url?: string;
   author_name?: string;
+  author_phone?: string;
   is_published?: boolean;
   featured?: boolean;
 }
