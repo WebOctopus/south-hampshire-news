@@ -157,8 +157,8 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-muted-foreground">Minimum Duration</Label>
-                <p className="font-medium">{getDurationValue()} issues = {getDurationMonths()} months</p>
+                <Label className="text-sm font-medium text-muted-foreground">Number of Deliveries per Leaflet</Label>
+                <p className="font-medium">{getDurationValue()}</p>
               </div>
 
               {/* Campaign Schedule Section */}
