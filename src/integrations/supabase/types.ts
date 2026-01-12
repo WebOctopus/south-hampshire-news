@@ -683,21 +683,28 @@ export type Database = {
           description: string | null
           end_time: string | null
           excerpt: string | null
+          facebook_url: string | null
           featured: boolean | null
           full_description: string | null
           id: string
           image: string | null
+          instagram_url: string | null
           is_published: boolean | null
+          linkedin_url: string | null
           links: Json | null
           location: string
           organizer: string | null
           postcode: string | null
           ticket_url: string | null
+          tiktok_url: string | null
           time: string
           title: string
+          twitter_url: string | null
           type: string
           updated_at: string
           user_id: string | null
+          website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           area: string
@@ -709,21 +716,28 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           excerpt?: string | null
+          facebook_url?: string | null
           featured?: boolean | null
           full_description?: string | null
           id?: string
           image?: string | null
+          instagram_url?: string | null
           is_published?: boolean | null
+          linkedin_url?: string | null
           links?: Json | null
           location: string
           organizer?: string | null
           postcode?: string | null
           ticket_url?: string | null
+          tiktok_url?: string | null
           time: string
           title: string
+          twitter_url?: string | null
           type: string
           updated_at?: string
           user_id?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           area?: string
@@ -735,21 +749,28 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           excerpt?: string | null
+          facebook_url?: string | null
           featured?: boolean | null
           full_description?: string | null
           id?: string
           image?: string | null
+          instagram_url?: string | null
           is_published?: boolean | null
+          linkedin_url?: string | null
           links?: Json | null
           location?: string
           organizer?: string | null
           postcode?: string | null
           ticket_url?: string | null
+          tiktok_url?: string | null
           time?: string
           title?: string
+          twitter_url?: string | null
           type?: string
           updated_at?: string
           user_id?: string | null
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
