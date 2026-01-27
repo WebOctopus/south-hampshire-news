@@ -204,46 +204,31 @@ const Auth = () => {
     setForgotPasswordLoading(true);
 
     try {
-      const resetUrl = `${window.location.origin}/reset-password`;
-      
-      // Use Supabase's built-in password reset
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: resetUrl,
+      // Call edge function which generates the reset link and sends branded email
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email: forgotPasswordEmail }
       });
 
       if (error) {
         console.error('Password reset error:', error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
-        // Also send our branded email via edge function
-        try {
-          await supabase.functions.invoke('send-password-reset', {
-            body: { 
-              email: forgotPasswordEmail,
-              resetUrl: resetUrl
-            }
-          });
-        } catch (emailError) {
-          console.error('Error sending branded reset email:', emailError);
-          // Continue anyway as Supabase's email was sent
-        }
-
-        toast({
-          title: "Check your email",
-          description: "We've sent you a password reset link. Please check your inbox."
-        });
-        setForgotPasswordOpen(false);
-        setForgotPasswordEmail('');
+        throw new Error(error.message || 'Failed to send reset email');
       }
-    } catch (error) {
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a password reset link. Please check your inbox."
+      });
+      setForgotPasswordOpen(false);
+      setForgotPasswordEmail('');
+    } catch (error: any) {
       console.error('Unexpected error during password reset:', error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: error.message || "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     } finally {
