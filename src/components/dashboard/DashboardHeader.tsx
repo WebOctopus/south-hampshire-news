@@ -1,7 +1,6 @@
-import { Home, Settings, HelpCircle, LogOut, User } from "lucide-react"
+import { Home, Settings, HelpCircle, LogOut } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { supabase } from "@/integrations/supabase/client"
-import { toast } from "sonner"
+import { useAuth } from "@/contexts/AuthContext"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import {
   DropdownMenu,
@@ -22,15 +21,10 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ user, onProfileClick }: DashboardHeaderProps) {
   const navigate = useNavigate()
+  const { signOut } = useAuth()
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut()
-      navigate("/")
-      toast.success("Signed out successfully")
-    } catch (error) {
-      toast.error("Error signing out")
-    }
+    await signOut()
   }
 
   const handleBackToWebsite = () => {
