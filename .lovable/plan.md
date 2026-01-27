@@ -1,126 +1,75 @@
 
-## Plan: Fix Password Reset "Invalid Link" Error
 
-### Problem Analysis
+## Fix: Password Reset Blank Page
 
-Based on the auth logs and your screenshot, here's what's happening:
+### Problem Identified
 
-| Time | Event | Result |
-|------|-------|--------|
-| 16:00:38 | Reset link generated | Success |
-| 16:03:22 | User clicked link, Supabase verified token | **Success** - user logged in |
-| 16:03:54+ | Page tries to re-verify consumed token | **Fails** - "One-time token not found" |
+The `ResetPassword.tsx` component has a **React hooks violation** that causes a complete render failure (blank page). 
 
-**Root Cause**: When Supabase's `/verify` endpoint processes the recovery link, it:
-1. Consumes the one-time token (single use)
-2. Creates a session for the user
-3. Redirects to `/reset-password` with hash parameters
+A `useEffect` hook on line 181 is placed *after* conditional `return` statements on lines 132-149 and 151-178. React requires all hooks to be called in the same order on every render - they cannot appear after early returns.
 
-However, the `ResetPassword.tsx` page then tries to call `setSession()` using those same hash parameters, which fails because the token was already consumed by the `/verify` endpoint.
-
-### Current Flow (Broken)
-
-```text
-User clicks email link
-    ↓
-Supabase /verify endpoint (consumes token, creates session)
-    ↓
-Redirects to /reset-password#access_token=...&type=recovery
-    ↓
-ResetPassword.tsx tries setSession() with consumed token
-    ↓
-FAILS - shows "Invalid Reset Link" error
-```
-
-### Fixed Flow
-
-```text
-User clicks email link
-    ↓
-Supabase /verify endpoint (consumes token, creates session)
-    ↓
-Redirects to /reset-password#access_token=...&type=recovery
-    ↓
-ResetPassword.tsx checks for EXISTING SESSION first
-    ↓
-If session exists → show password form
-If no session → THEN try to parse hash parameters
-    ↓
-SUCCESS - user can update password
-```
-
----
+This is a JavaScript runtime error that silently crashes the component, resulting in the blank white page you're seeing.
 
 ### Solution
 
-#### Modify `src/pages/ResetPassword.tsx`
-
-**Change the session checking logic to:**
-
-1. **First check if user already has a valid session** from the redirect
-   - Supabase's client library auto-detects hash parameters and establishes session
-   - If `supabase.auth.getSession()` returns a session, that's all we need
-
-2. **Only attempt manual token parsing as a fallback**
-   - This handles edge cases where auto-detection doesn't work
-
-3. **Clear the URL hash after successful session detection**
-   - Prevents re-parsing of consumed tokens on page refresh
-
-4. **Don't show error toast immediately** - wait for session check to complete
-
-**Updated Logic:**
-
-```text
-checkSession():
-  1. First, call supabase.auth.getSession()
-  2. If session exists:
-     - Clear URL hash (remove consumed token from URL)
-     - Set isValidSession = true
-     - Return early (skip hash parsing)
-  3. If no session, check URL hash parameters:
-     - If type=recovery and access_token present, try setSession()
-     - This is a fallback, likely won't be needed
-  4. If still no session after all checks:
-     - THEN show the "Invalid Link" UI (no toast)
-```
-
-**Remove the immediate toast errors** that fire during the checking phase - instead, just show the "Invalid Reset Link" card UI once checking is complete.
-
----
+Move the countdown `useEffect` to the top of the component, alongside the other `useEffect` (session checking). Both hooks will run on every render, but their internal conditions will prevent them from executing their logic when not needed.
 
 ### Technical Changes
 
 **File: `src/pages/ResetPassword.tsx`**
 
-| Current Behavior | New Behavior |
-|------------------|--------------|
-| Tries `setSession()` with hash params first | Checks existing session first |
-| Shows toast error during check | Only shows card UI after check fails |
-| Keeps consumed token in URL | Clears URL hash after session confirmed |
-| Calls `setSession()` even when session exists | Skips `setSession()` if session already exists |
+| Line | Change |
+|------|--------|
+| 181-190 | Remove the `useEffect` from its current position |
+| After line 76 | Insert the countdown `useEffect` immediately after the session-checking `useEffect` |
+| Update logic | Add guards inside the effect to only run when `isComplete` is true |
 
-**Key code change in `checkSession()` function:**
-- Prioritize checking for existing session from `supabase.auth.getSession()`
-- Clear the URL hash with `window.history.replaceState({}, '', window.location.pathname)` after success
-- Remove the toast notifications during the checking phase
-- The "Invalid Reset Link" card UI is sufficient feedback
+**Before (broken):**
+```tsx
+// Line 25-76: First useEffect ✓
+useEffect(() => { checkSession(); }, []);
 
----
+// Lines 132-149: if (checkingSession) return ...
+// Lines 151-178: if (!isValidSession) return ...
 
-### Expected Behavior After Fix
+// Line 180-190: Second useEffect AFTER returns ✗
+useEffect(() => { /* countdown */ }, [isComplete, countdown, navigate]);
+```
 
-| Scenario | Before | After |
-|----------|--------|-------|
-| First click on valid reset link | Error toast + Invalid Link card | Password form displays correctly |
-| Refreshing page during reset | Error toast | Password form (if session valid) or clean invalid link card |
-| Expired/used reset link | Toast flashes on home page | Clean "Invalid Reset Link" card on /reset-password |
-| Successfully update password | Works | Works (no change) |
+**After (fixed):**
+```tsx
+// Line 25-76: First useEffect ✓
+useEffect(() => { checkSession(); }, []);
 
----
+// Line 77-88: Second useEffect (moved here) ✓
+useEffect(() => {
+  if (isComplete && countdown > 0) {
+    const timer = setTimeout(() => {
+      setCountdown(countdown - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  } else if (isComplete && countdown === 0) {
+    navigate('/dashboard');
+  }
+}, [isComplete, countdown, navigate]);
 
-### File to Modify
+// Lines 90+: Conditional returns now safely AFTER all hooks
+if (checkingSession) return ...
+if (!isValidSession) return ...
+```
+
+### Expected Result
+
+After this fix:
+- The page will render correctly on the live site
+- The "Verifying your reset link..." spinner will appear while checking
+- Valid links will show the password form
+- Invalid/expired links will show the error card
+- After password update, the 5-second countdown and redirect will work
+
+### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/ResetPassword.tsx` | Refactor `checkSession()` to prioritize existing session, remove toast errors during check, clear URL hash after session confirmed |
+| `src/pages/ResetPassword.tsx` | Move countdown `useEffect` to before conditional returns |
+
