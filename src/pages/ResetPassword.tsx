@@ -18,6 +18,7 @@ const ResetPassword = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [countdown, setCountdown] = useState(5);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -171,6 +172,18 @@ const ResetPassword = () => {
     );
   }
 
+  // Auto-redirect countdown after password update
+  useEffect(() => {
+    if (isComplete && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (isComplete && countdown === 0) {
+      navigate('/dashboard');
+    }
+  }, [isComplete, countdown, navigate]);
+
   if (isComplete) {
     return (
       <div className="min-h-screen">
@@ -182,13 +195,13 @@ const ResetPassword = () => {
                 <CheckCircle className="h-16 w-16 text-community-green mx-auto mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Password Updated!</h2>
                 <p className="text-muted-foreground mb-6">
-                  Your password has been successfully changed. You can now sign in with your new password.
+                  Your password has been successfully changed. Redirecting to your dashboard in {countdown} seconds...
                 </p>
                 <Button 
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/dashboard')}
                   className="bg-community-green hover:bg-green-600"
                 >
-                  Sign In
+                  Go to Dashboard Now
                 </Button>
               </CardContent>
             </Card>

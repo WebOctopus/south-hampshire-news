@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Menu, X, User, LogOut, Shield, Newspaper, Users, Calendar, Building, Mail, Star, Trophy, MapPin, Briefcase, Phone, Megaphone, Calculator, Gift, Eye, ChevronDown } from 'lucide-react';
 import {
   Sheet,
@@ -30,67 +30,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { supabase } from '@/integrations/supabase/client';
-import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Check if user is admin
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .eq('role', 'admin')
-            .single();
-          
-          setIsAdmin(!!roleData);
-        } else {
-          setIsAdmin(false);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        // Check if user is admin
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .eq('role', 'admin')
-          .single();
-        
-        setIsAdmin(!!roleData);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, isAdmin, signOut } = useAuth();
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setIsAdmin(false);
-      setIsMenuOpen(false);
-      navigate('/');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    setIsMenuOpen(false);
+    await signOut();
   };
 
   // Handle navigation for links with hash (#) or query params (?)

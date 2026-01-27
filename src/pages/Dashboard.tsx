@@ -17,7 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
@@ -40,7 +40,7 @@ import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import CreateBookingForm from '@/components/dashboard/CreateBookingForm';
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -96,37 +96,33 @@ const Dashboard = () => {
     type: ''
   });
 
+  // Redirect if not authenticated
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          navigate('/auth');
-          return;
-        }
-        setUser(session.user);
-      } catch (error) {
-        console.error('Auth check error:', error);
-        navigate('/auth');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
-    const loadCategories = async () => {
-      const { data } = await supabase
-        .from('business_categories')
-        .select('*')
-        .order('name');
-      
-      if (data) {
-        setCategories(data);
-      }
-    };
+  useEffect(() => {
+    if (user && !authLoading) {
+      setLoading(false);
+    }
+  }, [user, authLoading]);
 
-    checkAuth();
+  const loadCategories = async () => {
+    const { data } = await supabase
+      .from('business_categories')
+      .select('*')
+      .order('name');
+    
+    if (data) {
+      setCategories(data);
+    }
+  };
+
+  useEffect(() => {
     loadCategories();
-  }, [navigate]);
+  }, []);
 
   // Check for returning BOGOF customer flag
   useEffect(() => {

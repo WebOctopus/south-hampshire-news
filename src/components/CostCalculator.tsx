@@ -275,43 +275,6 @@ const CostCalculator = ({ children }: CostCalculatorProps) => {
     loadPricingData();
   }, []);
 
-  // Refresh agency discount when auth state changes
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth state changed:', event, session?.user?.email);
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Reload user profile when they sign in
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('agency_discount_percent, is_agency_member, discount_type')
-          .eq('user_id', session.user.id)
-          .single();
-        
-        console.log('🔄 Refreshed profile data:', profileData);
-        console.log('❌ Refresh profile error:', profileError);
-        
-        const hasAgencyDiscount = profileData && (
-          (profileData.is_agency_member && profileData.agency_discount_percent > 0) ||
-          (profileData.discount_type === 'agency' && profileData.agency_discount_percent > 0)
-        );
-        
-        if (hasAgencyDiscount) {
-          console.log('✅ Refreshed agency discount:', profileData.agency_discount_percent);
-          setAgencyDiscountPercent(profileData.agency_discount_percent);
-        } else {
-          console.log('❌ No agency discount found on refresh');
-          setAgencyDiscountPercent(0);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        console.log('👋 User signed out, clearing agency discount');
-        setAgencyDiscountPercent(0);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   // Auto-set duration for BOGOF
   useEffect(() => {
     if (selectedPricingModel === 'bogof' && subscriptionDurations.length > 0) {
