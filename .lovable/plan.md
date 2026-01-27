@@ -1,118 +1,126 @@
 
+## Plan: Fix Password Reset "Invalid Link" Error
 
-## Plan: Fix Sign-Out Navigation to Ensure Immediate Home Page Redirect
+### Problem Analysis
 
-### Root Cause
+Based on the auth logs and your screenshot, here's what's happening:
 
-The sign-out functionality isn't working smoothly because:
+| Time | Event | Result |
+|------|-------|--------|
+| 16:00:38 | Reset link generated | Success |
+| 16:03:22 | User clicked link, Supabase verified token | **Success** - user logged in |
+| 16:03:54+ | Page tries to re-verify consumed token | **Fails** - "One-time token not found" |
 
-1. **`DashboardHeader.tsx` bypasses the centralized auth system** - It calls `supabase.auth.signOut()` directly and attempts its own navigation, instead of using `signOut()` from `useAuth()`
+**Root Cause**: When Supabase's `/verify` endpoint processes the recovery link, it:
+1. Consumes the one-time token (single use)
+2. Creates a session for the user
+3. Redirects to `/reset-password` with hash parameters
 
-2. **Navigation inside `onAuthStateChange` may not work reliably** - React Router's `navigate()` called from within an async callback can sometimes fail to trigger a proper re-render
+However, the `ResetPassword.tsx` page then tries to call `setSession()` using those same hash parameters, which fails because the token was already consumed by the `/verify` endpoint.
 
-3. **No forced navigation on sign-out** - When the user is on `/dashboard` and clicks sign-out, the app relies on `navigate('/')` which may not fully reload the page state
+### Current Flow (Broken)
+
+```text
+User clicks email link
+    ↓
+Supabase /verify endpoint (consumes token, creates session)
+    ↓
+Redirects to /reset-password#access_token=...&type=recovery
+    ↓
+ResetPassword.tsx tries setSession() with consumed token
+    ↓
+FAILS - shows "Invalid Reset Link" error
+```
+
+### Fixed Flow
+
+```text
+User clicks email link
+    ↓
+Supabase /verify endpoint (consumes token, creates session)
+    ↓
+Redirects to /reset-password#access_token=...&type=recovery
+    ↓
+ResetPassword.tsx checks for EXISTING SESSION first
+    ↓
+If session exists → show password form
+If no session → THEN try to parse hash parameters
+    ↓
+SUCCESS - user can update password
+```
 
 ---
 
 ### Solution
 
-#### Step 1: Update DashboardHeader to Use Centralized Auth
+#### Modify `src/pages/ResetPassword.tsx`
 
-**File: `src/components/dashboard/DashboardHeader.tsx`**
+**Change the session checking logic to:**
 
-| Current (Broken) | New (Fixed) |
-|------------------|-------------|
-| Imports `supabase` directly | Imports `useAuth` hook |
-| Calls `supabase.auth.signOut()` | Calls `signOut()` from context |
-| Uses local `navigate("/")` | Lets context handle navigation |
+1. **First check if user already has a valid session** from the redirect
+   - Supabase's client library auto-detects hash parameters and establishes session
+   - If `supabase.auth.getSession()` returns a session, that's all we need
 
-Changes:
-- Import `useAuth` from `@/contexts/AuthContext`
-- Remove direct `supabase` import
-- Call `signOut()` from the context instead of `supabase.auth.signOut()`
+2. **Only attempt manual token parsing as a fallback**
+   - This handles edge cases where auto-detection doesn't work
 
-#### Step 2: Strengthen Navigation in AuthContext
+3. **Clear the URL hash after successful session detection**
+   - Prevents re-parsing of consumed tokens on page refresh
 
-**File: `src/contexts/AuthContext.tsx`**
+4. **Don't show error toast immediately** - wait for session check to complete
 
-Ensure the sign-out navigation is robust by:
-- Using `window.location.href = '/'` as a fallback if `navigate('/')` doesn't work
-- Adding explicit navigation in the `signOut` function itself (not just relying on `onAuthStateChange`)
+**Updated Logic:**
 
-Changes to `signOut` function:
 ```text
-Current:
-  await supabase.auth.signOut();
-  // Navigation is handled by onAuthStateChange
-
-New:
-  await supabase.auth.signOut();
-  // Explicitly navigate to home
-  navigate('/');
+checkSession():
+  1. First, call supabase.auth.getSession()
+  2. If session exists:
+     - Clear URL hash (remove consumed token from URL)
+     - Set isValidSession = true
+     - Return early (skip hash parsing)
+  3. If no session, check URL hash parameters:
+     - If type=recovery and access_token present, try setSession()
+     - This is a fallback, likely won't be needed
+  4. If still no session after all checks:
+     - THEN show the "Invalid Link" UI (no toast)
 ```
 
-Changes to `onAuthStateChange`:
-```text
-Current:
-  if (event === 'SIGNED_OUT') {
-    setIsAdmin(false);
-    navigate('/');
-  }
-
-New:
-  if (event === 'SIGNED_OUT') {
-    setIsAdmin(false);
-    // Force navigation with window.location as fallback
-    setTimeout(() => {
-      if (window.location.pathname !== '/') {
-        window.location.href = '/';
-      }
-    }, 100);
-  }
-```
+**Remove the immediate toast errors** that fire during the checking phase - instead, just show the "Invalid Reset Link" card UI once checking is complete.
 
 ---
 
-### Technical Details
+### Technical Changes
 
-#### Why `window.location.href` as fallback?
+**File: `src/pages/ResetPassword.tsx`**
 
-React Router's `navigate()` performs a client-side navigation that may:
-- Not trigger if the component unmounts during the async operation
-- Not properly clear stale state from the previous authenticated session
-- Fail silently in edge cases
+| Current Behavior | New Behavior |
+|------------------|--------------|
+| Tries `setSession()` with hash params first | Checks existing session first |
+| Shows toast error during check | Only shows card UI after check fails |
+| Keeps consumed token in URL | Clears URL hash after session confirmed |
+| Calls `setSession()` even when session exists | Skips `setSession()` if session already exists |
 
-Using `window.location.href = '/'` ensures:
-- A full page reload that clears all React state
-- The auth context reinitializes with no user
-- The Navigation component re-renders showing the logged-out state
-
----
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/dashboard/DashboardHeader.tsx` | Use `useAuth().signOut()` instead of direct Supabase call |
-| `src/contexts/AuthContext.tsx` | Add explicit navigation in `signOut()` function, add `window.location.href` fallback |
+**Key code change in `checkSession()` function:**
+- Prioritize checking for existing session from `supabase.auth.getSession()`
+- Clear the URL hash with `window.history.replaceState({}, '', window.location.pathname)` after success
+- Remove the toast notifications during the checking phase
+- The "Invalid Reset Link" card UI is sufficient feedback
 
 ---
 
 ### Expected Behavior After Fix
 
-| Action | Before | After |
-|--------|--------|-------|
-| Click "Sign Out" in Dashboard | Stays on dashboard, URL doesn't change | Immediately navigates to home page |
-| Navigation updates | User has to manually reload | Navigation component shows "Customer Login" button |
-| Session state | May retain stale data | Fully cleared, fresh home page |
+| Scenario | Before | After |
+|----------|--------|-------|
+| First click on valid reset link | Error toast + Invalid Link card | Password form displays correctly |
+| Refreshing page during reset | Error toast | Password form (if session valid) or clean invalid link card |
+| Expired/used reset link | Toast flashes on home page | Clean "Invalid Reset Link" card on /reset-password |
+| Successfully update password | Works | Works (no change) |
 
 ---
 
-### Testing Steps
+### File to Modify
 
-After implementation:
-1. Log in to the dashboard
-2. Click on user avatar → "Sign Out"
-3. **Expected**: Immediately redirected to home page with "Customer Login" button visible
-4. Try navigating to `/dashboard` - should redirect to `/auth` since not authenticated
-
+| File | Changes |
+|------|---------|
+| `src/pages/ResetPassword.tsx` | Refactor `checkSession()` to prioritize existing session, remove toast errors during check, clear URL hash after session confirmed |
