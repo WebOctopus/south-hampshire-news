@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     );
 
     // Generate the password reset link using Admin API
-    const siteUrl = "https://south-hampshire-news.lovable.app";
+    const siteUrl = "https://peacockpixelmedia.co.uk";
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: email,
@@ -131,8 +131,8 @@ Deno.serve(async (req) => {
                 Connecting South Hampshire communities since 2014
               </p>
               <p style="color: #9ca3af; font-size: 12px; margin: 15px 0 0 0; text-align: center;">
-                <a href="https://south-hampshire-news.lovable.app" style="color: #166534; text-decoration: none;">Website</a> •
-                <a href="https://south-hampshire-news.lovable.app/contact" style="color: #166534; text-decoration: none;">Contact Us</a>
+                <a href="https://peacockpixelmedia.co.uk" style="color: #166534; text-decoration: none;">Website</a> •
+                <a href="https://peacockpixelmedia.co.uk/contact" style="color: #166534; text-decoration: none;">Contact Us</a>
               </p>
             </td>
           </tr>
