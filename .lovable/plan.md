@@ -1,212 +1,118 @@
 
 
-## Plan: Implement Robust Post-Action UI Updates for Authentication Flows
+## Plan: Fix Sign-Out Navigation to Ensure Immediate Home Page Redirect
 
-### Problem Analysis
+### Root Cause
 
-After investigating the codebase, I've identified the following issues causing the UI to not update immediately after authentication actions:
+The sign-out functionality isn't working smoothly because:
 
-| Action | Current Behavior | Root Cause |
-|--------|------------------|------------|
-| **Login** | Form stays on "Signing In..." or doesn't navigate immediately | Navigation happens but components don't re-render with new auth state |
-| **Register** | Form gets stuck, user unclear what happened | Email confirmation required but no clear UI feedback |
-| **Logout** | Navigation updates open/closed states, but Navigation component might not update | `handleSignOut` navigates but other components may have stale state |
-| **Password Reset** | After updating password, user has to manually navigate | Success state shown but no automatic sign-in or redirect |
+1. **`DashboardHeader.tsx` bypasses the centralized auth system** - It calls `supabase.auth.signOut()` directly and attempts its own navigation, instead of using `signOut()` from `useAuth()`
 
-### Root Causes
+2. **Navigation inside `onAuthStateChange` may not work reliably** - React Router's `navigate()` called from within an async callback can sometimes fail to trigger a proper re-render
 
-1. **Fragmented Auth State Management**: Multiple components (`Navigation.tsx`, `HeroSection.tsx`, `Auth.tsx`, `Dashboard.tsx`, etc.) each manage their own auth state independently with separate `onAuthStateChange` listeners
-
-2. **No Centralized Auth Context**: Without a single source of truth, components can have stale or inconsistent auth states
-
-3. **Missing Post-Action Navigation**: After successful actions, the app doesn't consistently redirect users to the appropriate destination
-
-4. **No Loading/Success State Transitions**: Forms don't clearly transition from "loading" to "success" with appropriate feedback
+3. **No forced navigation on sign-out** - When the user is on `/dashboard` and clicks sign-out, the app relies on `navigate('/')` which may not fully reload the page state
 
 ---
 
-### Solution Architecture
+### Solution
 
-Create a centralized **Auth Context** that:
-- Provides a single source of truth for authentication state
-- Broadcasts auth changes to all components simultaneously
-- Handles post-action navigation centrally
-- Provides consistent loading and success states
+#### Step 1: Update DashboardHeader to Use Centralized Auth
 
----
+**File: `src/components/dashboard/DashboardHeader.tsx`**
 
-### Implementation Steps
+| Current (Broken) | New (Fixed) |
+|------------------|-------------|
+| Imports `supabase` directly | Imports `useAuth` hook |
+| Calls `supabase.auth.signOut()` | Calls `signOut()` from context |
+| Uses local `navigate("/")` | Lets context handle navigation |
 
-#### Step 1: Create Auth Context Provider
-
-**New File: `src/contexts/AuthContext.tsx`**
-
-This context will:
-- Listen to `onAuthStateChange` once at the app level
-- Store user, session, and loading states
-- Provide helper functions for sign-in, sign-up, sign-out
-- Handle navigation after auth actions automatically
-
-```text
-Key exports:
-- AuthProvider (wrap App)
-- useAuth() hook
-- user, session, loading states
-- signIn(), signUp(), signOut(), resetPassword() functions
-```
-
-#### Step 2: Update App.tsx
-
-Wrap the application with `AuthProvider` so all components have access to the same auth state.
-
-```text
 Changes:
-- Import AuthProvider
-- Wrap BrowserRouter children with AuthProvider
+- Import `useAuth` from `@/contexts/AuthContext`
+- Remove direct `supabase` import
+- Call `signOut()` from the context instead of `supabase.auth.signOut()`
+
+#### Step 2: Strengthen Navigation in AuthContext
+
+**File: `src/contexts/AuthContext.tsx`**
+
+Ensure the sign-out navigation is robust by:
+- Using `window.location.href = '/'` as a fallback if `navigate('/')` doesn't work
+- Adding explicit navigation in the `signOut` function itself (not just relying on `onAuthStateChange`)
+
+Changes to `signOut` function:
+```text
+Current:
+  await supabase.auth.signOut();
+  // Navigation is handled by onAuthStateChange
+
+New:
+  await supabase.auth.signOut();
+  // Explicitly navigate to home
+  navigate('/');
 ```
 
-#### Step 3: Refactor Auth.tsx (Login/Register Page)
-
-Replace local auth handling with `useAuth()` hook:
-- Use `signIn()` from context instead of direct Supabase calls
-- Use `signUp()` from context
-- Remove local `onAuthStateChange` listener
-- Let context handle navigation after success
-
+Changes to `onAuthStateChange`:
 ```text
-Changes:
-- Import useAuth hook
-- Remove local loading states for auth actions (use context)
-- Call context methods which handle navigation
-```
+Current:
+  if (event === 'SIGNED_OUT') {
+    setIsAdmin(false);
+    navigate('/');
+  }
 
-#### Step 4: Refactor Navigation.tsx (Logout)
-
-Replace local auth state with `useAuth()` hook:
-- Use `user` from context
-- Use `signOut()` from context
-- Remove local `onAuthStateChange` listener
-
-```text
-Changes:
-- Import useAuth hook
-- Remove local user/isAdmin state and onAuthStateChange
-- Use context's signOut() which handles navigation
-```
-
-#### Step 5: Update AuthPromptDialog.tsx
-
-Use centralized auth for sign-in/register within the dialog:
-- Use `useAuth()` hook methods
-- Callback to parent on success for page-specific navigation
-
-```text
-Changes:
-- Import useAuth hook
-- Use context signIn/signUp methods
-- Keep onSuccess callback for page-specific actions
-```
-
-#### Step 6: Update ResetPassword.tsx
-
-After successful password update:
-- Automatically redirect to dashboard after brief delay
-- Or provide clear "Continue to Dashboard" button
-- Sign the user in if they have a valid session already
-
-```text
-Changes:
-- Add auto-redirect after password update
-- Show countdown or "Continue" button
-```
-
-#### Step 7: Update Other Components Using Auth State
-
-Update components that have their own auth listeners:
-- `HeroSection.tsx`
-- `BusinessCard.tsx`
-- `BusinessDetail.tsx`
-- `WhatsOn.tsx`
-- `CostCalculator.tsx`
-- `ProtectedRoute.tsx`
-- `Dashboard.tsx`
-
-```text
-Changes for each:
-- Remove local onAuthStateChange listeners
-- Import and use useAuth() hook instead
-- Components will automatically update when auth state changes
+New:
+  if (event === 'SIGNED_OUT') {
+    setIsAdmin(false);
+    // Force navigation with window.location as fallback
+    setTimeout(() => {
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+    }, 100);
+  }
 ```
 
 ---
 
-### Technical Implementation Details
+### Technical Details
 
-**AuthContext.tsx Structure:**
+#### Why `window.location.href` as fallback?
 
-```text
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  isAdmin: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: Error }>;
-  signUp: (email: string, password: string, options?: SignUpOptions) => Promise<{ error?: Error; needsConfirmation?: boolean }>;
-  signOut: () => Promise<void>;
-}
-```
+React Router's `navigate()` performs a client-side navigation that may:
+- Not trigger if the component unmounts during the async operation
+- Not properly clear stale state from the previous authenticated session
+- Fail silently in edge cases
 
-**Key Design Decisions:**
-
-1. **Single onAuthStateChange listener**: Set up once in AuthProvider, broadcasts to all consumers
-2. **Deferred Supabase calls**: Per best practices, use `setTimeout(0)` for any Supabase calls inside the auth state change callback
-3. **Navigation handled in context**: After sign-in, check role and navigate to appropriate dashboard; after sign-out, navigate to home
-4. **Admin check cached**: Store isAdmin in context to avoid repeated database queries
+Using `window.location.href = '/'` ensures:
+- A full page reload that clears all React state
+- The auth context reinitializes with no user
+- The Navigation component re-renders showing the logged-out state
 
 ---
-
-### Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/contexts/AuthContext.tsx` | Centralized auth state management |
 
 ### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/App.tsx` | Wrap with AuthProvider |
-| `src/pages/Auth.tsx` | Use useAuth() hook, remove local state |
-| `src/components/Navigation.tsx` | Use useAuth() hook, remove local listener |
-| `src/components/AuthPromptDialog.tsx` | Use useAuth() hook methods |
-| `src/pages/ResetPassword.tsx` | Add auto-redirect after success |
-| `src/components/HeroSection.tsx` | Use useAuth() hook |
-| `src/components/BusinessCard.tsx` | Use useAuth() hook |
-| `src/pages/BusinessDetail.tsx` | Use useAuth() hook |
-| `src/pages/WhatsOn.tsx` | Use useAuth() hook |
-| `src/components/CostCalculator.tsx` | Use useAuth() hook |
-| `src/components/ProtectedRoute.tsx` | Use useAuth() hook |
-| `src/pages/Dashboard.tsx` | Use useAuth() hook |
+| `src/components/dashboard/DashboardHeader.tsx` | Use `useAuth().signOut()` instead of direct Supabase call |
+| `src/contexts/AuthContext.tsx` | Add explicit navigation in `signOut()` function, add `window.location.href` fallback |
 
 ---
 
-### Expected Behavior After Implementation
+### Expected Behavior After Fix
 
-| Action | New Behavior |
-|--------|--------------|
-| **Login** | Form shows loading, then immediately navigates to Dashboard (or Admin) |
-| **Register** | Form shows loading, then shows confirmation message OR navigates if no email confirmation |
-| **Logout** | Navigation immediately updates, user redirected to home page |
-| **Password Reset** | After update, auto-redirect to Dashboard with "Password updated" toast |
-| **All Components** | Update instantly when auth state changes - no refresh needed |
+| Action | Before | After |
+|--------|--------|-------|
+| Click "Sign Out" in Dashboard | Stays on dashboard, URL doesn't change | Immediately navigates to home page |
+| Navigation updates | User has to manually reload | Navigation component shows "Customer Login" button |
+| Session state | May retain stale data | Fully cleared, fresh home page |
 
 ---
 
-### Benefits
+### Testing Steps
 
-1. **Single Source of Truth**: No more inconsistent auth states across components
-2. **Immediate UI Updates**: All components subscribe to the same state
-3. **Better UX**: Clear loading states, success feedback, and automatic navigation
-4. **Cleaner Code**: Remove duplicate auth logic from 10+ components
-5. **Easier Maintenance**: Auth logic in one place
+After implementation:
+1. Log in to the dashboard
+2. Click on user avatar → "Sign Out"
+3. **Expected**: Immediately redirected to home page with "Customer Login" button visible
+4. Try navigating to `/dashboard` - should redirect to `/auth` since not authenticated
 
