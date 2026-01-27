@@ -75,7 +75,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Handle navigation after auth events
         if (event === 'SIGNED_OUT') {
           setIsAdmin(false);
-          navigate('/');
+          // Force navigation with window.location as fallback
+          setTimeout(() => {
+            if (window.location.pathname !== '/') {
+              window.location.href = '/';
+            }
+          }, 100);
         }
       }
     );
@@ -196,7 +201,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signOut = useCallback(async () => {
     try {
       await supabase.auth.signOut();
-      // Navigation is handled by onAuthStateChange
+      // Explicitly navigate to home
+      navigate('/');
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
@@ -209,7 +215,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         variant: "destructive",
       });
     }
-  }, []);
+  }, [navigate]);
 
   const value: AuthContextType = {
     user,
