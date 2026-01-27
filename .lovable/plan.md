@@ -1,75 +1,110 @@
 
 
-## Fix: Password Reset Blank Page
+## Plan: Fix Password Reset PKCE Code Exchange
 
-### Problem Identified
+### Root Cause
 
-The `ResetPassword.tsx` component has a **React hooks violation** that causes a complete render failure (blank page). 
+The password reset flow uses Supabase's PKCE authentication. When the user clicks the reset link:
 
-A `useEffect` hook on line 181 is placed *after* conditional `return` statements on lines 132-149 and 151-178. React requires all hooks to be called in the same order on every render - they cannot appear after early returns.
+1. Supabase's `/verify` endpoint consumes the one-time token
+2. It redirects to `/reset-password?code=ABC123` (query parameter, not hash)
+3. The app needs to call `exchangeCodeForSession(code)` to establish a session
 
-This is a JavaScript runtime error that silently crashes the component, resulting in the blank white page you're seeing.
+**Current code only checks for hash parameters** (`#access_token=...`), missing the PKCE `?code=` query parameter entirely.
 
 ### Solution
 
-Move the countdown `useEffect` to the top of the component, alongside the other `useEffect` (session checking). Both hooks will run on every render, but their internal conditions will prevent them from executing their logic when not needed.
+Update `ResetPassword.tsx` to:
+
+1. **Check for PKCE code in query params first** - Look for `?code=` before checking hash params
+2. **Call `exchangeCodeForSession()`** - Exchange the code for a valid session
+3. **Handle the exchange result** - If successful, show the password form; if failed, show error
 
 ### Technical Changes
 
 **File: `src/pages/ResetPassword.tsx`**
 
-| Line | Change |
-|------|--------|
-| 181-190 | Remove the `useEffect` from its current position |
-| After line 76 | Insert the countdown `useEffect` immediately after the session-checking `useEffect` |
-| Update logic | Add guards inside the effect to only run when `isComplete` is true |
+Update the `checkSession()` function:
 
-**Before (broken):**
-```tsx
-// Line 25-76: First useEffect ✓
-useEffect(() => { checkSession(); }, []);
+```typescript
+const checkSession = async () => {
+  try {
+    // 1. First check for existing session (user already authenticated)
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      window.history.replaceState({}, '', window.location.pathname);
+      setIsValidSession(true);
+      setCheckingSession(false);
+      return;
+    }
 
-// Lines 132-149: if (checkingSession) return ...
-// Lines 151-178: if (!isValidSession) return ...
+    // 2. Check for PKCE code in query params (Supabase PKCE flow)
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      console.log('Found PKCE code, exchanging for session...');
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      
+      if (!error) {
+        // Clear URL params after successful exchange
+        window.history.replaceState({}, '', window.location.pathname);
+        setIsValidSession(true);
+        setCheckingSession(false);
+        return;
+      } else {
+        console.error('Error exchanging code for session:', error);
+        setIsValidSession(false);
+        setCheckingSession(false);
+        return;
+      }
+    }
 
-// Line 180-190: Second useEffect AFTER returns ✗
-useEffect(() => { /* countdown */ }, [isComplete, countdown, navigate]);
-```
-
-**After (fixed):**
-```tsx
-// Line 25-76: First useEffect ✓
-useEffect(() => { checkSession(); }, []);
-
-// Line 77-88: Second useEffect (moved here) ✓
-useEffect(() => {
-  if (isComplete && countdown > 0) {
-    const timer = setTimeout(() => {
-      setCountdown(countdown - 1);
-    }, 1000);
-    return () => clearTimeout(timer);
-  } else if (isComplete && countdown === 0) {
-    navigate('/dashboard');
+    // 3. Fallback: Check hash params (legacy flow)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    
+    if (type === 'recovery' && accessToken) {
+      const { error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: hashParams.get('refresh_token') || '',
+      });
+      
+      if (!error) {
+        window.history.replaceState({}, '', window.location.pathname);
+        setIsValidSession(true);
+      } else {
+        console.error('Error setting recovery session:', error);
+        setIsValidSession(false);
+      }
+    } else {
+      // No session, no code, no hash params = invalid link
+      setIsValidSession(false);
+    }
+  } catch (error) {
+    console.error('Error checking session:', error);
+    setIsValidSession(false);
+  } finally {
+    setCheckingSession(false);
   }
-}, [isComplete, countdown, navigate]);
-
-// Lines 90+: Conditional returns now safely AFTER all hooks
-if (checkingSession) return ...
-if (!isValidSession) return ...
+};
 ```
 
-### Expected Result
+### Expected Flow After Fix
 
-After this fix:
-- The page will render correctly on the live site
-- The "Verifying your reset link..." spinner will appear while checking
-- Valid links will show the password form
-- Invalid/expired links will show the error card
-- After password update, the 5-second countdown and redirect will work
+| Step | Before | After |
+|------|--------|-------|
+| User clicks email link | Goes to /verify | Goes to /verify (same) |
+| Supabase verifies token | Redirects to /reset-password?code=... | Redirects to /reset-password?code=... (same) |
+| ResetPassword loads | Checks only hash params (fails) | Checks query params, finds code |
+| Code exchange | Never happens | Calls exchangeCodeForSession(code) |
+| Session result | No session → "Invalid Link" | Session established → shows form |
 
-### Files to Modify
+### File to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/ResetPassword.tsx` | Move countdown `useEffect` to before conditional returns |
+| `src/pages/ResetPassword.tsx` | Add PKCE code detection and `exchangeCodeForSession()` call in `checkSession()` |
 
