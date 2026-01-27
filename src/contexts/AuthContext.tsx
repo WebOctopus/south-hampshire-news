@@ -19,7 +19,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    // During hot reload or initial render, context might not be ready
+    // Return a safe default instead of throwing
+    console.warn('useAuth called outside AuthProvider - using defaults');
+    return {
+      user: null,
+      session: null,
+      loading: true,
+      isAdmin: false,
+      signIn: async () => ({ error: new Error('Auth not initialized') }),
+      signUp: async () => ({ error: new Error('Auth not initialized') }),
+      signOut: async () => {},
+    } as AuthContextType;
   }
   return context;
 };
