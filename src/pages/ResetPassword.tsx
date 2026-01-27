@@ -26,21 +26,39 @@ const ResetPassword = () => {
     // Check if user has a valid recovery session
     const checkSession = async () => {
       try {
-        // First, check if Supabase already established a session from the redirect
-        // The Supabase client auto-detects hash parameters and creates a session
+        // 1. First check for existing session (user already authenticated)
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          // Session exists - Supabase already processed the recovery token
-          // Clear the URL hash to prevent re-processing on refresh
           window.history.replaceState({}, '', window.location.pathname);
           setIsValidSession(true);
           setCheckingSession(false);
           return;
         }
+
+        // 2. Check for PKCE code in query params (Supabase PKCE flow)
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
         
-        // Fallback: Try to manually parse hash parameters if no session exists
-        // This handles edge cases where auto-detection didn't work
+        if (code) {
+          console.log('Found PKCE code, exchanging for session...');
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          
+          if (!error) {
+            // Clear URL params after successful exchange
+            window.history.replaceState({}, '', window.location.pathname);
+            setIsValidSession(true);
+            setCheckingSession(false);
+            return;
+          } else {
+            console.error('Error exchanging code for session:', error);
+            setIsValidSession(false);
+            setCheckingSession(false);
+            return;
+          }
+        }
+
+        // 3. Fallback: Check hash params (legacy implicit flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const type = hashParams.get('type');
@@ -52,16 +70,14 @@ const ResetPassword = () => {
           });
           
           if (!error) {
-            // Clear the URL hash after successful session setup
             window.history.replaceState({}, '', window.location.pathname);
             setIsValidSession(true);
           } else {
             console.error('Error setting recovery session:', error);
-            // Don't show toast - the "Invalid Reset Link" card UI is sufficient
             setIsValidSession(false);
           }
         } else {
-          // No session and no valid hash params - invalid link
+          // No session, no code, no hash params = invalid link
           setIsValidSession(false);
         }
       } catch (error) {
