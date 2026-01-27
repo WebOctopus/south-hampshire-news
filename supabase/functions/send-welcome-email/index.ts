@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     console.log(`Sending welcome email to: ${email}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Discover Magazine <noreply@peacockandpixel.co.uk>",
+      from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
       to: [email],
       subject: "Welcome to Discover Magazine! 🎉",
       html: `
