@@ -21,6 +21,7 @@ import StoriesArchive from "./pages/StoriesArchive";
 import BusinessDetail from "./pages/BusinessDetail";
 import Support from "./pages/Support";
 import PaymentSetup from "./pages/PaymentSetup";
+import ResetPassword from "./pages/ResetPassword";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -48,6 +49,7 @@ const App = () => (
         <Route path="/stories" element={<StoriesArchive />} />
         <Route path="/story/:id" element={<Story />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/add-event" element={
