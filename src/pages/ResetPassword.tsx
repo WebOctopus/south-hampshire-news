@@ -75,6 +75,18 @@ const ResetPassword = () => {
     checkSession();
   }, []);
 
+  // Auto-redirect countdown after password update
+  useEffect(() => {
+    if (isComplete && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (isComplete && countdown === 0) {
+      navigate('/dashboard');
+    }
+  }, [isComplete, countdown, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -176,18 +188,6 @@ const ResetPassword = () => {
       </div>
     );
   }
-
-  // Auto-redirect countdown after password update
-  useEffect(() => {
-    if (isComplete && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (isComplete && countdown === 0) {
-      navigate('/dashboard');
-    }
-  }, [isComplete, countdown, navigate]);
 
   if (isComplete) {
     return (
