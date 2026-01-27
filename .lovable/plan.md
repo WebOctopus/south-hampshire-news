@@ -1,132 +1,60 @@
 
-## Plan: Fix Password Reset Flow (Resend Only)
+## Plan: Fix Password Reset Redirect URL Configuration
 
-### Problem Summary
-The password reset button is stuck on "Sending..." because:
-1. The current code calls **both** Supabase Auth's built-in email AND the custom edge function
-2. The edge function receives a generic URL without the actual reset token
-3. The edge function invocation appears to be hanging on the custom domain
+### Root Cause Analysis
 
-Since you want **Resend only**, we need to restructure the flow so that:
-- Supabase generates the reset token but does NOT send its own email
-- Our edge function receives the proper token and sends the branded email
+Based on the investigation:
 
-### Solution Architecture
+1. **Two emails received**: You got an old "Supabase Auth" email (from before our changes at 2:42 PM) AND our branded Resend email (at 2:52 PM). You likely clicked the old link.
 
-**Option A: Use Supabase Auth Hooks (Recommended)**
-Configure Supabase to call our edge function as an Auth Hook when password reset is requested, replacing Supabase's default email entirely.
+2. **localhost redirect**: The Supabase project's **Site URL** in the Supabase Dashboard is configured to `http://localhost:3000`. When `generateLink()` creates the recovery link, Supabase uses this URL to redirect users after token verification.
 
-**Option B: Admin API Token Generation**
-Have the edge function use the Supabase Admin API to generate the reset link, then send via Resend.
+3. **Token expired error**: The link you clicked was from the old email, and that token was already invalidated when the new token was generated.
 
-I recommend **Option B** as it gives us full control and doesn't require Supabase dashboard configuration.
+### The Fix
 
----
+There are **two parts** to this fix:
 
-### Implementation Steps
+#### Part 1: Update Supabase Dashboard Configuration (Manual Step Required)
 
-#### 1. Update Edge Function: `send-password-reset`
+You need to update the **Site URL** and **Redirect URLs** in the Supabase Dashboard:
 
-Modify the edge function to:
-- Accept just the email address
-- Use Supabase Admin API to generate a password reset link
-- Send the branded email with the real reset link
+1. Go to: **Supabase Dashboard > Authentication > URL Configuration**
+2. Update **Site URL** from `http://localhost:3000` to:
+   ```
+   https://south-hampshire-news.lovable.app
+   ```
+3. Add these to **Redirect URLs** (if not already present):
+   ```
+   https://south-hampshire-news.lovable.app/**
+   https://id-preview--ef3dec02-9a74-46ea-a941-0b415710729a.lovable.app/**
+   ```
 
-```text
-Changes:
-- Import createClient from supabase-js
-- Use SUPABASE_SERVICE_ROLE_KEY (already configured) to create admin client
-- Call supabase.auth.admin.generateLink() to get the real reset URL
-- Send email via Resend with the generated link
-```
+This ensures that after Supabase verifies the reset token, it redirects to your actual production site instead of localhost.
 
-#### 2. Update Frontend: `Auth.tsx`
+#### Part 2: Verify Branded Email Was Sent
 
-Simplify the `handleForgotPassword` function to:
-- Remove the call to `supabase.auth.resetPasswordForEmail()`
-- Only call the edge function with the email
-- Add proper error handling and timeout
-- Ensure loading state always resets
+Check your inbox for an email from **"Discover Magazine"** (not "Supabase Auth"). The branded email should have been sent at 2:52 PM. The logs confirm:
+- `Password reset email sent successfully` from Resend
+- Email ID: `61ed0be0-5c31-4e1b-a415-2e7433372b23`
 
-```text
-Changes:
-- Remove lines 209-220 (Supabase's resetPasswordForEmail call)
-- Update edge function call to only send email
-- Add fetch timeout to prevent infinite hanging
-- Add explicit error handling for edge function failures
-```
+If you only see the Supabase Auth email and NOT the Discover Magazine email, let me know and we can investigate further.
 
-#### 3. Ensure SUPABASE_SERVICE_ROLE_KEY is Set
+### Testing After Configuration Update
 
-The edge function needs the service role key (already in secrets) to use the Admin API.
+After updating the Supabase Dashboard:
+1. Request a new password reset from the production site
+2. Look for the branded "Discover Magazine" email (ignore any old Supabase Auth emails)
+3. Click the reset link - it should now redirect to `https://south-hampshire-news.lovable.app/reset-password`
 
----
+### Summary
 
-### Technical Details
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Redirects to localhost | Supabase Site URL set to localhost:3000 | Update Site URL in Supabase Dashboard |
+| Got "Supabase Auth" email | Old email from before fix was deployed | Use the newer "Discover Magazine" email |
+| otp_expired error | Clicked expired/old link | Request fresh reset after config update |
 
-**Edge Function Changes:**
-```typescript
-// New imports
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+### No Code Changes Required
 
-// Create admin client
-const supabaseAdmin = createClient(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-);
-
-// Generate real reset link
-const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-  type: "recovery",
-  email: email,
-  options: {
-    redirectTo: `${siteUrl}/reset-password`
-  }
-});
-
-// Use data.properties.action_link as the reset URL in the email
-```
-
-**Frontend Changes:**
-```typescript
-// Simplified handler
-const handleForgotPassword = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!forgotPasswordEmail) { /* validation */ }
-  
-  setForgotPasswordLoading(true);
-  
-  try {
-    const { data, error } = await supabase.functions.invoke('send-password-reset', {
-      body: { email: forgotPasswordEmail }
-    });
-    
-    if (error) throw error;
-    
-    toast({ title: "Check your email", ... });
-    setForgotPasswordOpen(false);
-    setForgotPasswordEmail('');
-  } catch (error) {
-    toast({ title: "Error", ..., variant: "destructive" });
-  } finally {
-    setForgotPasswordLoading(false); // Always resets
-  }
-};
-```
-
----
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `supabase/functions/send-password-reset/index.ts` | Add Supabase Admin client, generate real reset link, simplify input to just email |
-| `src/pages/Auth.tsx` | Remove Supabase's resetPasswordForEmail call, simplify to only use edge function |
-
----
-
-### Benefits
-- Single email from your verified domain (Resend only)
-- Proper reset token in the link
-- No hanging requests (proper error handling)
-- Loading state always resets
+The code changes from the previous implementation are correct. The only remaining step is the **Supabase Dashboard configuration** which must be done manually.
