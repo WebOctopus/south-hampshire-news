@@ -1,4 +1,5 @@
 import { Resend } from "npm:resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -10,7 +11,6 @@ const corsHeaders = {
 
 interface PasswordResetRequest {
   email: string;
-  resetUrl: string;
 }
 
 Deno.serve(async (req) => {
@@ -20,14 +20,42 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, resetUrl }: PasswordResetRequest = await req.json();
+    const { email }: PasswordResetRequest = await req.json();
 
     // Validate required fields
-    if (!email || !resetUrl) {
-      throw new Error("Email and resetUrl are required");
+    if (!email) {
+      throw new Error("Email is required");
     }
 
-    console.log(`Sending password reset email to: ${email}`);
+    console.log(`Processing password reset request for: ${email}`);
+
+    // Create Supabase admin client to generate the reset link
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Generate the password reset link using Admin API
+    const siteUrl = "https://south-hampshire-news.lovable.app";
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "recovery",
+      email: email,
+      options: {
+        redirectTo: `${siteUrl}/reset-password`
+      }
+    });
+
+    if (linkError) {
+      console.error("Error generating reset link:", linkError);
+      throw new Error(`Failed to generate reset link: ${linkError.message}`);
+    }
+
+    if (!linkData?.properties?.action_link) {
+      throw new Error("No reset link generated");
+    }
+
+    const resetUrl = linkData.properties.action_link;
+    console.log(`Reset link generated successfully for: ${email}`);
 
     const emailResponse = await resend.emails.send({
       from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
