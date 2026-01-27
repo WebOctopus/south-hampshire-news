@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import BusinessDirectory from "./pages/BusinessDirectory";
 import WhatsOn from "./pages/WhatsOn";
@@ -32,36 +33,38 @@ const App = () => (
     <Toaster />
     <Sonner />
     <BrowserRouter>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        
-        <Route path="/whats-on" element={<WhatsOn />} />
-        <Route path="/whats-on/archive" element={<EventsArchive />} />
-        <Route path="/events/:id" element={<EventDetail />} />
-        <Route path="/competitions" element={<Competitions />} />
-        <Route path="/advertising" element={<Advertising />} />
-        <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/business-directory" element={<BusinessDirectory />} />
-        <Route path="/business/:id" element={<BusinessDetail />} />
-        <Route path="/stories" element={<StoriesArchive />} />
-        <Route path="/story/:id" element={<Story />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/add-event" element={
-          <ProtectedRoute>
-            <AddEvent />
-          </ProtectedRoute>
-        } />
-        <Route path="/payment-setup" element={<PaymentSetup />} />
-        
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <AuthProvider>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          
+          <Route path="/whats-on" element={<WhatsOn />} />
+          <Route path="/whats-on/archive" element={<EventsArchive />} />
+          <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/competitions" element={<Competitions />} />
+          <Route path="/advertising" element={<Advertising />} />
+          <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/business-directory" element={<BusinessDirectory />} />
+          <Route path="/business/:id" element={<BusinessDetail />} />
+          <Route path="/stories" element={<StoriesArchive />} />
+          <Route path="/story/:id" element={<Story />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/add-event" element={
+            <ProtectedRoute>
+              <AddEvent />
+            </ProtectedRoute>
+          } />
+          <Route path="/payment-setup" element={<PaymentSetup />} />
+          
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   </TooltipProvider>
 );

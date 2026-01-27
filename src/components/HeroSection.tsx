@@ -1,29 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import AuthPromptDialog from '@/components/AuthPromptDialog';
-import type { User } from '@supabase/supabase-js';
 
 const HeroSection = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [authRedirectPath, setAuthRedirectPath] = useState('/add-event');
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-    
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleSubmitEvent = () => {
     if (user) {

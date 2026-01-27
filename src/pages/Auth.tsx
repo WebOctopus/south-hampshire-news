@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 
@@ -22,105 +23,55 @@ const Auth = () => {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isAdmin, signIn, signUp } = useAuth();
 
+  // Redirect if already logged in
   useEffect(() => {
-    // Check if user is already logged in
-    const checkAuth = async () => {
-      try {
-        console.log('Auth page: Checking existing session...');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          console.log('Auth page: Existing session found, checking role...');
-          
-          // Check if user is admin
-          const isAdmin = await checkUserRole(session.user.id);
-          
-          if (isAdmin) {
-            console.log('Auth page: Admin session found, redirecting to admin dashboard...');
-            navigate('/admin');
-          } else {
-            console.log('Auth page: Regular user session found, redirecting to dashboard...');
-            navigate('/dashboard');
-          }
-        }
-      } catch (error) {
-        console.error('Auth page: Error checking auth:', error);
+    if (user) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
       }
-    };
-    checkAuth();
-  }, [navigate]);
-
-  const checkUserRole = async (userId: string) => {
-    try {
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .single();
-
-      return !!roleData;
-    } catch (error) {
-      console.log('Auth page: No admin role found or error checking role');
-      return false;
     }
-  };
+  }, [user, isAdmin, navigate]);
 
+  // Welcome email helper
   const sendWelcomeEmail = async (email: string, displayName?: string) => {
     try {
-      const { error } = await supabase.functions.invoke('send-welcome-email', {
+      await supabase.functions.invoke('send-welcome-email', {
         body: { email, displayName }
       });
-      
-      if (error) {
-        console.error('Error sending welcome email:', error);
-      } else {
-        console.log('Welcome email sent successfully');
-      }
     } catch (error) {
-      console.error('Error invoking welcome email function:', error);
+      console.error('Error sending welcome email:', error);
     }
   };
+
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Auth page: Starting sign up process for:', signUpEmail);
     setSignUpLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: signUpEmail,
-        password: signUpPassword,
-        options: {
-          emailRedirectTo: redirectUrl
-        }
-      });
+      const { error, needsConfirmation } = await signUp(signUpEmail, signUpPassword);
 
       if (error) {
-        console.error('Auth page: Sign up error:', error);
         toast({
           title: "Sign Up Error",
           description: error.message,
           variant: "destructive"
         });
       } else {
-        console.log('Auth page: Sign up successful');
-        
-        // Send welcome email
-        await sendWelcomeEmail(signUpEmail);
-        
-        toast({
-          title: "Check your email",
-          description: "We've sent you a confirmation link to complete your registration."
-        });
-        // Clear form
+        // Clear form - navigation is handled by context if no confirmation needed
         setSignUpEmail('');
         setSignUpPassword('');
+        
+        if (needsConfirmation) {
+          // Send welcome email for users that need to confirm
+          await sendWelcomeEmail(signUpEmail);
+        }
       }
-    } catch (error) {
-      console.error('Auth page: Unexpected error during sign up:', error);
+    } catch (error: any) {
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -133,52 +84,23 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Auth page: Starting sign in process for:', signInEmail);
     setSignInLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: signInEmail,
-        password: signInPassword
-      });
+      const { error } = await signIn(signInEmail, signInPassword);
 
       if (error) {
-        console.error('Auth page: Sign in error:', error);
         toast({
           title: "Sign In Error",
           description: error.message,
           variant: "destructive"
         });
-        setSignInLoading(false);
-        return;
-      }
-
-      if (data.user) {
-        console.log('Auth page: Sign in successful for user:', data.user.email);
-        
-        // Clear form immediately
+      } else {
+        // Clear form - navigation is handled by context
         setSignInEmail('');
         setSignInPassword('');
-        
-        // Show success message
-        toast({
-          title: "Welcome back!",
-          description: "You have been successfully signed in."
-        });
-
-        // Check role and navigate
-        const isAdmin = await checkUserRole(data.user.id);
-        
-        if (isAdmin) {
-          console.log('Auth page: Admin role detected, redirecting to admin dashboard');
-          navigate('/admin');
-        } else {
-          console.log('Auth page: Regular user, redirecting to dashboard');
-          navigate('/dashboard');
-        }
       }
-    } catch (error) {
-      console.error('Auth page: Unexpected error during sign in:', error);
+    } catch (error: any) {
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",

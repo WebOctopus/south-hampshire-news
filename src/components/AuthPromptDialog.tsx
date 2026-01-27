@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar, FileText, CheckCircle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 interface AuthPromptDialogProps {
@@ -22,6 +22,7 @@ const AuthPromptDialog = ({ open, onOpenChange, onSuccess, redirectPath }: AuthP
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'signin' | 'register'>('signin');
+  const { signIn, signUp } = useAuth();
 
   const resetForm = () => {
     setEmail('');
@@ -45,17 +46,9 @@ const AuthPromptDialog = ({ open, onOpenChange, onSuccess, redirectPath }: AuthP
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await signIn(email, password);
 
       if (error) throw error;
-
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully signed in.",
-      });
 
       resetForm();
       onOpenChange(false);
@@ -108,40 +101,19 @@ const AuthPromptDialog = ({ open, onOpenChange, onSuccess, redirectPath }: AuthP
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectPath 
-            ? `${window.location.origin}${redirectPath}` 
-            : window.location.origin,
-          data: {
-            display_name: displayName || email.split('@')[0],
-          },
-        },
+      const { error, needsConfirmation } = await signUp(email, password, {
+        displayName: displayName || email.split('@')[0],
+        redirectPath,
       });
 
       if (error) throw error;
 
-      // Check if email confirmation is required
-      if (data.user && !data.session) {
-        toast({
-          title: "Check Your Email",
-          description: "We've sent you a confirmation link. Please check your email to verify your account.",
-        });
-      } else {
-        toast({
-          title: "Account Created!",
-          description: "Welcome! Your account has been created successfully.",
-        });
-        
-        if (onSuccess) {
-          onSuccess();
-        }
-      }
-
       resetForm();
       onOpenChange(false);
+      
+      if (!needsConfirmation && onSuccess) {
+        onSuccess();
+      }
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({

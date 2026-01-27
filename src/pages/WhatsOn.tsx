@@ -17,20 +17,20 @@ import { toast } from '@/hooks/use-toast';
 import { EventCard } from '@/components/EventCard';
 import { Event } from '@/hooks/useEvents';
 import AuthPromptDialog from '@/components/AuthPromptDialog';
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 
 type QuickFilter = 'all' | 'week' | 'month' | 'next_month';
 
 const WhatsOn = () => {
   const mountedRef = useRef(true);
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Auth state
-  const [user, setUser] = useState<User | null>(null);
+  // Auth dialog state
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   
   // Filter state
@@ -52,21 +52,6 @@ const WhatsOn = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [areas, setAreas] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
-
-  // Auth listener
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-    
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleAddEvent = () => {
     if (user) {
