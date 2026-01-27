@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-
 
 const Auth = () => {
   const [signInEmail, setSignInEmail] = useState('');
@@ -17,6 +17,9 @@ const Auth = () => {
   const [signUpPassword, setSignUpPassword] = useState('');
   const [signInLoading, setSignInLoading] = useState(false);
   const [signUpLoading, setSignUpLoading] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -63,6 +66,22 @@ const Auth = () => {
     }
   };
 
+  const sendWelcomeEmail = async (email: string, displayName?: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-welcome-email', {
+        body: { email, displayName }
+      });
+      
+      if (error) {
+        console.error('Error sending welcome email:', error);
+      } else {
+        console.log('Welcome email sent successfully');
+      }
+    } catch (error) {
+      console.error('Error invoking welcome email function:', error);
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Auth page: Starting sign up process for:', signUpEmail);
@@ -71,7 +90,7 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: signUpEmail,
         password: signUpPassword,
         options: {
@@ -88,6 +107,10 @@ const Auth = () => {
         });
       } else {
         console.log('Auth page: Sign up successful');
+        
+        // Send welcome email
+        await sendWelcomeEmail(signUpEmail);
+        
         toast({
           title: "Check your email",
           description: "We've sent you a confirmation link to complete your registration."
@@ -166,6 +189,68 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!forgotPasswordEmail) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setForgotPasswordLoading(true);
+
+    try {
+      const resetUrl = `${window.location.origin}/reset-password`;
+      
+      // Use Supabase's built-in password reset
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: resetUrl,
+      });
+
+      if (error) {
+        console.error('Password reset error:', error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        // Also send our branded email via edge function
+        try {
+          await supabase.functions.invoke('send-password-reset', {
+            body: { 
+              email: forgotPasswordEmail,
+              resetUrl: resetUrl
+            }
+          });
+        } catch (emailError) {
+          console.error('Error sending branded reset email:', emailError);
+          // Continue anyway as Supabase's email was sent
+        }
+
+        toast({
+          title: "Check your email",
+          description: "We've sent you a password reset link. Please check your inbox."
+        });
+        setForgotPasswordOpen(false);
+        setForgotPasswordEmail('');
+      }
+    } catch (error) {
+      console.error('Unexpected error during password reset:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -228,6 +313,15 @@ const Auth = () => {
                     >
                       {signInLoading ? 'Signing In...' : 'Sign In'}
                     </Button>
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => setForgotPasswordOpen(true)}
+                        className="text-sm text-community-green hover:underline"
+                      >
+                        Forgot your password?
+                      </button>
+                    </div>
                   </form>
                 </TabsContent>
                 
@@ -277,6 +371,53 @@ const Auth = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleForgotPassword}>
+            <div className="space-y-4 py-4">
+              <div>
+                <label htmlFor="forgot-email" className="block text-sm font-medium mb-1">
+                  Email Address
+                </label>
+                <Input
+                  id="forgot-email"
+                  type="email"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
+                  disabled={forgotPasswordLoading}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setForgotPasswordOpen(false)}
+                disabled={forgotPasswordLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-community-green hover:bg-green-600"
+                disabled={forgotPasswordLoading}
+              >
+                {forgotPasswordLoading ? 'Sending...' : 'Send Reset Link'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
