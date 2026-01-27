@@ -26,49 +26,54 @@ const ResetPassword = () => {
     // Check if user has a valid recovery session
     const checkSession = async () => {
       try {
+        // First, check if Supabase already established a session from the redirect
+        // The Supabase client auto-detects hash parameters and creates a session
         const { data: { session } } = await supabase.auth.getSession();
         
-        // Check if this is a recovery session by looking at the URL hash
+        if (session) {
+          // Session exists - Supabase already processed the recovery token
+          // Clear the URL hash to prevent re-processing on refresh
+          window.history.replaceState({}, '', window.location.pathname);
+          setIsValidSession(true);
+          setCheckingSession(false);
+          return;
+        }
+        
+        // Fallback: Try to manually parse hash parameters if no session exists
+        // This handles edge cases where auto-detection didn't work
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const type = hashParams.get('type');
         
         if (type === 'recovery' && accessToken) {
-          // Set the session from the recovery token
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: hashParams.get('refresh_token') || '',
           });
           
           if (!error) {
+            // Clear the URL hash after successful session setup
+            window.history.replaceState({}, '', window.location.pathname);
             setIsValidSession(true);
           } else {
             console.error('Error setting recovery session:', error);
-            toast({
-              title: "Invalid or Expired Link",
-              description: "This password reset link is invalid or has expired. Please request a new one.",
-              variant: "destructive"
-            });
+            // Don't show toast - the "Invalid Reset Link" card UI is sufficient
+            setIsValidSession(false);
           }
-        } else if (session) {
-          // User might have a valid session already
-          setIsValidSession(true);
         } else {
-          toast({
-            title: "Invalid Link",
-            description: "This password reset link is invalid. Please request a new one.",
-            variant: "destructive"
-          });
+          // No session and no valid hash params - invalid link
+          setIsValidSession(false);
         }
       } catch (error) {
         console.error('Error checking session:', error);
+        setIsValidSession(false);
       } finally {
         setCheckingSession(false);
       }
     };
 
     checkSession();
-  }, [toast]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
