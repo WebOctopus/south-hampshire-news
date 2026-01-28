@@ -64,6 +64,7 @@ const QuickQuoteCalculator: React.FC = () => {
   }, [areas, bogofAreas]);
 
   // Get subscription pricing - use DB if available, else defaults for instant display
+  // Divide by 2 to convert per-issue to monthly (bi-monthly magazine)
   const monthlyPrice = useMemo(() => {
     const adSizeName = AD_SIZE_OPTIONS[adSizeIndex].name;
     
@@ -73,13 +74,14 @@ const QuickQuoteCalculator: React.FC = () => {
       if (typeof subscriptionPricing === 'object') {
         const priceKey = numberOfAreas.toString();
         if (subscriptionPricing[priceKey]) {
-          return subscriptionPricing[priceKey];
+          // Divide by 2 to convert per-issue to monthly
+          return subscriptionPricing[priceKey] / 2;
         }
       }
     }
     
-    // Use hardcoded defaults for instant display
-    return DEFAULT_PRICING[adSizeName]?.[numberOfAreas] || 90;
+    // Use hardcoded defaults for instant display, divided by 2 for monthly
+    return (DEFAULT_PRICING[adSizeName]?.[numberOfAreas] || 180) / 2;
   }, [selectedAdSize, adSizeIndex, numberOfAreas]);
 
   // Calculate 6-month total
