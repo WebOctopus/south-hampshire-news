@@ -14,7 +14,8 @@ import {
   Trophy,
   Upload,
   Calendar,
-  ClipboardCheck
+  ClipboardCheck,
+  Star
 } from "lucide-react"
 
 import {
@@ -80,6 +81,11 @@ const menuItems = [
     title: "Magazine Editions",
     icon: BookOpen,
     section: "magazine-editions"
+  },
+  {
+    title: "Featured Advertisers",
+    icon: Star,
+    section: "featured-advertisers"
   },
   {
     title: "Competitions",
