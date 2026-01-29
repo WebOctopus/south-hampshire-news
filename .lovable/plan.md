@@ -1,109 +1,183 @@
 
 
-## Plan: Link Featured Advertisers to Business Directory Listings
+## Plan: Featured Advertisers Admin Management
 
 ### Overview
-Currently, clicking on a featured advertiser opens a dialog showing the enlarged image. The user wants clicking on an advertiser to navigate to that business's directory listing page instead.
+Build a new admin section to manage Featured Advertisers displayed on the homepage carousel. Admins can add, edit, delete, and reorder advertisers, with the ability to link each advertiser to their business directory listing.
 
 ---
 
-### Challenge: Missing Database Entries
+### Database Schema
 
-The featured advertisers in the carousel (DJ Summers Plumbing, Edwards Conservatory, Acorn Tree Specialist, etc.) **don't currently exist** in the businesses table. The existing businesses in the database are different entries.
+**New Table: `featured_advertisers`**
 
----
+| Column | Type | Default | Description |
+|--------|------|---------|-------------|
+| id | uuid | gen_random_uuid() | Primary key |
+| name | text | NOT NULL | Advertiser business name |
+| image_url | text | NOT NULL | URL to the advertiser artwork image |
+| business_id | uuid | NULL | Optional link to businesses table |
+| sort_order | integer | 0 | Display order in carousel |
+| is_active | boolean | true | Whether to show in carousel |
+| created_at | timestamp | now() | Creation timestamp |
+| updated_at | timestamp | now() | Last update timestamp |
 
-### Options to Implement
+**RLS Policies:**
+- Public can view active advertisers (SELECT)
+- Admins have full access (ALL)
 
-| Option | Description | Pros | Cons |
-|--------|-------------|------|------|
-| **A. Add business IDs to hardcoded data** | Store the business UUID alongside each advertiser | Direct linking, fast navigation | Requires creating businesses in DB first |
-| **B. Search by name on click** | Query database for matching business name | Works without pre-linking | Slower, may not find exact match |
-| **C. Create a featured_advertisers table** | Dedicated table linking to businesses | Clean separation, admin manageable | More complex setup |
-
----
-
-### Recommended Approach: Option A
-
-1. Add optional `businessId` property to each advertiser
-2. If `businessId` exists, clicking navigates to `/business/${businessId}`
-3. If no `businessId`, fall back to showing the enlarged image dialog (current behavior)
-
-This allows gradual linking as businesses are added to the directory.
+**Storage Bucket:** Use existing `business-images` bucket for advertiser artwork uploads.
 
 ---
 
-### Technical Changes
+### Files to Create
 
-**File: `src/components/FeaturedAdvertisersSection.tsx`**
-
-```tsx
-// Before
-const advertisers = [
-  { name: 'DJ Summers Plumbing & Heating', logo: '/lovable-uploads/...' },
-  ...
-];
-
-// After
-const advertisers = [
-  { 
-    name: 'DJ Summers Plumbing & Heating', 
-    logo: '/lovable-uploads/...', 
-    businessId: null  // Will be updated with actual ID when business exists in DB
-  },
-  ...
-];
-```
-
-**Navigation Logic:**
-- Replace `Dialog` wrapper with conditional logic
-- If `businessId` exists → navigate to `/business/${businessId}`
-- If no `businessId` → show current dialog popup (fallback)
-
-```tsx
-{advertiser.businessId ? (
-  <Link to={`/business/${advertiser.businessId}`}>
-    <div className="flex items-center justify-center p-4 bg-background rounded-lg...">
-      <img src={advertiser.logo} alt={advertiser.name} />
-    </div>
-  </Link>
-) : (
-  <Dialog>
-    <DialogTrigger asChild>
-      <div className="...">
-        <img src={advertiser.logo} alt={advertiser.name} />
-      </div>
-    </DialogTrigger>
-    <DialogContent>...</DialogContent>
-  </Dialog>
-)}
-```
-
----
-
-### Future Enhancement Option
-
-To fully implement this feature, the 8 featured advertisers would need to be added to the `businesses` table with their details. This could be done by:
-
-1. Admin manually creating each business in the admin dashboard
-2. Importing via CSV
-3. Or linking to existing businesses if they're added later
-
-Once businesses exist in the database, update the `businessId` values in the component to match.
-
----
+| File | Purpose |
+|------|---------|
+| `src/hooks/useFeaturedAdvertisers.ts` | React Query hooks for CRUD operations |
+| `src/components/admin/FeaturedAdvertisersManagement.tsx` | Admin management UI component |
 
 ### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/FeaturedAdvertisersSection.tsx` | Add `businessId` field, conditional navigation vs dialog |
+| `src/components/admin/AdminSidebar.tsx` | Add "Featured Advertisers" menu item |
+| `src/pages/AdminDashboard.tsx` | Add case for featured-advertisers section |
+| `src/components/FeaturedAdvertisersSection.tsx` | Fetch from database instead of hardcoded data |
 
 ---
 
-### Immediate Benefit
+### Admin Management Features
 
-- Clicking navigates to business page when linked
-- Falls back gracefully to image popup when not linked
-- Ready for future business entries without code changes
+1. **Table View**
+   - Thumbnail preview
+   - Advertiser name
+   - Linked business (with link to directory listing)
+   - Active toggle
+   - Drag-and-drop reordering (like Magazine Editions)
+
+2. **Add/Edit Dialog**
+   - Advertiser Name (text input)
+   - Artwork Image (drag-and-drop upload)
+   - Link to Business (searchable dropdown of businesses from database)
+   - Sort Order (number)
+   - Active Toggle (switch)
+
+3. **Business Linking**
+   - Dropdown shows all businesses from the directory
+   - Searchable/filterable by business name
+   - Shows "No business linked" option
+   - When linked, clicking advertiser on homepage navigates to `/business/{id}`
+
+---
+
+### Component: FeaturedAdvertisersManagement.tsx
+
+```text
++----------------------------------------------------------+
+|  Featured Advertisers                      [Add Advertiser] |
+|  Manage the advertisers displayed on the homepage carousel |
++----------------------------------------------------------+
+| Order | Image    | Name                  | Linked Business | Active | Actions |
+|-------|----------|----------------------|-----------------|--------|---------|
+|  ≡ 1  | [thumb]  | DJ Summers Plumbing  | (not linked)    |  ✓     | ✎ 🗑    |
+|  ≡ 2  | [thumb]  | Edwards Conservatory | Edwards Ltd     |  ✓     | ✎ 🗑    |
+|  ≡ 3  | [thumb]  | Acorn Tree Specialist| Acorn Tree Ltd  |  ✓     | ✎ 🗑    |
++----------------------------------------------------------+
+```
+
+---
+
+### Hook: useFeaturedAdvertisers.ts
+
+```typescript
+interface FeaturedAdvertiser {
+  id: string;
+  name: string;
+  image_url: string;
+  business_id: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  businesses?: {
+    id: string;
+    name: string;
+  } | null;
+}
+```
+
+**Query Functions:**
+- `useFeaturedAdvertisers(includeInactive)` - Fetch all advertisers with optional business join
+- `useFeaturedAdvertiserMutations()` - Create, update, delete, toggle, reorder
+
+---
+
+### Frontend Component Updates
+
+**FeaturedAdvertisersSection.tsx Changes:**
+- Replace hardcoded `advertisers` array with database query
+- Use `useFeaturedAdvertisers(false)` to fetch active advertisers
+- Keep existing navigation logic (if businessId → Link, else → Dialog popup)
+- Add loading skeleton while fetching
+- Fallback to empty state if no advertisers configured
+
+```tsx
+const { data: advertisers, isLoading } = useFeaturedAdvertisers(false);
+
+if (isLoading) return <Skeleton />;
+if (!advertisers?.length) return null;
+
+// Existing carousel code using fetched data
+```
+
+---
+
+### Admin Sidebar Entry
+
+Add to `menuItems` array in AdminSidebar.tsx:
+
+```typescript
+{
+  title: "Featured Advertisers",
+  icon: Star, // or Megaphone
+  section: "featured-advertisers"
+}
+```
+
+---
+
+### Business Selection Dropdown
+
+The admin form includes a searchable select for linking to businesses:
+
+1. Query `get_public_businesses` RPC function to list all businesses
+2. Show business name and location in dropdown
+3. Allow clearing selection (unlink)
+4. Display linked business name with link to directory page
+
+---
+
+### Data Migration
+
+Initial data: Migrate the 8 current hardcoded advertisers into the new database table, with `business_id` set to NULL (to be linked later by admin).
+
+---
+
+### User Flow
+
+1. **Admin enables Featured Advertiser management** → Goes to Admin Dashboard → Featured Advertisers
+2. **Admin adds new advertiser** → Uploads artwork → Enters name → Optionally links to business → Saves
+3. **Admin links existing advertiser to business** → Clicks Edit → Searches for business in dropdown → Saves
+4. **User clicks advertiser on homepage** → If linked, navigates to business detail page; if not linked, shows enlarged image popup
+
+---
+
+### Security
+
+- RLS policies ensure only admins can modify featured advertisers
+- Public can only view active advertisers
+- Image uploads validated for file type (JPG, PNG, WebP) and size (max 5MB)
+- Business linking uses existing business IDs from the verified businesses table
 
