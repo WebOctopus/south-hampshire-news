@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2, GripVertical, ExternalLink, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical, ExternalLink, Star, Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,14 +7,16 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { useFeaturedAdvertisers, useFeaturedAdvertiserMutations, FeaturedAdvertiser, FeaturedAdvertiserInput } from '@/hooks/useFeaturedAdvertisers';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
 import {
   DndContext,
   closestCenter,
@@ -110,6 +112,7 @@ const FeaturedAdvertisersManagement = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedAdvertiser, setSelectedAdvertiser] = useState<FeaturedAdvertiser | null>(null);
+  const [businessSearchOpen, setBusinessSearchOpen] = useState(false);
   const [formData, setFormData] = useState<FeaturedAdvertiserInput>({
     name: '',
     image_url: '',
@@ -334,25 +337,65 @@ const FeaturedAdvertisersManagement = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="business">Link to Business Directory</Label>
-              <Select
-                value={formData.business_id || 'none'}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, business_id: value === 'none' ? null : value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a business (optional)" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <SelectItem value="none">No business linked</SelectItem>
-                  {businesses?.map((business) => (
-                    <SelectItem key={business.id} value={business.id}>
-                      {business.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Link to Business Directory</Label>
+              <Popover open={businessSearchOpen} onOpenChange={setBusinessSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={businessSearchOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {formData.business_id
+                      ? businesses?.find((b) => b.id === formData.business_id)?.name || "Select a business..."
+                      : "No business linked"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search businesses..." />
+                    <CommandList>
+                      <CommandEmpty>No business found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="none"
+                          onSelect={() => {
+                            setFormData((prev) => ({ ...prev, business_id: null }));
+                            setBusinessSearchOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              !formData.business_id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          No business linked
+                        </CommandItem>
+                        {businesses?.map((business) => (
+                          <CommandItem
+                            key={business.id}
+                            value={business.name}
+                            onSelect={() => {
+                              setFormData((prev) => ({ ...prev, business_id: business.id }));
+                              setBusinessSearchOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.business_id === business.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {business.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <p className="text-xs text-muted-foreground">
                 When linked, clicking the advertiser on the homepage will navigate to their directory listing.
               </p>
@@ -408,25 +451,65 @@ const FeaturedAdvertisersManagement = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-business">Link to Business Directory</Label>
-              <Select
-                value={formData.business_id || 'none'}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, business_id: value === 'none' ? null : value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a business (optional)" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <SelectItem value="none">No business linked</SelectItem>
-                  {businesses?.map((business) => (
-                    <SelectItem key={business.id} value={business.id}>
-                      {business.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Link to Business Directory</Label>
+              <Popover open={businessSearchOpen} onOpenChange={setBusinessSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={businessSearchOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {formData.business_id
+                      ? businesses?.find((b) => b.id === formData.business_id)?.name || "Select a business..."
+                      : "No business linked"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search businesses..." />
+                    <CommandList>
+                      <CommandEmpty>No business found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="none"
+                          onSelect={() => {
+                            setFormData((prev) => ({ ...prev, business_id: null }));
+                            setBusinessSearchOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              !formData.business_id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          No business linked
+                        </CommandItem>
+                        {businesses?.map((business) => (
+                          <CommandItem
+                            key={business.id}
+                            value={business.name}
+                            onSelect={() => {
+                              setFormData((prev) => ({ ...prev, business_id: business.id }));
+                              setBusinessSearchOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.business_id === business.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {business.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <p className="text-xs text-muted-foreground">
                 When linked, clicking the advertiser on the homepage will navigate to their directory listing.
               </p>
