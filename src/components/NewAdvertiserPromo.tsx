@@ -1,21 +1,25 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Gift, Sparkles, Star, CheckCircle } from 'lucide-react';
+import { EditableText } from '@/components/inline-editor';
+import { AdvertisingContent } from '@/hooks/useAdvertisingContent';
 
-const NewAdvertiserPromo: React.FC = () => {
+interface NewAdvertiserPromoProps {
+  content: AdvertisingContent;
+  updateField: (path: string, value: string) => void;
+  updateBogofBenefit: (index: number, value: string) => void;
+}
+
+const NewAdvertiserPromo: React.FC<NewAdvertiserPromoProps> = ({ 
+  content, 
+  updateField, 
+  updateBogofBenefit 
+}) => {
   const offerTiles = [
     { paid: 1, free: 1 },
     { paid: 3, free: 3 },
     { paid: 5, free: 5 },
     { paid: 7, free: 7 },
-  ];
-
-  const benefits = [
-    "Minimum commitment is 3 consecutive issues = 6 months advertising",
-    "Great opportunity to test and trial areas",
-    "Mix the advert sizes, advert designs to experiment",
-    "Paid on monthly payment plan",
-    "After six months: continue, change areas/size, or cancel"
   ];
 
   return (
@@ -34,7 +38,11 @@ const NewAdvertiserPromo: React.FC = () => {
         <div className="flex justify-center mb-6">
           <Badge className="px-6 py-2 text-base font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-black border-0 shadow-lg shadow-yellow-500/30 animate-pulse-subtle">
             <Star className="h-4 w-4 mr-2 fill-current" />
-            New Advertisers Only
+            <EditableText
+              value={content.bogofPromo.badge}
+              onSave={(val) => updateField('bogofPromo.badge', val)}
+              as="span"
+            />
             <Star className="h-4 w-4 ml-2 fill-current" />
           </Badge>
         </div>
@@ -42,18 +50,19 @@ const NewAdvertiserPromo: React.FC = () => {
         {/* Main Headline */}
         <div className="text-center mb-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight">
-            SEEING{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-community-green to-emerald-400">
-              DOUBLE
-            </span>
+            <EditableText
+              value={content.bogofPromo.headline}
+              onSave={(val) => updateField('bogofPromo.headline', val)}
+              as="span"
+              className="text-transparent bg-clip-text bg-gradient-to-r from-community-green to-emerald-400"
+            />
           </h2>
-          <p className="text-xl md:text-2xl text-slate-300 max-w-2xl mx-auto">
-            For{' '}
-            <span className="font-bold text-white">Every Area Booked</span>
-            {' '}We Give You{' '}
-            <span className="font-bold text-pink-400">One Area FREE</span>
-            {' '}for 6 months
-          </p>
+          <EditableText
+            value={content.bogofPromo.offerDescription}
+            onSave={(val) => updateField('bogofPromo.offerDescription', val)}
+            as="p"
+            className="text-xl md:text-2xl text-slate-300 max-w-2xl mx-auto"
+          />
         </div>
 
         {/* Offer Tiles */}
@@ -91,20 +100,28 @@ const NewAdvertiserPromo: React.FC = () => {
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-center gap-3 mb-6">
             <Gift className="h-6 w-6 text-community-green" />
-            <h3 className="text-xl md:text-2xl font-bold text-white">
-              3+ Repeat Package for New Advertisers
-            </h3>
+            <EditableText
+              value={content.bogofPromo.packageHeading}
+              onSave={(val) => updateField('bogofPromo.packageHeading', val)}
+              as="h3"
+              className="text-xl md:text-2xl font-bold text-white"
+            />
           </div>
           
           {/* Benefits Grid */}
           <div className="grid sm:grid-cols-2 gap-3">
-            {benefits.map((benefit, index) => (
+            {content.bogofPromo.benefits.map((benefit, index) => (
               <div 
                 key={index}
                 className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
               >
                 <CheckCircle className="h-5 w-5 text-community-green flex-shrink-0 mt-0.5" />
-                <span className="text-slate-300 text-sm">{benefit}</span>
+                <EditableText
+                  value={benefit}
+                  onSave={(val) => updateBogofBenefit(index, val)}
+                  as="span"
+                  className="text-slate-300 text-sm"
+                />
               </div>
             ))}
           </div>
@@ -114,7 +131,12 @@ const NewAdvertiserPromo: React.FC = () => {
         <div className="flex justify-center mt-8">
           <div className="flex items-center gap-2 text-slate-500">
             <Sparkles className="h-4 w-4" />
-            <span className="text-sm">Double Your Reach. Double Your Impact.</span>
+            <EditableText
+              value={content.bogofPromo.footerTagline}
+              onSave={(val) => updateField('bogofPromo.footerTagline', val)}
+              as="span"
+              className="text-sm"
+            />
             <Sparkles className="h-4 w-4" />
           </div>
         </div>
