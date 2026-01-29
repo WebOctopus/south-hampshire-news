@@ -248,11 +248,11 @@ const BusinessDirectory = () => {
                 <SelectTrigger className="w-full md:w-56 h-12 text-black">
                   <div className="flex items-center gap-2">
                     <MapPin size={16} className="text-gray-500" />
-                    <SelectValue placeholder="All Locations" />
+                    <SelectValue placeholder="Your Location" />
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
+                  <SelectItem value="all">Your Location</SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location} value={location}>
                       {cleanAreaName(location)}
