@@ -45,6 +45,49 @@ export const defaultAdvertisingContent = {
     phone: "023 8064 5852",
     description: "Our sales team are ready to chat about your advertising goals and find the perfect solution for your business.",
   },
+  roiSection: {
+    mainHeading: "The all important question:",
+    subHeading1: "How Much Does it Cost to Advertise?",
+    subHeading2: "And What Could your Return (ROI) be?",
+    description: "It's difficult to project as there are so many factors that affect ROI. The better these factors are handled the better the end result. The % scales are industry standard. Nothing is guaranteed but we hope this shows we are invested in value for money and results.",
+  },
+  productSection: {
+    title: "The Product",
+    subtitle: "What makes a magazine effective",
+    features: [
+      { title: "Circulation", description: "How many copies are printed—the more printed, the more potential readers and customers" },
+      { title: "Distribution Method", description: "Targeted letterbox delivery vs untargeted pick-up (prone to waste)" },
+      { title: "Audience Targeting", description: "Who is the magazine aimed at? Where exactly is it delivered?" },
+      { title: "Delivery Reliability", description: "Is delivery tracked? Is it reliable?" },
+      { title: "Editorial Balance", description: "Good ratio of editorial to adverts = engaged readers" },
+      { title: "Editorial Quality", description: "Varied, interesting, local, and topical content" },
+    ],
+  },
+  advertiserSection: {
+    title: "The Advertiser",
+    subtitle: "What you bring to the table",
+    features: [
+      { title: "Right Ad Size", description: "Is the advert the right size for your type of business?" },
+      { title: "Design Quality", description: "Is the advert selling or just telling? Professional design matters" },
+      { title: "Response Management", description: "Unanswered calls going to voicemail is not well-managed response" },
+      { title: "Measuring Correctly", description: "Are you measuring response or only the result?" },
+    ],
+    footerText: "Remember: Advertising generates response, you create the result",
+  },
+  bogofPromo: {
+    badge: "New Advertisers Only",
+    headline: "SEEING DOUBLE",
+    offerDescription: "For Every Area Booked We Give You One Area FREE for 6 months",
+    packageHeading: "3+ Repeat Package for New Advertisers",
+    benefits: [
+      "Minimum commitment is 3 consecutive issues = 6 months advertising",
+      "Great opportunity to test and trial areas",
+      "Mix the advert sizes, advert designs to experiment",
+      "Paid on monthly payment plan",
+      "After six months: continue, change areas/size, or cancel",
+    ],
+    footerTagline: "Double Your Reach. Double Your Impact.",
+  },
 };
 
 export type AdvertisingContent = typeof defaultAdvertisingContent;
@@ -185,12 +228,33 @@ export const useAdvertisingContent = () => {
     updateMutation.mutate({ stats: newStats });
   };
 
+  // Helper to update feature in product/advertiser sections
+  const updateFeature = (
+    section: 'productSection' | 'advertiserSection',
+    index: number,
+    field: 'title' | 'description',
+    value: string
+  ) => {
+    const newFeatures = [...content[section].features];
+    newFeatures[index] = { ...newFeatures[index], [field]: value };
+    updateMutation.mutate({ [section]: { ...content[section], features: newFeatures } });
+  };
+
+  // Helper to update BOGOF benefit
+  const updateBogofBenefit = (index: number, value: string) => {
+    const newBenefits = [...content.bogofPromo.benefits];
+    newBenefits[index] = value;
+    updateMutation.mutate({ bogofPromo: { ...content.bogofPromo, benefits: newBenefits } });
+  };
+
   return {
     content,
     isLoading,
     error,
     updateField,
     updateStat,
+    updateFeature,
+    updateBogofBenefit,
     isSaving: updateMutation.isPending,
   };
 };

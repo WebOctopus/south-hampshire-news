@@ -13,64 +13,32 @@ import {
   TrendingUp,
   HelpCircle
 } from 'lucide-react';
+import { EditableText } from '@/components/inline-editor';
+import { AdvertisingContent } from '@/hooks/useAdvertisingContent';
 
-const ROIFactorsInfo: React.FC = () => {
-  const productPoints = [
-    {
-      icon: BarChart3,
-      title: "Circulation",
-      description: "How many copies are printed—the more printed, the more potential readers and customers"
-    },
-    {
-      icon: MapPin,
-      title: "Distribution Method",
-      description: "Targeted letterbox delivery vs untargeted pick-up (prone to waste)"
-    },
-    {
-      icon: User,
-      title: "Audience Targeting",
-      description: "Who is the magazine aimed at? Where exactly is it delivered?"
-    },
-    {
-      icon: CheckCircle,
-      title: "Delivery Reliability",
-      description: "Is delivery tracked? Is it reliable?"
-    },
-    {
-      icon: BookOpen,
-      title: "Editorial Balance",
-      description: "Good ratio of editorial to adverts = engaged readers"
-    },
-    {
-      icon: Sparkles,
-      title: "Editorial Quality",
-      description: "Varied, interesting, local, and topical content"
-    }
-  ];
+const iconMap = {
+  BarChart3,
+  MapPin,
+  User,
+  CheckCircle,
+  BookOpen,
+  Sparkles,
+  Maximize2,
+  Palette,
+  Phone,
+  TrendingUp,
+};
 
-  const advertiserPoints = [
-    {
-      icon: Maximize2,
-      title: "Right Ad Size",
-      description: "Is the advert the right size for your type of business?"
-    },
-    {
-      icon: Palette,
-      title: "Design Quality",
-      description: "Is the advert selling or just telling? Professional design matters"
-    },
-    {
-      icon: Phone,
-      title: "Response Management",
-      description: "Unanswered calls going to voicemail is not well-managed response"
-    },
-    {
-      icon: TrendingUp,
-      title: "Measuring Correctly",
-      description: "Are you measuring response or only the result?"
-    }
-  ];
+interface ROIFactorsInfoProps {
+  content: AdvertisingContent;
+  updateField: (path: string, value: string) => void;
+  updateFeature: (section: 'productSection' | 'advertiserSection', index: number, field: 'title' | 'description', value: string) => void;
+}
 
+const productIcons = [BarChart3, MapPin, User, CheckCircle, BookOpen, Sparkles];
+const advertiserIcons = [Maximize2, Palette, Phone, TrendingUp];
+
+const ROIFactorsInfo: React.FC<ROIFactorsInfoProps> = ({ content, updateField, updateFeature }) => {
   return (
     <div className="space-y-8">
       {/* Header Section */}
@@ -83,16 +51,33 @@ const ROIFactorsInfo: React.FC = () => {
           <div className="inline-flex items-center justify-center p-3 bg-community-green/20 rounded-full mb-4">
             <HelpCircle className="h-8 w-8 text-community-green" />
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4">
-            The all important question:
-          </h2>
+          <EditableText
+            value={content.roiSection.mainHeading}
+            onSave={(val) => updateField('roiSection.mainHeading', val)}
+            as="h2"
+            className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4"
+          />
           <p className="text-2xl md:text-3xl lg:text-4xl font-black text-community-green leading-tight">
-            How Much Does it Cost to Advertise?<br />
-            And What Could your Return (ROI) be?
+            <EditableText
+              value={content.roiSection.subHeading1}
+              onSave={(val) => updateField('roiSection.subHeading1', val)}
+              as="span"
+              className="block"
+            />
+            <EditableText
+              value={content.roiSection.subHeading2}
+              onSave={(val) => updateField('roiSection.subHeading2', val)}
+              as="span"
+              className="block"
+            />
           </p>
-          <p className="text-slate-300 text-lg mt-4 max-w-3xl mx-auto">
-            It's difficult to project as there are so many factors that affect ROI. The better these factors are handled the better the end result. The % scales are industry standard. Nothing is guaranteed but we hope this shows we are invested in value for money and results.
-          </p>
+          <EditableText
+            value={content.roiSection.description}
+            onSave={(val) => updateField('roiSection.description', val)}
+            as="p"
+            multiline
+            className="text-slate-300 text-lg mt-4 max-w-3xl mx-auto"
+          />
         </div>
       </div>
 
@@ -110,26 +95,49 @@ const ROIFactorsInfo: React.FC = () => {
                 <Newspaper className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-community-navy">The Product</h3>
-                <p className="text-sm text-muted-foreground">What makes a magazine effective</p>
+                <EditableText
+                  value={content.productSection.title}
+                  onSave={(val) => updateField('productSection.title', val)}
+                  as="h3"
+                  className="text-2xl font-black text-community-navy"
+                />
+                <EditableText
+                  value={content.productSection.subtitle}
+                  onSave={(val) => updateField('productSection.subtitle', val)}
+                  as="p"
+                  className="text-sm text-muted-foreground"
+                />
               </div>
             </div>
             
             {/* Points */}
             <ul className="space-y-4">
-              {productPoints.map((point, index) => (
-                <li key={index} className="flex gap-4 p-3 rounded-lg bg-white border border-slate-100 hover:border-community-green/30 hover:shadow-md transition-all duration-200">
-                  <div className="flex-shrink-0">
-                    <div className="p-2 rounded-lg bg-community-green/10">
-                      <point.icon className="h-5 w-5 text-community-green" />
+              {content.productSection.features.map((point, index) => {
+                const IconComponent = productIcons[index] || BarChart3;
+                return (
+                  <li key={index} className="flex gap-4 p-3 rounded-lg bg-white border border-slate-100 hover:border-community-green/30 hover:shadow-md transition-all duration-200">
+                    <div className="flex-shrink-0">
+                      <div className="p-2 rounded-lg bg-community-green/10">
+                        <IconComponent className="h-5 w-5 text-community-green" />
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <span className="font-bold text-community-navy block">{point.title}</span>
-                    <span className="text-muted-foreground text-sm">{point.description}</span>
-                  </div>
-                </li>
-              ))}
+                    <div>
+                      <EditableText
+                        value={point.title}
+                        onSave={(val) => updateFeature('productSection', index, 'title', val)}
+                        as="span"
+                        className="font-bold text-community-navy block"
+                      />
+                      <EditableText
+                        value={point.description}
+                        onSave={(val) => updateFeature('productSection', index, 'description', val)}
+                        as="span"
+                        className="text-muted-foreground text-sm"
+                      />
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
@@ -146,33 +154,59 @@ const ROIFactorsInfo: React.FC = () => {
                 <User className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-white">The Advertiser</h3>
-                <p className="text-sm text-slate-400">What you bring to the table</p>
+                <EditableText
+                  value={content.advertiserSection.title}
+                  onSave={(val) => updateField('advertiserSection.title', val)}
+                  as="h3"
+                  className="text-2xl font-black text-white"
+                />
+                <EditableText
+                  value={content.advertiserSection.subtitle}
+                  onSave={(val) => updateField('advertiserSection.subtitle', val)}
+                  as="p"
+                  className="text-sm text-slate-400"
+                />
               </div>
             </div>
             
             {/* Points */}
             <ul className="space-y-4">
-              {advertiserPoints.map((point, index) => (
-                <li key={index} className="flex gap-4 p-3 rounded-lg bg-white/5 border border-white/10 hover:border-community-green/30 hover:bg-white/10 transition-all duration-200">
-                  <div className="flex-shrink-0">
-                    <div className="p-2 rounded-lg bg-community-green/20">
-                      <point.icon className="h-5 w-5 text-community-green" />
+              {content.advertiserSection.features.map((point, index) => {
+                const IconComponent = advertiserIcons[index] || Maximize2;
+                return (
+                  <li key={index} className="flex gap-4 p-3 rounded-lg bg-white/5 border border-white/10 hover:border-community-green/30 hover:bg-white/10 transition-all duration-200">
+                    <div className="flex-shrink-0">
+                      <div className="p-2 rounded-lg bg-community-green/20">
+                        <IconComponent className="h-5 w-5 text-community-green" />
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <span className="font-bold text-white block">{point.title}</span>
-                    <span className="text-slate-400 text-sm">{point.description}</span>
-                  </div>
-                </li>
-              ))}
+                    <div>
+                      <EditableText
+                        value={point.title}
+                        onSave={(val) => updateFeature('advertiserSection', index, 'title', val)}
+                        as="span"
+                        className="font-bold text-white block"
+                      />
+                      <EditableText
+                        value={point.description}
+                        onSave={(val) => updateFeature('advertiserSection', index, 'description', val)}
+                        as="span"
+                        className="text-slate-400 text-sm"
+                      />
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
             
             {/* Emphasis footer */}
             <div className="mt-6 p-4 rounded-xl bg-community-green/20 border border-community-green/30">
-              <p className="text-white text-sm text-center">
-                <span className="font-bold">Remember:</span> Advertising generates response, <span className="text-community-green font-semibold">you</span> create the result
-              </p>
+              <EditableText
+                value={content.advertiserSection.footerText}
+                onSave={(val) => updateField('advertiserSection.footerText', val)}
+                as="p"
+                className="text-white text-sm text-center"
+              />
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { usePricingData } from '@/hooks/usePricingData';
+import { useAdvertisingContent } from '@/hooks/useAdvertisingContent';
 import { formatPriceWholeNumber } from '@/lib/pricingCalculator';
 import { Calculator, TrendingUp, Users, Target, Gift, PoundSterling, Sparkles, Home } from 'lucide-react';
 import ROIFactorsInfo from './ROIFactorsInfo';
@@ -40,6 +41,7 @@ const QuickQuoteCalculator: React.FC = () => {
   const [conversionRate, setConversionRate] = useState(0.05); // Default 0.05% (realistic print conversion)
 
   const { areas, adSizes, subscriptionDurations, isLoading, isError } = usePricingData();
+  const { content: advertisingContent, updateField, updateFeature, updateBogofBenefit } = useAdvertisingContent();
 
   // Find the matching ad size from database
   const selectedAdSize = useMemo(() => {
@@ -106,10 +108,18 @@ const QuickQuoteCalculator: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* ROI Factors Educational Section */}
-      <ROIFactorsInfo />
+      <ROIFactorsInfo 
+        content={advertisingContent}
+        updateField={updateField}
+        updateFeature={updateFeature}
+      />
       
       {/* New Advertiser BOGOF Promo Banner */}
-      <NewAdvertiserPromo />
+      <NewAdvertiserPromo 
+        content={advertisingContent}
+        updateField={updateField}
+        updateBogofBenefit={updateBogofBenefit}
+      />
       
       {/* Branded Container Wrapper */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-community-navy via-slate-800 to-community-navy p-1">
