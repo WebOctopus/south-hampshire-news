@@ -36,6 +36,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import QuickQuoteCalculator from "@/components/QuickQuoteCalculator";
 import { EnquiryFormSection } from "@/components/EnquiryFormSection";
 import Footer from "@/components/Footer";
+import { EditModeProvider, EditModeToggle, EditableText } from "@/components/inline-editor";
+import { useAdvertisingContent } from "@/hooks/useAdvertisingContent";
 interface FormData {
   name: string;
   email: string;
@@ -707,14 +709,20 @@ const CalculatorTest = () => {
     circulation: "13,500",
     leaflets: "NO, SORRY"
   }];
-  return <div id="top" className="min-h-screen bg-gray-50">
+  // Use advertising content hook for inline editing
+  const { content: advertisingContent, updateField, updateStat } = useAdvertisingContent();
+
+  return (
+    <EditModeProvider>
+    <div id="top" className="min-h-screen bg-gray-50">
       <Navigation />
+      <EditModeToggle />
       
       {/* Hero Header Section - Established, Calm, Confident */}
       <section className="relative bg-community-navy overflow-hidden min-h-[85vh] flex items-center">
         {/* Background Video with Overlay */}
         <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover object-center">
-          <source src="https://qajegkbvbpekdggtrupv.supabase.co/storage/v1/object/public/websitevideo/New%20Hero%20Video.mp4" type="video/mp4" />
+          <source src={advertisingContent.hero.videoUrl} type="video/mp4" />
         </video>
         
         {/* Gradient Overlay for readability */}
@@ -730,19 +738,29 @@ const CalculatorTest = () => {
             {/* Trust badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-8">
               <div className="w-2 h-2 bg-community-green rounded-full animate-pulse" />
-              <span className="text-sm text-white/90 font-medium">South Hampshire's Leading Local Magazine Publisher</span>
+              <EditableText
+                value={advertisingContent.hero.trustBadge}
+                onSave={(val) => updateField('hero.trustBadge', val)}
+                as="span"
+                className="text-sm text-white/90 font-medium"
+              />
             </div>
             
             {/* Main headline */}
             <div className="space-y-4 mb-8">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white leading-tight">
-                Reach{' '}
-                <span className="text-community-green">142,000</span>{' '}
-                Affluent Homes
-              </h1>
-              <p className="text-xl md:text-2xl text-white/80 leading-relaxed max-w-2xl mx-auto">
-                Generate brand awareness, create leads, and boost website traffic with South Hampshire's most trusted local magazine network.
-              </p>
+              <EditableText
+                value={advertisingContent.hero.headline}
+                onSave={(val) => updateField('hero.headline', val)}
+                as="h1"
+                className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white leading-tight"
+              />
+              <EditableText
+                value={advertisingContent.hero.subheadline}
+                onSave={(val) => updateField('hero.subheadline', val)}
+                as="p"
+                multiline
+                className="text-xl md:text-2xl text-white/80 leading-relaxed max-w-2xl mx-auto"
+              />
             </div>
             
           </div>
@@ -761,8 +779,18 @@ const CalculatorTest = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-community-green to-emerald-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
                 <Home className="h-6 w-6 text-white" />
               </div>
-              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">142k</div>
-              <div className="text-sm text-muted-foreground mt-1">Bi-monthly Circulation</div>
+              <EditableText
+                value={advertisingContent.stats[0]?.number || "142k"}
+                onSave={(val) => updateStat(0, 'number', val)}
+                as="div"
+                className="text-3xl lg:text-4xl font-heading font-bold text-community-navy"
+              />
+              <EditableText
+                value={advertisingContent.stats[0]?.label || "Bi-monthly Circulation"}
+                onSave={(val) => updateStat(0, 'label', val)}
+                as="div"
+                className="text-sm text-muted-foreground mt-1"
+              />
             </div>
             
             {/* Stat Card 2 - Editions */}
@@ -770,8 +798,18 @@ const CalculatorTest = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-community-navy to-slate-700 rounded-xl mb-4 group-hover:scale-110 transition-transform">
                 <MapPin className="h-6 w-6 text-white" />
               </div>
-              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">14</div>
-              <div className="text-sm text-muted-foreground mt-1">Local Editions</div>
+              <EditableText
+                value={advertisingContent.stats[1]?.number || "14"}
+                onSave={(val) => updateStat(1, 'number', val)}
+                as="div"
+                className="text-3xl lg:text-4xl font-heading font-bold text-community-navy"
+              />
+              <EditableText
+                value={advertisingContent.stats[1]?.label || "Local Editions"}
+                onSave={(val) => updateStat(1, 'label', val)}
+                as="div"
+                className="text-sm text-muted-foreground mt-1"
+              />
             </div>
             
             {/* Stat Card 3 - Repeat Rate */}
@@ -779,8 +817,18 @@ const CalculatorTest = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
                 <RefreshCcw className="h-6 w-6 text-white" />
               </div>
-              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">72%</div>
-              <div className="text-sm text-muted-foreground mt-1">Repeat Rate</div>
+              <EditableText
+                value={advertisingContent.stats[2]?.number || "72%"}
+                onSave={(val) => updateStat(2, 'number', val)}
+                as="div"
+                className="text-3xl lg:text-4xl font-heading font-bold text-community-navy"
+              />
+              <EditableText
+                value={advertisingContent.stats[2]?.label || "Repeat Rate"}
+                onSave={(val) => updateStat(2, 'label', val)}
+                as="div"
+                className="text-sm text-muted-foreground mt-1"
+              />
             </div>
             
             {/* Stat Card 4 - Customers */}
@@ -788,8 +836,18 @@ const CalculatorTest = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
                 <Users className="h-6 w-6 text-white" />
               </div>
-              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">1,000s</div>
-              <div className="text-sm text-muted-foreground mt-1">Customers since 2005</div>
+              <EditableText
+                value={advertisingContent.stats[3]?.number || "1,000s"}
+                onSave={(val) => updateStat(3, 'number', val)}
+                as="div"
+                className="text-3xl lg:text-4xl font-heading font-bold text-community-navy"
+              />
+              <EditableText
+                value={advertisingContent.stats[3]?.label || "Customers since 2005"}
+                onSave={(val) => updateStat(3, 'label', val)}
+                as="div"
+                className="text-sm text-muted-foreground mt-1"
+              />
             </div>
             
             {/* Stat Card 5 - Leaflets */}
@@ -797,8 +855,18 @@ const CalculatorTest = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-400 rounded-xl mb-4 group-hover:scale-110 transition-transform">
                 <FileText className="h-6 w-6 text-white" />
               </div>
-              <div className="text-3xl lg:text-4xl font-heading font-bold text-community-navy">580k</div>
-              <div className="text-sm text-muted-foreground mt-1">Leaflets/Year</div>
+              <EditableText
+                value={advertisingContent.stats[4]?.number || "580k"}
+                onSave={(val) => updateStat(4, 'number', val)}
+                as="div"
+                className="text-3xl lg:text-4xl font-heading font-bold text-community-navy"
+              />
+              <EditableText
+                value={advertisingContent.stats[4]?.label || "Leaflets/Year"}
+                onSave={(val) => updateStat(4, 'label', val)}
+                as="div"
+                className="text-sm text-muted-foreground mt-1"
+              />
             </div>
           </div>
         </div>
@@ -822,23 +890,37 @@ const CalculatorTest = () => {
                   <Heart className="h-10 w-10 text-community-green fill-community-green" />
                 </div>
                 
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-community-navy leading-tight">
-                  Love Your Business...
-                </h2>
-                <p className="text-2xl md:text-3xl font-heading font-bold text-community-green mt-2">
-                  Invest in Local Advertising to Grow, Expand & Thrive
-                </p>
+                <EditableText
+                  value={advertisingContent.loveSection.heading}
+                  onSave={(val) => updateField('loveSection.heading', val)}
+                  as="h2"
+                  className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-community-navy leading-tight"
+                />
+                <EditableText
+                  value={advertisingContent.loveSection.subheading}
+                  onSave={(val) => updateField('loveSection.subheading', val)}
+                  as="p"
+                  className="text-2xl md:text-3xl font-heading font-bold text-community-green mt-2"
+                />
               </div>
               
               {/* Story Paragraphs */}
               <div className="space-y-4">
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Discover Magazine is the region's most established and widespread portfolio of local publications available to businesses to generate brand awareness, create leads and boost website traffic from affluent homeowners in South Hampshire.
-                </p>
+                <EditableText
+                  value={advertisingContent.loveSection.paragraph1}
+                  onSave={(val) => updateField('loveSection.paragraph1', val)}
+                  as="p"
+                  multiline
+                  className="text-lg text-muted-foreground leading-relaxed"
+                />
                 
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  We started publishing local magazines in 2005 with one magazine delivered to 2,000 homes. Today, Discover has the <span className="font-semibold text-community-navy">largest single circulation of any magazine in South Hampshire</span>.
-                </p>
+                <EditableText
+                  value={advertisingContent.loveSection.paragraph2}
+                  onSave={(val) => updateField('loveSection.paragraph2', val)}
+                  as="p"
+                  multiline
+                  className="text-lg text-muted-foreground leading-relaxed"
+                />
               </div>
               
               {/* Key Stats Row */}
@@ -915,19 +997,25 @@ const CalculatorTest = () => {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Our Media Pack
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Browse our complete media pack to learn about advertising opportunities
-            </p>
+            <EditableText
+              value={advertisingContent.mediaPack.heading}
+              onSave={(val) => updateField('mediaPack.heading', val)}
+              as="h2"
+              className="text-4xl font-heading font-bold text-community-navy mb-4"
+            />
+            <EditableText
+              value={advertisingContent.mediaPack.description}
+              onSave={(val) => updateField('mediaPack.description', val)}
+              as="p"
+              className="text-lg text-muted-foreground"
+            />
           </div>
           
           {/* Adobe InDesign Media Pack Embed */}
           <div className="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-community-navy/20 bg-white">
             <div className="relative w-full overflow-hidden" style={{ paddingBottom: '75%' }}>
               <iframe 
-                src="https://indd.adobe.com/embed/0cffeb07-c98f-42bf-9c6b-7661f5c82240?startpage=1&allowFullscreen=false"
+                src={advertisingContent.mediaPack.embedUrl}
                 className="absolute w-full" 
                 style={{
                   height: '115%',
@@ -957,12 +1045,18 @@ const CalculatorTest = () => {
       <section id="editions-map" className="py-16 bg-gradient-to-b from-slate-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Interactive Distribution & Circulation Maps
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Click on a numbered button or area name to view detailed distribution information
-            </p>
+            <EditableText
+              value={advertisingContent.editionsMap.heading}
+              onSave={(val) => updateField('editionsMap.heading', val)}
+              as="h2"
+              className="text-4xl font-heading font-bold text-community-navy mb-4"
+            />
+            <EditableText
+              value={advertisingContent.editionsMap.description}
+              onSave={(val) => updateField('editionsMap.description', val)}
+              as="p"
+              className="text-lg text-muted-foreground"
+            />
           </div>
           
           {/* Adobe InDesign Interactive Embed - cropped to hide Adobe UI bars */}
@@ -970,7 +1064,7 @@ const CalculatorTest = () => {
             <div className="relative w-full overflow-hidden" style={{
             paddingBottom: '56%'
           }}>
-              <iframe src="https://indd.adobe.com/embed/3a8ebb1d-2f10-4a2a-b847-dd653c134e5a?startpage=1&allowFullscreen=false" className="absolute w-full" style={{
+              <iframe src={advertisingContent.editionsMap.embedUrl} className="absolute w-full" style={{
               height: '135%',
               top: '-12%',
               left: '0'
@@ -1014,23 +1108,37 @@ const CalculatorTest = () => {
             <div className="flex justify-center mb-6">
               <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white rounded-full shadow-md border border-stone-200">
                 <div className="w-2.5 h-2.5 bg-community-green rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-community-navy">Ready to Get Started?</span>
+                <EditableText
+                  value={advertisingContent.calculatorSection.badge}
+                  onSave={(val) => updateField('calculatorSection.badge', val)}
+                  as="span"
+                  className="text-sm font-medium text-community-navy"
+                />
                 <div className="w-2.5 h-2.5 bg-community-green rounded-full animate-pulse" />
               </div>
             </div>
             
-            <h2 className="text-4xl font-heading font-bold text-community-navy mb-4">
-              Get Your Instant Quote & Booking
-            </h2>
-            <p className="text-xl text-muted-foreground mb-6">
-              Start by selecting your preferred advertising package
-            </p>
+            <EditableText
+              value={advertisingContent.calculatorSection.heading}
+              onSave={(val) => updateField('calculatorSection.heading', val)}
+              as="h2"
+              className="text-4xl font-heading font-bold text-community-navy mb-4"
+            />
+            <EditableText
+              value={advertisingContent.calculatorSection.subheading}
+              onSave={(val) => updateField('calculatorSection.subheading', val)}
+              as="p"
+              className="text-xl text-muted-foreground mb-6"
+            />
             
             {/* Motivational tagline */}
             <div className="max-w-xl mx-auto p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-stone-200/50">
-              <p className="text-center text-muted-foreground italic">
-                "Join hundreds of local businesses who've grown with Discover Magazine"
-              </p>
+              <EditableText
+                value={advertisingContent.calculatorSection.tagline}
+                onSave={(val) => updateField('calculatorSection.tagline', val)}
+                as="p"
+                className="text-center text-muted-foreground italic"
+              />
             </div>
           </div>
           
@@ -1104,6 +1212,8 @@ const CalculatorTest = () => {
       
 
       <Footer />
-    </div>;
+    </div>
+    </EditModeProvider>
+  );
 };
 export default CalculatorTest;
