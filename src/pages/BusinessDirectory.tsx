@@ -241,21 +241,6 @@ const BusinessDirectory = () => {
                   }}
                 />
               </div>
-              <Select value={selectedCategory} onValueChange={(value) => {
-                setSelectedCategory(value);
-                setCurrentPage(1);
-              }}>
-                <SelectTrigger className="w-full md:w-48 h-12 text-black">
-                  <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <Select value={selectedLocation} onValueChange={(value) => {
                 setSelectedLocation(value);
                 setCurrentPage(1);
