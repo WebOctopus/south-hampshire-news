@@ -64,7 +64,6 @@ const Navigation = () => {
 
   const competitionsDropdownItems = [
     { name: 'Current Competitions', href: '/competitions', description: 'Enter exciting competitions with amazing prizes', icon: Trophy },
-    { name: 'Past Winners', href: '/competitions#winners', description: 'See previous competition winners and their stories', icon: Users },
     { name: 'Competition Rules', href: '/competitions#rules', description: 'Read terms and conditions for all competitions', icon: Eye },
   ];
 
