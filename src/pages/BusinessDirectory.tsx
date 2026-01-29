@@ -246,10 +246,9 @@ const BusinessDirectory = () => {
                 setCurrentPage(1);
               }}>
                 <SelectTrigger className="w-full md:w-48 h-12 text-black">
-                  <SelectValue placeholder="All Categories" />
+                  <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
