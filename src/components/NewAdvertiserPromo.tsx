@@ -2,10 +2,10 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Gift, Sparkles, Star, CheckCircle } from 'lucide-react';
 import { EditableText } from '@/components/inline-editor';
-import { AdvertisingContent } from '@/hooks/useAdvertisingContent';
+import { AdvertisingContent, defaultAdvertisingContent } from '@/hooks/useAdvertisingContent';
 
 interface NewAdvertiserPromoProps {
-  content: AdvertisingContent;
+  content?: AdvertisingContent;
   updateField: (path: string, value: string) => void;
   updateBogofBenefit: (index: number, value: string) => void;
 }
@@ -15,6 +15,8 @@ const NewAdvertiserPromo: React.FC<NewAdvertiserPromoProps> = ({
   updateField, 
   updateBogofBenefit 
 }) => {
+  // Use defaults if content not yet loaded
+  const safeContent = content || defaultAdvertisingContent;
   const offerTiles = [
     { paid: 1, free: 1 },
     { paid: 3, free: 3 },
@@ -39,7 +41,7 @@ const NewAdvertiserPromo: React.FC<NewAdvertiserPromoProps> = ({
           <Badge className="px-6 py-2 text-base font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-black border-0 shadow-lg shadow-yellow-500/30 animate-pulse-subtle">
             <Star className="h-4 w-4 mr-2 fill-current" />
             <EditableText
-              value={content.bogofPromo.badge}
+              value={safeContent.bogofPromo.badge}
               onSave={(val) => updateField('bogofPromo.badge', val)}
               as="span"
             />
@@ -51,14 +53,14 @@ const NewAdvertiserPromo: React.FC<NewAdvertiserPromoProps> = ({
         <div className="text-center mb-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight">
             <EditableText
-              value={content.bogofPromo.headline}
+              value={safeContent.bogofPromo.headline}
               onSave={(val) => updateField('bogofPromo.headline', val)}
               as="span"
               className="text-transparent bg-clip-text bg-gradient-to-r from-community-green to-emerald-400"
             />
           </h2>
           <EditableText
-            value={content.bogofPromo.offerDescription}
+            value={safeContent.bogofPromo.offerDescription}
             onSave={(val) => updateField('bogofPromo.offerDescription', val)}
             as="p"
             className="text-xl md:text-2xl text-slate-300 max-w-2xl mx-auto"
@@ -101,7 +103,7 @@ const NewAdvertiserPromo: React.FC<NewAdvertiserPromoProps> = ({
           <div className="flex items-center justify-center gap-3 mb-6">
             <Gift className="h-6 w-6 text-community-green" />
             <EditableText
-              value={content.bogofPromo.packageHeading}
+              value={safeContent.bogofPromo.packageHeading}
               onSave={(val) => updateField('bogofPromo.packageHeading', val)}
               as="h3"
               className="text-xl md:text-2xl font-bold text-white"
@@ -110,7 +112,7 @@ const NewAdvertiserPromo: React.FC<NewAdvertiserPromoProps> = ({
           
           {/* Benefits Grid */}
           <div className="grid sm:grid-cols-2 gap-3">
-            {content.bogofPromo.benefits.map((benefit, index) => (
+            {safeContent.bogofPromo.benefits.map((benefit, index) => (
               <div 
                 key={index}
                 className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
@@ -132,7 +134,7 @@ const NewAdvertiserPromo: React.FC<NewAdvertiserPromoProps> = ({
           <div className="flex items-center gap-2 text-slate-500">
             <Sparkles className="h-4 w-4" />
             <EditableText
-              value={content.bogofPromo.footerTagline}
+              value={safeContent.bogofPromo.footerTagline}
               onSave={(val) => updateField('bogofPromo.footerTagline', val)}
               as="span"
               className="text-sm"
