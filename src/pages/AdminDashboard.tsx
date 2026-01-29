@@ -24,6 +24,7 @@ import { StoriesManagement } from '@/components/admin/StoriesManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { BusinessEditForm } from '@/components/admin/BusinessEditForm';
 import { ClaimRequestsManagement } from '@/components/admin/ClaimRequestsManagement';
+import FeaturedAdvertisersManagement from '@/components/admin/FeaturedAdvertisersManagement';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -592,6 +593,9 @@ const AdminDashboard = () => {
 
       case 'magazine-editions':
         return <MagazineEditionsManagement />;
+
+      case 'featured-advertisers':
+        return <FeaturedAdvertisersManagement />;
 
       case 'competitions':
         return <CompetitionsManagement />;
