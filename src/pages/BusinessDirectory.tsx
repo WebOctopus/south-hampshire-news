@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Filter, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import BusinessCard from '../components/BusinessCard';
+import BusinessAuthPromptDialog from '@/components/BusinessAuthPromptDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-
 // Helper to clean area names (remove "Area X - " prefix)
 const cleanAreaName = (areaName: string): string => {
   return areaName.replace(/^Area \d+\s*-\s*/, '').trim();
@@ -48,6 +49,9 @@ interface Business {
 const ITEMS_PER_PAGE = 100;
 
 const BusinessDirectory = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
@@ -58,8 +62,8 @@ const BusinessDirectory = () => {
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const requestIdRef = useRef(0);
-
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   const fetchCategories = useCallback(async () => {
@@ -166,6 +170,27 @@ const BusinessDirectory = () => {
   useEffect(() => {
     fetchBusinesses();
   }, [fetchBusinesses]);
+
+  // Handle #add hash in URL
+  useEffect(() => {
+    if (location.hash === '#add') {
+      handleAddBusinessClick();
+      // Clear the hash
+      window.history.replaceState(null, '', location.pathname);
+    }
+  }, [location.hash]);
+
+  const handleAddBusinessClick = () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      setShowAuthDialog(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    navigate('/dashboard');
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -384,6 +409,7 @@ const BusinessDirectory = () => {
             <Button 
               size="lg"
               className="bg-white text-community-green hover:bg-gray-100 px-6 md:px-8 py-3 text-base md:text-lg font-medium"
+              onClick={handleAddBusinessClick}
             >
               Add Your Business
             </Button>
@@ -391,6 +417,13 @@ const BusinessDirectory = () => {
         </section>
       </main>
       <Footer />
+
+      {/* Auth Dialog for Adding Business */}
+      <BusinessAuthPromptDialog
+        open={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };
