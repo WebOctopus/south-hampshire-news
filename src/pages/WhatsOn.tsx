@@ -11,7 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths, isWithinInterval } from 'date-fns';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { EventCard } from '@/components/EventCard';
@@ -24,6 +24,7 @@ type QuickFilter = 'all' | 'week' | 'month' | 'next_month';
 const WhatsOn = () => {
   const mountedRef = useRef(true);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   
   const [events, setEvents] = useState<Event[]>([]);
@@ -53,17 +54,26 @@ const WhatsOn = () => {
   const [areas, setAreas] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
 
-  const handleAddEvent = () => {
+  const handleAddEvent = useCallback(() => {
     if (user) {
       navigate('/add-event');
     } else {
       setShowAuthDialog(true);
     }
-  };
+  }, [user, navigate]);
 
   const handleAuthSuccess = () => {
     navigate('/add-event');
   };
+
+  // Handle ?tab=add query param to trigger add event flow
+  useEffect(() => {
+    if (searchParams.get('tab') === 'add') {
+      // Clear the param to prevent re-triggering
+      setSearchParams({}, { replace: true });
+      handleAddEvent();
+    }
+  }, [searchParams, setSearchParams, handleAddEvent]);
 
   useEffect(() => {
     return () => {
