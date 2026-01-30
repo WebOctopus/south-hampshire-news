@@ -1,72 +1,73 @@
 
 
-## Plan: Add Verified and Featured Badges to Business Cards
+## Plan: Add Directory Keywords Field to Business Listings
 
 ### Overview
 
-Add "Verified" and "Featured" badges to the Business Directory cards, matching the existing badge styling used on the Business Detail page.
+Add a "Directory Keywords" text field to business listings that allows admins to add searchable keywords/tags to improve business discovery in the directory search.
 
 ---
 
 ### Current State
 
-- **Data availability**: The `get_public_businesses` RPC already returns `is_verified` and `featured` fields
-- **BusinessDirectory.tsx**: The `Business` interface already includes these fields
-- **BusinessCard.tsx**: Missing these fields in its interface and not displaying badges
-- **BusinessDetail.tsx**: Already shows these badges with proper styling (blue for Verified, yellow for Featured)
+- The `businesses` table does **not** have a keywords column
+- The admin `BusinessEditForm` has no keywords field
+- The `get_public_businesses` RPC searches name, description, city, and postcode only
 
 ---
 
-### Changes Required
+### Implementation Steps
 
-**File: `src/components/BusinessCard.tsx`**
+**Step 1: Database Migration**
 
-1. Add `is_verified` and `featured` optional boolean fields to the `BusinessCardProps` interface
+Add a new `keywords` text column to the `businesses` table:
+- Column name: `keywords`
+- Type: `text` (nullable)
+- Purpose: Store comma-separated or space-separated searchable terms
 
-2. Add the badges to the existing badge section (after category and biz_type badges):
-   - Verified badge: Blue styling (`bg-blue-100 text-blue-800`)
-   - Featured badge: Yellow styling (`bg-yellow-100 text-yellow-800`)
+**Step 2: Update Admin BusinessEditForm**
+
+Add the Keywords field to `src/components/admin/BusinessEditForm.tsx`:
+- Add `keywords` to the formData state
+- Add a Textarea input in the "Basic Information" section
+- Label: "Directory Keywords"
+- Placeholder: "e.g., plumber, heating, boiler repair, emergency"
+- Helper text explaining the purpose
+
+**Step 3: Update Search RPC Function**
+
+Modify `get_public_businesses` to include keywords in the search:
+- Add `OR b.keywords ILIKE '%' || search_term || '%'` to the WHERE clause
+
+**Step 4: Update User Edit Form (Optional)**
+
+Add keywords to `UserBusinessEditForm.tsx` so business owners can also manage their keywords.
 
 ---
 
-### Visual Result
+### Database Change
 
-The business cards will display badges in this order:
-1. Category badge (green) - e.g., "Business & IT"
-2. Biz Type badge (outline) - e.g., "BIZ Recruitment / HR"
-3. Verified badge (blue) - if `is_verified` is true
-4. Featured badge (yellow) - if `featured` is true
+```sql
+ALTER TABLE businesses 
+ADD COLUMN keywords text;
 
-This matches the reference screenshot showing the badge row layout.
-
----
-
-### Technical Details
-
-**Interface update:**
-```typescript
-interface BusinessCardProps {
-  business: {
-    // ... existing fields
-    is_verified?: boolean;
-    featured?: boolean;
-    // ...
-  };
-}
+COMMENT ON COLUMN businesses.keywords IS 'Searchable keywords/tags to improve directory discovery';
 ```
 
-**Badge rendering (added to existing badge section):**
-```tsx
-{business.is_verified && (
-  <Badge variant="default" className="bg-blue-100 text-blue-800">
-    Verified
-  </Badge>
-)}
-{business.featured && (
-  <Badge variant="default" className="bg-yellow-100 text-yellow-800">
-    Featured
-  </Badge>
-)}
+---
+
+### Form Field Location
+
+The keywords field will be added to the "Basic Information" section, after the description field:
+
+```text
+Basic Information
+├── Business Name *
+├── Category
+├── Description (textarea)
+├── Directory Keywords (textarea) ← NEW
+├── Business Type
+└── Sector
 ```
 
 ---
@@ -75,9 +76,47 @@ interface BusinessCardProps {
 
 | File | Changes |
 |------|---------|
-| `src/components/BusinessCard.tsx` | Add `is_verified` and `featured` to interface; render badges |
+| Database migration | Add `keywords` column to `businesses` table |
+| `src/components/admin/BusinessEditForm.tsx` | Add keywords field to form |
+| `get_public_businesses` RPC | Include keywords in search filter |
+| `src/components/dashboard/UserBusinessEditForm.tsx` | Add keywords field (optional) |
 
-### No Database Changes Required
+---
 
-The `get_public_businesses` RPC function already returns both fields - no backend modifications needed.
+### Technical Details
+
+**Form State Update:**
+```typescript
+const [formData, setFormData] = useState({
+  // ... existing fields
+  keywords: business?.keywords || '',
+});
+```
+
+**Form Input:**
+```tsx
+<div className="space-y-2">
+  <Label htmlFor="keywords">Directory Keywords</Label>
+  <Textarea
+    id="keywords"
+    value={formData.keywords}
+    onChange={(e) => handleChange('keywords', e.target.value)}
+    placeholder="e.g., plumber, heating, boiler repair, emergency"
+    rows={2}
+  />
+  <p className="text-xs text-muted-foreground">
+    Add searchable keywords to help customers find this business
+  </p>
+</div>
+```
+
+**RPC Search Update:**
+```sql
+AND (search_term IS NULL OR 
+     b.name ILIKE '%' || search_term || '%' OR
+     b.description ILIKE '%' || search_term || '%' OR
+     b.city ILIKE '%' || search_term || '%' OR
+     b.postcode ILIKE '%' || search_term || '%' OR
+     b.keywords ILIKE '%' || search_term || '%')  -- NEW
+```
 
