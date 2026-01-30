@@ -105,6 +105,13 @@
 }
 
 @layer utilities {
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
   .animate-pulse-subtle {
     animation: pulse-subtle 3s ease-in-out infinite;
   }
