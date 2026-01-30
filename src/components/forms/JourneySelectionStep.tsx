@@ -1,8 +1,9 @@
 import { JourneyType } from './types';
 import { PenLine, Megaphone, Mail, Lightbulb, Truck, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ExternalLink } from 'lucide-react';
 
-interface JourneyOption {
+interface JourneyOptionType {
   type: JourneyType;
   label: string;
   description: string;
@@ -10,9 +11,10 @@ interface JourneyOption {
   color: string;
   bgColor: string;
   borderColor: string;
+  externalUrl?: string;
 }
 
-const journeyOptions: JourneyOption[] = [
+const journeyOptions: JourneyOptionType[] = [
   {
     type: 'editorial',
     label: 'Submit a story (Editorial)',
@@ -56,7 +58,8 @@ const journeyOptions: JourneyOption[] = [
     icon: Truck,
     color: 'text-orange-600',
     bgColor: 'bg-orange-50 hover:bg-orange-100',
-    borderColor: 'border-orange-200 data-[selected=true]:border-orange-500 data-[selected=true]:ring-2 data-[selected=true]:ring-orange-200'
+    borderColor: 'border-orange-200 data-[selected=true]:border-orange-500 data-[selected=true]:ring-2 data-[selected=true]:ring-orange-200',
+    externalUrl: 'https://roundcontrol.co.uk/discover-magazines-ltd/join-waiting-list'
   }
 ];
 
@@ -66,6 +69,14 @@ interface JourneySelectionStepProps {
 }
 
 const JourneySelectionStep = ({ selectedJourney, onSelect }: JourneySelectionStepProps) => {
+  const handleOptionClick = (option: JourneyOptionType) => {
+    if (option.externalUrl) {
+      window.open(option.externalUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      onSelect(option.type);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -80,14 +91,14 @@ const JourneySelectionStep = ({ selectedJourney, onSelect }: JourneySelectionSte
       <div className="grid gap-4">
         {journeyOptions.map((option) => {
           const Icon = option.icon;
-          const isSelected = selectedJourney === option.type;
+          const isSelected = selectedJourney === option.type && !option.externalUrl;
           
           return (
             <button
               key={option.type}
               type="button"
               data-selected={isSelected}
-              onClick={() => onSelect(option.type)}
+              onClick={() => handleOptionClick(option)}
               className={cn(
                 "w-full p-5 rounded-xl border-2 transition-all duration-200 text-left group",
                 "flex items-center gap-4",
@@ -109,6 +120,9 @@ const JourneySelectionStep = ({ selectedJourney, onSelect }: JourneySelectionSte
                   isSelected && "text-community-navy"
                 )}>
                   {option.label}
+                  {option.externalUrl && (
+                    <ExternalLink className="inline-block h-4 w-4 ml-2 text-gray-400" />
+                  )}
                 </h3>
                 <p className="text-sm text-gray-600 mt-0.5">
                   {option.description}
