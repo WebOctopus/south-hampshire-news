@@ -402,6 +402,7 @@ export type Database = {
           instagram_url: string | null
           is_active: boolean | null
           is_verified: boolean | null
+          keywords: string | null
           linkedin_url: string | null
           logo_url: string | null
           name: string
@@ -435,6 +436,7 @@ export type Database = {
           instagram_url?: string | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          keywords?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           name: string
@@ -468,6 +470,7 @@ export type Database = {
           instagram_url?: string | null
           is_active?: boolean | null
           is_verified?: boolean | null
+          keywords?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           name?: string
