@@ -76,7 +76,7 @@ const Footer = () => {
                 <div className="bg-community-green/20 rounded-full p-2 mt-1">
                   <MapPin className="h-4 w-4 text-community-green" />
                 </div>
-                <p className="text-white font-semibold">Eastleigh, Hampshire</p>
+                <p className="text-white font-semibold">30 Leigh Road, Eastleigh, SO50 9DT Hampshire</p>
               </div>
               
               <div className="bg-white/5 rounded-lg p-4 mt-6">
@@ -153,7 +153,7 @@ const Footer = () => {
                 <div className="bg-community-green/20 rounded-full p-2">
                   <MapPin className="h-5 w-5 text-community-green" />
                 </div>
-                <span className="text-white font-semibold">Eastleigh, Hampshire</span>
+                <span className="text-white font-semibold">30 Leigh Road, Eastleigh, SO50 9DT Hampshire</span>
               </div>
 
               <div className="bg-white/5 rounded-lg p-4 mt-2">
