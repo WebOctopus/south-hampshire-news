@@ -1,7 +1,8 @@
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, MapPin, Clock, PoundSterling, Users } from 'lucide-react';
+import { CheckCircle, MapPin, Clock, PoundSterling, Users, Map } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 const ApplyToDistribute = () => {
   const perks = [
@@ -140,7 +141,30 @@ const ApplyToDistribute = () => {
             </CardContent>
           </Card>
         </section>
+
+        {/* Distribution Areas Map Section */}
+        <section id="areas" className="mb-12 scroll-mt-20">
+          <h2 className="text-3xl font-heading font-bold text-center mb-8">Distribution Areas</h2>
+          <Card className="max-w-4xl mx-auto">
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-full aspect-[4/3] bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
+                  <div className="text-center p-8">
+                    <Map className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                    <p className="text-muted-foreground font-medium">Distribution Areas Map</p>
+                    <p className="text-sm text-muted-foreground/70 mt-2">Map image coming soon</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground text-center mt-4 max-w-2xl">
+                  Our distribution network covers key areas across South Hampshire. View the map above to see if your area is available for delivery opportunities.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       </div>
+      
+      <Footer />
     </div>
   );
 };
