@@ -1,131 +1,138 @@
 
 
-## Plan: Add Searchable Business Dropdown Filter
+## Plan: Professional Business Search with Predictive Filtering
 
 ### Overview
-Replace the standard `Select` component for "Link to Business Directory" with a searchable combobox using the existing `Popover` + `Command` (cmdk) components. This allows admins to quickly filter and find businesses by typing.
+
+Transform the Business Management search from a basic text input requiring a button click into a professional autocomplete search that shows matching businesses as you type. This will use the existing `Popover` + `Command` (cmdk) components already established in the codebase, with optimizations for the large dataset (18,778+ businesses).
 
 ---
 
-### Technical Approach
+### Current State
 
-The project already has the `cmdk` library installed and the `Command` UI components configured. We'll use the standard Shadcn combobox pattern:
+- Simple `Input` field with "Search" and "Clear" buttons
+- Requires clicking "Search" to execute the filter
+- No visual feedback or predictions as user types
+- Backend query uses `ilike` pattern matching
+
+### Proposed Solution
+
+Replace the current input with a searchable combobox that:
+1. Shows a dropdown of matching businesses as you type
+2. Performs client-side filtering for instant feedback
+3. Debounces the search query to avoid excessive API calls
+4. Shows business metadata (category, location) in suggestions
+5. Allows selecting a business to filter the table to that single result
+
+---
+
+### Implementation Steps
+
+**Step 1: Add State Variables**
+
+Add new state for the search popover:
+- `searchOpen` - controls popover visibility
+- `debouncedSearchTerm` - debounced version of search input
+- `searchSuggestions` - array of matching businesses for dropdown
+
+**Step 2: Create Debounced Search Query**
+
+Add a debounced query that fetches matching businesses as user types:
+- Use `setTimeout` or a debounce hook with ~300ms delay
+- Query businesses table with `ilike` filter
+- Limit results to 20-50 suggestions for performance
+
+**Step 3: Replace Search Input with Combobox**
+
+Transform the search section (lines 381-403) to use:
+- `Popover` + `PopoverTrigger` + `PopoverContent`
+- `Command` + `CommandInput` + `CommandList` + `CommandGroup` + `CommandItem`
+- Show business name, category badge, and location in each suggestion
+- Keyboard navigation support (built into cmdk)
+
+**Step 4: Selection Behavior**
+
+When user selects a suggestion:
+- Set the search term to the selected business name
+- Close the popover
+- Trigger the table filter (existing logic)
+
+**Step 5: Enhance Visual Design**
+
+- Show loading spinner while fetching suggestions
+- Display "No results found" when search yields nothing
+- Show business category and location in suggestions
+- Add clear button inside the search input
+
+---
+
+### Architecture Diagram
 
 ```text
 +------------------------------------------+
-| Link to Business Directory               |
-+------------------------------------------+
-| [Search businesses...]           🔍      |
-+------------------------------------------+
-| ✓ DJ Summers Plumbing                    |
-|   Edwards Conservatory Ltd               |
-|   All-Tech Motors                        |
-|   Allan Light Homes and Gardens          |
-|   ...                                    |
+|  Business Search Combobox                |
+|  +------------------------------------+  |
+|  | [Search icon] Type to search...   |  |
+|  +------------------------------------+  |
+|  | Suggestions Dropdown               |  |
+|  | +--------------------------------+ |  |
+|  | | DJ Summers Plumbing            | |  |
+|  | | [Services] • Southampton       | |  |
+|  | +--------------------------------+ |  |
+|  | | Flair Interiors                | |  |
+|  | | [Home] • Christchurch          | |  |
+|  | +--------------------------------+ |  |
+|  | | ...more suggestions            | |  |
+|  | +--------------------------------+ |  |
+|  +------------------------------------+  |
 +------------------------------------------+
 ```
 
 ---
 
-### Implementation Details
+### Technical Details
 
-**File: `src/components/admin/FeaturedAdvertisersManagement.tsx`**
+**Database Query (Server-side filtering)**
+```sql
+-- Optimized query for suggestions (max 20 results)
+SELECT id, name, city, postcode, 
+       business_categories.name as category
+FROM businesses
+WHERE name ILIKE '%search_term%'
+   OR email ILIKE '%search_term%'
+   OR postcode ILIKE '%search_term%'
+   OR city ILIKE '%search_term%'
+ORDER BY name ASC
+LIMIT 20
+```
 
-1. **Add new imports:**
-   - `Popover`, `PopoverContent`, `PopoverTrigger` from `@/components/ui/popover`
-   - `Command`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem` from `@/components/ui/command`
-   - `Check`, `ChevronsUpDown` from `lucide-react`
+**Component Structure**
+```text
+AdminDashboard.tsx
+├── businessSearchOpen (state)
+├── searchSuggestions (state via useQuery)
+└── Search UI
+    ├── Popover
+    │   ├── PopoverTrigger (Button styled as input)
+    │   └── PopoverContent
+    │       └── Command
+    │           ├── CommandInput (actual text input)
+    │           ├── CommandList
+    │           │   ├── CommandEmpty (no results)
+    │           │   └── CommandGroup
+    │           │       └── CommandItem (for each suggestion)
+    │           └── Loading spinner (conditional)
+    ├── Clear Button
+    └── Add Business Button
+```
 
-2. **Add state for dropdown open/close:**
-   ```tsx
-   const [businessSearchOpen, setBusinessSearchOpen] = useState(false);
-   ```
-
-3. **Replace the `<Select>` component with Combobox pattern:**
-
-   **Before (lines 336-359 and 410-433):**
-   ```tsx
-   <Select
-     value={formData.business_id || 'none'}
-     onValueChange={...}
-   >
-     <SelectTrigger>
-       <SelectValue placeholder="Select a business (optional)" />
-     </SelectTrigger>
-     <SelectContent className="max-h-60">
-       <SelectItem value="none">No business linked</SelectItem>
-       {businesses?.map((business) => (
-         <SelectItem key={business.id} value={business.id}>
-           {business.name}
-         </SelectItem>
-       ))}
-     </SelectContent>
-   </Select>
-   ```
-
-   **After (searchable combobox):**
-   ```tsx
-   <Popover open={businessSearchOpen} onOpenChange={setBusinessSearchOpen}>
-     <PopoverTrigger asChild>
-       <Button
-         variant="outline"
-         role="combobox"
-         aria-expanded={businessSearchOpen}
-         className="w-full justify-between"
-       >
-         {formData.business_id
-           ? businesses?.find((b) => b.id === formData.business_id)?.name
-           : "No business linked"}
-         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-       </Button>
-     </PopoverTrigger>
-     <PopoverContent className="w-full p-0" align="start">
-       <Command>
-         <CommandInput placeholder="Search businesses..." />
-         <CommandList>
-           <CommandEmpty>No business found.</CommandEmpty>
-           <CommandGroup>
-             <CommandItem
-               value="none"
-               onSelect={() => {
-                 setFormData((prev) => ({ ...prev, business_id: null }));
-                 setBusinessSearchOpen(false);
-               }}
-             >
-               <Check
-                 className={cn(
-                   "mr-2 h-4 w-4",
-                   !formData.business_id ? "opacity-100" : "opacity-0"
-                 )}
-               />
-               No business linked
-             </CommandItem>
-             {businesses?.map((business) => (
-               <CommandItem
-                 key={business.id}
-                 value={business.name}
-                 onSelect={() => {
-                   setFormData((prev) => ({ ...prev, business_id: business.id }));
-                   setBusinessSearchOpen(false);
-                 }}
-               >
-                 <Check
-                   className={cn(
-                     "mr-2 h-4 w-4",
-                     formData.business_id === business.id ? "opacity-100" : "opacity-0"
-                   )}
-                 />
-                 {business.name}
-               </CommandItem>
-             ))}
-           </CommandGroup>
-         </CommandList>
-       </Command>
-     </PopoverContent>
-   </Popover>
-   ```
-
-4. **Handle both Add and Edit dialogs** - the same combobox component will be used in both dialogs.
+**Key Features:**
+- Fuzzy matching on name, email, postcode, city
+- Shows category and location in dropdown
+- Debounced API calls (300ms delay)
+- Keyboard accessible (arrow keys, Enter, Escape)
+- Click outside closes dropdown
+- Selecting shows filtered table with that business
 
 ---
 
@@ -133,25 +140,21 @@ The project already has the `cmdk` library installed and the `Command` UI compon
 
 | File | Changes |
 |------|---------|
-| `src/components/admin/FeaturedAdvertisersManagement.tsx` | Replace Select with searchable Combobox |
+| `src/pages/AdminDashboard.tsx` | Add search combobox UI, debounced query hook, suggestion state |
+
+### Dependencies
+
+No new dependencies required - uses existing:
+- `@radix-ui/react-popover` (already installed)
+- `cmdk` (already installed)
+- Existing `Command` and `Popover` UI components
 
 ---
 
-### User Experience
+### Performance Considerations
 
-- Admin clicks dropdown → sees search input at top
-- Typing filters the list in real-time
-- Matching businesses appear below as user types
-- Clicking a business selects it and closes dropdown
-- "No business linked" option remains available at top
-- Checkmark shows currently selected business
-
----
-
-### Benefits
-
-- **Fast filtering** through large business database
-- **Familiar pattern** - standard combobox UX
-- **Existing components** - no new dependencies needed
-- **Keyboard accessible** - arrow keys, enter to select
+- **Debouncing**: 300ms delay prevents API calls on every keystroke
+- **Limit Results**: Show max 20 suggestions in dropdown
+- **Index Usage**: Existing database queries use `ilike` which works with GIN indexes if available
+- **Client Filtering**: The Command component filters displayed items client-side after initial load
 
