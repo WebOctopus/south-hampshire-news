@@ -32,6 +32,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const [formData, setFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
+    keywords: business?.keywords || '',
     biz_type: business?.biz_type || '',
     sector: business?.sector || '',
     category_id: business?.category_id || '',
@@ -218,6 +219,20 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={3}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="keywords">Directory Keywords</Label>
+              <Textarea
+                id="keywords"
+                value={formData.keywords}
+                onChange={(e) => handleChange('keywords', e.target.value)}
+                placeholder="e.g., plumber, heating, boiler repair, emergency"
+                rows={2}
+              />
+              <p className="text-xs text-muted-foreground">
+                Add searchable keywords to help customers find this business
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

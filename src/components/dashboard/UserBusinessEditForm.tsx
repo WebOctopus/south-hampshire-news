@@ -28,6 +28,7 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
   const [formData, setFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
+    keywords: business?.keywords || '',
     category_id: business?.category_id || '',
     email: business?.email || '',
     phone: business?.phone || '',
@@ -170,6 +171,20 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
               rows={4}
               placeholder="Tell customers about your business..."
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="keywords">Directory Keywords</Label>
+            <Textarea
+              id="keywords"
+              value={formData.keywords}
+              onChange={(e) => handleChange('keywords', e.target.value)}
+              placeholder="e.g., plumber, heating, boiler repair, emergency"
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              Add searchable keywords to help customers find your business
+            </p>
           </div>
         </CardContent>
       </Card>
