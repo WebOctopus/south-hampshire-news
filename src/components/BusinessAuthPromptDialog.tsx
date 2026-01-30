@@ -127,7 +127,7 @@ const BusinessAuthPromptDialog = ({ open, onOpenChange, onSuccess }: BusinessAut
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-primary/10 rounded-lg">
