@@ -9,8 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useQuery } from '@tanstack/react-query';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CostCalculatorManagement from '@/components/admin/CostCalculatorManagement';
@@ -26,7 +31,7 @@ import { BusinessEditForm } from '@/components/admin/BusinessEditForm';
 import { ClaimRequestsManagement } from '@/components/admin/ClaimRequestsManagement';
 import FeaturedAdvertisersManagement from '@/components/admin/FeaturedAdvertisersManagement';
 import { User } from '@supabase/supabase-js';
-import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -43,6 +48,8 @@ const AdminDashboard = () => {
   const [editingBusiness, setEditingBusiness] = useState<any>(null);
   const [isBusinessEditOpen, setIsBusinessEditOpen] = useState(false);
   const [businessSearchTerm, setBusinessSearchTerm] = useState('');
+  const [businessSearchOpen, setBusinessSearchOpen] = useState(false);
+  const debouncedBusinessSearch = useDebounce(businessSearchTerm, 300);
   const [businessPage, setBusinessPage] = useState(0);
   const BUSINESSES_PER_PAGE = 25;
   const [storyForm, setStoryForm] = useState({
@@ -92,6 +99,30 @@ const AdminDashboard = () => {
 
     checkAdminAuth();
   }, [navigate, toast]);
+
+  // Predictive search suggestions query
+  const { data: searchSuggestions = [], isLoading: suggestionsLoading } = useQuery({
+    queryKey: ['business-suggestions', debouncedBusinessSearch],
+    queryFn: async () => {
+      if (!debouncedBusinessSearch || debouncedBusinessSearch.length < 2) return [];
+      
+      const { data } = await supabase
+        .from('businesses')
+        .select(`
+          id,
+          name,
+          city,
+          postcode,
+          business_categories (name)
+        `)
+        .or(`name.ilike.%${debouncedBusinessSearch}%,email.ilike.%${debouncedBusinessSearch}%,postcode.ilike.%${debouncedBusinessSearch}%,city.ilike.%${debouncedBusinessSearch}%`)
+        .order('name')
+        .limit(20);
+      
+      return data || [];
+    },
+    enabled: isAdmin && debouncedBusinessSearch.length >= 2,
+  });
 
   const loadBusinesses = async () => {
     // Get total count first
@@ -378,22 +409,95 @@ const AdminDashboard = () => {
             </div>
             
             {/* Search and Add */}
-            <div className="flex gap-4 flex-wrap">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, postcode, city..."
-                  value={businessSearchTerm}
-                  onChange={(e) => {
-                    setBusinessSearchTerm(e.target.value);
-                    setBusinessPage(0);
-                  }}
-                  className="pl-10"
-                />
-              </div>
-              <Button variant="outline" onClick={() => { setBusinessSearchTerm(''); setBusinessPage(0); loadBusinesses(); }}>
-                Clear
-              </Button>
+            <div className="flex gap-4 flex-wrap items-center">
+              <Popover open={businessSearchOpen} onOpenChange={setBusinessSearchOpen}>
+                <PopoverTrigger asChild>
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                    <Input
+                      placeholder="Type to search businesses..."
+                      value={businessSearchTerm}
+                      onChange={(e) => {
+                        setBusinessSearchTerm(e.target.value);
+                        setBusinessPage(0);
+                        if (e.target.value.length >= 2) {
+                          setBusinessSearchOpen(true);
+                        }
+                      }}
+                      onFocus={() => {
+                        if (businessSearchTerm.length >= 2) {
+                          setBusinessSearchOpen(true);
+                        }
+                      }}
+                      className="pl-10 pr-10"
+                    />
+                    {businessSearchTerm && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setBusinessSearchTerm('');
+                          setBusinessPage(0);
+                          setBusinessSearchOpen(false);
+                          loadBusinesses();
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+                  <Command shouldFilter={false}>
+                    <CommandList>
+                      {suggestionsLoading ? (
+                        <div className="flex items-center justify-center py-6">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
+                        </div>
+                      ) : searchSuggestions.length === 0 ? (
+                        <CommandEmpty>
+                          {debouncedBusinessSearch.length < 2 
+                            ? "Type at least 2 characters to search..."
+                            : "No businesses found."
+                          }
+                        </CommandEmpty>
+                      ) : (
+                        <CommandGroup heading={`${searchSuggestions.length} result${searchSuggestions.length === 1 ? '' : 's'}`}>
+                          {searchSuggestions.map((business: any) => (
+                            <CommandItem
+                              key={business.id}
+                              value={business.name}
+                              onSelect={() => {
+                                setBusinessSearchTerm(business.name);
+                                setBusinessSearchOpen(false);
+                                setBusinessPage(0);
+                                loadBusinesses();
+                              }}
+                              className="flex items-center justify-between py-3 cursor-pointer"
+                            >
+                              <div className="flex flex-col gap-1">
+                                <span className="font-medium">{business.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {[business.city, business.postcode].filter(Boolean).join(' • ') || 'No location'}
+                                </span>
+                              </div>
+                              {business.business_categories?.name && (
+                                <Badge variant="secondary" className="text-xs ml-2">
+                                  {business.business_categories.name}
+                                </Badge>
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              
               <Button onClick={loadBusinesses}>
                 <Search className="h-4 w-4 mr-2" /> Search
               </Button>
