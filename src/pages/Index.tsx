@@ -137,7 +137,9 @@ const Index = () => {
         <FeaturedAdvertisersSection />
         
         {/* Latest Stories */}
-        <LatestStoriesGrid />
+        <div id="news">
+          <LatestStoriesGrid />
+        </div>
         
         {/* Discover Extra */}
         <NewsletterSignup />
