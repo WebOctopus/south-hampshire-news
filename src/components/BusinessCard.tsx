@@ -22,6 +22,8 @@ interface BusinessCardProps {
     featured_image_url: string;
     images: string[];
     biz_type?: string;
+    is_verified?: boolean;
+    featured?: boolean;
     business_categories?: {
       name: string;
       icon: string;
@@ -86,7 +88,7 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
         </div>
         
         {/* Category Badges */}
-        {(business.business_categories?.name || business.biz_type) && (
+        {(business.business_categories?.name || business.biz_type || business.is_verified || business.featured) && (
           <div className="flex flex-wrap gap-2">
             {business.business_categories?.name && (
               <Badge variant="secondary" className="bg-community-green/10 text-community-green border-community-green/20">
@@ -96,6 +98,16 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
             {business.biz_type && (
               <Badge variant="outline" className="text-muted-foreground">
                 {business.biz_type}
+              </Badge>
+            )}
+            {business.is_verified && (
+              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                Verified
+              </Badge>
+            )}
+            {business.featured && (
+              <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+                Featured
               </Badge>
             )}
           </div>
