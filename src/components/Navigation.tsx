@@ -79,11 +79,7 @@ const Navigation = () => {
     { name: 'Featured Listings', href: '/business-directory#featured', description: 'Premium business listings with enhanced visibility', icon: Star },
   ];
 
-  const contactDropdownItems = [
-    { name: 'Contact Form', href: '/contact', description: 'Get in touch with our editorial team', icon: Phone },
-    { name: 'Editorial Submissions', href: '/contact#editorial', description: 'Submit news stories and community updates', icon: Newspaper },
-    { name: 'Advertising Enquiries', href: '/contact#advertising', description: 'Discuss advertising opportunities and packages', icon: Megaphone },
-  ];
+  // Contact removed from dropdowns - now a direct link
 
   const whatsOnDropdownItems = [
     { name: 'Find Events', href: '/whats-on', description: 'Browse upcoming events in your area', icon: Calendar },
@@ -104,7 +100,6 @@ const Navigation = () => {
     { title: 'Directory', items: businessDirectoryDropdownItems, path: '/business-directory' },
     { title: 'Advertising', items: advertisingDropdownItems, path: '/advertising' },
     { title: 'Distribute', items: distributeDropdownItems, path: '/apply-to-distribute' },
-    { title: 'Contact', items: contactDropdownItems, path: '/contact' },
   ];
 
   return (
@@ -217,6 +212,16 @@ const Navigation = () => {
                   </NavigationMenuItem>
                 ))}
 
+                {/* Contact - Direct Link (no dropdown) */}
+                <NavigationMenuItem>
+                  <Link 
+                    to="/contact"
+                    className="text-gray-700 hover:text-community-green px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  >
+                    Contact
+                  </Link>
+                </NavigationMenuItem>
+
               </NavigationMenuList>
             </NavigationMenu>
             
@@ -327,6 +332,15 @@ const Navigation = () => {
                     ))}
                   </Accordion>
 
+                  {/* Contact - Direct Link (no accordion) */}
+                  <Link
+                    to="/contact"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 px-3 py-4 border-b border-border hover:bg-accent transition-colors group"
+                  >
+                    <Phone size={18} className="text-muted-foreground group-hover:text-community-green" />
+                    <span className="text-base font-medium text-foreground group-hover:text-community-green">Contact</span>
+                  </Link>
                   {/* User Section */}
                   <div className="border-t border-border pt-6 space-y-3">
                     {user ? (
