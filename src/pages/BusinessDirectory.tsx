@@ -168,8 +168,15 @@ const BusinessDirectory = () => {
   }, [fetchCategories, fetchLocations]);
 
   useEffect(() => {
-    fetchBusinesses();
-  }, [fetchBusinesses]);
+    // Only fetch if a specific location is selected (anti-scraping)
+    if (selectedLocation !== 'all') {
+      fetchBusinesses();
+    } else {
+      setBusinesses([]);
+      setTotalCount(0);
+      setLoading(false);
+    }
+  }, [fetchBusinesses, selectedLocation]);
 
   // Handle #add hash in URL
   useEffect(() => {
@@ -237,7 +244,7 @@ const BusinessDirectory = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen no-select">
       <Navigation />
       <main>
         {/* Hero Section */}
@@ -302,7 +309,17 @@ const BusinessDirectory = () => {
               </div>
             </div>
 
-            {loading ? (
+            {selectedLocation === 'all' ? (
+              <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Select Your Area
+                </h3>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  Please choose a location from the dropdown above to view local businesses in your area.
+                </p>
+              </div>
+            ) : loading ? (
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-community-green"></div>
                 <p className="mt-4 text-gray-600">Loading businesses...</p>
