@@ -1,10 +1,10 @@
 
 
-## Plan: Add Chatbot Widget to Website
+## Plan: Update Chatbot Widget Script
 
 ### Overview
 
-Add the Lovable chatbot widget script to the website so it appears on all pages.
+Replace the current chatbot widget script with the new Supabase-hosted version that should be publicly accessible.
 
 ---
 
@@ -12,24 +12,24 @@ Add the Lovable chatbot widget script to the website so it appears on all pages.
 
 **File to modify:** `index.html`
 
-Add the chatbot script tag just before the closing `</body>` tag:
+Replace the existing script tag:
 
 ```html
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-  <script src="https://f634468b-9654-4bdc-8401-06aeda72dc34.lovableproject.com/chatbot-widget.js" data-chatbot-id="f532ace8-8e6d-4694-81d1-ef91e7f36915"></script>
-</body>
+<!-- Remove this -->
+<script src="https://f634468b-9654-4bdc-8401-06aeda72dc34.lovableproject.com/chatbot-widget.js" data-chatbot-id="f532ace8-8e6d-4694-81d1-ef91e7f36915"></script>
+
+<!-- Replace with this -->
+<script src="https://nztjzyhtynfijonrkuem.supabase.co/functions/v1/widget-loader?id=f532ace8-8e6d-4694-81d1-ef91e7f36915" async></script>
 ```
 
 ---
 
 ### Technical Notes
 
-- The script will load asynchronously and inject the chatbot widget into the page
-- The `data-chatbot-id` attribute identifies which chatbot configuration to use
-- Placing it at the end of the body ensures it doesn't block page rendering
-- The widget will appear on all pages since it's in the root HTML file
+- The new script is hosted on **Supabase Edge Functions**, which are publicly accessible (no authentication required)
+- The chatbot ID (`f532ace8-8e6d-4694-81d1-ef91e7f36915`) is now passed as a query parameter instead of a data attribute
+- The `async` attribute allows the script to load without blocking page rendering
+- This should resolve the previous issue where the script required Lovable authentication
 
 ---
 
@@ -37,5 +37,5 @@ Add the chatbot script tag just before the closing `</body>` tag:
 
 | File | Change |
 |------|--------|
-| `index.html` | Add chatbot widget script before closing `</body>` tag |
+| `index.html` | Replace chatbot widget script URL with Supabase-hosted version |
 
