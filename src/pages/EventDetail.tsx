@@ -94,6 +94,21 @@ const EventDetail = () => {
     });
   };
 
+  const formatDateRange = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Same month and year
+    if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+      return `${start.getDate()} - ${end.getDate()} ${start.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
+    }
+    
+    // Different months
+    return `${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} - ${end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+  };
+
+  const hasDateRange = event?.date_end && event.date_end !== event.date;
+
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
@@ -220,7 +235,12 @@ const EventDetail = () => {
                   <div className="flex flex-wrap gap-4 mb-6 text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-primary" />
-                      <span>{formatDate(event.date)}</span>
+                      <span>
+                        {hasDateRange 
+                          ? formatDateRange(event.date, event.date_end!)
+                          : formatDate(event.date)
+                        }
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-5 w-5 text-primary" />

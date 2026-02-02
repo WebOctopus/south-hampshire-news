@@ -18,6 +18,14 @@ export function EventCard({ event }: EventCardProps) {
     };
   };
 
+  const formatShortDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return {
+      day: date.getDate(),
+      month: date.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase()
+    };
+  };
+
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
@@ -26,7 +34,9 @@ export function EventCard({ event }: EventCardProps) {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  const dateInfo = formatDate(event.date);
+  const hasDateRange = event.date_end && event.date_end !== event.date;
+  const startDateInfo = formatDate(event.date);
+  const endDateInfo = hasDateRange ? formatShortDate(event.date_end!) : null;
 
   return (
     <Link to={`/events/${event.id}`} className="group block">
@@ -49,9 +59,25 @@ export function EventCard({ event }: EventCardProps) {
           
           {/* Date Badge */}
           <div className="absolute top-3 left-3 bg-background rounded-lg shadow-md p-2 text-center min-w-[60px]">
-            <p className="text-xs font-medium text-primary">{dateInfo.month}</p>
-            <p className="text-2xl font-bold leading-none">{dateInfo.day}</p>
-            <p className="text-xs text-muted-foreground">{dateInfo.weekday}</p>
+            {hasDateRange ? (
+              // Multi-day event: show date range
+              <>
+                <p className="text-xs font-medium text-primary">
+                  {formatShortDate(event.date).month} {formatShortDate(event.date).day}
+                </p>
+                <p className="text-sm font-bold leading-none my-0.5">-</p>
+                <p className="text-xs font-medium text-primary">
+                  {endDateInfo?.month} {endDateInfo?.day}
+                </p>
+              </>
+            ) : (
+              // Single-day event: show single date
+              <>
+                <p className="text-xs font-medium text-primary">{startDateInfo.month}</p>
+                <p className="text-2xl font-bold leading-none">{startDateInfo.day}</p>
+                <p className="text-xs text-muted-foreground">{startDateInfo.weekday}</p>
+              </>
+            )}
           </div>
 
           {/* Featured Badge */}

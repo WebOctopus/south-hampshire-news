@@ -57,6 +57,7 @@ export function EventsManagement() {
     excerpt: '',
     full_description: '',
     date: '',
+    date_end: '',
     time: '',
     end_time: '',
     location: '',
@@ -128,6 +129,7 @@ export function EventsManagement() {
       excerpt: '',
       full_description: '',
       date: '',
+      date_end: '',
       time: '',
       end_time: '',
       location: '',
@@ -163,6 +165,7 @@ export function EventsManagement() {
       excerpt: event.excerpt || '',
       full_description: event.full_description || '',
       date: event.date,
+      date_end: event.date_end || '',
       time: event.time,
       end_time: event.end_time || '',
       location: event.location,
@@ -269,9 +272,10 @@ export function EventsManagement() {
   };
 
   const downloadCsvTemplate = () => {
-    const headers = 'title,date,time,end_time,location,area,postcode,category,type,excerpt,description,organizer,ticket_url,contact_email,contact_phone';
-    const example = '"Summer Festival","2025-07-15","10:00","18:00","Central Park","Downtown","AB12 3CD","Community","Festival","Join us for a day of fun!","Full description here...","Local Council","https://tickets.example.com","events@example.com","01onal234567890"';
-    const csvContent = `${headers}\n${example}`;
+    const headers = 'title,date,date_end,time,end_time,location,area,postcode,category,type,excerpt,description,organizer,ticket_url,contact_email,contact_phone';
+    const example = '"Summer Festival","2025-07-15","2025-07-17","10:00","18:00","Central Park","Downtown","AB12 3CD","Community","Festival","Join us for 3 days of fun!","Full description here...","Local Council","https://tickets.example.com","events@example.com","01234567890"';
+    const singleDayExample = '"One Day Concert","2025-08-20","","19:00","23:00","Music Hall","City Center","CD45 6EF","Music","Concert","An evening of live music","Full description...","Music Promotions","","info@concert.com",""';
+    const csvContent = `${headers}\n${example}\n${singleDayExample}`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -307,6 +311,7 @@ export function EventsManagement() {
           parsedEvents.push({
             title: event.title,
             date: event.date,
+            date_end: event.date_end || undefined,
             time: event.time,
             end_time: event.end_time || undefined,
             location: event.location,
@@ -471,7 +476,7 @@ export function EventsManagement() {
                         </div>
                         
                         <div>
-                          <Label htmlFor="date">Date *</Label>
+                          <Label htmlFor="date">Start Date *</Label>
                           <Input
                             id="date"
                             type="date"
@@ -479,6 +484,18 @@ export function EventsManagement() {
                             onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                             required
                           />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="date_end">End Date (for multi-day)</Label>
+                          <Input
+                            id="date_end"
+                            type="date"
+                            value={formData.date_end}
+                            onChange={(e) => setFormData(prev => ({ ...prev, date_end: e.target.value }))}
+                            min={formData.date}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Leave blank for single-day events</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">

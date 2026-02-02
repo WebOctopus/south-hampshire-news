@@ -14,6 +14,7 @@ export interface Event {
   excerpt: string | null;
   full_description: string | null;
   date: string;
+  date_end: string | null;
   time: string;
   end_time: string | null;
   location: string;
@@ -47,6 +48,7 @@ export interface EventFormData {
   excerpt?: string;
   full_description?: string;
   date: string;
+  date_end?: string;
   time: string;
   end_time?: string;
   location: string;
