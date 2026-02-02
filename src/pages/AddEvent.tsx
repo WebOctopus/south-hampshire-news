@@ -18,6 +18,7 @@ const AddEvent = () => {
     title: '',
     organizer: '',
     date: '',
+    date_end: '',
     time: '',
     end_time: '',
     location: '',
@@ -127,6 +128,7 @@ const AddEvent = () => {
         excerpt: formData.excerpt || null,
         full_description: formData.full_description || null,
         date: formData.date,
+        date_end: formData.date_end || null,
         time: formData.time,
         end_time: formData.end_time || null,
         location: formData.location,
@@ -193,7 +195,7 @@ const AddEvent = () => {
                   <Button variant="outline" onClick={() => {
                     setSubmitSuccess(false);
                     setFormData({
-                      title: '', organizer: '', date: '', time: '', end_time: '',
+                      title: '', organizer: '', date: '', date_end: '', time: '', end_time: '',
                       location: '', area: '', postcode: '', category: '', type: '',
                       excerpt: '', full_description: '', ticket_url: '', contact_email: '', contact_phone: ''
                     });
@@ -312,9 +314,9 @@ const AddEvent = () => {
                     Date & Time
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="date">Date *</Label>
+                      <Label htmlFor="date">Start Date *</Label>
                       <Input
                         id="date"
                         type="date"
@@ -323,6 +325,18 @@ const AddEvent = () => {
                         disabled={isSubmitting}
                         required
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="date_end">End Date (optional)</Label>
+                      <Input
+                        id="date_end"
+                        type="date"
+                        value={formData.date_end}
+                        onChange={(e) => handleInputChange('date_end', e.target.value)}
+                        min={formData.date}
+                        disabled={isSubmitting}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Leave blank for single-day events</p>
                     </div>
                     <div>
                       <Label htmlFor="time">Start Time *</Label>
