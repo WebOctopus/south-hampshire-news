@@ -10,6 +10,23 @@ import {
   getStepsForJourney
 } from '@/components/forms/types';
 
+const getCategoryLabel = (journeyType: JourneyType): string => {
+  switch (journeyType) {
+    case 'editorial':
+      return 'Submit a Story';
+    case 'advertising':
+      return 'Request an Advertising Quote';
+    case 'discover_extra':
+      return 'Subscribe to Discover EXTRA';
+    case 'think_advertising':
+      return 'Subscribe to THINK Advertising';
+    case 'distributor':
+      return 'Apply for Magazine Distribution';
+    default:
+      return 'Unknown';
+  }
+};
+
 const captureUTMParams = () => {
   const params = new URLSearchParams(window.location.search);
   return {
@@ -117,6 +134,7 @@ export const useDiscoverForms = () => {
     setSubmissionError(null);
     
     const payload = {
+      form_category: getCategoryLabel(formState.journey_type),
       journey_type: formState.journey_type,
       contact: formState.contact,
       data: formState.data,
