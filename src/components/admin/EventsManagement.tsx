@@ -446,7 +446,7 @@ export function EventsManagement() {
               if (!open) resetForm();
             }}>
               <DialogTrigger asChild>
-                <Button>
+                <Button onClick={() => resetForm()}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Event
                 </Button>
