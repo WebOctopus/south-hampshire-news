@@ -13,11 +13,20 @@ serve(async (req) => {
 
   try {
     const webhookUrl = Deno.env.get("DISCOVER_FORMS_WEBHOOK_URL");
+    const apiKey = Deno.env.get("INBOUND_WEBHOOK_API_KEY");
     
     if (!webhookUrl) {
       console.error("DISCOVER_FORMS_WEBHOOK_URL not configured");
       return new Response(
         JSON.stringify({ error: "Webhook URL not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!apiKey) {
+      console.error("INBOUND_WEBHOOK_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ error: "Webhook API key not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -29,6 +38,7 @@ serve(async (req) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": apiKey,
       },
       body: JSON.stringify(payload),
     });
