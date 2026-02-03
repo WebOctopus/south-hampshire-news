@@ -12,10 +12,11 @@ serve(async (req) => {
   }
 
   try {
-    const webhookUrl = Deno.env.get("DISCOVER_FORMS_WEBHOOK_URL");
+    const defaultWebhookUrl = Deno.env.get("DISCOVER_FORMS_WEBHOOK_URL");
+    const editorialWebhookUrl = Deno.env.get("EDITORIAL_WEBHOOK_URL");
     const apiKey = Deno.env.get("INBOUND_WEBHOOK_API_KEY");
     
-    if (!webhookUrl) {
+    if (!defaultWebhookUrl) {
       console.error("DISCOVER_FORMS_WEBHOOK_URL not configured");
       return new Response(
         JSON.stringify({ error: "Webhook URL not configured" }),
@@ -32,6 +33,18 @@ serve(async (req) => {
     }
 
     const payload = await req.json();
+    
+    // Route to different webhooks based on journey type
+    const journeyType = payload.journey_type;
+    let webhookUrl: string;
+    
+    if (journeyType === 'editorial') {
+      webhookUrl = editorialWebhookUrl || defaultWebhookUrl;
+      console.log("Routing editorial submission to EDITORIAL_WEBHOOK_URL");
+    } else {
+      webhookUrl = defaultWebhookUrl;
+      console.log(`Routing ${journeyType} submission to DISCOVER_FORMS_WEBHOOK_URL`);
+    }
     
     // Flatten contact fields to root level for destination webhook compatibility
     const flattenedPayload = {
