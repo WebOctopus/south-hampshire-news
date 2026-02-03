@@ -1,56 +1,63 @@
 
 
-## Plan: Add Authentication to Webhook Requests
+## Plan: Route Form Submissions to Different Webhooks by Journey Type
 
-### Problem
+### Overview
 
-The destination webhook at `nztjzyhtynfijonrkuem.supabase.co/functions/v1/inbound-webhook` requires API key authentication. Currently, the edge function sends requests without any authentication header, resulting in a 401 error.
+Add routing logic to the `submit-discover-form` edge function so different form types are sent to different webhook endpoints.
 
-### Solution
+---
 
-1. Store the API key as a new Supabase secret
-2. Update the edge function to include the authentication header when calling the webhook
+### Routing Configuration
+
+| Journey Type | Webhook Destination |
+|--------------|---------------------|
+| `editorial` (Submit a story) | `https://nztjzyhtynfijonrkuem.supabase.co/functions/v1/inbound-webhook` |
+| `advertising` (Request an Advertising Quote) | Current `DISCOVER_FORMS_WEBHOOK_URL` secret |
+| `discover_extra` (Discover EXTRA newsletter) | Current `DISCOVER_FORMS_WEBHOOK_URL` secret |
+| `think_advertising` (THINK monthly email) | Current `DISCOVER_FORMS_WEBHOOK_URL` secret |
+| `distributor` (Apply for distribution) | Current `DISCOVER_FORMS_WEBHOOK_URL` secret |
 
 ---
 
 ### Implementation Steps
 
-#### Step 1: Add the API Key Secret
+#### Step 1: Add New Secret for Editorial Webhook
 
-A new secret will need to be added:
-- **Secret Name**: `INBOUND_WEBHOOK_API_KEY`
-- **Value**: The API key you provided (`qs_live_...`)
+A new secret will be added:
+- **Name**: `EDITORIAL_WEBHOOK_URL`
+- **Value**: `https://nztjzyhtynfijonrkuem.supabase.co/functions/v1/inbound-webhook`
 
-#### Step 2: Update Edge Function
+#### Step 2: Update Edge Function with Routing Logic
 
 **File**: `supabase/functions/submit-discover-form/index.ts`
 
-Add the API key to the outgoing request headers:
+Add logic to select the webhook URL based on `journey_type`:
 
-```typescript
-const response = await fetch(webhookUrl, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "x-api-key": Deno.env.get("INBOUND_WEBHOOK_API_KEY") || "",
-  },
-  body: JSON.stringify(payload),
-});
+```text
+┌─────────────────────────┐
+│  Form Submission        │
+│  (with journey_type)    │
+└───────────┬─────────────┘
+            │
+            ▼
+    ┌───────────────┐
+    │ journey_type? │
+    └───────┬───────┘
+            │
+     ┌──────┴──────┐
+     │             │
+editorial      all others
+     │             │
+     ▼             ▼
+EDITORIAL_    DISCOVER_FORMS_
+WEBHOOK_URL   WEBHOOK_URL
 ```
 
-Also add validation to ensure the API key is configured:
-
-```typescript
-const apiKey = Deno.env.get("INBOUND_WEBHOOK_API_KEY");
-
-if (!apiKey) {
-  console.error("INBOUND_WEBHOOK_API_KEY not configured");
-  return new Response(
-    JSON.stringify({ error: "Webhook API key not configured" }),
-    { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-  );
-}
-```
+The function will:
+1. Read the `journey_type` from the incoming payload
+2. Select the appropriate webhook URL based on the journey type
+3. Both webhooks use the same `INBOUND_WEBHOOK_API_KEY` for authentication
 
 ---
 
@@ -58,17 +65,44 @@ if (!apiKey) {
 
 | File | Change |
 |------|--------|
-| `supabase/functions/submit-discover-form/index.ts` | Add API key header to webhook request |
+| `supabase/functions/submit-discover-form/index.ts` | Add routing logic based on journey_type |
 
 ### Secrets to Add
 
-| Secret Name | Purpose |
-|-------------|---------|
-| `INBOUND_WEBHOOK_API_KEY` | Authentication for the destination webhook |
+| Secret Name | Value | Purpose |
+|-------------|-------|---------|
+| `EDITORIAL_WEBHOOK_URL` | `https://nztjzyhtynfijonrkuem.supabase.co/functions/v1/inbound-webhook` | Webhook for editorial/story submissions |
+
+---
+
+### Technical Details
+
+The edge function will be updated to:
+
+1. Load both webhook URLs from environment variables
+2. Determine which URL to use based on `payload.journey_type`
+3. Fall back to the default webhook if a journey-specific one isn't configured
+4. Log which webhook is being used for debugging
+
+Example routing logic:
+```typescript
+const journeyType = payload.journey_type;
+let webhookUrl: string;
+
+if (journeyType === 'editorial') {
+  webhookUrl = Deno.env.get("EDITORIAL_WEBHOOK_URL") || defaultWebhookUrl;
+} else {
+  webhookUrl = defaultWebhookUrl;
+}
+```
 
 ---
 
 ### Summary
 
-This will authenticate the outgoing webhook requests using the `x-api-key` header, which should resolve the 401 error and allow form submissions to succeed.
+This approach keeps the configuration flexible:
+- Editorial stories go to their dedicated webhook
+- All other forms continue using the existing webhook
+- Both use the same API key for authentication
+- Easy to add more journey-specific webhooks in the future
 
