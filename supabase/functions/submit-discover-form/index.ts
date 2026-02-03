@@ -32,7 +32,26 @@ serve(async (req) => {
     }
 
     const payload = await req.json();
-    console.log("Submitting discover form:", JSON.stringify(payload, null, 2));
+    
+    // Flatten contact fields to root level for destination webhook compatibility
+    const flattenedPayload = {
+      // Root level contact fields (required by destination webhook)
+      email: payload.contact?.email || "",
+      first_name: payload.contact?.first_name || "",
+      last_name: payload.contact?.last_name || "",
+      phone: payload.contact?.phone || "",
+      postcode: payload.contact?.postcode || "",
+      company: payload.contact?.company || "",
+      // Keep the rest of the payload structure
+      form_category: payload.form_category,
+      journey_type: payload.journey_type,
+      contact: payload.contact,
+      data: payload.data,
+      consents: payload.consents,
+      meta: payload.meta,
+    };
+    
+    console.log("Submitting discover form:", JSON.stringify(flattenedPayload, null, 2));
 
     const response = await fetch(webhookUrl, {
       method: "POST",
@@ -40,13 +59,14 @@ serve(async (req) => {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(flattenedPayload),
     });
 
     if (!response.ok) {
-      console.error("Webhook failed:", response.status, await response.text());
+      const errorText = await response.text();
+      console.error("Webhook failed:", response.status, errorText);
       return new Response(
-        JSON.stringify({ error: "Webhook submission failed", status: response.status }),
+        JSON.stringify({ error: "Webhook submission failed", status: response.status, details: errorText }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
