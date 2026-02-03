@@ -1,217 +1,74 @@
 
 
-## Plan: Structure Webhook Payload with Clear Category Names
+## Plan: Add Authentication to Webhook Requests
 
-### Overview
+### Problem
 
-Update the form submission system to include a clear, human-readable `form_category` field in the JSON payload sent to the webhook. This allows the receiving system to easily categorize and route submissions.
+The destination webhook at `nztjzyhtynfijonrkuem.supabase.co/functions/v1/inbound-webhook` requires API key authentication. Currently, the edge function sends requests without any authentication header, resulting in a 401 error.
 
----
+### Solution
 
-### Current Payload Structure
-
-The current payload sent to the webhook looks like:
-```json
-{
-  "journey_type": "editorial",
-  "contact": { ... },
-  "data": { ... },
-  "consents": { ... },
-  "meta": { ... }
-}
-```
-
-The `journey_type` values are internal codes:
-- `editorial`
-- `advertising`
-- `discover_extra`
-- `think_advertising`
+1. Store the API key as a new Supabase secret
+2. Update the edge function to include the authentication header when calling the webhook
 
 ---
 
-### Proposed Payload Structure
+### Implementation Steps
 
-Add a new `form_category` field with clear, descriptive names:
+#### Step 1: Add the API Key Secret
 
-```json
-{
-  "form_category": "Submit a Story",
-  "journey_type": "editorial",
-  "contact": {
-    "first_name": "...",
-    "last_name": "...",
-    "email": "...",
-    "phone": "...",
-    "postcode": "...",
-    "company": "..."
+A new secret will need to be added:
+- **Secret Name**: `INBOUND_WEBHOOK_API_KEY`
+- **Value**: The API key you provided (`qs_live_...`)
+
+#### Step 2: Update Edge Function
+
+**File**: `supabase/functions/submit-discover-form/index.ts`
+
+Add the API key to the outgoing request headers:
+
+```typescript
+const response = await fetch(webhookUrl, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-api-key": Deno.env.get("INBOUND_WEBHOOK_API_KEY") || "",
   },
-  "data": {
-    // Journey-specific fields
-  },
-  "consents": {
-    // Consent flags
-  },
-  "meta": {
-    "source": "discover_combined_form",
-    "page_url": "...",
-    "submitted_at": "2026-02-02T16:58:00.000Z",
-    "utm_source": null,
-    "utm_medium": null,
-    "utm_campaign": null,
-    "utm_content": null,
-    "utm_term": null
-  }
-}
+  body: JSON.stringify(payload),
+});
 ```
 
-**Category Mapping:**
+Also add validation to ensure the API key is configured:
 
-| Journey Type | Form Category |
-|-------------|---------------|
-| `editorial` | Submit a Story |
-| `advertising` | Request an Advertising Quote |
-| `discover_extra` | Subscribe to Discover EXTRA |
-| `think_advertising` | Subscribe to THINK Advertising |
+```typescript
+const apiKey = Deno.env.get("INBOUND_WEBHOOK_API_KEY");
+
+if (!apiKey) {
+  console.error("INBOUND_WEBHOOK_API_KEY not configured");
+  return new Response(
+    JSON.stringify({ error: "Webhook API key not configured" }),
+    { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
+```
 
 ---
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/hooks/useDiscoverForms.ts` | Add category mapping and include `form_category` in payload |
+| File | Change |
+|------|--------|
+| `supabase/functions/submit-discover-form/index.ts` | Add API key header to webhook request |
 
----
+### Secrets to Add
 
-### Implementation Details
-
-**Add category mapping function:**
-
-```typescript
-const getCategoryLabel = (journeyType: JourneyType): string => {
-  switch (journeyType) {
-    case 'editorial':
-      return 'Submit a Story';
-    case 'advertising':
-      return 'Request an Advertising Quote';
-    case 'discover_extra':
-      return 'Subscribe to Discover EXTRA';
-    case 'think_advertising':
-      return 'Subscribe to THINK Advertising';
-    default:
-      return 'Unknown';
-  }
-};
-```
-
-**Update the submitForm payload:**
-
-```typescript
-const payload = {
-  form_category: getCategoryLabel(formState.journey_type),
-  journey_type: formState.journey_type,
-  contact: formState.contact,
-  data: formState.data,
-  consents: formState.consents,
-  meta: {
-    ...formState.meta,
-    source: 'discover_combined_form',
-    page_url: window.location.href,
-    submitted_at: new Date().toISOString()
-  }
-};
-```
-
----
-
-### Example Payloads
-
-**Submit a Story:**
-```json
-{
-  "form_category": "Submit a Story",
-  "journey_type": "editorial",
-  "contact": {
-    "first_name": "Jane",
-    "last_name": "Smith",
-    "email": "jane@example.com",
-    "phone": "07123456789"
-  },
-  "data": {
-    "editorial_organisation": "Local Charity",
-    "editorial_story_summary": "Community garden opens",
-    "editorial_category": "community_news_story",
-    "editorial_story_text": "Full story content..."
-  },
-  "consents": { ... },
-  "meta": { ... }
-}
-```
-
-**Request an Advertising Quote:**
-```json
-{
-  "form_category": "Request an Advertising Quote",
-  "journey_type": "advertising",
-  "contact": {
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john@business.com",
-    "phone": "07987654321",
-    "company": "Local Shop Ltd"
-  },
-  "data": {
-    "advertising_business_name": "Local Shop Ltd",
-    "advertising_editions_interested": ["Southampton", "Eastleigh"],
-    "advertising_ad_sizes": ["quarter_page", "half_page"]
-  },
-  "consents": { ... },
-  "meta": { ... }
-}
-```
-
-**Subscribe to Discover EXTRA:**
-```json
-{
-  "form_category": "Subscribe to Discover EXTRA",
-  "journey_type": "discover_extra",
-  "contact": {
-    "first_name": "Sarah",
-    "email": "sarah@email.com"
-  },
-  "data": {
-    "newsletter_discover_keep_use_frequency": "every_issue",
-    "newsletter_discover_rating": "much_better"
-  },
-  "consents": { 
-    "discover_extra": true 
-  },
-  "meta": { ... }
-}
-```
-
-**Subscribe to THINK Advertising:**
-```json
-{
-  "form_category": "Subscribe to THINK Advertising",
-  "journey_type": "think_advertising",
-  "contact": {
-    "first_name": "Mike",
-    "email": "mike@company.com"
-  },
-  "data": {
-    "newsletter_think_feedback": "Looking forward to tips"
-  },
-  "consents": { 
-    "think_monthly": true 
-  },
-  "meta": { ... }
-}
-```
+| Secret Name | Purpose |
+|-------------|---------|
+| `INBOUND_WEBHOOK_API_KEY` | Authentication for the destination webhook |
 
 ---
 
 ### Summary
 
-This is a simple change that adds a human-readable `form_category` field to the webhook payload while keeping the existing `journey_type` for backward compatibility. The receiving webhook can now easily categorize submissions using the `form_category` field.
+This will authenticate the outgoing webhook requests using the `x-api-key` header, which should resolve the 401 error and allow form submissions to succeed.
 
