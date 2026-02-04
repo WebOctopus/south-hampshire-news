@@ -38,9 +38,9 @@ serve(async (req) => {
     const journeyType = payload.journey_type;
     let webhookUrl: string;
     
-    if (journeyType === 'editorial') {
+    if (journeyType === 'editorial' || journeyType === 'discover_extra') {
       webhookUrl = editorialWebhookUrl || defaultWebhookUrl;
-      console.log("Routing editorial submission to EDITORIAL_WEBHOOK_URL");
+      console.log(`Routing ${journeyType} submission to EDITORIAL_WEBHOOK_URL`);
     } else {
       webhookUrl = defaultWebhookUrl;
       console.log(`Routing ${journeyType} submission to DISCOVER_FORMS_WEBHOOK_URL`);
