@@ -426,7 +426,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         } as any
       };
 
-      const { error: quoteError } = await supabase.from('quotes').insert(quotePayload);
+      const { data: quoteData, error: quoteError } = await supabase.from('quotes').insert(quotePayload).select().single();
       if (quoteError) {
         console.error('Quote save error:', quoteError);
         toast({
@@ -435,6 +435,43 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           variant: "destructive",
         });
         return;
+      }
+
+      // Send quote to external webhook for CRM
+      try {
+        const selectedAdSizeData = adSizes?.find(a => a.id === campaignData.selectedAdSize);
+        const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
+                                      subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+        
+        await supabase.functions.invoke('send-quote-booking-webhook', {
+          body: {
+            record_type: 'quote',
+            record_id: quoteData.id,
+            pricing_model: selectedPricingModel,
+            contact_name: fullName,
+            email: contactData.email,
+            phone: contactData.phone || '',
+            company: contactData.companyName || '',
+            title: quotePayload.title,
+            ad_size: selectedAdSizeData?.name,
+            duration: selectedDurationData?.name,
+            selected_areas: effectiveSelectedAreas,
+            bogof_paid_areas: campaignData.bogofPaidAreas || [],
+            bogof_free_areas: campaignData.bogofFreeAreas || [],
+            total_circulation: campaignData.pricingBreakdown?.totalCirculation,
+            subtotal: campaignData.pricingBreakdown?.subtotal,
+            final_total: campaignData.pricingBreakdown?.finalTotal,
+            monthly_price: quotePayload.monthly_price,
+            volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
+            status: 'draft',
+            pricing_breakdown: campaignData.pricingBreakdown,
+            selections: quotePayload.selections
+          }
+        });
+        console.log('Quote webhook sent successfully');
+      } catch (webhookError) {
+        console.error('Quote webhook error:', webhookError);
+        // Don't fail the save if webhook fails
       }
 
       // Also save to quote_requests table for admin tracking
@@ -770,6 +807,43 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         }
       } catch (webhookError) {
         console.error('Webhook send error:', webhookError);
+      }
+
+      // Send booking to external CRM webhook
+      try {
+        const selectedAdSizeData = adSizes?.find(a => a.id === campaignData.selectedAdSize);
+        const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
+                                      subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+        
+        await supabase.functions.invoke('send-quote-booking-webhook', {
+          body: {
+            record_type: 'booking',
+            record_id: bookingData.id,
+            pricing_model: selectedPricingModel,
+            contact_name: fullName,
+            email: contactData.email,
+            phone: contactData.phone || '',
+            company: contactData.companyName || '',
+            title: bookingPayload.title,
+            ad_size: selectedAdSizeData?.name,
+            duration: selectedDurationData?.name,
+            selected_areas: effectiveSelectedAreas,
+            bogof_paid_areas: campaignData.bogofPaidAreas || [],
+            bogof_free_areas: campaignData.bogofFreeAreas || [],
+            total_circulation: campaignData.pricingBreakdown?.totalCirculation,
+            subtotal: campaignData.pricingBreakdown?.subtotal,
+            final_total: campaignData.pricingBreakdown?.finalTotal,
+            monthly_price: bookingPayload.monthly_price,
+            volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
+            status: 'pending',
+            pricing_breakdown: campaignData.pricingBreakdown,
+            selections: bookingPayload.selections
+          }
+        });
+        console.log('Booking CRM webhook sent successfully');
+      } catch (crmWebhookError) {
+        console.error('Booking CRM webhook error:', crmWebhookError);
+        // Don't fail the booking if CRM webhook fails
       }
 
       // Store information for the dashboard

@@ -214,9 +214,46 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         status: 'draft'
       };
 
-      const { error } = await supabase.from('quotes').insert([quotePayload]);
+      const { data: quoteData, error } = await supabase.from('quotes').insert([quotePayload]).select().single();
       
       if (error) throw error;
+
+      // Send quote to external CRM webhook
+      try {
+        const selectedAdSizeData = adSizes?.find(a => a.id === selectedAdSize);
+        const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
+                                      subscriptionDurations?.find(d => d.id === selectedDuration);
+        
+        await supabase.functions.invoke('send-quote-booking-webhook', {
+          body: {
+            record_type: 'quote',
+            record_id: quoteData.id,
+            pricing_model: pricingModel,
+            contact_name: profile?.display_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: profile?.phone || '',
+            company: '',
+            title: 'Dashboard Quote',
+            ad_size: selectedAdSizeData?.name,
+            duration: selectedDurationData?.name,
+            selected_areas: pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas,
+            bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
+            bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
+            total_circulation: pricingBreakdown.totalCirculation,
+            subtotal: pricingBreakdown.subtotal,
+            final_total: pricingBreakdown.finalTotal,
+            monthly_price: quotePayload.monthly_price,
+            volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0),
+            status: 'draft',
+            pricing_breakdown: pricingBreakdown,
+            selections: quotePayload.selections
+          }
+        });
+        console.log('Dashboard quote webhook sent successfully');
+      } catch (webhookError) {
+        console.error('Dashboard quote webhook error:', webhookError);
+        // Don't fail the save if webhook fails
+      }
 
       toast({
         title: 'Quote Saved',
@@ -279,9 +316,46 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         webhook_payload: {}
       };
 
-      const { error } = await supabase.from('bookings').insert([bookingPayload]);
+      const { data: bookingData, error } = await supabase.from('bookings').insert([bookingPayload]).select().single();
       
       if (error) throw error;
+
+      // Send booking to external CRM webhook
+      try {
+        const selectedAdSizeData = adSizes?.find(a => a.id === selectedAdSize);
+        const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
+                                      subscriptionDurations?.find(d => d.id === selectedDuration);
+        
+        await supabase.functions.invoke('send-quote-booking-webhook', {
+          body: {
+            record_type: 'booking',
+            record_id: bookingData.id,
+            pricing_model: pricingModel,
+            contact_name: profile?.display_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: profile?.phone || '',
+            company: '',
+            title: 'Dashboard Booking',
+            ad_size: selectedAdSizeData?.name,
+            duration: selectedDurationData?.name,
+            selected_areas: pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas,
+            bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
+            bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
+            total_circulation: pricingBreakdown.totalCirculation,
+            subtotal: pricingBreakdown.subtotal,
+            final_total: pricingBreakdown.finalTotal,
+            monthly_price: bookingPayload.monthly_price,
+            volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0),
+            status: 'pending',
+            pricing_breakdown: pricingBreakdown,
+            selections: bookingPayload.selections
+          }
+        });
+        console.log('Dashboard booking webhook sent successfully');
+      } catch (webhookError) {
+        console.error('Dashboard booking webhook error:', webhookError);
+        // Don't fail the booking if webhook fails
+      }
 
       toast({
         title: 'Booking Created',
