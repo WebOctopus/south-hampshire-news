@@ -503,9 +503,47 @@ const CalculatorTest = () => {
           user_id: session.user.id
         } as any;
         const {
-          error
-        } = await supabase.from('quotes').insert(payloadForDb);
+            data: savedQuote,
+            error
+        } = await supabase.from('quotes').insert(payloadForDb).select().single();
         if (error) throw error;
+
+        // Send quote to external CRM webhook for existing users
+        try {
+          const selectedAdSizeData = adSizes?.find(a => a.id === selectedAdSize);
+          const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
+                                        subscriptionDurations?.find(d => d.id === selectedDuration);
+          
+          await supabase.functions.invoke('send-quote-booking-webhook', {
+            body: {
+              record_type: 'quote',
+              record_id: savedQuote.id,
+              pricing_model: pricingModel,
+              contact_name: formData.name,
+              email: formData.email,
+              phone: formData.phone || '',
+              company: formData.company || '',
+              title: basePayload.title,
+              ad_size: selectedAdSizeData?.name,
+              duration: selectedDurationData?.name,
+              selected_areas: effectiveSelectedAreas,
+              bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
+              bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
+              total_circulation: pricingBreakdown.totalCirculation,
+              subtotal: pricingBreakdown.subtotal,
+              final_total: pricingBreakdown.finalTotal,
+              monthly_price: basePayload.monthly_price,
+              volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
+              status: 'draft',
+              pricing_breakdown: pricingBreakdown,
+              selections: basePayload.selections
+            }
+          });
+          console.log('Page quote webhook sent successfully (existing user session)');
+        } catch (webhookError) {
+          console.error('Page quote webhook error:', webhookError);
+        }
+
         toast({
           title: "Saved",
           description: "Quote saved to your dashboard."
@@ -535,10 +573,47 @@ const CalculatorTest = () => {
             ...basePayload,
             user_id: authData.user.id
           } as any;
-          const {
+        const {
+            data: savedQuote,
             error: quotesError
-          } = await supabase.from('quotes').insert(payloadForDb);
+          } = await supabase.from('quotes').insert(payloadForDb).select().single();
           if (quotesError) throw quotesError;
+
+          // Send quote to external CRM webhook
+          try {
+            const selectedAdSizeData = adSizes?.find(a => a.id === selectedAdSize);
+            const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
+                                          subscriptionDurations?.find(d => d.id === selectedDuration);
+            
+            await supabase.functions.invoke('send-quote-booking-webhook', {
+              body: {
+                record_type: 'quote',
+                record_id: savedQuote.id,
+                pricing_model: pricingModel,
+                contact_name: formData.name,
+                email: formData.email,
+                phone: formData.phone || '',
+                company: formData.company || '',
+                title: basePayload.title,
+                ad_size: selectedAdSizeData?.name,
+                duration: selectedDurationData?.name,
+                selected_areas: effectiveSelectedAreas,
+                bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
+                bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
+                total_circulation: pricingBreakdown.totalCirculation,
+                subtotal: pricingBreakdown.subtotal,
+                final_total: pricingBreakdown.finalTotal,
+                monthly_price: basePayload.monthly_price,
+                volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
+                status: 'draft',
+                pricing_breakdown: pricingBreakdown,
+                selections: basePayload.selections
+              }
+            });
+            console.log('Page quote webhook sent successfully (existing user)');
+          } catch (webhookError) {
+            console.error('Page quote webhook error:', webhookError);
+          }
 
           // Mark this as a new user from the calculator for password setup
           localStorage.setItem('newUserFromCalculator', 'true');

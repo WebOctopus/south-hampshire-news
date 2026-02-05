@@ -79,3 +79,6 @@ verify_jwt = false
 
 [functions.send-password-reset]
 verify_jwt = false
+
+[functions.send-quote-booking-webhook]
+verify_jwt = false
