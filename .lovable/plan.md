@@ -1,42 +1,39 @@
 
 
-## Plan: Target "Interactive Rate Card Calculator" Section Directly
+## Plan: Update Fixed Term Summary Saving Text
 
-### The Problem
+### Overview
 
-Currently, the "Rate Card Calculator" menu item links to `/advertising#quick-quote`, which targets the entire QuickQuoteCalculator section. This section contains three components rendered in order:
-1. **ROIFactorsInfo** - "The all important question" (current landing point)
-2. **NewAdvertiserPromo** - BOGOF promo banner
-3. **Interactive Rate Card Calculator** - The actual calculator card (desired landing point)
-
-### Solution
-
-Add a new anchor ID directly on the "Interactive Rate Card Calculator" Card component and update the navigation link to use this new anchor.
+Change the savings message in the Fixed Term basket summary from "Total Saving" to "Book Online & Save 10%" to communicate that customers receive a 10% discount for booking online rather than in person.
 
 ---
 
-### Implementation Steps
+### Implementation
 
-#### 1. Add anchor to QuickQuoteCalculator.tsx
+**File to modify**: `src/components/FixedTermBasketSummary.tsx`
 
-Add `id="rate-card-calculator"` to the Card component (line 132) that contains the "Interactive Rate Card Calculator" title:
+**Change**: Update the text inside the green savings box (line 256).
 
+From:
 ```tsx
-<Card id="rate-card-calculator" className="w-full border-0 shadow-none scroll-mt-20">
+<p className="text-sm font-medium text-green-800">Total Saving</p>
 ```
 
-The `scroll-mt-20` class ensures the header clears the sticky navigation bar.
-
-#### 2. Update Navigation.tsx
-
-Change the "Rate Card Calculator" menu item href from `/advertising#quick-quote` to `/advertising#rate-card-calculator`.
+To:
+```tsx
+<p className="text-sm font-medium text-green-800">Book Online & Save 10%</p>
+```
 
 ---
 
-### Files to Modify
+### Result
 
-| File | Change |
-|------|--------|
-| `src/components/QuickQuoteCalculator.tsx` | Add `id="rate-card-calculator"` and `scroll-mt-20` to the Card component |
-| `src/components/Navigation.tsx` | Update href to `/advertising#rate-card-calculator` |
+The pricing summary section will display:
+
+| Before | After |
+|--------|-------|
+| **Total Saving** | **Book Online & Save 10%** |
+| £XXX.XX | £XXX.XX |
+
+This makes it clear that the 10% discount shown is a benefit of booking through the online calculator rather than calling for an in-person quote.
 
