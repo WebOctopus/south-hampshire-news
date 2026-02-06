@@ -82,7 +82,7 @@ const Footer = () => {
               <div className="bg-white/5 rounded-lg p-4 mt-6">
                 <p className="text-community-green font-semibold mb-2">Business Hours</p>
                 <p className="text-gray-300 text-sm">Mon-Thurs: 9am-5pm</p>
-                <p className="text-gray-300 text-sm">Fri: 9am-3pm</p>
+                <p className="text-gray-300 text-sm">Fri: 9am-4pm</p>
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@ const Footer = () => {
 
               <div className="bg-white/5 rounded-lg p-4 mt-2">
                 <p className="text-community-green font-semibold mb-1">Business Hours</p>
-                <p className="text-gray-300 text-sm">Mon-Thurs: 9am-5pm | Fri: 9am-3pm</p>
+                <p className="text-gray-300 text-sm">Mon-Thurs: 9am-5pm | Fri: 9am-4pm</p>
               </div>
             </CollapsibleContent>
           </Collapsible>
