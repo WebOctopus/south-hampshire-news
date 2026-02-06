@@ -1,80 +1,87 @@
 
 
-## Plan: Add Consent Checkbox to Editorial (Submit a Story) Journey
+## Plan: Hide Prices from Advertisement Size Cards
 
-### Current State
+### The Issue
 
-The form system already has consent checkboxes on most journeys:
-- **Advertising**: Email contact consent + THINK newsletter (optional)
-- **Discover Extra**: Newsletter subscription consent (on contact step + interests step)
-- **THINK Advertising**: Newsletter subscription consent
-- **Distributor**: Email contact consent
-
-The **Editorial (Submit a Story)** journey is the only one missing a consent checkbox in its main story details step.
-
-All journeys already have Terms & Conditions and Privacy Policy checkboxes on the final confirmation step.
-
----
+On the Advertising page, the ad size selection cards display price badges like "From £45 - £90 + VAT" under each size. User feedback indicates this is confusing because:
+- The prices shown don't account for the full context (number of areas, duration, etc.)
+- Users see the detailed pricing breakdown elsewhere in the summary
+- Having partial prices at this step creates confusion about final costs
 
 ### Solution
 
-Add an email contact consent checkbox to the **Editorial Journey** (Submit a Story) form, similar to the existing patterns used in Advertising and Distributor journeys.
+Remove the price Badge from the advertisement size cards, keeping only the visual size representation and dimensions.
 
 ---
 
-### Implementation Steps
+### Implementation
 
-#### 1. Update EditorialJourney.tsx
+**File to modify**: `src/components/AdvertisementSizeStep.tsx`
 
-Add props for consent handling:
-- Accept `consents` and `onConsentsChange` props
-- Add a consent checkbox at the bottom of the form with appropriate styling
+**Location**: Lines 141-167 in the `renderAdSizeVisual` function
 
-**Consent text**: "I consent to being contacted by email regarding my story submission"
+**Change**: Remove the entire conditional block that renders the price Badge, leaving just the visual size box.
 
-#### 2. Update DiscoverFormsHub.tsx
-
-Pass consent props to the EditorialJourney component (similar to how it's done for AdvertisingJourney).
-
-#### 3. Add validation in canProceed()
-
-Require the email contact consent to be checked before proceeding from the Editorial story details step.
-
-#### 4. Update types.ts (if needed)
-
-Ensure the `Consents` interface has an appropriate field for editorial consent. The existing `email_contact` field can be reused since it's generic.
-
----
-
-### Visual Layout
-
-The Editorial form will add this section at the bottom:
-
-```text
-[Story Details Form...]
-
-─────────────────────────────────────────────────────────
-Communication Preferences
-
-☑ I consent to being contacted by email regarding my story submission *
-  We'll use your email to follow up on your story and keep you updated.
-─────────────────────────────────────────────────────────
+**Before** (current code):
+```tsx
+const renderAdSizeVisual = (size: any, isSelected: boolean) => {
+  // ... dimension calculations ...
+  
+  return (
+    <div className="flex flex-col items-center space-y-3">
+      <div className={cn("border-2 border-dashed...")} ... >
+        <span className="text-xs font-medium">{size.name}</span>
+      </div>
+      
+      {/* This price badge will be removed */}
+      {(pricingModel === 'bogof' && size.subscription_pricing_per_issue) || ... && (
+        <Badge variant="outline" className="text-xs">
+          {/* Complex pricing display logic */}
+        </Badge>
+      )}
+    </div>
+  );
+};
 ```
+
+**After** (simplified):
+```tsx
+const renderAdSizeVisual = (size: any, isSelected: boolean) => {
+  // ... dimension calculations (unchanged) ...
+  
+  return (
+    <div className="flex flex-col items-center space-y-3">
+      <div className={cn("border-2 border-dashed...")} ... >
+        <span className="text-xs font-medium">{size.name}</span>
+      </div>
+      {/* Price badge removed - pricing shown in summary */}
+    </div>
+  );
+};
+```
+
+---
+
+### Visual Result
+
+**Before**: Each ad size card shows:
+- Size name and dimensions
+- Visual representation box
+- Price badge: "From £45 - £90 + VAT"
+
+**After**: Each ad size card shows:
+- Size name and dimensions  
+- Visual representation box
+- *(No price - cleaner appearance)*
+
+The full pricing breakdown continues to be displayed in the pricing summary section after selection.
 
 ---
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/components/forms/EditorialJourney.tsx` | Add consents + onConsentsChange props, add consent checkbox UI |
-| `src/components/forms/DiscoverFormsHub.tsx` | Pass consents props to EditorialJourney, update canProceed validation |
-
----
-
-### Technical Notes
-
-- Uses the existing `email_contact` boolean from the `Consents` interface
-- Styling matches the existing consent boxes in AdvertisingJourney and DistributorJourney
-- Required consent validation prevents form progression without explicit opt-in
+| File | Change |
+|------|--------|
+| `src/components/AdvertisementSizeStep.tsx` | Remove lines 141-167 (the price Badge rendering block) |
 
