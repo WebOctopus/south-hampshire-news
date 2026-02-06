@@ -1,7 +1,8 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { EditorialData } from './types';
+import { Checkbox } from '@/components/ui/checkbox';
+import { EditorialData, Consents } from './types';
 import { cn } from '@/lib/utils';
 import { X, Upload, Newspaper, MessageSquare, Store, Heart, BookOpen, Star, Award } from 'lucide-react';
 
@@ -9,6 +10,8 @@ interface EditorialJourneyProps {
   data: Partial<EditorialData>;
   onChange: (updates: Partial<EditorialData>) => void;
   errors?: Partial<Record<keyof EditorialData, string>>;
+  consents?: Consents;
+  onConsentsChange?: (updates: Partial<Consents>) => void;
 }
 
 const categories = [
@@ -21,7 +24,7 @@ const categories = [
   { value: 'community_hero', label: 'Community Hero', icon: Award },
 ];
 
-const EditorialJourney = ({ data, onChange, errors }: EditorialJourneyProps) => {
+const EditorialJourney = ({ data, onChange, errors, consents, onConsentsChange }: EditorialJourneyProps) => {
   const summaryText = data.editorial_story_summary || '';
   const wordCount = summaryText.trim() ? summaryText.trim().split(/\s+/).length : 0;
   const isOverLimit = wordCount > 30;
@@ -185,6 +188,32 @@ const EditorialJourney = ({ data, onChange, errors }: EditorialJourneyProps) => 
           </div>
         )}
       </div>
+
+      {/* Communication Preferences */}
+      {consents && onConsentsChange && (
+        <div className="mt-6 p-4 bg-muted/50 rounded-lg border">
+          <h3 className="text-sm font-medium text-foreground mb-3">Communication Preferences</h3>
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="editorial_email_consent"
+              checked={consents.email_contact}
+              onCheckedChange={(checked) => onConsentsChange({ email_contact: !!checked })}
+              className="mt-0.5"
+            />
+            <div className="space-y-1">
+              <Label 
+                htmlFor="editorial_email_consent" 
+                className="text-sm font-medium cursor-pointer"
+              >
+                I consent to being contacted by email regarding my story submission *
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                We'll use your email to follow up on your story and keep you updated.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -45,7 +45,8 @@ const DiscoverFormsHub = () => {
           d.editorial_story_summary && 
           summaryWords <= 30 &&
           d.editorial_category && 
-          d.editorial_story_text
+          d.editorial_story_text &&
+          consents.email_contact
         );
       }
       if (current_step === 2) return !!(contact.first_name && contact.last_name && contact.email && contact.phone);
@@ -134,7 +135,7 @@ const DiscoverFormsHub = () => {
 
     switch (journey_type) {
       case 'editorial':
-        if (current_step === 1) return <EditorialJourney data={data as Partial<EditorialData>} onChange={updateData} />;
+        if (current_step === 1) return <EditorialJourney data={data as Partial<EditorialData>} onChange={updateData} consents={consents} onConsentsChange={updateConsents} />;
         if (current_step === 2) return <SharedContactStep contact={contact} journeyType={journey_type} onChange={updateContact} />;
         if (current_step === 3) return <ConfirmationStep journeyType={journey_type} consents={consents} onConsentChange={updateConsents} isSubmitted={false} />;
         break;
