@@ -1,67 +1,64 @@
 
 
-## Plan: Add Consent Checkbox to Discover Extra Contact Details Step
+## Plan: Add Consent Checkbox to Editorial (Submit a Story) Journey
 
-### Overview
+### Current State
 
-Currently, the Discover EXTRA journey has this step flow:
-1. **Step 1 (Contact Information)**: First Name, Last Name, Email, Postcode - uses `SharedContactStep`
-2. **Step 2 (Interests)**: Feedback questions + consent checkbox - uses `NewsletterJourney`
+The form system already has consent checkboxes on most journeys:
+- **Advertising**: Email contact consent + THINK newsletter (optional)
+- **Discover Extra**: Newsletter subscription consent (on contact step + interests step)
+- **THINK Advertising**: Newsletter subscription consent
+- **Distributor**: Email contact consent
 
-The user wants the consent checkbox to appear on Step 1 alongside the contact details, with the explanatory text about email frequency and postcode personalization.
+The **Editorial (Submit a Story)** journey is the only one missing a consent checkbox in its main story details step.
+
+All journeys already have Terms & Conditions and Privacy Policy checkboxes on the final confirmation step.
+
+---
 
 ### Solution
 
-Update `SharedContactStep` to:
-1. Accept consents and onConsentsChange props (for the discover_extra consent)
-2. Display the newsletter consent checkbox specifically for `discover_extra` journey
-3. Include the custom explanatory text above the form fields
+Add an email contact consent checkbox to the **Editorial Journey** (Submit a Story) form, similar to the existing patterns used in Advertising and Distributor journeys.
 
 ---
 
 ### Implementation Steps
 
-#### 1. Update SharedContactStep.tsx
+#### 1. Update EditorialJourney.tsx
 
-**Add new props** for consent handling:
-- `consents?: Consents`
-- `onConsentsChange?: (updates: Partial<Consents>) => void`
+Add props for consent handling:
+- Accept `consents` and `onConsentsChange` props
+- Add a consent checkbox at the bottom of the form with appropriate styling
 
-**Add custom intro text** for discover_extra journey with the specified copy about email frequency and postcode personalization.
-
-**Add consent checkbox** at the bottom of the form, styled consistently with existing consent boxes in the codebase.
+**Consent text**: "I consent to being contacted by email regarding my story submission"
 
 #### 2. Update DiscoverFormsHub.tsx
 
-Pass the `consents` and `updateConsents` props to `SharedContactStep` when rendering for the `discover_extra` journey.
+Pass consent props to the EditorialJourney component (similar to how it's done for AdvertisingJourney).
 
-#### 3. Update canProceed validation
+#### 3. Add validation in canProceed()
 
-Ensure step 1 for `discover_extra` now also validates that the consent checkbox is checked.
+Require the email contact consent to be checked before proceeding from the Editorial story details step.
+
+#### 4. Update types.ts (if needed)
+
+Ensure the `Consents` interface has an appropriate field for editorial consent. The existing `email_contact` field can be reused since it's generic.
 
 ---
 
 ### Visual Layout
 
-The Contact Details step for Discover EXTRA will display:
+The Editorial form will add this section at the bottom:
 
 ```text
-Your Contact Details
+[Story Details Form...]
 
-We usually send one email a month, occasionally two if there is a special
-event, announcement or offer to share. By adding your postcode we know
-which edition of Discover you receive (one of 14 local editions) and can
-tailor the e-newsletter to you. You can unsubscribe at any time.
+─────────────────────────────────────────────────────────
+Communication Preferences
 
-[First Name *]  [Last Name]
-[Email *]
-[Postcode]
-
-┌──────────────────────────────────────────────────────────────────┐
-│ ☑ Yes, I'd like to receive Discover EXTRA emails *               │
-│   Get exclusive content, competitions, and local news delivered  │
-│   to your inbox.                                                 │
-└──────────────────────────────────────────────────────────────────┘
+☑ I consent to being contacted by email regarding my story submission *
+  We'll use your email to follow up on your story and keep you updated.
+─────────────────────────────────────────────────────────
 ```
 
 ---
@@ -70,7 +67,14 @@ tailor the e-newsletter to you. You can unsubscribe at any time.
 
 | File | Changes |
 |------|---------|
-| `src/components/forms/SharedContactStep.tsx` | Add consents props, custom intro text for discover_extra, consent checkbox |
-| `src/components/forms/DiscoverFormsHub.tsx` | Pass consents and updateConsents to SharedContactStep for discover_extra |
-| `src/components/forms/DiscoverFormsHub.tsx` | Update step 1 validation for discover_extra to require consent checkbox |
+| `src/components/forms/EditorialJourney.tsx` | Add consents + onConsentsChange props, add consent checkbox UI |
+| `src/components/forms/DiscoverFormsHub.tsx` | Pass consents props to EditorialJourney, update canProceed validation |
+
+---
+
+### Technical Notes
+
+- Uses the existing `email_contact` boolean from the `Consents` interface
+- Styling matches the existing consent boxes in AdvertisingJourney and DistributorJourney
+- Required consent validation prevents form progression without explicit opt-in
 
