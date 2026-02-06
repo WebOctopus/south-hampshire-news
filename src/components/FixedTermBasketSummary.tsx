@@ -111,10 +111,11 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   <Label className="text-sm font-medium text-muted-foreground">Advert Size</Label>
                   <p className="font-medium">{getAdSizeName()}</p>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
-                  <p className="font-medium">{getDurationName()}</p>
-                </div>
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
+                <p className="font-medium">{getDurationName()}</p>
+                <p className="text-xs text-green-600 font-medium mt-1">Book Online & Save 10%</p>
+              </div>
               </div>
               
               <div>
