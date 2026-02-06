@@ -765,13 +765,6 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2">
-                  <span className="text-primary font-medium">🎨</span>
-                  <div>
-                    <p className="font-medium">FREE DESIGN SERVICE:</p>
-                    <p className="text-muted-foreground">By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one.</p>
-                  </div>
-                </div>
 
                 <div className="flex items-start gap-2">
                   <span className="text-primary font-medium">🎯</span>

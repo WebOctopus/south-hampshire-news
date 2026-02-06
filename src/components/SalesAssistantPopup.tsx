@@ -77,7 +77,6 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
         "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
         "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
         "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority page position or call us for help and advice.",
-        "🎨 FREE DESIGN SERVICE: By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one.",
         "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time."
       ],
       action: {
@@ -132,7 +131,6 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
         "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
         "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
         "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority page position or call us for help and advice.",
-        "🎨 FREE DESIGN SERVICE: By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one.",
         "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time."
       ],
       action: {
@@ -188,7 +186,6 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
         "🎯 WHAT YOU'RE BOOKING: A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
         "💰 INVESTMENT SHOWN: Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
         "⚡ IMMEDIATE CONFIRMATION: Book now for instant campaign confirmation and priority page position or call us for help and advice.",
-        "🎨 FREE DESIGN SERVICE: By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one.",
         "📊 GUARANTEED REACH: Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time."
       ],
       action: {
