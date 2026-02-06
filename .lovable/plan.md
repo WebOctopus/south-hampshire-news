@@ -1,67 +1,57 @@
 
 
-## Plan: Update Payment Display to Include VAT and Change Payment Timing
+## Plan: Remove "FREE DESIGN SERVICE" Sections
 
-### Changes Required
+### Overview
 
-Based on the screenshot from the dashboard, two updates are needed in the payment section:
-
-1. **Add VAT to the displayed price** - Currently shows "£48.00", should show "£48.00 + VAT" (or calculate including VAT)
-2. **Change payment timing from 3 days to 5 days** - The text currently says "1ST payment will be taken within the next 3 days"
+Remove the "FREE DESIGN SERVICE" bullet point from the sales assistant popup tips that appear during the quote/booking process. This message appears in multiple places within the codebase.
 
 ---
 
-### Implementation
+### Locations to Modify
 
-**File to modify**: `src/components/dashboard/BookingDetailsDialog.tsx`
-
-#### Change 1: Add "+ VAT" to the payment amount display (line 574)
-
-**Before:**
-```tsx
-<span className="font-bold text-lg">
-  {formatPrice(totalAmount)}
-  {option.option_type === 'direct_debit' && <span className="text-sm text-muted-foreground">/month</span>}
-</span>
-```
-
-**After:**
-```tsx
-<span className="font-bold text-lg">
-  {formatPrice(totalAmount)} + VAT
-  {option.option_type === 'direct_debit' && <span className="text-sm text-muted-foreground">/month</span>}
-</span>
-```
-
-#### Change 2: Update payment timing from 3 days to 5 days (line 589)
-
-**Before:**
-```tsx
-<p className="text-sm text-muted-foreground">
-  • 1ST payment will be taken within the next 3 days. Subsequent payments on the 10th day of each month.
-</p>
-```
-
-**After:**
-```tsx
-<p className="text-sm text-muted-foreground">
-  • 1ST payment will be taken within the next 5 days. Subsequent payments on the 10th day of each month.
-</p>
-```
+| File | Line(s) | Context |
+|------|---------|---------|
+| `src/components/SalesAssistantPopup.tsx` | Line 80 | BOGOF journey - step 5 tips |
+| `src/components/SalesAssistantPopup.tsx` | Line 135 | Fixed Term journey - step 4 tips |
+| `src/components/SalesAssistantPopup.tsx` | Line 191 | Leafleting journey - step 4 tips |
+| `src/components/BookingSummaryStep.tsx` | Lines 769-773 | Booking summary info section |
 
 ---
 
-### Files to Modify
+### Changes
 
-| File | Changes |
-|------|---------|
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Add "+ VAT" to price display (line 574), change "3 days" to "5 days" (line 589) |
+**Remove this tip from all three journey sections in SalesAssistantPopup.tsx:**
+```
+"🎨 FREE DESIGN SERVICE: By booking online you get free advert design. Our professional design team creates stunning ads at no extra cost - just provide your content, images, logo and branding kit if you have one."
+```
+
+**Remove this block from BookingSummaryStep.tsx:**
+```tsx
+<span className="text-primary font-medium">🎨</span>
+<div>
+  <p className="font-medium">FREE DESIGN SERVICE:</p>
+  <p className="text-muted-foreground">By booking online you get free advert design...</p>
+</div>
+```
 
 ---
 
 ### Result
 
-The payment section will display:
-- **Monthly Direct Debit** £48.00 **+ VAT** /month
-- 1ST payment will be taken within the next **5 days**
+After removal, the booking summary and sales assistant tips will show:
+- ✅ WHAT YOU'RE BOOKING
+- ✅ INVESTMENT SHOWN
+- ✅ IMMEDIATE CONFIRMATION
+- ❌ ~~FREE DESIGN SERVICE~~ (removed)
+- ✅ GUARANTEED REACH
+
+---
+
+### Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/components/SalesAssistantPopup.tsx` | Remove the FREE DESIGN SERVICE line from lines 80, 135, and 191 |
+| `src/components/BookingSummaryStep.tsx` | Remove the FREE DESIGN SERVICE block (lines 769-773) |
 
