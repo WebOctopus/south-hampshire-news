@@ -12,7 +12,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { formatDateUK, cn } from '@/lib/utils';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
-import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
+import { getAreaGroupedSchedules, isMonthAvailable } from '@/lib/issueSchedule';
 
 // Helper function to format month display
 const formatMonthDisplay = (monthString: string) => {
@@ -273,7 +273,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         ...bogofFreeAreas.map(id => effectiveAreas?.find(a => a.id === id)).filter(Boolean)
       ];
       
-      // Get the next 3 available start dates from all areas
+      // Get the next 3 available start dates from all areas (filtered by print deadline)
       const availableStartDates = (() => {
         if (allAreas.length === 0 || !allAreas[0]?.schedule) return [];
         
@@ -285,12 +285,14 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         // Sort chronologically
         const sortedMonths = allMonths.sort();
         
-        // Filter out past months and take only the next 3
-        const today = new Date();
+        // Filter using print deadline instead of just month comparison
         const futureMonths = sortedMonths.filter(month => {
-          const [year, monthNum] = month.split('-').map(Number);
-          const monthDate = new Date(year, monthNum - 1);
-          return monthDate >= new Date(today.getFullYear(), today.getMonth());
+          // Find the schedule entry for this month from any area
+          const monthSchedule = allAreas
+            .flatMap(area => (area.schedule as any[]) || [])
+            .find((s: any) => s.month === month);
+          
+          return monthSchedule ? isMonthAvailable(monthSchedule) : false;
         });
         
         return futureMonths.slice(0, 3);
@@ -381,7 +383,9 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             const area = effectiveAreas?.find(a => a.id === areaId);
             if (!area) return null;
 
-            const availableMonths = area.schedule || [];
+            // Filter out months where print deadline has passed
+            const allMonths = area.schedule || [];
+            const availableMonths = allMonths.filter(isMonthAvailable);
             const areaSelectedMonths = selectedMonths[areaId] || [];
 
             return (
@@ -459,7 +463,9 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
           const area = effectiveAreas?.find(a => a.id === areaId);
           if (!area) return null;
 
-          const availableMonths = area.schedule || [];
+          // Filter out months where print deadline has passed
+          const allMonths = area.schedule || [];
+          const availableMonths = allMonths.filter(isMonthAvailable);
           const areaSelectedMonths = selectedMonths[areaId] || [];
           const maxSelectableMonths = (durationData as any)?.duration_value || (durationData as any)?.months || 1;
 
