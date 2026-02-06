@@ -137,34 +137,6 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
             {size.name}
           </span>
         </div>
-        
-        {(
-          (pricingModel === 'bogof' && size.subscription_pricing_per_issue) || 
-          (pricingModel !== 'bogof' && size.base_price_per_area)
-        ) && (
-          <Badge variant="outline" className="text-xs">
-            {(() => {
-              if (pricingModel === 'bogof') {
-                if (typeof size.subscription_pricing_per_issue === 'object' && size.subscription_pricing_per_issue) {
-                  // Get the best price: subscription rate for 14 areas divided by 14
-                  const fourteenAreasPrice = size.subscription_pricing_per_issue["14"] || size.subscription_pricing_per_issue[14];
-                  const firstPrice = size.subscription_pricing_per_issue["1"] || size.subscription_pricing_per_issue[1];
-                  
-                  if (fourteenAreasPrice && firstPrice) {
-                    const bestPrice = (fourteenAreasPrice / 14).toFixed(2);
-                    return `From £${bestPrice} - £${firstPrice} + VAT`;
-                  }
-                  if (firstPrice) return `From £${firstPrice} + VAT`;
-                }
-                if (typeof size.subscription_pricing_per_issue === 'number') {
-                  return `From £${size.subscription_pricing_per_issue} + VAT`;
-                }
-                return `From £${size.base_price_per_area || 0} + VAT`;
-              }
-              return `From £${size.base_price_per_area || 0} + VAT`;
-            })()}
-          </Badge>
-        )}
       </div>
     );
   };
