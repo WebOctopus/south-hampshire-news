@@ -571,7 +571,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-medium">{option.display_name}</span>
                                 <span className="font-bold text-lg">
-                                  {formatPrice(totalAmount)}
+                                  {formatPrice(totalAmount)} + VAT
                                   {option.option_type === 'direct_debit' && <span className="text-sm text-muted-foreground">/month</span>}
                                 </span>
                               </div>
@@ -586,7 +586,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                                     • 'Go Cardless REF DISCOVERMAGA' will appear on your statement
                                   </p>
                                   <p className="text-sm text-muted-foreground">
-                                    • 1ST payment will be taken within the next 3 days. Subsequent payments on the 10th day of each month.
+                                    • 1ST payment will be taken within the next 5 days. Subsequent payments on the 10th day of each month.
                                   </p>
                                 </div>}
                             </Label>
