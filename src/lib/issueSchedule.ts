@@ -13,6 +13,61 @@ export interface AreaGroupSchedule {
 }
 
 /**
+ * Parse various deadline date formats from schedule data
+ */
+export function parseDeadlineDate(
+  deadlineStr: string | undefined, 
+  yearHint?: string | number
+): Date | null {
+  if (!deadlineStr || deadlineStr.toLowerCase() === 'tbc') return null;
+  
+  // Try ISO format (YYYY-MM-DD) - preferred
+  if (/^\d{4}-\d{2}-\d{2}$/.test(deadlineStr)) {
+    return new Date(deadlineStr);
+  }
+  
+  // Try DD.MM.YYYY format
+  if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(deadlineStr)) {
+    const [day, month, year] = deadlineStr.split('.');
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  }
+  
+  // Try DD.MM format with year hint
+  if (/^\d{1,2}\.\d{1,2}$/.test(deadlineStr) && yearHint) {
+    const [day, month] = deadlineStr.split('.');
+    const year = typeof yearHint === 'string' ? parseInt(yearHint) : yearHint;
+    if (!isNaN(year)) {
+      return new Date(year, parseInt(month) - 1, parseInt(day));
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Check if a month is still available based on print deadline
+ * Returns true if the print deadline is today or in the future
+ */
+export function isMonthAvailable(monthData: any): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Prefer print_deadline, fallback to copy_deadline
+  const deadlineStr = 
+    monthData.print_deadline || 
+    monthData.printDeadline || 
+    monthData.copy_deadline || 
+    monthData.copyDeadline;
+  
+  if (!deadlineStr) return true; // No deadline = show it
+  
+  const deadlineDate = parseDeadlineDate(deadlineStr, monthData.year);
+  if (!deadlineDate) return true; // Couldn't parse = show it
+  
+  return deadlineDate >= today;
+}
+
+/**
  * Get the next available issue based on current date and area schedules
  */
 export function getNextAvailableIssue(areaSchedules: any[]): IssueOption | null {
@@ -229,29 +284,28 @@ export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule
       }
     }
 
-    // Build fixed options
-    const scheduleOptions: IssueOption[] = [
-      {
-        value: '2026-01',
-        label: 'January 2026',
-        month: '2026-01'
-      },
-      {
-        value: '2026-02',
-        label: 'February 2026',
-        month: '2026-02'
-      },
-      {
-        value: '2026-03',
-        label: 'March 2026',
-        month: '2026-03'
-      },
-      {
-        value: 'later',
-        label: 'Later—please call 023 8026 6388',
-        month: 'later'
-      }
-    ];
+    // Filter months where print deadline hasn't passed
+    const availableMonths = sortedMonths.filter(monthStr => {
+      const monthSchedule = areas[0]?.schedule?.find(
+        (s: any) => s.month === monthStr
+      );
+      return monthSchedule ? isMonthAvailable(monthSchedule) : true;
+    });
+
+    // Build options from first 3 available months + "Later" option
+    const scheduleOptions: IssueOption[] = availableMonths
+      .slice(0, 3)
+      .map(monthStr => ({
+        value: monthStr,
+        label: formatMonthForDisplay(monthStr),
+        month: monthStr
+      }));
+
+    scheduleOptions.push({
+      value: 'later',
+      label: 'Later—please call 023 8026 6388',
+      month: 'later'
+    });
 
     const areaNames = areas.map(area => area.name).join(', ');
     result.push({

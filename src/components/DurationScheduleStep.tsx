@@ -334,10 +334,10 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           
-          // Filter out months where the copy deadline has passed
+          // Filter out months where the print deadline has passed (prefer print_deadline over copy_deadline)
           const availableMonths = allMonths.filter((monthData: any) => {
-            // Get the deadline date - prefer ISO format copy_deadline, fallback to copyDeadline
-            const deadlineStr = monthData.copy_deadline || monthData.copyDeadline;
+            // Get the deadline date - prefer print_deadline, fallback to copy_deadline
+            const deadlineStr = monthData.print_deadline || monthData.printDeadline || monthData.copy_deadline || monthData.copyDeadline;
             if (!deadlineStr || deadlineStr.toLowerCase() === 'tbc') {
               // If no deadline or TBC, still show the month but it won't have a deadline displayed
               return true;
