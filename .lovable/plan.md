@@ -1,10 +1,14 @@
 
 
-## Plan: Update Fixed Term Summary Saving Text
+## Plan: Add "Book Online & Save 10%" to Booking Summary Card
 
-### Overview
+### The Issue
 
-Change the savings message in the Fixed Term basket summary from "Total Saving" to "Book Online & Save 10%" to communicate that customers receive a 10% discount for booking online rather than in person.
+The "Book Online & Save 10%" message currently only appears in the **Pricing Summary** section (right column) inside a green box. The user wants this message to also appear in the **Booking Summary** card (left column), directly under the Duration field, so it's immediately visible when reviewing the booking details.
+
+### Solution
+
+Add a styled "Book Online & Save 10%" badge/message directly under the Duration field in the Booking Summary card.
 
 ---
 
@@ -12,28 +16,43 @@ Change the savings message in the Fixed Term basket summary from "Total Saving" 
 
 **File to modify**: `src/components/FixedTermBasketSummary.tsx`
 
-**Change**: Update the text inside the green savings box (line 256).
+**Location**: After line 117 (under the Duration field display)
 
-From:
-```tsx
-<p className="text-sm font-medium text-green-800">Total Saving</p>
-```
+**Add the following** under the Duration value:
 
-To:
 ```tsx
-<p className="text-sm font-medium text-green-800">Book Online & Save 10%</p>
+<div className="grid grid-cols-2 gap-4">
+  <div>
+    <Label className="text-sm font-medium text-muted-foreground">Advert Size</Label>
+    <p className="font-medium">{getAdSizeName()}</p>
+  </div>
+  <div>
+    <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
+    <p className="font-medium">{getDurationName()}</p>
+    {/* NEW: Add online discount message */}
+    <p className="text-xs text-green-600 font-medium mt-1">Book Online & Save 10%</p>
+  </div>
+</div>
 ```
 
 ---
 
-### Result
+### Visual Result
 
-The pricing summary section will display:
+The Booking Summary card will display:
 
-| Before | After |
-|--------|-------|
-| **Total Saving** | **Book Online & Save 10%** |
-| £XXX.XX | £XXX.XX |
+| Advert Size | Duration |
+|-------------|----------|
+| 1/2 Page Portrait | 2 Issues = 4 months |
+| | **Book Online & Save 10%** |
 
-This makes it clear that the 10% discount shown is a benefit of booking through the online calculator rather than calling for an in-person quote.
+The message will appear in green text, making it stand out as a promotional benefit.
+
+---
+
+### Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/components/FixedTermBasketSummary.tsx` | Add green "Book Online & Save 10%" text under Duration field (after line 117) |
 
