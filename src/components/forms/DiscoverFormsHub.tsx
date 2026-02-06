@@ -71,7 +71,7 @@ const DiscoverFormsHub = () => {
     }
     
     if (journey_type === 'discover_extra') {
-      if (current_step === 1) return !!(contact.first_name && contact.email);
+      if (current_step === 1) return !!(contact.first_name && contact.email && consents.discover_extra);
       if (current_step === 2) {
         const d = data as Partial<DiscoverExtraData>;
         return !!(
@@ -146,6 +146,11 @@ const DiscoverFormsHub = () => {
         break;
       
       case 'discover_extra':
+        if (current_step === 1) return <SharedContactStep contact={contact} journeyType={journey_type} onChange={updateContact} consents={consents} onConsentsChange={updateConsents} />;
+        if (current_step === 2) return <NewsletterJourney data={data as Partial<DiscoverExtraData | ThinkMonthlyData>} onChange={updateData} journeyType={journey_type} consents={consents} onConsentsChange={updateConsents} />;
+        if (current_step === 3) return <ConfirmationStep journeyType={journey_type} consents={consents} onConsentChange={updateConsents} isSubmitted={false} />;
+        break;
+      
       case 'think_advertising':
         if (current_step === 1) return <SharedContactStep contact={contact} journeyType={journey_type} onChange={updateContact} />;
         if (current_step === 2) return <NewsletterJourney data={data as Partial<DiscoverExtraData | ThinkMonthlyData>} onChange={updateData} journeyType={journey_type} consents={consents} onConsentsChange={updateConsents} />;
