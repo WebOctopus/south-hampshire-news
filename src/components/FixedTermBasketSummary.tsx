@@ -253,7 +253,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                 {saving > 0 && (
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div className="text-center">
-                      <p className="text-sm font-medium text-green-800">Total Saving</p>
+                      <p className="text-sm font-medium text-green-800">Book Online & Save 10%</p>
                       <p className="text-2xl font-bold text-green-600">{formatPrice(saving)}</p>
                     </div>
                   </div>
