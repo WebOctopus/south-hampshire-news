@@ -1,87 +1,214 @@
 
 
-## Plan: Hide Prices from Advertisement Size Cards
+## Plan: Smart Month Filtering Using Print Deadline Dates
 
-### The Issue
+### Problem
 
-On the Advertising page, the ad size selection cards display price badges like "From £45 - £90 + VAT" under each size. User feedback indicates this is confusing because:
-- The prices shown don't account for the full context (number of areas, duration, etc.)
-- Users see the detailed pricing breakdown elsewhere in the summary
-- Having partial prices at this step creates confusion about final costs
+Currently, the "When Would You Like Your Advertising to Start?" section shows outdated months (like January 2026) even though those deadlines have already passed. This happens in multiple places:
+
+1. **`issueSchedule.ts`** - Has hardcoded month options (January, February, March 2026) that never update
+2. **`AreaAndScheduleStep.tsx`** - Fixed Term and BOGOF schedule sections don't filter by deadline dates
+3. **`DurationScheduleStep.tsx`** - Already has some deadline filtering but uses `copy_deadline`, not `print_deadline`
 
 ### Solution
 
-Remove the price Badge from the advertisement size cards, keeping only the visual size representation and dimensions.
+Make the system smart by checking the **print deadline** (`print_deadline` field) for each month. If today's date is past the print deadline, that month is no longer available and should be hidden.
 
 ---
 
-### Implementation
+### Implementation Details
 
-**File to modify**: `src/components/AdvertisementSizeStep.tsx`
+#### 1. Create a Shared Deadline Utility Function
 
-**Location**: Lines 141-167 in the `renderAdSizeVisual` function
+Add a reusable function to parse and check deadline dates:
 
-**Change**: Remove the entire conditional block that renders the price Badge, leaving just the visual size box.
+```typescript
+// In src/lib/issueSchedule.ts
 
-**Before** (current code):
-```tsx
-const renderAdSizeVisual = (size: any, isSelected: boolean) => {
-  // ... dimension calculations ...
+/**
+ * Parse various deadline date formats from schedule data
+ */
+export function parseDeadlineDate(
+  deadlineStr: string | undefined, 
+  yearHint?: string | number
+): Date | null {
+  if (!deadlineStr || deadlineStr.toLowerCase() === 'tbc') return null;
   
-  return (
-    <div className="flex flex-col items-center space-y-3">
-      <div className={cn("border-2 border-dashed...")} ... >
-        <span className="text-xs font-medium">{size.name}</span>
-      </div>
-      
-      {/* This price badge will be removed */}
-      {(pricingModel === 'bogof' && size.subscription_pricing_per_issue) || ... && (
-        <Badge variant="outline" className="text-xs">
-          {/* Complex pricing display logic */}
-        </Badge>
-      )}
-    </div>
-  );
-};
+  // Try ISO format (YYYY-MM-DD) - preferred
+  if (/^\d{4}-\d{2}-\d{2}$/.test(deadlineStr)) {
+    return new Date(deadlineStr);
+  }
+  
+  // Try DD.MM.YYYY format
+  if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(deadlineStr)) {
+    const [day, month, year] = deadlineStr.split('.');
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  }
+  
+  // Try DD.MM format with year hint
+  if (/^\d{1,2}\.\d{1,2}$/.test(deadlineStr) && yearHint) {
+    const [day, month] = deadlineStr.split('.');
+    const year = typeof yearHint === 'string' ? parseInt(yearHint) : yearHint;
+    if (!isNaN(year)) {
+      return new Date(year, parseInt(month) - 1, parseInt(day));
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Check if a month is still available based on print deadline
+ * Returns true if the print deadline is today or in the future
+ */
+export function isMonthAvailable(monthData: any): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Prefer print_deadline, fallback to copy_deadline
+  const deadlineStr = 
+    monthData.print_deadline || 
+    monthData.printDeadline || 
+    monthData.copy_deadline || 
+    monthData.copyDeadline;
+  
+  if (!deadlineStr) return true; // No deadline = show it
+  
+  const deadlineDate = parseDeadlineDate(deadlineStr, monthData.year);
+  if (!deadlineDate) return true; // Couldn't parse = show it
+  
+  return deadlineDate >= today;
+}
 ```
 
-**After** (simplified):
-```tsx
-const renderAdSizeVisual = (size: any, isSelected: boolean) => {
-  // ... dimension calculations (unchanged) ...
-  
-  return (
-    <div className="flex flex-col items-center space-y-3">
-      <div className={cn("border-2 border-dashed...")} ... >
-        <span className="text-xs font-medium">{size.name}</span>
-      </div>
-      {/* Price badge removed - pricing shown in summary */}
-    </div>
-  );
-};
+#### 2. Update `getAreaGroupedSchedules` Function
+
+Replace the hardcoded months with dynamic filtering based on print deadlines:
+
+**Before:**
+```typescript
+const scheduleOptions: IssueOption[] = [
+  { value: '2026-01', label: 'January 2026', month: '2026-01' },
+  { value: '2026-02', label: 'February 2026', month: '2026-02' },
+  { value: '2026-03', label: 'March 2026', month: '2026-03' },
+  { value: 'later', label: 'Later—please call...', month: 'later' }
+];
 ```
 
----
+**After:**
+```typescript
+// Filter months where print deadline hasn't passed
+const availableMonths = sortedMonths.filter(monthStr => {
+  const monthSchedule = areas[0].schedule.find(
+    (s: any) => s.month === monthStr
+  );
+  return monthSchedule ? isMonthAvailable(monthSchedule) : true;
+});
 
-### Visual Result
+// Build options from first 3 available months + "Later" option
+const scheduleOptions: IssueOption[] = availableMonths
+  .slice(0, 3)
+  .map(monthStr => ({
+    value: monthStr,
+    label: formatMonthForDisplay(monthStr),
+    month: monthStr
+  }));
 
-**Before**: Each ad size card shows:
-- Size name and dimensions
-- Visual representation box
-- Price badge: "From £45 - £90 + VAT"
+scheduleOptions.push({
+  value: 'later',
+  label: 'Later—please call 023 8026 6388',
+  month: 'later'
+});
+```
 
-**After**: Each ad size card shows:
-- Size name and dimensions  
-- Visual representation box
-- *(No price - cleaner appearance)*
+#### 3. Update `AreaAndScheduleStep.tsx` - Fixed Term Section
 
-The full pricing breakdown continues to be displayed in the pricing summary section after selection.
+Add deadline filtering to the Fixed Term schedule section (around line 462):
+
+**Before:**
+```typescript
+const availableMonths = area.schedule || [];
+```
+
+**After:**
+```typescript
+import { isMonthAvailable } from '@/lib/issueSchedule';
+
+// Filter out months where print deadline has passed
+const allMonths = area.schedule || [];
+const availableMonths = allMonths.filter(isMonthAvailable);
+```
+
+#### 4. Update `AreaAndScheduleStep.tsx` - BOGOF Section
+
+Add deadline filtering to the BOGOF start date selection (around line 277-296):
+
+**Before:**
+```typescript
+const futureMonths = sortedMonths.filter(month => {
+  const [year, monthNum] = month.split('-').map(Number);
+  const monthDate = new Date(year, monthNum - 1);
+  return monthDate >= new Date(today.getFullYear(), today.getMonth());
+});
+```
+
+**After:**
+```typescript
+// Filter using print deadline instead of just month comparison
+const futureMonths = sortedMonths.filter(month => {
+  // Find the schedule entry for this month from any area
+  const monthSchedule = allAreas
+    .flatMap(area => area.schedule)
+    .find((s: any) => s.month === month);
+  
+  return monthSchedule ? isMonthAvailable(monthSchedule) : false;
+});
+```
+
+#### 5. Update `DurationScheduleStep.tsx` - Use Print Deadline
+
+Update the existing deadline filtering to prefer `print_deadline` (around line 340):
+
+**Before:**
+```typescript
+const deadlineStr = monthData.copy_deadline || monthData.copyDeadline;
+```
+
+**After:**
+```typescript
+// Prefer print_deadline as the cutoff
+const deadlineStr = 
+  monthData.print_deadline || 
+  monthData.printDeadline || 
+  monthData.copy_deadline || 
+  monthData.copyDeadline;
+```
 
 ---
 
 ### Files to Modify
 
-| File | Change |
-|------|--------|
-| `src/components/AdvertisementSizeStep.tsx` | Remove lines 141-167 (the price Badge rendering block) |
+| File | Changes |
+|------|---------|
+| `src/lib/issueSchedule.ts` | Add `parseDeadlineDate()` and `isMonthAvailable()` utilities; update `getAreaGroupedSchedules()` to use dynamic filtering |
+| `src/components/AreaAndScheduleStep.tsx` | Import utilities; filter Fixed Term months by deadline; filter BOGOF months by deadline |
+| `src/components/DurationScheduleStep.tsx` | Update deadline preference to use `print_deadline` first |
+
+---
+
+### Expected Behavior
+
+1. **Today: February 6, 2026**
+2. **January 2026 print deadline: January 21, 2026** → Already passed → **Not shown**
+3. **February 2026 print deadline: February 21, 2026** → Still available → **Shown as first option**
+4. System automatically shows the next 3 available months based on real deadline dates
+
+---
+
+### Edge Cases Handled
+
+- Missing deadline dates → Month is shown (fails open)
+- TBC deadline → Month is shown
+- Various date formats supported (ISO, DD.MM.YYYY, DD.MM with year hint)
+- Both ISO format (`print_deadline`) and legacy format (`printDeadline`) supported
 
