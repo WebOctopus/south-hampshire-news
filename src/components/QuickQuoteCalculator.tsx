@@ -129,7 +129,7 @@ const QuickQuoteCalculator: React.FC = () => {
         
         <div className="relative bg-background rounded-xl overflow-hidden">
           {/* Main Quick Quote Card */}
-          <Card className="w-full border-0 shadow-none">
+          <Card id="rate-card-calculator" className="w-full border-0 shadow-none scroll-mt-20">
             <CardHeader className="bg-gradient-to-r from-community-navy to-slate-800 border-b-4 border-community-green">
               <CardTitle className="flex items-center gap-3 text-2xl text-white">
                 <div className="p-2 bg-community-green rounded-lg">

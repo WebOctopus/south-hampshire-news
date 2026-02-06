@@ -88,7 +88,7 @@ const Navigation = () => {
 
   const advertisingDropdownItems = [
     { name: 'Advertising Overview', href: '/advertising#top', description: 'Learn about our reach, story, and magazine editions', icon: Megaphone },
-    { name: 'Rate Card Calculator', href: '/advertising#quick-quote', description: 'Get a quick pricing estimate in seconds', icon: Calculator },
+    { name: 'Rate Card Calculator', href: '/advertising#rate-card-calculator', description: 'Get a quick pricing estimate in seconds', icon: Calculator },
     { name: 'Online Quote & Booking Tool', href: '/advertising#calculator', description: 'Full quote builder with all package options', icon: Gift },
     { name: 'Advertising Enquiry Form', href: '/advertising#enquiry-form', description: 'Get in touch for a personalised quote', icon: Phone },
   ];
