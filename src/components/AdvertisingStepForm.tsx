@@ -471,7 +471,39 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         console.log('Quote webhook sent successfully');
       } catch (webhookError) {
         console.error('Quote webhook error:', webhookError);
-        // Don't fail the save if webhook fails
+      }
+
+      // Send confirmation emails (non-blocking)
+      try {
+        const selectedAdSizeData = adSizes?.find(a => a.id === campaignData.selectedAdSize);
+        const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
+                                      subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+        await supabase.functions.invoke('send-booking-confirmation-email', {
+          body: {
+            record_type: 'quote',
+            record_id: quoteData.id,
+            pricing_model: selectedPricingModel,
+            contact_name: fullName,
+            email: contactData.email,
+            phone: contactData.phone || '',
+            company: contactData.companyName || '',
+            title: quotePayload.title,
+            ad_size: selectedAdSizeData?.name,
+            duration: selectedDurationData?.name,
+            selected_areas: effectiveSelectedAreas,
+            bogof_paid_areas: campaignData.bogofPaidAreas || [],
+            bogof_free_areas: campaignData.bogofFreeAreas || [],
+            total_circulation: campaignData.pricingBreakdown?.totalCirculation,
+            subtotal: campaignData.pricingBreakdown?.subtotal,
+            final_total: campaignData.pricingBreakdown?.finalTotal,
+            monthly_price: quotePayload.monthly_price,
+            volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
+            pricing_breakdown: campaignData.pricingBreakdown,
+          }
+        });
+        console.log('Quote confirmation email sent');
+      } catch (emailError) {
+        console.error('Quote confirmation email error:', emailError);
       }
 
       // Also save to quote_requests table for admin tracking
@@ -843,7 +875,39 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         console.log('Booking CRM webhook sent successfully');
       } catch (crmWebhookError) {
         console.error('Booking CRM webhook error:', crmWebhookError);
-        // Don't fail the booking if CRM webhook fails
+      }
+
+      // Send confirmation emails (non-blocking)
+      try {
+        const adSizeDataForEmail = adSizes?.find(a => a.id === campaignData.selectedAdSize);
+        const durationDataForEmail = durations?.find(d => d.id === campaignData.selectedDuration) || 
+                                      subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+        await supabase.functions.invoke('send-booking-confirmation-email', {
+          body: {
+            record_type: 'booking',
+            record_id: bookingData.id,
+            pricing_model: selectedPricingModel,
+            contact_name: fullName,
+            email: contactData.email,
+            phone: contactData.phone || '',
+            company: contactData.companyName || '',
+            title: bookingPayload.title,
+            ad_size: adSizeDataForEmail?.name,
+            duration: durationDataForEmail?.name,
+            selected_areas: effectiveSelectedAreas,
+            bogof_paid_areas: campaignData.bogofPaidAreas || [],
+            bogof_free_areas: campaignData.bogofFreeAreas || [],
+            total_circulation: campaignData.pricingBreakdown?.totalCirculation,
+            subtotal: campaignData.pricingBreakdown?.subtotal,
+            final_total: campaignData.pricingBreakdown?.finalTotal,
+            monthly_price: bookingPayload.monthly_price,
+            volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
+            pricing_breakdown: campaignData.pricingBreakdown,
+          }
+        });
+        console.log('Booking confirmation email sent');
+      } catch (emailError) {
+        console.error('Booking confirmation email error:', emailError);
       }
 
       // Store information for the dashboard

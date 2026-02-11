@@ -82,3 +82,6 @@ verify_jwt = false
 
 [functions.send-quote-booking-webhook]
 verify_jwt = false
+
+[functions.send-booking-confirmation-email]
+verify_jwt = false

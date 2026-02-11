@@ -252,7 +252,36 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         console.log('Dashboard quote webhook sent successfully');
       } catch (webhookError) {
         console.error('Dashboard quote webhook error:', webhookError);
-        // Don't fail the save if webhook fails
+      }
+
+      // Send confirmation emails (non-blocking)
+      try {
+        const adSizeForEmail = adSizes?.find(a => a.id === selectedAdSize);
+        const durationForEmail = durations?.find(d => d.id === selectedDuration) || 
+                                  subscriptionDurations?.find(d => d.id === selectedDuration);
+        await supabase.functions.invoke('send-booking-confirmation-email', {
+          body: {
+            record_type: 'quote',
+            record_id: quoteData.id,
+            pricing_model: pricingModel,
+            contact_name: profile?.display_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: profile?.phone || '',
+            ad_size: adSizeForEmail?.name,
+            duration: durationForEmail?.name,
+            selected_areas: pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas,
+            bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
+            bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
+            total_circulation: pricingBreakdown.totalCirculation,
+            subtotal: pricingBreakdown.subtotal,
+            final_total: pricingBreakdown.finalTotal,
+            monthly_price: quotePayload.monthly_price,
+            pricing_breakdown: pricingBreakdown,
+          }
+        });
+        console.log('Dashboard quote confirmation email sent');
+      } catch (emailError) {
+        console.error('Dashboard quote email error:', emailError);
       }
 
       toast({
@@ -354,7 +383,36 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         console.log('Dashboard booking webhook sent successfully');
       } catch (webhookError) {
         console.error('Dashboard booking webhook error:', webhookError);
-        // Don't fail the booking if webhook fails
+      }
+
+      // Send confirmation emails (non-blocking)
+      try {
+        const adSizeForBookEmail = adSizes?.find(a => a.id === selectedAdSize);
+        const durationForBookEmail = durations?.find(d => d.id === selectedDuration) || 
+                                      subscriptionDurations?.find(d => d.id === selectedDuration);
+        await supabase.functions.invoke('send-booking-confirmation-email', {
+          body: {
+            record_type: 'booking',
+            record_id: bookingData.id,
+            pricing_model: pricingModel,
+            contact_name: profile?.display_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: profile?.phone || '',
+            ad_size: adSizeForBookEmail?.name,
+            duration: durationForBookEmail?.name,
+            selected_areas: pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas,
+            bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
+            bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
+            total_circulation: pricingBreakdown.totalCirculation,
+            subtotal: pricingBreakdown.subtotal,
+            final_total: pricingBreakdown.finalTotal,
+            monthly_price: bookingPayload.monthly_price,
+            pricing_breakdown: pricingBreakdown,
+          }
+        });
+        console.log('Dashboard booking confirmation email sent');
+      } catch (emailError) {
+        console.error('Dashboard booking email error:', emailError);
       }
 
       toast({
