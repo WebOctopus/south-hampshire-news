@@ -407,7 +407,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
                   </div>
                   
                   <div className="pt-2 border-t">
-                    <span className="font-medium">Actual Campaign Cost </span>
+                    <span className="font-medium">Online Discount Cost </span>
                     {formatPrice(pricingBreakdown.finalTotal)} + vat ({formatPrice(pricingBreakdown.finalTotal * 1.2)})
                   </div>
                 </div>
