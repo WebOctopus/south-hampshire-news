@@ -1,4 +1,5 @@
 import { Resend } from "npm:resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -33,16 +34,39 @@ interface EmailPayload {
   selections?: any;
 }
 
+function applyTemplate(html: string, vars: Record<string, string>): string {
+  let result = html;
+  for (const [key, value] of Object.entries(vars)) {
+    const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+    result = result.replace(regex, value);
+  }
+  return result;
+}
+
+async function fetchTemplate(name: string): Promise<{ subject: string; html_body: string } | null> {
+  try {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { data, error } = await supabaseAdmin
+      .from("email_templates")
+      .select("subject, html_body")
+      .eq("name", name)
+      .single();
+    if (error || !data) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 function getPricingModelLabel(model: string): string {
   switch (model) {
-    case "fixed":
-      return "Fixed Term";
-    case "bogof":
-      return "3+ Repeat Package";
-    case "leafleting":
-      return "Leafleting Service";
-    default:
-      return "Advertising";
+    case "fixed": return "Fixed Term";
+    case "bogof": return "3+ Repeat Package";
+    case "leafleting": return "Leafleting Service";
+    default: return "Advertising";
   }
 }
 
@@ -231,11 +255,34 @@ Deno.serve(async (req) => {
     // Email A: Admin notification
     if (adminEmail) {
       try {
+        // Try DB template for admin email
+        const adminTemplate = await fetchTemplate("booking_quote_admin");
+        let adminSubject: string;
+        let adminHtml: string;
+
+        if (adminTemplate) {
+          const vars: Record<string, string> = {
+            type_label: typeLabel,
+            model_label: modelLabel,
+            customer_name: payload.contact_name || "Unknown",
+            email: payload.email,
+            phone: payload.phone || "Not provided",
+            company: payload.company || "Not provided",
+            details_table: "",
+            admin_url: "https://south-hampshire-news.lovable.app/admin",
+          };
+          adminSubject = applyTemplate(adminTemplate.subject, vars);
+          adminHtml = applyTemplate(adminTemplate.html_body, vars);
+        } else {
+          adminSubject = `New ${typeLabel} Received – ${modelLabel}`;
+          adminHtml = buildAdminEmailHtml(payload);
+        }
+
         const adminResult = await resend.emails.send({
           from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
           to: adminEmail.split(",").map((e: string) => e.trim()),
-          subject: `New ${typeLabel} Received – ${modelLabel}`,
-          html: buildAdminEmailHtml(payload),
+          subject: adminSubject,
+          html: adminHtml,
         });
         results.admin = { success: true, data: adminResult };
         console.log("Admin notification sent:", adminResult);
@@ -250,15 +297,38 @@ Deno.serve(async (req) => {
 
     // Email B: Customer confirmation
     try {
-      const customerSubject = payload.record_type === "booking"
-        ? "Your Discover Magazine Booking Confirmation"
-        : "Your Discover Magazine Quote Has Been Saved";
+      const templateName = payload.record_type === "booking"
+        ? "booking_confirmation_customer"
+        : "quote_saved_customer";
+      const customerTemplate = await fetchTemplate(templateName);
+
+      let customerSubject: string;
+      let customerHtml: string;
+
+      if (customerTemplate) {
+        const vars: Record<string, string> = {
+          customer_name: (payload.contact_name || payload.email.split("@")[0]).split(" ")[0],
+          package_type: modelLabel,
+          ad_size: payload.ad_size || "N/A",
+          duration: payload.duration || "N/A",
+          circulation: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
+          total_cost: formatCurrency(payload.final_total),
+          dashboard_url: "https://south-hampshire-news.lovable.app/dashboard",
+        };
+        customerSubject = applyTemplate(customerTemplate.subject, vars);
+        customerHtml = applyTemplate(customerTemplate.html_body, vars);
+      } else {
+        customerSubject = payload.record_type === "booking"
+          ? "Your Discover Magazine Booking Confirmation"
+          : "Your Discover Magazine Quote Has Been Saved";
+        customerHtml = buildCustomerEmailHtml(payload);
+      }
 
       const customerResult = await resend.emails.send({
         from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
         to: [payload.email],
         subject: customerSubject,
-        html: buildCustomerEmailHtml(payload),
+        html: customerHtml,
       });
       results.customer = { success: true, data: customerResult };
       console.log("Customer confirmation sent:", customerResult);

@@ -675,6 +675,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          available_variables: string[]
+          created_at: string
+          display_name: string
+          html_body: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          available_variables?: string[]
+          created_at?: string
+          display_name: string
+          html_body: string
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          available_variables?: string[]
+          created_at?: string
+          display_name?: string
+          html_body?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           area: string
