@@ -1,75 +1,26 @@
 
 
-## Fix: June missing from start date options due to alphabetical sorting
+## Add Design Service blurb to FixedTermBasketSummary
 
-### Root Cause
+The blurb was previously added to `BookingSummaryStep.tsx`, but the screen shown in the screenshot is actually rendered by `FixedTermBasketSummary.tsx`. The design service text needs to be added there as well, below the "Book Now" button.
 
-The schedule data uses month **names** (e.g., "April", "June", "August") instead of sortable date strings (e.g., "2026-04"). In `src/lib/issueSchedule.ts`, line 272, months are sorted with a simple `.sort()` which sorts alphabetically:
+### Change
 
-```
-Alphabetical order: April, August, December, June, October
-Chronological order: April, June, August, October, December
-```
+**File: `src/components/FixedTermBasketSummary.tsx`**
 
-After filtering out past months, `.slice(0, 3)` takes the first 3 alphabetically -- "April, August, December" -- skipping June entirely.
+Insert the Design Service blurb after the "Book Now" button (around line 215), before the "What You're Booking" section:
 
-### Solution
-
-Update the sorting logic in `getAreaGroupedSchedules` to sort months **chronologically** instead of alphabetically. This requires converting month names (like "June") to a numeric order before sorting.
-
-### Changes
-
-**File: `src/lib/issueSchedule.ts`**
-
-1. Add a helper function to convert month strings to a sortable value. Handle both formats:
-   - `"2026-02"` (already sortable)
-   - `"June"` with `year` field in the schedule data (needs month-name-to-number conversion)
-
-2. Update `getAreaGroupedSchedules` (around line 272) to sort months chronologically using the helper, instead of the default `.sort()`.
-
-3. Also update the `availableMonths` sort (line 288 area) to ensure consistent chronological ordering throughout.
-
-The helper will look like:
-
-```typescript
-function getMonthSortKey(monthStr: string, schedule: any[]): string {
-  // Already in YYYY-MM format
-  if (/^\d{4}-\d{2}$/.test(monthStr)) return monthStr;
-
-  // Month name format - find its year from schedule data
-  const monthNames = ['January','February','March','April','May','June',
-                      'July','August','September','October','November','December'];
-  const monthIndex = monthNames.findIndex(
-    name => name.toLowerCase() === monthStr.toLowerCase()
-  );
-  if (monthIndex === -1) return monthStr;
-
-  const scheduleEntry = schedule.find((s: any) => s.month === monthStr);
-  const year = scheduleEntry?.year || new Date().getFullYear();
-  return `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
-}
+```tsx
+{/* Design Service Blurb */}
+<div className="mt-4 p-3 bg-muted/50 rounded-md text-sm">
+  <p className="font-medium mb-1">DESIGN SERVICE:</p>
+  <p className="text-muted-foreground">
+    By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.
+  </p>
+</div>
 ```
 
-Then the sort becomes:
+### Side note (not in this fix)
 
-```typescript
-const sortedMonths = Array.from(monthsSet).sort((a, b) => {
-  const aKey = getMonthSortKey(a, areas[0]?.schedule || []);
-  const bKey = getMonthSortKey(b, areas[0]?.schedule || []);
-  return aKey.localeCompare(bKey);
-});
-```
+The screenshot also shows "Selected issues: undefined 'y" and "undefined 'ne" — this is a separate bug in the month formatting logic in `FixedTermBasketSummary.tsx` where the year/month parsing is failing. This can be addressed separately if needed.
 
-### Impact
-
-- The start date radio buttons will correctly show **April, June, August** (chronologically) instead of **April, August, December** (alphabetically)
-- All other places using `getAreaGroupedSchedules` will also benefit from correct ordering
-- No changes needed to `BookingSummaryStep.tsx` or any other consumer -- the fix is contained in the utility function
-
-### Summary
-
-| File | Change |
-|------|--------|
-| `src/lib/issueSchedule.ts` | Add chronological sort helper; update `getAreaGroupedSchedules` sorting (lines 272, 296) |
-
-One file, small change. Fixes the month ordering across all schedule displays.
