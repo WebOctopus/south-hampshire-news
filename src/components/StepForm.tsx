@@ -125,7 +125,17 @@ export const StepForm: React.FC<StepFormProps> = ({ children, onComplete, stepLa
 
   const goToStep = (step: number) => {
     if (step >= 0 && step < totalSteps) {
-      setCurrentStep(step);
+      // Going backward is always allowed
+      if (step <= currentStep) {
+        setCurrentStep(step);
+        return;
+      }
+      // Going forward: validate via onStepTransition if available
+      if (stepLabels?.onStepTransition) {
+        stepLabels.onStepTransition(currentStep, () => setCurrentStep(step));
+      } else {
+        setCurrentStep(step);
+      }
     }
   };
 
