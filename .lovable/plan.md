@@ -1,16 +1,18 @@
 
 
-## Plan: Update Payment Button Text
+## Plan: Update Payment Option Text to "GoCardless"
 
-A simple text change in `src/components/dashboard/BookingDetailsDialog.tsx`.
+### Overview
+Replace "Direct Debit" with "GoCardless" in the payment option descriptions across all summary/basket views where the 3 Payment Options are displayed.
 
-### Change
-- **Line 604**: Change `Set Up Direct Debit Payment` to `Make Payment by GoCardless`
+### Changes
 
-### File
-| File | Line | Change |
-|------|------|--------|
-| `src/components/dashboard/BookingDetailsDialog.tsx` | 604 | Replace button label text |
+| File | Line | Current Text | New Text |
+|------|------|-------------|----------|
+| `src/components/BookingSummaryStep.tsx` | 663 | `'Direct Debit'` | `'GoCardless'` |
+| `src/components/EditQuoteForm.tsx` | 601 | `'Direct Debit'` | `'GoCardless'` |
 
-No other files are affected.
+These are the two files where the Monthly Payment Plan sub-label reads "Direct Debit" under the payment option radio buttons. Both will be updated to say "GoCardless" instead.
+
+No other files are affected for this specific summary page text.
 
