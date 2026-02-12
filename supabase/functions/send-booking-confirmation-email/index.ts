@@ -143,7 +143,7 @@ ${detailRowsHtml}
 ${bogofInfo}
 </table>
 <div style="background-color:#f0fdf4;border-radius:8px;padding:15px;text-align:center;">
-<a href="https://south-hampshire-news.lovable.app/admin" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">View in Admin Dashboard</a>
+<a href="https://peacockpixelmedia.co.uk/admin" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">View in Admin Dashboard</a>
 </div>
 </td></tr>
 <tr><td style="background-color:#f9fafb;padding:20px 40px;border-top:1px solid #e5e7eb;">
@@ -212,7 +212,7 @@ ${nextStepsHtml}
 </div>
 <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:25px;">
 <tr><td align="center">
-<a href="https://south-hampshire-news.lovable.app/dashboard" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:14px 30px;border-radius:6px;font-weight:bold;font-size:16px;">Go to Your Dashboard</a>
+<a href="https://peacockpixelmedia.co.uk/dashboard" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:14px 30px;border-radius:6px;font-weight:bold;font-size:16px;">Go to Your Dashboard</a>
 </td></tr></table>
 <div style="background-color:#f9fafb;border-radius:8px;padding:20px;">
 <p style="color:#555;font-size:14px;margin:0 0 8px;"><strong>Need help?</strong></p>
@@ -224,9 +224,9 @@ ${nextStepsHtml}
 <p style="color:#6b7280;font-size:14px;margin:0 0 10px;text-align:center;"><strong>Peacock & Pixel Ltd</strong> | Discover Magazine</p>
 <p style="color:#9ca3af;font-size:12px;margin:0;text-align:center;">Connecting South Hampshire communities since 2014</p>
 <p style="color:#9ca3af;font-size:12px;margin:15px 0 0;text-align:center;">
-<a href="https://south-hampshire-news.lovable.app" style="color:#166534;text-decoration:none;">Website</a> •
-<a href="https://south-hampshire-news.lovable.app/contact" style="color:#166534;text-decoration:none;">Contact Us</a> •
-<a href="https://south-hampshire-news.lovable.app/advertising" style="color:#166534;text-decoration:none;">Advertise</a>
+<a href="https://peacockpixelmedia.co.uk" style="color:#166534;text-decoration:none;">Website</a> •
+<a href="https://peacockpixelmedia.co.uk/contact" style="color:#166534;text-decoration:none;">Contact Us</a> •
+<a href="https://peacockpixelmedia.co.uk/advertising" style="color:#166534;text-decoration:none;">Advertise</a>
 </p>
 </td></tr>
 </table></td></tr></table></body></html>`;
@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
             phone: payload.phone || "Not provided",
             company: payload.company || "Not provided",
             details_table: "",
-            admin_url: "https://south-hampshire-news.lovable.app/admin",
+            admin_url: "https://peacockpixelmedia.co.uk/admin",
           };
           adminSubject = applyTemplate(adminTemplate.subject, vars);
           adminHtml = applyTemplate(adminTemplate.html_body, vars);
@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
           duration: payload.duration || "N/A",
           circulation: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
           total_cost: formatCurrency(payload.final_total),
-          dashboard_url: "https://south-hampshire-news.lovable.app/dashboard",
+          dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
         };
         customerSubject = applyTemplate(customerTemplate.subject, vars);
         customerHtml = applyTemplate(customerTemplate.html_body, vars);
