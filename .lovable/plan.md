@@ -1,43 +1,31 @@
 
 
-## Plan: Block step navigation until Campaign Duration is selected
+## Fix: Campaign Duration validation checking wrong step index
 
-### Problem
-Users can bypass the Campaign Duration validation by clicking the **step number circles** in the progress indicator. The `goToStep` function navigates directly without running any validation, unlike the "Next Step" button which correctly goes through `onStepTransition`.
+### Root Cause
+The validation in `handleStepTransition` checks `currentStep === 2`, but `AreaAndScheduleStep` is actually the **second child** of `StepForm` (index 1, zero-based):
 
-### Solution
-Add validation to `goToStep` in `StepForm.tsx` so that when navigating **forward** from step 2 (Area & Schedule), it also runs through the `onStepTransition` handler -- which already contains the Campaign Duration validation.
+- Step 0: `PricingOptionsStep`
+- Step 1: `AreaAndScheduleStep` (has Campaign Duration)
+- Step 2: `AdvertisementSizeStep` / `LeafletSizeStep`
+- Step 3+: remaining steps
 
-### Changes
+The comment even says "Step 2 is AreaAndScheduleStep (index 2 in the form)" but that's incorrect -- it's index 1. So validation never fires because when the user is on AreaAndScheduleStep (`currentStep === 1`), the code is looking for `currentStep === 2`.
 
-**File: `src/components/StepForm.tsx`**
+### Fix
 
-1. **Update `goToStep` function** (line 126-130): When the user clicks a step circle to go **forward** past the current step, run the same `onStepTransition` validation instead of jumping directly. If navigating backward, allow it freely (no validation needed for going back).
+**File:** `src/components/AdvertisingStepForm.tsx` (line 257)
 
+Change:
 ```typescript
-const goToStep = (step: number) => {
-  if (step >= 0 && step < totalSteps) {
-    // Going backward is always allowed
-    if (step <= currentStep) {
-      setCurrentStep(step);
-      return;
-    }
-    // Going forward: validate via onStepTransition if available
-    if (stepLabels?.onStepTransition) {
-      stepLabels.onStepTransition(currentStep, () => setCurrentStep(step));
-    } else {
-      setCurrentStep(step);
-    }
-  }
-};
+if (currentStep === 2) {
+```
+To:
+```typescript
+if (currentStep === 1) {
 ```
 
-This is a single edit to one function. It ensures the existing Campaign Duration validation (with toast + scroll) fires regardless of whether users click "Next Step" or click a future step circle directly.
+And update the comment on line 256 accordingly.
 
-### Summary
+One line change. This will make the Campaign Duration validation actually fire when users try to leave the Area & Schedule step.
 
-| File | Change |
-|------|--------|
-| `src/components/StepForm.tsx` | Update `goToStep` to run `onStepTransition` validation when navigating forward (lines 126-130) |
-
-One small edit, no new dependencies.
