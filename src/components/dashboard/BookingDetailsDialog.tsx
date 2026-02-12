@@ -601,7 +601,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         Setting up payment...
                       </> : <>
                         <CreditCard className="mr-2 h-4 w-4" />
-                        Set Up Direct Debit Payment
+                        Make Payment by GoCardless
                       </>}
                   </Button>
 
