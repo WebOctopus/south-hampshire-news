@@ -253,8 +253,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const handleStepTransition = (currentStep: number, nextStep: () => void) => {
-    // Step 2 is AreaAndScheduleStep (index 2 in the form)
-    if (currentStep === 2) {
+    // Step 1 is AreaAndScheduleStep (index 1 in the form)
+    if (currentStep === 1) {
       // Validate for leafleting - require duration AND month selections
       if (selectedPricingModel === 'leafleting') {
         if (!campaignData.selectedDuration) {
