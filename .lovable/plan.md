@@ -1,32 +1,43 @@
 
 
-## Plan: Scroll to Campaign Duration on validation failure
+## Plan: Block step navigation until Campaign Duration is selected
 
 ### Problem
-When users try to proceed without selecting a Campaign Duration, a toast error appears but the page doesn't scroll to the Campaign Duration field, so they may not see what needs fixing.
+Users can bypass the Campaign Duration validation by clicking the **step number circles** in the progress indicator. The `goToStep` function navigates directly without running any validation, unlike the "Next Step" button which correctly goes through `onStepTransition`.
 
 ### Solution
-Add a DOM id to the Campaign Duration section in `AreaAndScheduleStep.tsx`, then scroll to it when validation fails in `AdvertisingStepForm.tsx`.
+Add validation to `goToStep` in `StepForm.tsx` so that when navigating **forward** from step 2 (Area & Schedule), it also runs through the `onStepTransition` handler -- which already contains the Campaign Duration validation.
 
 ### Changes
 
-**File 1: `src/components/AreaAndScheduleStep.tsx`** (line 772)
-- Add `id="campaign-duration-section"` to the Campaign Duration container div so it can be targeted by `scrollIntoView`.
+**File: `src/components/StepForm.tsx`**
 
-**File 2: `src/components/AdvertisingStepForm.tsx`** (lines 260-265 and 285-290)
-- After showing the toast for missing Campaign Duration (for both `leafleting` and `fixed` models), add:
-  ```typescript
-  document.getElementById('campaign-duration-section')?.scrollIntoView({ 
-    behavior: 'smooth', 
-    block: 'center' 
-  });
-  ```
-- This scrolls smoothly to the Campaign Duration dropdown, making it immediately visible alongside the red border and error message already in place.
+1. **Update `goToStep` function** (line 126-130): When the user clicks a step circle to go **forward** past the current step, run the same `onStepTransition` validation instead of jumping directly. If navigating backward, allow it freely (no validation needed for going back).
+
+```typescript
+const goToStep = (step: number) => {
+  if (step >= 0 && step < totalSteps) {
+    // Going backward is always allowed
+    if (step <= currentStep) {
+      setCurrentStep(step);
+      return;
+    }
+    // Going forward: validate via onStepTransition if available
+    if (stepLabels?.onStepTransition) {
+      stepLabels.onStepTransition(currentStep, () => setCurrentStep(step));
+    } else {
+      setCurrentStep(step);
+    }
+  }
+};
+```
+
+This is a single edit to one function. It ensures the existing Campaign Duration validation (with toast + scroll) fires regardless of whether users click "Next Step" or click a future step circle directly.
 
 ### Summary
+
 | File | Change |
 |------|--------|
-| `src/components/AreaAndScheduleStep.tsx` | Add `id="campaign-duration-section"` to duration div (line 772) |
-| `src/components/AdvertisingStepForm.tsx` | Add `scrollIntoView` after both duration validation toasts (lines ~263 and ~288) |
+| `src/components/StepForm.tsx` | Update `goToStep` to run `onStepTransition` validation when navigating forward (lines 126-130) |
 
-Two small edits, no new dependencies.
+One small edit, no new dependencies.
