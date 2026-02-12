@@ -1,26 +1,28 @@
 
 
-## Make Design Service blurb consistent with the other 3 info points
+## Replace Lovable URLs with peacockpixelmedia.co.uk in email edge functions
 
-The "DESIGN SERVICE" blurb currently uses a different style (plain box with `bg-muted/50`) compared to the three points below it ("WHAT YOU'RE BOOKING", "INVESTMENT SHOWN", "IMMEDIATE CONFIRMATION") which use an icon + text layout with `flex items-start gap-2`.
+The screenshot confirms that email links (e.g. the "dashboard" link) currently point to `south-hampshire-news.lovable.app`. All instances need to be replaced with `https://peacockpixelmedia.co.uk`.
 
-### Change
+### Files to update
 
-**File: `src/components/FixedTermBasketSummary.tsx`**
+**1. `supabase/functions/send-welcome-email/index.ts`**
+- Line 84: fallback HTML dashboard link -> `https://peacockpixelmedia.co.uk/dashboard`
+- Line 134: template variable `dashboard_url` -> `https://peacockpixelmedia.co.uk/dashboard`
 
-Replace the current Design Service blurb (lines 307-313) with the same layout pattern used by the other three points:
+**2. `supabase/functions/send-booking-confirmation-email/index.ts`**
+- Line 146: admin dashboard link -> `https://peacockpixelmedia.co.uk/admin`
+- Line 215: customer dashboard link -> `https://peacockpixelmedia.co.uk/dashboard`
+- Line 227: website footer link -> `https://peacockpixelmedia.co.uk`
+- Line 228: contact footer link -> `https://peacockpixelmedia.co.uk/contact`
+- Line 229: advertise footer link -> `https://peacockpixelmedia.co.uk/advertising`
+- Line 272: admin_url template variable -> `https://peacockpixelmedia.co.uk/admin`
+- Line 316: dashboard_url template variable -> `https://peacockpixelmedia.co.uk/dashboard`
 
-```tsx
-<div className="flex items-start gap-2">
-  <span className="text-primary font-medium">🎨</span>
-  <div>
-    <p className="font-medium">DESIGN SERVICE:</p>
-    <p className="text-muted-foreground">By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.</p>
-  </div>
-</div>
-```
+### Summary
 
-Then move it into the same `space-y-4` container as the other three points (the `mt-6 space-y-4 text-sm` div at line 317), making it the first item in that group of four.
+A simple find-and-replace of `https://south-hampshire-news.lovable.app` with `https://peacockpixelmedia.co.uk` across both edge function files. No logic changes needed. Both functions will be redeployed automatically.
 
-This gives it the same icon-left, text-right layout as the others. The paint palette emoji keeps visual consistency with the emoji icons used by the other points.
+### Technical detail
 
+The database-stored email templates were checked and contain no Lovable URLs, so only the hardcoded fallback HTML and template variable defaults need updating.
