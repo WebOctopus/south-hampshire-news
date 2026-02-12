@@ -263,6 +263,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             description: "Please select a campaign duration before continuing.",
             variant: "destructive",
           });
+          document.getElementById('campaign-duration-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
         }
         
@@ -288,6 +289,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             description: "Please select a campaign duration before continuing.",
             variant: "destructive",
           });
+          document.getElementById('campaign-duration-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
         }
         

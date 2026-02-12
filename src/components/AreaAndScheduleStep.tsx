@@ -769,7 +769,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
       {/* Duration Selection - Hidden for BOGOF as it's fixed to 6 months */}
       {effectiveSelectedAreas.length > 0 && pricingModel !== 'bogof' && (
-        <div className={cn(
+        <div id="campaign-duration-section" className={cn(
           "space-y-4 p-4 rounded-lg border-2 transition-colors",
           !selectedDuration ? "border-destructive/50 bg-destructive/5" : "border-transparent"
         )}>
