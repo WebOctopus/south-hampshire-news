@@ -233,6 +233,25 @@ export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
  * Group areas by their schedules and return available starting months for each group
  * Returns fixed options: Next Available Issues, January 2026, February 2026, March 2026, and Later option
  */
+/**
+ * Convert a month string to a sortable YYYY-MM key for chronological ordering.
+ * Handles both "2026-04" format and month name format like "June".
+ */
+function getMonthSortKey(monthStr: string, schedule: any[]): string {
+  if (/^\d{4}-\d{2}$/.test(monthStr)) return monthStr;
+
+  const monthNames = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+  const monthIndex = monthNames.findIndex(
+    name => name.toLowerCase() === monthStr.toLowerCase()
+  );
+  if (monthIndex === -1) return monthStr;
+
+  const scheduleEntry = schedule.find((s: any) => s.month === monthStr);
+  const year = scheduleEntry?.year || new Date().getFullYear();
+  return `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+}
+
 export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule[] {
   if (!areaSchedules || areaSchedules.length === 0) {
     return [];
@@ -268,8 +287,13 @@ export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule
       }
     });
 
-    // Sort months and find the next available one
-    const sortedMonths = Array.from(monthsSet).sort();
+    // Sort months chronologically (not alphabetically)
+    const allScheduleData = areas[0]?.schedule || [];
+    const sortedMonths = Array.from(monthsSet).sort((a, b) => {
+      const aKey = getMonthSortKey(a, allScheduleData);
+      const bKey = getMonthSortKey(b, allScheduleData);
+      return aKey.localeCompare(bKey);
+    });
     let nextAvailableMonth = '';
     
     for (const monthStr of sortedMonths) {
