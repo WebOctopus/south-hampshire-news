@@ -304,17 +304,18 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   Book Now
                 </button>
 
-                {/* Design Service Blurb */}
-                <div className="mt-4 p-3 bg-muted/50 rounded-md text-sm">
-                  <p className="font-medium mb-1">DESIGN SERVICE:</p>
-                  <p className="text-muted-foreground">
-                    By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.
-                  </p>
-                </div>
               </div>
 
-              {/* What You're Booking */}
+              {/* Info Points */}
               <div className="mt-6 space-y-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-primary font-medium">🎨</span>
+                  <div>
+                    <p className="font-medium">DESIGN SERVICE:</p>
+                    <p className="text-muted-foreground">By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.</p>
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-2">
                   <span className="text-primary font-medium">📦</span>
                   <div>
