@@ -15,7 +15,8 @@ import {
   Upload,
   Calendar,
   ClipboardCheck,
-  Star
+  Star,
+  Mail
 } from "lucide-react"
 
 import {
@@ -96,6 +97,11 @@ const menuItems = [
     title: "CSV Import",
     icon: Upload,
     section: "csv-import"
+  },
+  {
+    title: "Email Templates",
+    icon: Mail,
+    section: "email-templates"
   }
 ]
 
