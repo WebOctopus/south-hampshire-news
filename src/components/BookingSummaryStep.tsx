@@ -660,7 +660,7 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                             {option.option_type === 'monthly' ? 'Monthly Payment Plan' : option.display_name}
                           </Label>
                           <p className="text-sm text-muted-foreground mt-1">
-                            {option.option_type === 'monthly' ? 'Direct Debit' : option.description}
+                            {option.option_type === 'monthly' ? 'GoCardless' : option.description}
                           </p>
                           <p className="text-lg font-bold text-primary">
                             {formatPrice(amount)} + VAT
