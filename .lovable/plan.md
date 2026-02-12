@@ -1,73 +1,75 @@
 
 
-## Fix: Campaign Duration validation is never executed
+## Fix: June missing from start date options due to alphabetical sorting
 
 ### Root Cause
 
-The `handleStepTransition` function (line 255) contains all the Campaign Duration validation logic, but it is **never actually used**. Instead, the `stepLabels` object (line 943) defines its own inline `onStepTransition` handler that completely bypasses `handleStepTransition`:
+The schedule data uses month **names** (e.g., "April", "June", "August") instead of sortable date strings (e.g., "2026-04"). In `src/lib/issueSchedule.ts`, line 272, months are sorted with a simple `.sort()` which sorts alphabetically:
 
 ```
-stepLabels.onStepTransition (line 947)  <-- This is what StepForm calls
-    |
-    +--> Only checks BOGOF dialog at step 3
-    +--> Calls nextStep() directly for everything else
-    +--> NEVER calls handleStepTransition()
-
-handleStepTransition (line 255)  <-- This has the validation, but is ORPHANED
-    |
-    +--> Checks Campaign Duration at step 1
-    +--> Shows toast + scrolls to section
-    +--> Never gets called by anything
+Alphabetical order: April, August, December, June, October
+Chronological order: April, June, August, October, December
 ```
 
-### Fix
+After filtering out past months, `.slice(0, 3)` takes the first 3 alphabetically -- "April, August, December" -- skipping June entirely.
 
-Merge the Campaign Duration validation from `handleStepTransition` into the actual `onStepTransition` handler inside `stepLabels` (line 947-956). This way both the Campaign Duration check (step 1) and the BOGOF dialog check (step 3) live in the same function that StepForm actually calls.
+### Solution
+
+Update the sorting logic in `getAreaGroupedSchedules` to sort months **chronologically** instead of alphabetically. This requires converting month names (like "June") to a numeric order before sorting.
 
 ### Changes
 
-**File: `src/components/AdvertisingStepForm.tsx`**
+**File: `src/lib/issueSchedule.ts`**
 
-Update the `onStepTransition` inside `stepLabels` (lines 947-956) to:
+1. Add a helper function to convert month strings to a sortable value. Handle both formats:
+   - `"2026-02"` (already sortable)
+   - `"June"` with `year` field in the schedule data (needs month-name-to-number conversion)
 
-1. Add Campaign Duration validation when `currentStep === 1` (leaving the Area and Schedule step)
-2. For `fixed` and `leafleting` models: check that `campaignData.selectedDuration` is set; if not, show the error toast, scroll to the duration section, and return without calling `nextStep()`
-3. Keep the existing BOGOF dialog check at step 3
-4. Remove or mark the orphaned `handleStepTransition` function (lines 255-314) since its logic will now live in `stepLabels.onStepTransition`
+2. Update `getAreaGroupedSchedules` (around line 272) to sort months chronologically using the helper, instead of the default `.sort()`.
 
-The updated `onStepTransition` will look like:
+3. Also update the `availableMonths` sort (line 288 area) to ensure consistent chronological ordering throughout.
+
+The helper will look like:
 
 ```typescript
-onStepTransition: (currentStep: number, nextStep: () => void) => {
-  // Step 1: Validate Campaign Duration before leaving Area & Schedule
-  if (currentStep === 1) {
-    if (selectedPricingModel === 'leafleting' || selectedPricingModel === 'fixed') {
-      if (!campaignData.selectedDuration) {
-        toast({
-          title: "Campaign Duration Required",
-          description: "Please select a campaign duration before continuing.",
-          variant: "destructive",
-        });
-        document.getElementById('campaign-duration-section')?.scrollIntoView({ 
-          behavior: 'smooth', block: 'center' 
-        });
-        return; // Block navigation
-      }
-    }
-  }
+function getMonthSortKey(monthStr: string, schedule: any[]): string {
+  // Already in YYYY-MM format
+  if (/^\d{4}-\d{2}$/.test(monthStr)) return monthStr;
 
-  // Step 3: BOGOF/FreePlus dialog for Fixed Term with 3+ areas
-  if (currentStep === 3 && selectedPricingModel === 'fixed' 
-      && (campaignData.selectedAreas?.length || 0) >= 3 
-      && campaignData.selectedAdSize) {
-    setPendingNextStep(() => nextStep);
-    setShowFixedTermConfirmation(true);
-    return;
-  }
+  // Month name format - find its year from schedule data
+  const monthNames = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+  const monthIndex = monthNames.findIndex(
+    name => name.toLowerCase() === monthStr.toLowerCase()
+  );
+  if (monthIndex === -1) return monthStr;
 
-  nextStep(); // Proceed normally
+  const scheduleEntry = schedule.find((s: any) => s.month === monthStr);
+  const year = scheduleEntry?.year || new Date().getFullYear();
+  return `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
 }
 ```
 
-This is the only change needed. The validation, toast, and scroll-to-section logic all remain the same -- they just need to be in the right place.
+Then the sort becomes:
 
+```typescript
+const sortedMonths = Array.from(monthsSet).sort((a, b) => {
+  const aKey = getMonthSortKey(a, areas[0]?.schedule || []);
+  const bKey = getMonthSortKey(b, areas[0]?.schedule || []);
+  return aKey.localeCompare(bKey);
+});
+```
+
+### Impact
+
+- The start date radio buttons will correctly show **April, June, August** (chronologically) instead of **April, August, December** (alphabetically)
+- All other places using `getAreaGroupedSchedules` will also benefit from correct ordering
+- No changes needed to `BookingSummaryStep.tsx` or any other consumer -- the fix is contained in the utility function
+
+### Summary
+
+| File | Change |
+|------|--------|
+| `src/lib/issueSchedule.ts` | Add chronological sort helper; update `getAreaGroupedSchedules` sorting (lines 272, 296) |
+
+One file, small change. Fixes the month ordering across all schedule displays.
