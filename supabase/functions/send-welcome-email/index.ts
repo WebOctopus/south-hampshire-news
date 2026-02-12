@@ -81,7 +81,7 @@ function buildFallbackHtml(name: string): string {
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center">
-                    <a href="https://south-hampshire-news.lovable.app/dashboard" style="display: inline-block; background-color: #166534; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                    <a href="https://peacockpixelmedia.co.uk/dashboard" style="display: inline-block; background-color: #166534; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: bold; font-size: 16px;">
                       Go to Your Dashboard
                     </a>
                   </td>
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     if (template) {
       const vars: Record<string, string> = {
         customer_name: name,
-        dashboard_url: "https://south-hampshire-news.lovable.app/dashboard",
+        dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
       };
       subject = applyTemplate(template.subject, vars);
       html = applyTemplate(template.html_body, vars);
