@@ -739,6 +739,12 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                 </button>
               </div>
 
+              {/* Design Service Blurb */}
+              <div className="mt-4 p-3 bg-muted/50 rounded-md text-sm">
+                <p className="font-medium mb-1">DESIGN SERVICE:</p>
+                <p className="text-muted-foreground">By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.</p>
+              </div>
+
               {/* What You're Booking */}
               <div className="mt-6 space-y-4 text-sm">
                 <div className="flex items-start gap-2">
