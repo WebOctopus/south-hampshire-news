@@ -882,7 +882,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   const stepLabels = {
-    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Quote & Payment Options', 'Contact Information', 'Save My Quote'],
+    nextButtonLabels: ['Select Areas & Publication Schedule', 'Choose Advertisement Size', 'Quote & Payment Options', 'Next: Contact Details', 'Save My Quote'],
     prevButtonLabel: 'Previous Step',
     onLastStepNext: () => Promise.resolve(), // Dummy function since we use the global handler
     onStepTransition: (currentStep: number, nextStep: () => void) => {
@@ -931,6 +931,18 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             });
             return;
           }
+        }
+      }
+
+      // Step 3: Payment option required for bogof and leafleting
+      if (currentStep === 3 && selectedPricingModel !== 'fixed') {
+        if (!campaignData.selectedPaymentOption) {
+          toast({
+            title: "Payment Option Required",
+            description: "Please select a payment option to continue.",
+            variant: "destructive",
+          });
+          return;
         }
       }
 
