@@ -279,7 +279,7 @@ Deno.serve(async (req) => {
         }
 
         const adminResult = await resend.emails.send({
-          from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
+          from: "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>",
           to: adminEmail.split(",").map((e: string) => e.trim()),
           subject: adminSubject,
           html: adminHtml,
@@ -348,7 +348,7 @@ Deno.serve(async (req) => {
       }
 
       const customerResult = await resend.emails.send({
-        from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
+        from: "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>",
         to: [payload.email],
         subject: customerSubject,
         html: customerHtml,
