@@ -1,62 +1,114 @@
 
-## Fix: 3+ Package Campaign Schedule Showing Wrong Start Month
+## Fix: "Contact Information" Button Bypasses Mandatory Payment Option
 
-### Root Cause
+### The Problem
 
-The schedule data in the database has a **mixed month format** — this is the core problem:
+On the basket/summary page (Step 4 of 5), the top-right "Contact Information →" button navigates directly to the contact details step **without requiring a payment option to be selected**. This bypasses the whole purpose of the payment selection screen.
 
-- Early months are stored as ISO strings: `"2026-01"`, `"2026-03"` 
-- Later months are stored as raw English names with a separate year field: `"April"`, `"May"`, `"June"`, `"July"`, etc.
+The root cause is in `AdvertisingStepForm.tsx`. The `onStepTransition` handler validates step 1 (area/schedule) and step 3 (fixed term dialog), but has **no validation at step 3 (index) — the basket summary step**:
 
-When the "starting issue" radio options are built in `getAreaGroupedSchedules()` (in `issueSchedule.ts`), the value stored for the user's selection is the raw month name — e.g. `"April"` instead of `"2026-04"`. This creates a cascade of failures:
-
-1. `formatMonthForDisplay("April")` fails to parse `"April"` as a `YYYY-MM` date string, so the label shown is just `"April"` with no year
-2. When the user picks `"April"`, `selectedStartingIssue = "April"` (not `"2026-04"`)
-3. For areas that publish in Jan/Mar/May cycle (e.g. Chandler's Ford), the comparison code tries `new Date("April" + "-01")` which produces `Invalid Date (NaN)`
-4. All `>= NaN` comparisons return `false`, so the "find the next month at or after the start" logic finds nothing
-5. A fallback kicks in that simply picks the first schedule entry whose date is after today — which can end up being the wrong month entirely (January 2026 for areas where that entry is present, depending on the comparison)
-
-### The Fix — Two Files
-
-#### 1. `src/lib/issueSchedule.ts` — Normalise month values to YYYY-MM in options
-
-Add an exported helper `normalizeMonthToYYYYMM(monthStr, schedule)` that converts any month string (whether `"April"` or `"2026-04"`) into a consistent `"YYYY-MM"` key, using the `year` field from the schedule entry when available.
-
-Update `getAreaGroupedSchedules` to:
-- Use `normalizeMonthToYYYYMM` as the key when building the internal `monthToEntry` map (so all lookups and comparisons use a consistent format)
-- Emit option `value` as the normalised `"2026-04"` string, not the raw `"April"` string
-- This also fixes `formatMonthForDisplay` labels — `"2026-04"` parses correctly to `"April 2026"`
-
-#### 2. `src/components/BookingSummaryStep.tsx` — Normalise schedule entries before comparison
-
-Add a local helper `normalizeScheduleMonth(s)` inside the render callback that converts a single schedule entry's `month` field to YYYY-MM (using `s.year` when available).
-
-Replace every direct `s.month === startMonth` comparison with `normalizeScheduleMonth(s) === startMonth`, and replace `new Date(s.month + '-01')` with `new Date(normalizeScheduleMonth(s) + '-01')`.
-
-This ensures that even though the database stores `"April"`, the comparison works correctly against `"2026-04"`.
-
-### Example — Before & After
-
-**Before (broken):**
-```
-selectedStartingIssue = "April"   ← raw month name
-new Date("April" + "-01")         ← Invalid Date / NaN
-NaN >= NaN                         ← always false → falls to bad fallback
-→ Area 2 shows January 2026 ✗
+```typescript
+// currentStep 3 = basket summary (0-indexed)
+// Currently: no check → calls nextStep() freely
+// Fix needed: block if !campaignData.selectedPaymentOption
 ```
 
-**After (fixed):**
+The "Save Quote" and "Book Now" buttons **inside** the `BookingSummaryStep` component do check `disabled={!selectedPaymentOption}`, but the top-right StepForm navigation button completely ignores this.
+
+### Two Changes to Make
+
+---
+
+#### Change 1: Add payment validation to `onStepTransition` for step index 3
+
+In `src/components/AdvertisingStepForm.tsx`, inside the `onStepTransition` handler, add a check **before** the final `nextStep()` call:
+
+```typescript
+// Step 3 (0-indexed) = Basket Summary step — payment option must be selected
+if (currentStep === 3 && (selectedPricingModel === 'bogof' || selectedPricingModel === 'leafleting')) {
+  if (!campaignData.selectedPaymentOption) {
+    toast({
+      title: "Payment Option Required",
+      description: "Please select a payment option before continuing.",
+      variant: "destructive",
+    });
+    return;
+  }
+}
 ```
-selectedStartingIssue = "2026-04" ← normalised YYYY-MM
-new Date("2026-04-01")            ← valid April 1 date
-"2026-03" < "2026-04" → skip     ← March skipped correctly
-"2026-05" >= "2026-04" → match   ← May 2026 correctly selected as start
-→ Area 2 shows May 2026, July 2026, September 2026 ✓
+
+Note: For `fixed` pricing model, `currentStep === 3` is already intercepted by the BOGOF/FreePlus dialog check (`if (currentStep === 3 && selectedPricingModel === 'fixed' ...)`). That dialog then calls `nextStep()` via `handleContinueWithFixedTerm` — so we also need to add the payment check inside that dialog handler, or before it.
+
+The cleanest approach: add a **single early-exit payment check at `currentStep === 3` for ALL pricing models** before the fixed-term dialog check:
+
+```typescript
+// Step 3: Payment option must always be selected (for bogof/leafleting)
+// For fixed, it will also need this but fixed goes through FixedTermBasketSummary which has no payment options
 ```
+
+Wait — actually **fixed term uses `FixedTermBasketSummary`** which has no payment options at all (it's a different, simplified summary with no payment selection). So the validation should only apply for `bogof` and `leafleting`.
+
+**Final logic:**
+
+```typescript
+onStepTransition: (currentStep: number, nextStep: () => void) => {
+  // ... existing step 1 validations ...
+
+  // Step 3: Payment option required for bogof and leafleting
+  if (currentStep === 3 && selectedPricingModel !== 'fixed') {
+    if (!campaignData.selectedPaymentOption) {
+      toast({
+        title: "Payment Option Required",
+        description: "Please select a payment option to continue.",
+        variant: "destructive",
+      });
+      return; // Block navigation
+    }
+  }
+
+  // Step 3: BOGOF/FreePlus dialog for Fixed Term with 3+ areas (existing)
+  if (currentStep === 3 && selectedPricingModel === 'fixed' && ...) {
+    // existing dialog logic
+  }
+
+  nextStep();
+}
+```
+
+---
+
+#### Change 2: Remove the "Contact Information" button label ambiguity (optional UX improvement)
+
+The button label "Contact Information" at the top-right is confusing — it implies you click it to provide contact info, bypassing the payment selection. Since the basket summary already has "Save Quote" and "Book Now" buttons with proper validation, the top-right "Contact Information" button is redundant and misleading.
+
+**Two options for this:**
+
+**Option A (preferred):** Keep the button but rename it to something like `"Next: Contact Details →"` so it's clearer it's a step-forward action, and it will now be blocked by the payment validation above.
+
+**Option B:** Hide the top-right next button specifically on step 4 (the basket summary), since the inline buttons serve this purpose better.
+
+We'll go with **Option A** — rename the label and enforce the payment validation gate. This is the least disruptive change and keeps consistent navigation UX.
+
+The `nextButtonLabels` array at index 3 currently reads `'Contact Information'`. We'll change it to `'Next: Contact Details'` to make it clearer it's a navigation action rather than a section label.
+
+---
 
 ### Files Changed
 
-- `src/lib/issueSchedule.ts` — add helper, update `getAreaGroupedSchedules` to output YYYY-MM values
-- `src/components/BookingSummaryStep.tsx` — normalise schedule entry months before all comparisons
+| File | Change |
+|---|---|
+| `src/components/AdvertisingStepForm.tsx` | Add payment option validation at `currentStep === 3` in `onStepTransition`; optionally rename label |
 
-No database changes, no edge function changes.
+No database changes. No edge function changes. Single file edit.
+
+### Step Index Reference
+
+| StepForm 0-indexed | Step Label | Pricing models |
+|---|---|---|
+| 0 | Pricing Options | all |
+| 1 | Area & Schedule | all |
+| 2 | Ad Size / Design | all |
+| 3 | **Basket Summary** | bogof → BookingSummaryStep; fixed → FixedTermBasketSummary; leafleting → LeafletBasketSummary |
+| 4 | Contact Information | all |
+
+The validation fires when the user tries to leave step index 3 (basket summary). For `bogof` and `leafleting` it will block if no payment option is selected.
