@@ -146,8 +146,24 @@ ${bogofInfo}
 <a href="https://peacockpixelmedia.co.uk/admin" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">View in Admin Dashboard</a>
 </div>
 </td></tr>
-<tr><td style="background-color:#f9fafb;padding:20px 40px;border-top:1px solid #e5e7eb;">
-<p style="color:#9ca3af;font-size:12px;margin:0;text-align:center;">This is an automated notification from Discover Magazine</p>
+<tr><td style="background-color:#f9fafb;padding:30px 40px;border-top:1px solid #e5e7eb;text-align:center;">
+<img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width:160px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />
+<table role="presentation" style="width:100%;border-collapse:collapse;">
+<tr><td style="text-align:center;padding:4px 0;">
+<span style="color:#166534;font-size:14px;">&#x1F4DE;</span>
+<a href="tel:02380266388" style="color:#374151;font-size:14px;text-decoration:none;margin-left:6px;">023 8026 6388</a>
+</td></tr>
+<tr><td style="text-align:center;padding:4px 0;">
+<span style="color:#166534;font-size:14px;">&#x2709;</span>
+<a href="mailto:discover@discovermagazines.co.uk" style="color:#166534;font-size:14px;text-decoration:none;margin-left:6px;">discover@discovermagazines.co.uk</a>
+</td></tr>
+<tr><td style="text-align:center;padding:4px 0;">
+<span style="color:#166534;font-size:14px;">&#x1F4CD;</span>
+<span style="color:#374151;font-size:14px;margin-left:6px;">30 Leigh Road, Eastleigh, SO50 9DT Hampshire</span>
+</td></tr>
+</table>
+<p style="color:#9ca3af;font-size:12px;margin:16px 0 8px;">Connecting South Hampshire communities since 2014</p>
+<p style="color:#9ca3af;font-size:12px;margin:0;">This is an automated notification from Discover Magazine</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
@@ -216,16 +232,30 @@ ${nextStepsHtml}
 </td></tr></table>
 <div style="background-color:#f9fafb;border-radius:8px;padding:20px;">
 <p style="color:#555;font-size:14px;margin:0 0 8px;"><strong>Need help?</strong></p>
-<p style="color:#555;font-size:14px;margin:0;">📧 Email: <a href="mailto:info@peacockpixelmedia.co.uk" style="color:#166534;">info@peacockpixelmedia.co.uk</a></p>
-<p style="color:#555;font-size:14px;margin:5px 0 0;">📞 Phone: 023 9298 9314</p>
+<p style="color:#555;font-size:14px;margin:0;">&#x2709; Email: <a href="mailto:discover@discovermagazines.co.uk" style="color:#166534;">discover@discovermagazines.co.uk</a></p>
+<p style="color:#555;font-size:14px;margin:5px 0 0;">&#x1F4DE; Phone: <a href="tel:02380266388" style="color:#166534;text-decoration:none;">023 8026 6388</a></p>
 </div>
 </td></tr>
-<tr><td style="background-color:#f9fafb;padding:30px 40px;border-top:1px solid #e5e7eb;">
-<p style="color:#6b7280;font-size:14px;margin:0 0 10px;text-align:center;"><strong>Peacock & Pixel Ltd</strong> | Discover Magazine</p>
-<p style="color:#9ca3af;font-size:12px;margin:0;text-align:center;">Connecting South Hampshire communities since 2014</p>
-<p style="color:#9ca3af;font-size:12px;margin:15px 0 0;text-align:center;">
-<a href="https://peacockpixelmedia.co.uk" style="color:#166534;text-decoration:none;">Website</a> •
-<a href="https://peacockpixelmedia.co.uk/contact" style="color:#166534;text-decoration:none;">Contact Us</a> •
+<tr><td style="background-color:#f9fafb;padding:30px 40px;border-top:1px solid #e5e7eb;text-align:center;">
+<img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width:160px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />
+<table role="presentation" style="width:100%;border-collapse:collapse;">
+<tr><td style="text-align:center;padding:4px 0;">
+<span style="color:#166534;font-size:14px;">&#x1F4DE;</span>
+<a href="tel:02380266388" style="color:#374151;font-size:14px;text-decoration:none;margin-left:6px;">023 8026 6388</a>
+</td></tr>
+<tr><td style="text-align:center;padding:4px 0;">
+<span style="color:#166534;font-size:14px;">&#x2709;</span>
+<a href="mailto:discover@discovermagazines.co.uk" style="color:#166534;font-size:14px;text-decoration:none;margin-left:6px;">discover@discovermagazines.co.uk</a>
+</td></tr>
+<tr><td style="text-align:center;padding:4px 0;">
+<span style="color:#166534;font-size:14px;">&#x1F4CD;</span>
+<span style="color:#374151;font-size:14px;margin-left:6px;">30 Leigh Road, Eastleigh, SO50 9DT Hampshire</span>
+</td></tr>
+</table>
+<p style="color:#9ca3af;font-size:12px;margin:16px 0 8px;">Connecting South Hampshire communities since 2014</p>
+<p style="color:#9ca3af;font-size:12px;margin:0;">
+<a href="https://peacockpixelmedia.co.uk" style="color:#166534;text-decoration:none;">Website</a> &bull;
+<a href="https://peacockpixelmedia.co.uk/contact" style="color:#166534;text-decoration:none;">Contact Us</a> &bull;
 <a href="https://peacockpixelmedia.co.uk/advertising" style="color:#166534;text-decoration:none;">Advertise</a>
 </p>
 </td></tr>
