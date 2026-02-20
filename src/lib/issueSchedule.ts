@@ -233,23 +233,33 @@ export function getAvailableIssueOptions(areaSchedules: any[]): IssueOption[] {
  * Group areas by their schedules and return available starting months for each group
  * Returns fixed options: Next Available Issues, January 2026, February 2026, March 2026, and Later option
  */
+const MONTH_NAMES = ['January','February','March','April','May','June',
+                     'July','August','September','October','November','December'];
+
+/**
+ * Normalise any month string to YYYY-MM format.
+ * Handles both "2026-04" (already correct) and plain month names like "April"
+ * by using the `year` field from the matching schedule entry.
+ */
+export function normalizeMonthToYYYYMM(monthStr: string, schedule: any[]): string {
+  if (/^\d{4}-\d{2}$/.test(monthStr)) return monthStr;
+
+  const monthIndex = MONTH_NAMES.findIndex(
+    name => name.toLowerCase() === monthStr.toLowerCase()
+  );
+  if (monthIndex === -1) return monthStr; // unknown format — return as-is
+
+  const scheduleEntry = schedule.find((s: any) => s.month === monthStr);
+  const year = scheduleEntry?.year || new Date().getFullYear();
+  return `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+}
+
 /**
  * Convert a month string to a sortable YYYY-MM key for chronological ordering.
  * Handles both "2026-04" format and month name format like "June".
  */
 function getMonthSortKey(monthStr: string, schedule: any[]): string {
-  if (/^\d{4}-\d{2}$/.test(monthStr)) return monthStr;
-
-  const monthNames = ['January','February','March','April','May','June',
-                      'July','August','September','October','November','December'];
-  const monthIndex = monthNames.findIndex(
-    name => name.toLowerCase() === monthStr.toLowerCase()
-  );
-  if (monthIndex === -1) return monthStr;
-
-  const scheduleEntry = schedule.find((s: any) => s.month === monthStr);
-  const year = scheduleEntry?.year || new Date().getFullYear();
-  return `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+  return normalizeMonthToYYYYMM(monthStr, schedule);
 }
 
 export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule[] {
@@ -294,36 +304,35 @@ export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule
       const bKey = getMonthSortKey(b, allScheduleData);
       return aKey.localeCompare(bKey);
     });
-    let nextAvailableMonth = '';
-    
-    for (const monthStr of sortedMonths) {
-      try {
-        const monthDate = parse(monthStr, 'yyyy-MM', new Date());
-        if (!isBefore(monthDate, currentMonth)) {
-          nextAvailableMonth = monthStr;
-          break;
-        }
-      } catch (error) {
-        console.error('Error parsing month:', monthStr, error);
-      }
-    }
+    // Filter months where print deadline hasn't passed, and normalise to YYYY-MM for comparison
 
-    // Filter months where print deadline hasn't passed
     const availableMonths = sortedMonths.filter(monthStr => {
-      const monthSchedule = areas[0]?.schedule?.find(
-        (s: any) => s.month === monthStr
+      const normalised = normalizeMonthToYYYYMM(monthStr, allScheduleData);
+      // Find the schedule entry by either raw name or normalised key
+      const monthSchedule = allScheduleData.find(
+        (s: any) => s.month === monthStr || normalizeMonthToYYYYMM(s.month, allScheduleData) === normalised
       );
-      return monthSchedule ? isMonthAvailable(monthSchedule) : true;
+      if (!monthSchedule) return true;
+      // Only include months whose print deadline is today or in the future
+      try {
+        const normDate = parse(normalised, 'yyyy-MM', new Date());
+        if (isBefore(normDate, currentMonth)) return false;
+      } catch { /* keep it */ }
+      return isMonthAvailable(monthSchedule);
     });
 
     // Build options from first 3 available months + "Later" option
+    // ALWAYS emit value as YYYY-MM so comparisons in BookingSummaryStep work correctly
     const scheduleOptions: IssueOption[] = availableMonths
       .slice(0, 3)
-      .map(monthStr => ({
-        value: monthStr,
-        label: formatMonthForDisplay(monthStr),
-        month: monthStr
-      }));
+      .map(monthStr => {
+        const normalisedKey = normalizeMonthToYYYYMM(monthStr, allScheduleData);
+        return {
+          value: normalisedKey,
+          label: formatMonthForDisplay(normalisedKey),
+          month: normalisedKey
+        };
+      });
 
     scheduleOptions.push({
       value: 'later',
