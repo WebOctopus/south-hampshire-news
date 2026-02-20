@@ -8,7 +8,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useStepForm } from '@/components/StepForm';
-import { getAreaGroupedSchedules } from '@/lib/issueSchedule';
+import { getAreaGroupedSchedules, normalizeMonthToYYYYMM } from '@/lib/issueSchedule';
 import { calculatePaymentAmount as calcPaymentAmount } from '@/lib/paymentCalculations';
 import { parse } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -298,53 +298,38 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   // Get the original index for alternating logic
                   const areaIndex = selectedAreaData.findIndex(a => a.id === area.id);
                   const schedule = area.schedule || [];
-                  
+
+                  // Helper: normalise a schedule entry's month to YYYY-MM
+                  const normMonth = (s: any): string => normalizeMonthToYYYYMM(s.month, schedule);
+
                   // For BOGOF packages, determine the correct starting month for this area
                   // based on whether it should start in odd or even months
                   let startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
                   
                   // If the selected start month doesn't exist in this area's schedule,
                   // find the first available month at or after the selected start date
-                  if (startMonth && !schedule.some((s: any) => s.month === startMonth)) {
+                  if (startMonth && !schedule.some((s: any) => normMonth(s) === startMonth)) {
                     const baseStartDate = new Date(startMonth + '-01');
                     const futureMonth = schedule.find((s: any) => {
-                      const scheduleDate = new Date(s.month + '-01');
+                      const scheduleDate = new Date(normMonth(s) + '-01');
                       return scheduleDate >= baseStartDate;
                     });
                     if (futureMonth) {
-                      startMonth = futureMonth.month;
+                      startMonth = normMonth(futureMonth);
                     }
                   }
                   
-                  // Get the starting index in the schedule
-                  const startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                  // Get the starting index in the schedule (compare using normalised keys)
+                  const startIndex = schedule.findIndex((s: any) => normMonth(s) === startMonth);
                   if (startIndex === -1) {
                     // Fallback: use the first available month in the schedule that's not in the past
                     const today = new Date();
-                    const futureSchedules = schedule.filter((s: any) => {
-                      let dateStr: string;
-                      if (s.month && s.month.includes('-')) {
-                        dateStr = s.month + '-01';
-                      } else if (s.month && s.year) {
-                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                            'July', 'August', 'September', 'October', 'November', 'December'];
-                        const monthIndex = monthNames.indexOf(s.month);
-                        if (monthIndex !== -1) {
-                          const monthNum = String(monthIndex + 1).padStart(2, '0');
-                          dateStr = `${s.year}-${monthNum}-01`;
-                        } else {
-                          dateStr = s.month + '-01';
-                        }
-                      } else {
-                        dateStr = s.month + '-01';
-                      }
-                      return new Date(dateStr) >= today;
-                    });
+                    const futureSchedules = schedule.filter((s: any) => new Date(normMonth(s) + '-01') >= today);
                     if (futureSchedules.length === 0) return null;
-                    startMonth = futureSchedules[0].month;
+                    startMonth = normMonth(futureSchedules[0]);
                   }
                   
-                  const finalStartIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                  const finalStartIndex = schedule.findIndex((s: any) => normMonth(s) === startMonth);
                   if (finalStartIndex === -1) return null;
 
                   // Get the next 3 issues for this area (for BOGOF or first period)
@@ -450,45 +435,27 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                       
                       const areaIndex = selectedAreaData.findIndex(a => a.id === areaId);
                       const schedule = area.schedule || [];
+
+                      // Helper: normalise a schedule entry's month to YYYY-MM
+                      const normMonth7 = (s: any): string => normalizeMonthToYYYYMM(s.month, schedule);
                       
                       // Determine the correct starting month for this area (same logic as above)
                       let startMonth = selectedStartingIssue || availableStartingIssues[0]?.value || '';
                       
-                      if (pricingModel === 'bogof' && startMonth) {
-                        const shouldUseNextMonth = areaIndex % 2 !== 0;
-                        if (shouldUseNextMonth) {
-                          const baseStartIndex = schedule.findIndex((s: any) => s.month === startMonth);
-                          if (baseStartIndex >= 0 && baseStartIndex + 1 < schedule.length) {
-                            startMonth = schedule[baseStartIndex + 1].month;
-                          }
-                        }
+                      // If the start month isn't in this area's schedule, find first month at/after it
+                      if (startMonth && !schedule.some((s: any) => normMonth7(s) === startMonth)) {
+                        const baseStartDate = new Date(startMonth + '-01');
+                        const futureMonth = schedule.find((s: any) => new Date(normMonth7(s) + '-01') >= baseStartDate);
+                        if (futureMonth) startMonth = normMonth7(futureMonth);
                       }
                       
-                      let startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                      let startIndex = schedule.findIndex((s: any) => normMonth7(s) === startMonth);
                       if (startIndex === -1) {
                         const today = new Date();
-                        const futureSchedules = schedule.filter((s: any) => {
-                          let dateStr: string;
-                          if (s.month && s.month.includes('-')) {
-                            dateStr = s.month + '-01';
-                          } else if (s.month && s.year) {
-                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                                'July', 'August', 'September', 'October', 'November', 'December'];
-                            const monthIndex = monthNames.indexOf(s.month);
-                            if (monthIndex !== -1) {
-                              const monthNum = String(monthIndex + 1).padStart(2, '0');
-                              dateStr = `${s.year}-${monthNum}-01`;
-                            } else {
-                              dateStr = s.month + '-01';
-                            }
-                          } else {
-                            dateStr = s.month + '-01';
-                          }
-                          return new Date(dateStr) >= today;
-                        });
+                        const futureSchedules = schedule.filter((s: any) => new Date(normMonth7(s) + '-01') >= today);
                         if (futureSchedules.length === 0) return null;
-                        startMonth = futureSchedules[0].month;
-                        startIndex = schedule.findIndex((s: any) => s.month === startMonth);
+                        startMonth = normMonth7(futureSchedules[0]);
+                        startIndex = schedule.findIndex((s: any) => normMonth7(s) === startMonth);
                         if (startIndex === -1) return null;
                       }
                       
@@ -498,49 +465,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                       let monthYear: string;
                       
                       if (month7Issue) {
-                        // Handle both "YYYY-MM" format and month name format
-                        let dateStr: string;
-                        if (month7Issue.month && month7Issue.month.includes('-')) {
-                          dateStr = month7Issue.month + '-01';
-                        } else if (month7Issue.month && month7Issue.year) {
-                          const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                              'July', 'August', 'September', 'October', 'November', 'December'];
-                          const monthIndex = monthNames.indexOf(month7Issue.month);
-                          if (monthIndex !== -1) {
-                            const monthNum = String(monthIndex + 1).padStart(2, '0');
-                            dateStr = `${month7Issue.year}-${monthNum}-01`;
-                          } else {
-                            dateStr = month7Issue.month + '-01';
-                          }
-                        } else {
-                          dateStr = month7Issue.month + '-01';
-                        }
+                        // Always normalise to YYYY-MM for date construction
+                        const dateStr = normMonth7(month7Issue) + '-01';
                         const date = new Date(dateStr);
                         monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
                       } else {
-                        // Calculate month 7 manually (6 months after start, since bi-monthly = 3 issues * 2 months)
-                        // Handle both date formats for startMonth
-                        let startDateStr: string;
-                        if (startMonth.includes('-')) {
-                          startDateStr = startMonth + '-01';
-                        } else {
-                          // Try to find the schedule item to get the year
-                          const scheduleItem = schedule.find((s: any) => s.month === startMonth);
-                          if (scheduleItem && scheduleItem.year) {
-                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                                'July', 'August', 'September', 'October', 'November', 'December'];
-                            const monthIndex = monthNames.indexOf(startMonth);
-                            if (monthIndex !== -1) {
-                              const monthNum = String(monthIndex + 1).padStart(2, '0');
-                              startDateStr = `${scheduleItem.year}-${monthNum}-01`;
-                            } else {
-                              startDateStr = startMonth + '-01';
-                            }
-                          } else {
-                            startDateStr = startMonth + '-01';
-                          }
-                        }
-                        const startDate = new Date(startDateStr);
+                        // Calculate month 7 manually — startMonth is already YYYY-MM after normalisation above
+                        const startDate = new Date(startMonth + '-01');
                         const month7Date = new Date(startDate);
                         month7Date.setMonth(startDate.getMonth() + 6);
                         monthYear = month7Date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
