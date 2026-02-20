@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     console.log(`Reset link generated successfully for: ${email}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
+      from: "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>",
       to: [email],
       subject: "Reset Your Password - Discover Magazine",
       html: `

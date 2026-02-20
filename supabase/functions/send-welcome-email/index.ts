@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Discover Magazine <noreply@peacockpixelmedia.co.uk>",
+      from: "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>",
       to: [email],
       subject,
       html,
