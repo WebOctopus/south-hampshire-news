@@ -1,63 +1,49 @@
 
-## Apply Branded Footer to the 6 New Database Email Templates
+## Fix Fixed Term Summary Page — Two Changes
 
-### The Problem
+### Change 1: Remove "Book Online & Save 10%" Labels
 
-The 6 product-specific email templates inserted into the database during the previous session were created before the branded footer was built. They still contain:
+There are two places where this label appears in `src/components/FixedTermBasketSummary.tsx`:
 
-- **Old footer**: Just "Peacock & Pixel Ltd | Discover Magazine" text with no logo, no contact details
-- **Wrong contact info** in the "Need help?" box: `info@peacockpixelmedia.co.uk` and `023 9298 9314` (the old number)
-
-The edge function fallback HTML already has the correct branded footer — it's only the database-stored template bodies that are behind.
-
-### Templates Affected (all 6)
-
-| Template Name | Display Name |
-|---|---|
-| `booking_bogof_customer` | Booking Confirmation — 3+ Repeat Package |
-| `booking_fixed_customer` | Booking Confirmation — Fixed Term |
-| `booking_leafleting_customer` | Booking Confirmation — Leafleting |
-| `quote_bogof_customer` | Quote Saved — 3+ Repeat Package |
-| `quote_fixed_customer` | Quote Saved — Fixed Term |
-| `quote_leafleting_customer` | Quote Saved — Leafleting |
-
-### What Will Be Updated
-
-**1. The "Need help?" contact block** (inside the email body, above the footer)
-
-Replacing the old wrong details:
+**Occurrence 1 — Line 117** (under the Duration field in the Booking Summary card on the left):
+```tsx
+<p className="text-xs text-green-600 font-medium mt-1">Book Online & Save 10%</p>
 ```
-Email: info@peacockpixelmedia.co.uk
-Phone: 023 9298 9314
-```
+This line is removed entirely.
 
-With the correct branded contact info:
+**Occurrence 2 — Line 257** (inside the green savings box in the Pricing Summary on the right):
+```tsx
+<p className="text-sm font-medium text-green-800">Book Online & Save 10%</p>
+<p className="text-2xl font-bold text-green-600">{formatPrice(saving)}</p>
 ```
-✉ discover@discovermagazines.co.uk
-📞 023 8026 6388
+The entire `saving > 0` conditional block (lines 254–261) that renders this green savings box is removed.
+
+---
+
+### Change 2: Fix "Cost Per Insert" Calculation
+
+**Current (wrong):**
+```ts
+const costPerInsert = finalTotal / totalInsertions;
+// finalTotal = £759 (includes £55 artwork fee)
+// totalInsertions = 4
+// result = £189.75 ← WRONG (includes artwork)
 ```
 
-**2. The footer row** at the bottom of each template
-
-Replacing the old plain-text footer:
-```html
-<p>Peacock &amp; Pixel Ltd | Discover Magazine</p>
-<p>Connecting South Hampshire communities since 2014</p>
+**Correct:**
+```ts
+const bookingCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign || finalTotal;
+const costPerInsert = bookingCostExclDesign / totalInsertions;
+// bookingCostExclDesign = £704 (Cost of This Booking, no artwork)
+// totalInsertions = 4
+// result = £176.00 ← CORRECT (as shown in the user's annotated image)
 ```
 
-With the full branded footer matching the edge function fallback:
-- Discover Magazine logo image (max-width: 160px)
-- 📞 023 8026 6388 (linked, tel:)
-- ✉ discover@discovermagazines.co.uk (linked, mailto:)
-- 📍 30 Leigh Road, Eastleigh, SO50 9DT Hampshire
-- Tagline: "Connecting South Hampshire communities since 2014"
-- Three footer links: Website · Contact Us · Advertise
+The `finalTotalBeforeDesign` field is already present on `pricingBreakdown` — it's used on line 208 to display "Cost of This Booking" correctly in the pricing summary. The cost per insert calculation just needs to reference the same value.
 
-### How It's Done
+---
 
-A single SQL `UPDATE` statement per template will replace the `html_body` column value for all 6 templates in the `email_templates` table. This is the same approach as any template edit made through the admin UI — no edge function redeployment is needed since the templates are loaded from the database at send time.
+### Files Changed
 
-### No Risk to Other Templates
-
-- The existing generic templates (`quote_saved_customer`, `booking_confirmation_customer`, `booking_quote_admin`, `welcome_email`) are not touched — they were already updated in the previous branded footer session.
-- All product-specific content (variables, summary tables, next steps) within each template body is preserved — only the footer row and the "Need help?" contact block are changed.
+- `src/components/FixedTermBasketSummary.tsx` — 3 small edits, no other files touched
+- No database changes, no edge function redeployment needed
