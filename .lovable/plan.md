@@ -1,28 +1,75 @@
 
+## Add Separate Quote Email Templates for Fixed Term, 3+ Repeat, and Leafleting
 
-## Replace Lovable URLs with peacockpixelmedia.co.uk in email edge functions
+### The Problem
 
-The screenshot confirms that email links (e.g. the "dashboard" link) currently point to `south-hampshire-news.lovable.app`. All instances need to be replaced with `https://peacockpixelmedia.co.uk`.
+Currently there are two customer-facing templates: one for bookings and one for quotes — but both are shared across all three product types (Fixed Term, 3+ Repeat Package, Leafleting). Each product type has meaningfully different information to communicate to the customer, so they need separate templates.
 
-### Files to update
+### What Will Change
 
-**1. `supabase/functions/send-welcome-email/index.ts`**
-- Line 84: fallback HTML dashboard link -> `https://peacockpixelmedia.co.uk/dashboard`
-- Line 134: template variable `dashboard_url` -> `https://peacockpixelmedia.co.uk/dashboard`
+#### 1. Database — 6 new email templates (via SQL insert)
 
-**2. `supabase/functions/send-booking-confirmation-email/index.ts`**
-- Line 146: admin dashboard link -> `https://peacockpixelmedia.co.uk/admin`
-- Line 215: customer dashboard link -> `https://peacockpixelmedia.co.uk/dashboard`
-- Line 227: website footer link -> `https://peacockpixelmedia.co.uk`
-- Line 228: contact footer link -> `https://peacockpixelmedia.co.uk/contact`
-- Line 229: advertise footer link -> `https://peacockpixelmedia.co.uk/advertising`
-- Line 272: admin_url template variable -> `https://peacockpixelmedia.co.uk/admin`
-- Line 316: dashboard_url template variable -> `https://peacockpixelmedia.co.uk/dashboard`
+Six new templates will be inserted into `email_templates` — one customer quote template and one customer booking template per product type:
 
-### Summary
+| Template Name | Display Name |
+|---|---|
+| `quote_fixed_customer` | Quote Saved — Fixed Term (Customer) |
+| `quote_bogof_customer` | Quote Saved — 3+ Repeat Package (Customer) |
+| `quote_leafleting_customer` | Quote Saved — Leafleting (Customer) |
+| `booking_fixed_customer` | Booking Confirmation — Fixed Term (Customer) |
+| `booking_bogof_customer` | Booking Confirmation — 3+ Repeat Package (Customer) |
+| `booking_leafleting_customer` | Booking Confirmation — Leafleting (Customer) |
 
-A simple find-and-replace of `https://south-hampshire-news.lovable.app` with `https://peacockpixelmedia.co.uk` across both edge function files. No logic changes needed. Both functions will be redeployed automatically.
+Each template will have appropriate variables:
 
-### Technical detail
+- **Fixed Term**: `customer_name`, `ad_size`, `duration`, `circulation`, `total_cost`, `monthly_price`, `duration_discount`, `dashboard_url`
+- **3+ Repeat (bogof)**: `customer_name`, `ad_size`, `paid_areas`, `free_areas`, `total_circulation`, `total_cost`, `monthly_price`, `dashboard_url`
+- **Leafleting**: `customer_name`, `leaflet_size`, `number_of_areas`, `distribution_start`, `total_cost`, `dashboard_url`
 
-The database-stored email templates were checked and contain no Lovable URLs, so only the hardcoded fallback HTML and template variable defaults need updating.
+The existing `quote_saved_customer` and `booking_confirmation_customer` templates are kept as generic fallbacks.
+
+#### 2. Edge Function — `send-booking-confirmation-email/index.ts`
+
+The template selection logic will be updated. Currently:
+```
+templateName = record_type === "booking"
+  ? "booking_confirmation_customer"
+  : "quote_saved_customer"
+```
+
+It will become:
+```
+templateName = `${record_type}_${pricing_model}_customer`
+// e.g. "quote_fixed_customer", "booking_leafleting_customer"
+// Falls back to generic template if specific one not found
+```
+
+The variable map passed to `applyTemplate` will also be expanded per product type to populate leafleting- and bogof-specific variables like `leaflet_size`, `distribution_start`, `paid_areas`, `free_areas`, `monthly_price`, `duration_discount`.
+
+#### 3. Admin UI — `EmailTemplatesManagement.tsx`
+
+- Add new sample data entries for the new variables so the live preview works correctly:
+  - `leaflet_size`, `number_of_areas`, `distribution_start`, `paid_areas`, `free_areas`, `monthly_price`, `duration_discount`
+- Templates will automatically appear in the existing table — no structural UI change needed
+
+### How It Works End-to-End
+
+```text
+User submits quote (pricing_model = "fixed")
+  └─> Edge function called with { record_type: "quote", pricing_model: "fixed" }
+       └─> Looks up "quote_fixed_customer" in DB
+            └─> Found? Use it with fixed-specific variables
+            └─> Not found? Fall back to "quote_saved_customer" generic template
+
+User submits quote (pricing_model = "leafleting")
+  └─> Edge function called with { record_type: "quote", pricing_model: "leafleting" }
+       └─> Looks up "quote_leafleting_customer" in DB
+            └─> Found? Use it with leafleting-specific variables (leaflet_size, areas, dates)
+```
+
+### No Breaking Changes
+
+- The admin notification template (`booking_quote_admin`) is unchanged — it already shows all fields dynamically
+- The existing generic templates remain as fallbacks
+- All current bookings and quotes continue to work unchanged
+- The 6 new templates appear in the admin Email Templates list and are immediately editable
