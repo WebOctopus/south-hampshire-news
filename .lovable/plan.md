@@ -1,73 +1,63 @@
 
-## Add Branded Footer to All Emails
+## Apply Branded Footer to the 6 New Database Email Templates
 
-### What's Changing
+### The Problem
 
-Every transactional email currently has a minimal footer with only "Peacock & Pixel Ltd | Discover Magazine" and a tagline. This will be replaced with a fully branded footer that includes:
+The 6 product-specific email templates inserted into the database during the previous session were created before the branded footer was built. They still contain:
 
-- The Discover Magazine logo (hosted image)
-- Phone: 023 8026 6388 (with a phone icon)
-- Email: discover@discovermagazines.co.uk (with an email icon)
-- Address: 30 Leigh Road, Eastleigh, SO50 9DT Hampshire (with a location icon)
-- Tagline: Connecting South Hampshire communities since 2014
+- **Old footer**: Just "Peacock & Pixel Ltd | Discover Magazine" text with no logo, no contact details
+- **Wrong contact info** in the "Need help?" box: `info@peacockpixelmedia.co.uk` and `023 9298 9314` (the old number)
 
-Icons will be rendered as inline Unicode/emoji-style characters styled to match the green brand colour, since HTML email clients do not support icon libraries like Lucide.
+The edge function fallback HTML already has the correct branded footer — it's only the database-stored template bodies that are behind.
 
-### Files Affected
+### Templates Affected (all 6)
 
-**1. `supabase/functions/send-booking-confirmation-email/index.ts`**
+| Template Name | Display Name |
+|---|---|
+| `booking_bogof_customer` | Booking Confirmation — 3+ Repeat Package |
+| `booking_fixed_customer` | Booking Confirmation — Fixed Term |
+| `booking_leafleting_customer` | Booking Confirmation — Leafleting |
+| `quote_bogof_customer` | Quote Saved — 3+ Repeat Package |
+| `quote_fixed_customer` | Quote Saved — Fixed Term |
+| `quote_leafleting_customer` | Quote Saved — Leafleting |
 
-Three footer locations:
-- `buildAdminEmailHtml()` — line ~149–152 (admin notification footer)
-- `buildCustomerEmailHtml()` — line ~223–231 (customer confirmation footer)
-- The contact info block inside the customer email body (line ~217–221) will also be updated to use the correct phone number (currently shows `023 9298 9314`, needs updating to `023 8026 6388`) and correct email (`discover@discovermagazines.co.uk`)
+### What Will Be Updated
 
-**2. `supabase/functions/send-welcome-email/index.ts`**
+**1. The "Need help?" contact block** (inside the email body, above the footer)
 
-One footer location in `buildFallbackHtml()` — line ~92–100.
-
-**3. `supabase/functions/send-password-reset/index.ts`**
-
-One footer location inside the inline HTML string — the footer `<tr>` block.
-
-### What the New Footer Will Look Like
-
-```text
-┌─────────────────────────────────────────────┐
-│          [Discover Magazine Logo]           │
-│                                             │
-│  📞 023 8026 6388                          │
-│  ✉  discover@discovermagazines.co.uk       │
-│  📍 30 Leigh Road, Eastleigh,              │
-│     SO50 9DT Hampshire                     │
-│                                             │
-│  Connecting South Hampshire communities    │
-│  since 2014                                │
-│                                             │
-│  Website  •  Contact Us  •  Advertise      │
-└─────────────────────────────────────────────┘
+Replacing the old wrong details:
+```
+Email: info@peacockpixelmedia.co.uk
+Phone: 023 9298 9314
 ```
 
-### Logo
+With the correct branded contact info:
+```
+✉ discover@discovermagazines.co.uk
+📞 023 8026 6388
+```
 
-The Discover logo will be referenced as a hosted image from the live site:
-`https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png`
+**2. The footer row** at the bottom of each template
 
-Since email clients block images by default, the alt text `Discover Magazine` will be shown as a fallback. The logo will be constrained to a maximum width of 160px.
+Replacing the old plain-text footer:
+```html
+<p>Peacock &amp; Pixel Ltd | Discover Magazine</p>
+<p>Connecting South Hampshire communities since 2014</p>
+```
 
-### Icon Approach
+With the full branded footer matching the edge function fallback:
+- Discover Magazine logo image (max-width: 160px)
+- 📞 023 8026 6388 (linked, tel:)
+- ✉ discover@discovermagazines.co.uk (linked, mailto:)
+- 📍 30 Leigh Road, Eastleigh, SO50 9DT Hampshire
+- Tagline: "Connecting South Hampshire communities since 2014"
+- Three footer links: Website · Contact Us · Advertise
 
-Rather than relying on icon fonts (which email clients do not support), each contact item will use an inline SVG data URI or a simple Unicode character styled in the brand green:
+### How It's Done
 
-- 📞 `&#x1F4DE;` — phone
-- ✉ `&#x2709;` — email envelope
-- 📍 `&#x1F4CD;` — location pin
+A single SQL `UPDATE` statement per template will replace the `html_body` column value for all 6 templates in the `email_templates` table. This is the same approach as any template edit made through the admin UI — no edge function redeployment is needed since the templates are loaded from the database at send time.
 
-These render natively in all major email clients (Gmail, Outlook, Apple Mail) without any dependencies.
+### No Risk to Other Templates
 
-### Technical Details
-
-- A shared `buildBrandedFooterHtml()` helper function will be defined once at the top of each edge function file and reused in all email builders within that file — avoiding repetition.
-- All three functions will be redeployed automatically after the changes.
-- No database or RLS changes required.
-- The contact info "Need help?" box inside `buildCustomerEmailHtml` will also be updated to show the correct phone number and email to ensure consistency.
+- The existing generic templates (`quote_saved_customer`, `booking_confirmation_customer`, `booking_quote_admin`, `welcome_email`) are not touched — they were already updated in the previous branded footer session.
+- All product-specific content (variables, summary tables, next steps) within each template body is preserved — only the footer row and the "Need help?" contact block are changed.
