@@ -83,7 +83,8 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   const baseTotal = pricingBreakdown?.baseTotal || 0;
   const finalTotal = pricingBreakdown?.finalTotal || 0;
   const totalWithVAT = finalTotal * 1.20;
-  const costPerInsert = finalTotal / totalInsertions;
+  const bookingCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign || finalTotal;
+  const costPerInsert = totalInsertions > 0 ? bookingCostExclDesign / totalInsertions : 0;
   const saving = baseTotal - finalTotal;
 
   const handleNext = () => {
@@ -114,7 +115,6 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
                 <p className="font-medium">{getDurationName()}</p>
-                <p className="text-xs text-green-600 font-medium mt-1">Book Online & Save 10%</p>
               </div>
               </div>
               
@@ -251,14 +251,6 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   </div>
                 </div>
 
-                {saving > 0 && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-green-800">Book Online & Save 10%</p>
-                      <p className="text-2xl font-bold text-green-600">{formatPrice(saving)}</p>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Amazing Value Section */}
