@@ -29,6 +29,8 @@ const SAMPLE_DATA: Record<string, string> = {
   duration: "6 months",
   circulation: "25,000",
   total_cost: "£540.00",
+  monthly_price: "£90.00",
+  duration_discount: "10%",
   dashboard_url: "https://example.com/dashboard",
   type_label: "Booking",
   model_label: "Fixed Term",
@@ -37,6 +39,14 @@ const SAMPLE_DATA: Record<string, string> = {
   company: "Smith & Co Ltd",
   details_table: '<table style="width:100%;"><tr><td>Package</td><td>Fixed Term</td></tr></table>',
   admin_url: "https://example.com/admin",
+  // Bogof-specific
+  paid_areas: "Fareham, Gosport",
+  free_areas: "Portchester",
+  total_circulation: "15,000",
+  // Leafleting-specific
+  leaflet_size: "A5",
+  number_of_areas: "3",
+  distribution_start: "March 2025",
 };
 
 function applyPreviewVariables(html: string, variables: string[]): string {

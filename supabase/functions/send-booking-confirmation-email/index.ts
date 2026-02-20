@@ -297,21 +297,44 @@ Deno.serve(async (req) => {
 
     // Email B: Customer confirmation
     try {
-      const templateName = payload.record_type === "booking"
+      // Try product-specific template first, fall back to generic
+      const specificTemplateName = `${payload.record_type}_${payload.pricing_model}_customer`;
+      const genericTemplateName = payload.record_type === "booking"
         ? "booking_confirmation_customer"
         : "quote_saved_customer";
-      const customerTemplate = await fetchTemplate(templateName);
+
+      let customerTemplate = await fetchTemplate(specificTemplateName);
+      if (!customerTemplate) {
+        customerTemplate = await fetchTemplate(genericTemplateName);
+      }
 
       let customerSubject: string;
       let customerHtml: string;
 
       if (customerTemplate) {
+        // Build variable map covering all product types
+        const paidAreas = payload.bogof_paid_areas?.length ? payload.bogof_paid_areas.join(", ") : "N/A";
+        const freeAreas = payload.bogof_free_areas?.length ? payload.bogof_free_areas.join(", ") : "N/A";
         const vars: Record<string, string> = {
           customer_name: (payload.contact_name || payload.email.split("@")[0]).split(" ")[0],
           package_type: modelLabel,
+          // Fixed Term vars
           ad_size: payload.ad_size || "N/A",
           duration: payload.duration || "N/A",
           circulation: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
+          monthly_price: formatCurrency(payload.monthly_price),
+          duration_discount: payload.duration_discount_percent && payload.duration_discount_percent > 0
+            ? `${payload.duration_discount_percent}%`
+            : "None",
+          // Bogof vars
+          paid_areas: paidAreas,
+          free_areas: freeAreas,
+          total_circulation: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
+          // Leafleting vars
+          leaflet_size: payload.ad_size || "N/A",
+          number_of_areas: payload.selected_areas?.length?.toString() || "N/A",
+          distribution_start: payload.selections?.distributionStartDate || "N/A",
+          // Shared
           total_cost: formatCurrency(payload.final_total),
           dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
         };
