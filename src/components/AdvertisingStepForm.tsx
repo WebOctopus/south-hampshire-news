@@ -24,6 +24,7 @@ import LeafletSizeStep from '@/components/LeafletSizeStep';
 import { cn } from '@/lib/utils';
 import { getFraudDetectionData } from '@/hooks/useBogofEligibility';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -386,8 +387,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
                                       subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
         
+        const webhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas };
         await supabase.functions.invoke('send-quote-booking-webhook', {
-          body: {
+          body: resolveWebhookPayload({
             record_type: 'quote',
             record_id: quoteData.id,
             pricing_model: selectedPricingModel,
@@ -409,7 +411,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             status: 'draft',
             pricing_breakdown: campaignData.pricingBreakdown,
             selections: quotePayload.selections
-          }
+          }, webhookLookups)
         });
         console.log('Quote webhook sent successfully');
       } catch (webhookError) {
@@ -790,8 +792,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
                                       subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
         
+        const bookingWebhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas };
         await supabase.functions.invoke('send-quote-booking-webhook', {
-          body: {
+          body: resolveWebhookPayload({
             record_type: 'booking',
             record_id: bookingData.id,
             pricing_model: selectedPricingModel,
@@ -813,7 +816,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             status: 'pending',
             pricing_breakdown: campaignData.pricingBreakdown,
             selections: bookingPayload.selections
-          }
+          }, bookingWebhookLookups)
         });
         console.log('Booking CRM webhook sent successfully');
       } catch (crmWebhookError) {

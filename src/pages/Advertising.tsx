@@ -38,6 +38,8 @@ import { EnquiryFormSection } from "@/components/EnquiryFormSection";
 import Footer from "@/components/Footer";
 import { EditModeProvider, EditModeToggle, EditableText } from "@/components/inline-editor";
 import { useAdvertisingContent } from "@/hooks/useAdvertisingContent";
+import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
+import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 interface FormData {
   name: string;
   email: string;
@@ -159,6 +161,7 @@ const CalculatorTest = () => {
     data: agencyData
   } = useAgencyDiscount();
   const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
+  const { data: paymentOptions } = usePaymentOptions();
 
   // Invalidate all calculator-related queries when page mounts to ensure fresh data
   useEffect(() => {
@@ -514,8 +517,9 @@ const CalculatorTest = () => {
           const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
                                         subscriptionDurations?.find(d => d.id === selectedDuration);
           
+          const webhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas: leafletAreas || [] };
           await supabase.functions.invoke('send-quote-booking-webhook', {
-            body: {
+            body: resolveWebhookPayload({
               record_type: 'quote',
               record_id: savedQuote.id,
               pricing_model: pricingModel,
@@ -537,7 +541,7 @@ const CalculatorTest = () => {
               status: 'draft',
               pricing_breakdown: pricingBreakdown,
               selections: basePayload.selections
-            }
+            }, webhookLookups)
           });
           console.log('Page quote webhook sent successfully (existing user session)');
         } catch (webhookError) {
@@ -585,8 +589,9 @@ const CalculatorTest = () => {
             const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
                                           subscriptionDurations?.find(d => d.id === selectedDuration);
             
+            const newUserWebhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas: leafletAreas || [] };
             await supabase.functions.invoke('send-quote-booking-webhook', {
-              body: {
+              body: resolveWebhookPayload({
                 record_type: 'quote',
                 record_id: savedQuote.id,
                 pricing_model: pricingModel,
@@ -608,9 +613,9 @@ const CalculatorTest = () => {
                 status: 'draft',
                 pricing_breakdown: pricingBreakdown,
                 selections: basePayload.selections
-              }
+              }, newUserWebhookLookups)
             });
-            console.log('Page quote webhook sent successfully (existing user)');
+            console.log('Page quote webhook sent successfully (new user)');
           } catch (webhookError) {
             console.error('Page quote webhook error:', webhookError);
           }
