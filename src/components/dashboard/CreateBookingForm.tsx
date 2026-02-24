@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { User } from '@supabase/supabase-js';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { calculatePaymentAmount, formatPaymentPrice } from '@/lib/paymentCalculations';
+import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -224,8 +225,9 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
                                       subscriptionDurations?.find(d => d.id === selectedDuration);
         
+        const webhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas: leafletAreas || [] };
         await supabase.functions.invoke('send-quote-booking-webhook', {
-          body: {
+          body: resolveWebhookPayload({
             record_type: 'quote',
             record_id: quoteData.id,
             pricing_model: pricingModel,
@@ -247,7 +249,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             status: 'draft',
             pricing_breakdown: pricingBreakdown,
             selections: quotePayload.selections
-          }
+          }, webhookLookups)
         });
         console.log('Dashboard quote webhook sent successfully');
       } catch (webhookError) {
@@ -355,8 +357,9 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
                                       subscriptionDurations?.find(d => d.id === selectedDuration);
         
+        const bookingWebhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas: leafletAreas || [] };
         await supabase.functions.invoke('send-quote-booking-webhook', {
-          body: {
+          body: resolveWebhookPayload({
             record_type: 'booking',
             record_id: bookingData.id,
             pricing_model: pricingModel,
@@ -378,7 +381,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             status: 'pending',
             pricing_breakdown: pricingBreakdown,
             selections: bookingPayload.selections
-          }
+          }, bookingWebhookLookups)
         });
         console.log('Dashboard booking webhook sent successfully');
       } catch (webhookError) {
