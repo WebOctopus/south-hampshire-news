@@ -80,6 +80,23 @@ function formatDateHuman(dateStr: string | undefined | null): string {
   }
 }
 
+/** Format a month value as "February 2026" */
+function formatMonthHuman(month: string | undefined | null, year?: string | number | null): string {
+  if (!month) return '';
+  // Handle "YYYY-MM" format (e.g. "2026-02")
+  const yymm = month.match(/^(\d{4})-(\d{2})$/);
+  if (yymm) {
+    try {
+      return format(new Date(Number(yymm[1]), Number(yymm[2]) - 1, 1), 'MMMM yyyy');
+    } catch {
+      return month;
+    }
+  }
+  // If it's already a month name like "February", append year if available
+  if (year) return `${month} ${year}`;
+  return month;
+}
+
 /** Build the areas array from pricing breakdown */
 function buildAreasArray(pricingBreakdown: any, adSizeName: string | undefined, lookups: CrmLookups): any[] {
   if (!pricingBreakdown?.areaBreakdown || !Array.isArray(pricingBreakdown.areaBreakdown)) return [];
@@ -118,7 +135,7 @@ function buildScheduleArray(pricingBreakdown: any, lookups: CrmLookups): any[] {
         return entries
           .filter((s: any) => s && typeof s === 'object')
           .map((s: any) => ({
-            month: s.month || s.label || '',
+            month: formatMonthHuman(s.month, s.year) || s.label || '',
             copy_deadline: formatDateHuman(s.copy_deadline || s.copyDeadline),
             delivery_date: formatDateHuman(s.delivery_date || s.deliveryDate),
           }));
