@@ -1,105 +1,39 @@
 
 
-## Simplify Webhook Payload to Flat CRM-Friendly Format
+## Fix: Webhook Still Sending Old Format
 
-### Overview
+### Root Causes
 
-Replace the current verbose webhook payload with a clean, flat JSON structure containing only the business-relevant fields. No UUIDs, no internal metadata, no deeply nested objects.
+**Issue 1: Edge function not deployed.** The edge function code was updated to a thin pass-through proxy in the repo, but the old version is still running on Supabase. The old deployed version likely reshapes/wraps the payload, undoing the client-side cleanup. We need to **deploy the updated edge function**.
 
-### Target Output Format
-
-```json
-{
-  "record_type": "booking",
-  "journey_tag": "Fixed Term",
-  "email": "john@example.com",
-  "first_name": "John",
-  "last_name": "Smith",
-  "phone": "07700900000",
-  "company": "Acme Ltd",
-  "title": "Fixed Term Booking",
-  "status": "pending",
-  "pricing_model": "fixed",
-  "ad_size": "1/2 Page Portrait",
-  "duration": "6 issues",
-  "subtotal": 352,
-  "final_total": 352,
-  "monthly_price": 352,
-  "total_circulation": 20000,
-  "areas": [
-    {
-      "name": "Area 5 - LOCKS HEATH, PARK GATE...",
-      "ad_size": "1/2 Page Portrait",
-      "base_price": 176,
-      "circulation": 12000
-    }
-  ],
-  "schedule": [
-    { "month": "February 2026", "copy_deadline": "12 Jan 2026", "delivery_date": "02 Feb 2026" }
-  ],
-  "discounts": {
-    "agency_discount_percent": 0,
-    "volume_discount_percent": 0,
-    "duration_discount_percent": 0
-  },
-  "payment_option": "Monthly Direct Debit",
-  "source": "advertising_calculator",
-  "submitted_at": "2026-02-24T10:00:00.000Z"
-}
-```
-
-BOGOF-specific fields (`bogof_paid_areas`, `bogof_free_areas`) will only be included when the pricing model is `bogof` and they have values. Empty arrays are omitted entirely.
+**Issue 2: Schedule month not human-readable.** The `buildScheduleArray` in `webhookPayloadResolver.ts` passes through `s.month` as-is (e.g. `"2026-02"`). It should format this to `"February 2026"`. The `copy_deadline` and `delivery_date` are already formatted, but the `month` field was missed.
 
 ### Changes
 
-#### 1. Rewrite `src/lib/webhookPayloadResolver.ts`
+#### 1. Deploy the edge function
 
-Replace the current UUID-resolving approach with a new function `buildCrmWebhookPayload(rawData, lookups)` that:
+Deploy `send-quote-booking-webhook` so the updated thin-proxy code goes live. This is the main fix -- without it, the old server-side function continues to reshape the payload.
 
-- Extracts only the fields listed in the target format
-- Resolves all UUIDs to names using the lookup arrays (same approach as now, but builds a clean output)
-- Builds the `areas` array from `pricing_breakdown.areaBreakdown`, extracting only `name`, `ad_size`, `base_price`, and `circulation`
-- Builds the `schedule` array from area schedule data, formatting dates as "DD Mon YYYY" (e.g. "12 Jan 2026")
-- Builds a flat `discounts` object with just the three discount percentages
-- Omits empty BOGOF arrays, the `pricing_breakdown` object, the `selections` object, and all internal IDs/metadata
-- Includes `payment_option` as the resolved display name (only when present)
-- Adds `source` and `submitted_at` at the root level (moved from the edge function's `meta` wrapper)
+#### 2. Fix month formatting in `src/lib/webhookPayloadResolver.ts`
 
-#### 2. Update edge function `supabase/functions/send-quote-booking-webhook/index.ts`
+In `buildScheduleArray`, change the `month` field mapping from:
+```
+month: s.month || s.label || ''
+```
+to parse `s.month` (which comes as `"2026-02"` or month names like `"February"`) and format it as `"February 2026"`:
+```
+month: formatMonthHuman(s.month, s.year) || s.label || ''
+```
 
-Simplify the edge function to **pass through the payload directly** instead of restructuring it. The client now sends the final CRM-ready shape. The edge function only needs to:
-
-- Read the payload
-- Add the `x-api-key` header
-- Forward to the webhook URL
-- Return the response
-
-Remove the `WebhookPayload` interface reshaping, the `getJourneyTag` mapping (moved to client), and the `data`/`meta` nesting. The edge function becomes a thin proxy.
-
-#### 3. Update all 6 call sites
-
-In each file, replace the verbose raw payload object with a call to `buildCrmWebhookPayload()` that passes the minimal required inputs:
-
-**`src/components/AdvertisingStepForm.tsx`** (2 calls: quote + booking)
-- Pass `campaignData`, `contactData`, `selectedPricingModel`, `areas`, `adSizes`, `durations`, `subscriptionDurations`, `paymentOptions`
-- The builder function extracts what it needs
-
-**`src/pages/Advertising.tsx`** (2 calls: existing user + new user quote)
-- Same pattern with local variable names
-
-**`src/components/dashboard/CreateBookingForm.tsx`** (2 calls: quote + booking)
-- Same pattern
-
-Each call site shrinks from ~20 lines to ~5 lines.
+Add a small helper `formatMonthHuman` that:
+- Handles `"YYYY-MM"` format (e.g. `"2026-02"` becomes `"February 2026"`)
+- Handles plain month names (e.g. `"February"`) by appending the year from `s.year` if available
+- Falls back to the raw string if it can't parse
 
 ### Files Changed
 
 | File | Change |
 |---|---|
-| `src/lib/webhookPayloadResolver.ts` | Rewrite: new `buildCrmWebhookPayload()` that outputs the flat structure |
-| `supabase/functions/send-quote-booking-webhook/index.ts` | Simplify to thin proxy (pass-through) |
-| `src/components/AdvertisingStepForm.tsx` | Replace 2 webhook payloads with `buildCrmWebhookPayload()` |
-| `src/pages/Advertising.tsx` | Replace 2 webhook payloads with `buildCrmWebhookPayload()` |
-| `src/components/dashboard/CreateBookingForm.tsx` | Replace 2 webhook payloads with `buildCrmWebhookPayload()` |
+| `src/lib/webhookPayloadResolver.ts` | Add `formatMonthHuman` helper; update `buildScheduleArray` to use it |
+| `supabase/functions/send-quote-booking-webhook/index.ts` | **Deploy** (no code change -- code is already correct) |
 
-No database changes.
