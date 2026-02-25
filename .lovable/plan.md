@@ -1,20 +1,30 @@
 
 
-## Fix: Areas Field Still Verbose in Webhook
+## Fix: Leafleting "Book Now" Blocked by Payment Option Validation
 
-### Root Cause
+### Problem
 
-The updated edge function (thin pass-through proxy) was **never successfully deployed** to Supabase. The old version is still running, which restructures the clean client payload back into a verbose format with nested objects and internal metadata.
-
-The client-side code is correct -- `buildCrmWebhookPayload` already strips areas down to just `name`, `ad_size`, `base_price`, and `circulation`. But the old deployed edge function overwrites this.
+When users click "Book Now" on the leafleting basket summary, the `onStepTransition` handler in `AdvertisingStepForm.tsx` blocks navigation because it requires a `selectedPaymentOption` for all non-fixed pricing models (line 941: `selectedPricingModel !== 'fixed'`). Leafleting uses fixed 25%/75% payment terms displayed inline — there is no payment option selector, so this field is always empty.
 
 ### Fix
 
-**Deploy the edge function** `send-quote-booking-webhook`. No code changes needed -- the code is already correct in the repo. It just needs to be deployed to Supabase so the new thin-proxy version replaces the old one.
+In `src/components/AdvertisingStepForm.tsx`, line 941, change the condition from:
+
+```typescript
+if (currentStep === 3 && selectedPricingModel !== 'fixed')
+```
+
+to:
+
+```typescript
+if (currentStep === 3 && selectedPricingModel === 'bogof')
+```
+
+This limits the payment option validation to BOGOF only, which is the only non-fixed model that actually has a payment option selector. Leafleting will pass through to the contact information step as expected.
 
 ### Files Changed
 
 | File | Change |
 |---|---|
-| `supabase/functions/send-quote-booking-webhook/index.ts` | **Deploy only** (no code change) |
+| `src/components/AdvertisingStepForm.tsx` | Line 941: change condition to only check `bogof` model |
 
