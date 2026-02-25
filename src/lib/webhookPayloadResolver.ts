@@ -29,6 +29,11 @@ interface PaymentOptionLookup {
   display_name: string;
 }
 
+interface LeafletSizeLookup {
+  id: string;
+  label: string;
+}
+
 interface CrmLookups {
   areas?: AreaLookup[];
   adSizes?: AdSizeLookup[];
@@ -36,6 +41,8 @@ interface CrmLookups {
   subscriptionDurations?: DurationLookup[];
   paymentOptions?: PaymentOptionLookup[];
   leafletAreas?: AreaLookup[];
+  leafletSizes?: LeafletSizeLookup[];
+  leafletDurations?: DurationLookup[];
 }
 
 function resolveAreaName(id: string, lookups: CrmLookups): string {
@@ -46,13 +53,16 @@ function resolveAreaName(id: string, lookups: CrmLookups): string {
 
 function resolveAdSizeName(id: string | undefined | null, lookups: CrmLookups): string | undefined {
   if (!id) return undefined;
-  return lookups.adSizes?.find(a => a.id === id)?.name ?? id;
+  return lookups.adSizes?.find(a => a.id === id)?.name
+    ?? lookups.leafletSizes?.find(a => a.id === id)?.label
+    ?? id;
 }
 
 function resolveDurationName(id: string | undefined | null, lookups: CrmLookups): string | undefined {
   if (!id) return undefined;
   return lookups.durations?.find(d => d.id === id)?.name
     ?? lookups.subscriptionDurations?.find(d => d.id === id)?.name
+    ?? lookups.leafletDurations?.find(d => d.id === id)?.name
     ?? id;
 }
 

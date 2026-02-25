@@ -59,7 +59,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const queryClient = useQueryClient();
   const { durations, subscriptionDurations, areas, adSizes, volumeDiscounts } = usePricingData();
   const { data: leafletDurations } = useLeafletCampaignDurations();
-  const { leafletAreas } = useLeafletData();
+  const { leafletAreas, leafletSizes } = useLeafletData();
   const { data: paymentOptions } = usePaymentOptions();
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
@@ -383,11 +383,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // Send quote to external webhook for CRM
       try {
-        const selectedAdSizeData = adSizes?.find(a => a.id === campaignData.selectedAdSize);
-        const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
-                                      subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+        const selectedAdSizeData = selectedPricingModel === 'leafleting'
+          ? leafletSizes?.find(a => a.id === campaignData.selectedAdSize)
+          : adSizes?.find(a => a.id === campaignData.selectedAdSize);
+        const selectedDurationData = selectedPricingModel === 'leafleting'
+          ? leafletDurations?.find(d => d.id === campaignData.selectedDuration)
+          : (durations?.find(d => d.id === campaignData.selectedDuration) || 
+             subscriptionDurations?.find(d => d.id === campaignData.selectedDuration));
         
-        const webhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas };
+        const adSizeName = selectedPricingModel === 'leafleting' 
+          ? (selectedAdSizeData as any)?.label 
+          : (selectedAdSizeData as any)?.name;
+        
+        const webhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas, leafletSizes, leafletDurations };
         await supabase.functions.invoke('send-quote-booking-webhook', {
           body: resolveWebhookPayload({
             record_type: 'quote',
@@ -398,7 +406,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             phone: contactData.phone || '',
             company: contactData.companyName || '',
             title: quotePayload.title,
-            ad_size: selectedAdSizeData?.name,
+            ad_size: adSizeName,
             duration: selectedDurationData?.name,
             selected_areas: effectiveSelectedAreas,
             bogof_paid_areas: campaignData.bogofPaidAreas || [],
@@ -788,11 +796,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // Send booking to external CRM webhook
       try {
-        const selectedAdSizeData = adSizes?.find(a => a.id === campaignData.selectedAdSize);
-        const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
-                                      subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+        const bookingAdSizeData = selectedPricingModel === 'leafleting'
+          ? leafletSizes?.find(a => a.id === campaignData.selectedAdSize)
+          : adSizes?.find(a => a.id === campaignData.selectedAdSize);
+        const bookingDurationData = selectedPricingModel === 'leafleting'
+          ? leafletDurations?.find(d => d.id === campaignData.selectedDuration)
+          : (durations?.find(d => d.id === campaignData.selectedDuration) || 
+             subscriptionDurations?.find(d => d.id === campaignData.selectedDuration));
         
-        const bookingWebhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas };
+        const bookingAdSizeName = selectedPricingModel === 'leafleting' 
+          ? (bookingAdSizeData as any)?.label 
+          : (bookingAdSizeData as any)?.name;
+        
+        const bookingWebhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas, leafletSizes, leafletDurations };
         await supabase.functions.invoke('send-quote-booking-webhook', {
           body: resolveWebhookPayload({
             record_type: 'booking',
@@ -803,8 +819,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             phone: contactData.phone || '',
             company: contactData.companyName || '',
             title: bookingPayload.title,
-            ad_size: selectedAdSizeData?.name,
-            duration: selectedDurationData?.name,
+            ad_size: bookingAdSizeName,
+            duration: bookingDurationData?.name,
             selected_areas: effectiveSelectedAreas,
             bogof_paid_areas: campaignData.bogofPaidAreas || [],
             bogof_free_areas: campaignData.bogofFreeAreas || [],
