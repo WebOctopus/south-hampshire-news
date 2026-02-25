@@ -938,7 +938,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       }
 
       // Step 3: Payment option required for bogof and leafleting
-      if (currentStep === 3 && selectedPricingModel !== 'fixed') {
+      if (currentStep === 3 && selectedPricingModel === 'bogof') {
         if (!campaignData.selectedPaymentOption) {
           toast({
             title: "Payment Option Required",
