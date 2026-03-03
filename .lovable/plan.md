@@ -1,54 +1,42 @@
 
 
-## Bug: Leaflet areas pulling wrong schedule (magazine schedule instead of their own)
+## Two Issues in Dashboard "Your Saved Quotes"
 
-### Root Cause
+### Issue 1: Campaign Type shows "Bogof" instead of proper display name
 
-In `src/components/AreaAndScheduleStep.tsx`, lines 109-122, there is code that **intentionally overrides** each leaflet area's schedule with the corresponding magazine area's schedule:
+**Location**: `src/pages/Dashboard.tsx`, lines 1233-1237
 
+The table displays raw `pricing_model` values with only basic mapping. "bogof" shows as "Bogof" instead of "3+ Repeat Package for New Advertisers".
+
+**Fix**: Update the display mapping:
 ```typescript
-// For leafleting, use leaflet areas but with schedule from magazine areas
-const leafletAreasWithMagazineSchedule = (leafletAreas || []).map(leafletArea => {
-  const magazineArea = areas?.find(a => 
-    a.name.toLowerCase().includes(leafletArea.name.toLowerCase()) || ...
-  ) || areas?.[0];
-  
-  return {
-    ...leafletArea,
-    schedule: magazineArea?.schedule || leafletArea.schedule || []
-  };
-});
+{quote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
+ quote.pricing_model === 'fixed' ? 'Fixed Term' :
+ quote.pricing_model === 'leafleting' ? 'Leafleting' : 
+ quote.pricing_model}
 ```
+Also update the same mapping in `QuoteConversionCard.tsx` (line 53) where `getPricingModelDisplay` returns `'3+ Repeat Package'` — change to `'3+ Repeat Package for New Advertisers'`.
 
-This means leaflet Area 2 (Chandler's Ford, which has a March/May/July schedule in the `leaflet_areas` table) gets overwritten with the magazine area's schedule (April/June/August from `pricing_areas`). The comment says "This ensures leaflets follow the same publication schedule as magazines" — but that is incorrect; leaflets have their own independent schedule stored in the database.
+### Issue 2: View dialog shows no info (uses wrong column names)
 
-### Fix
+**Location**: `src/pages/Dashboard.tsx`, lines 1516-1581
 
-In `src/components/AreaAndScheduleStep.tsx`, change `getEffectiveData()` for the leafleting case to simply use the leaflet areas as-is with their own schedules:
+The View Quote dialog references columns that don't exist in the `quotes` table:
+- `viewingQuote.campaign_type` → should be `viewingQuote.pricing_model`
+- `viewingQuote.total_cost` → should be `viewingQuote.final_total`
+- `viewingQuote.advert_size` → should use `ad_size_id` (needs lookup or stored name)
+- `viewingQuote.locations` → should use `selected_area_ids` / `bogof_paid_area_ids` / `bogof_free_area_ids`
+- `viewingQuote.quantity` → should be `total_circulation`
+- `viewingQuote.contact_email` → doesn't exist, use `email`
+- `viewingQuote.contact_phone` → doesn't exist, use `phone`
+- `viewingQuote.company_name` → doesn't exist, use `company`
 
-```typescript
-if (pricingModel === 'leafleting') {
-  return {
-    areas: (leafletAreas || []).map(a => ({
-      ...a,
-      schedule: a.schedule || []
-    })),
-    isLoading: leafletAreasLoading,
-    isError: !!leafletAreasError
-  };
-}
-```
-
-This removes the magazine schedule override and uses each leaflet area's own schedule data from the `leaflet_areas` table.
-
-### Also fix nested Label tag
-
-Line 160 of `LeafletBasketSummary.tsx` has a nested `<Label>` from the previous edit — will fix that too.
+**Fix**: Rewrite the View dialog to use correct column names and the same display name mapping. Show: pricing model, status, monthly price, final total (+ VAT), total circulation, contact info (name, email, phone, company), and created date.
 
 ### Files Changed
 
 | File | Change |
 |---|---|
-| `src/components/AreaAndScheduleStep.tsx` | Lines 108-128: Remove magazine schedule override for leafleting areas |
-| `src/components/LeafletBasketSummary.tsx` | Line 160: Fix nested `<Label>` tag |
+| `src/pages/Dashboard.tsx` | Lines 1233-1237: Fix campaign type display name for bogof. Lines 1516-1581: Rewrite View dialog to use correct quote column names |
+| `src/components/dashboard/QuoteConversionCard.tsx` | Line 53: Update bogof display name to "3+ Repeat Package for New Advertisers" |
 
