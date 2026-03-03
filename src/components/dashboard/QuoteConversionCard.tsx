@@ -48,7 +48,7 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
   const getPricingModelDisplay = (pricingModel: string) => {
     switch (pricingModel) {
       case 'fixed': return 'Fixed Term';
-      case 'bogof': return '3+ Repeat Package';
+      case 'bogof': return '3+ Repeat Package for New Advertisers';
       case 'leafleting': return 'Leafleting Service';
       case 'subscription': return 'Subscription';
       default: return pricingModel;
