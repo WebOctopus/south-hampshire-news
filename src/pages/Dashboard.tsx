@@ -1230,8 +1230,9 @@ const Dashboard = () => {
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <span className="capitalize">
-                            {quote.pricing_model === 'bogof' ? 'Bogof' : 
+                          <span>
+                            {quote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
+                             quote.pricing_model === 'fixed' ? 'Fixed Term' :
                              quote.pricing_model === 'fixed_term' ? 'Fixed Term' : 
                              quote.pricing_model === 'leafleting' ? 'Leafleting' : 
                              quote.pricing_model}
@@ -1518,35 +1519,33 @@ const Dashboard = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Campaign Type</Label>
-                  <p className="capitalize">{viewingQuote.campaign_type?.replace('_', ' ')}</p>
+                  <p>
+                    {viewingQuote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
+                     viewingQuote.pricing_model === 'fixed' ? 'Fixed Term' :
+                     viewingQuote.pricing_model === 'fixed_term' ? 'Fixed Term' : 
+                     viewingQuote.pricing_model === 'leafleting' ? 'Leafleting' : 
+                     viewingQuote.pricing_model}
+                  </p>
                 </div>
                 <div>
-                  <Label>Total Cost</Label>
-                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.total_cost)}</p>
+                  <Label>Status</Label>
+                  <p className="capitalize">{viewingQuote.status || 'Draft'}</p>
                 </div>
               </div>
-              {viewingQuote.advert_size && (
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Advert Size</Label>
-                  <p>{viewingQuote.advert_size}</p>
+                  <Label>Monthly Price</Label>
+                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.monthly_price || 0)} + VAT</p>
                 </div>
-              )}
-              {viewingQuote.locations && viewingQuote.locations.length > 0 && (
                 <div>
-                  <Label>Locations</Label>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {viewingQuote.locations.map((location: any, index: number) => (
-                      <span key={index} className="bg-primary/10 text-primary px-2 py-1 rounded text-sm">
-                        {location.name || location}
-                      </span>
-                    ))}
-                  </div>
+                  <Label>Final Total</Label>
+                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.final_total || 0)} + VAT</p>
                 </div>
-              )}
-              {viewingQuote.quantity && (
+              </div>
+              {viewingQuote.total_circulation > 0 && (
                 <div>
-                  <Label>Quantity</Label>
-                  <p>{viewingQuote.quantity.toLocaleString()}</p>
+                  <Label>Total Circulation</Label>
+                  <p>{(viewingQuote.total_circulation || 0).toLocaleString()}</p>
                 </div>
               )}
               {viewingQuote.contact_name && (
@@ -1557,27 +1556,30 @@ const Dashboard = () => {
                       <Label>Name</Label>
                       <p>{viewingQuote.contact_name}</p>
                     </div>
-                    {viewingQuote.contact_email && (
+                    {viewingQuote.email && (
                       <div>
                         <Label>Email</Label>
-                        <p>{viewingQuote.contact_email}</p>
+                        <p>{viewingQuote.email}</p>
                       </div>
                     )}
-                    {viewingQuote.contact_phone && (
+                    {viewingQuote.phone && (
                       <div>
                         <Label>Phone</Label>
-                        <p>{viewingQuote.contact_phone}</p>
+                        <p>{viewingQuote.phone}</p>
                       </div>
                     )}
-                    {viewingQuote.company_name && (
+                    {viewingQuote.company && (
                       <div>
                         <Label>Company</Label>
-                        <p>{viewingQuote.company_name}</p>
+                        <p>{viewingQuote.company}</p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
+              <div className="border-t pt-4 text-sm text-muted-foreground">
+                <p>Created: {new Date(viewingQuote.created_at).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
             </div>
           )}
         </DialogContent>
