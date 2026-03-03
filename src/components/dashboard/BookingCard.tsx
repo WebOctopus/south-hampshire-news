@@ -53,7 +53,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
     : booking.final_total;
     
   const getPaymentLabel = () => {
-    if (!selectedOption) return 'Total Cost';
+    if (!selectedOption) return '+ VAT';
     
     if (selectedOption.option_type === 'monthly') {
       return 'Monthly Payment';
@@ -63,9 +63,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
       } else if (selectedOption.display_name.includes('12')) {
         return '12 Month Payment';
       }
-      return 'Total Cost';
+      return '+ VAT';
     }
-    return 'Total Cost';
+    return '+ VAT';
   };
 
   useEffect(() => {
