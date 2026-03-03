@@ -106,25 +106,13 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
 
   const getEffectiveData = () => {
     if (pricingModel === 'leafleting') {
-      // For leafleting, use leaflet areas but with schedule from magazine areas
-      // This ensures leaflets follow the same publication schedule as magazines
-      const leafletAreasWithMagazineSchedule = (leafletAreas || []).map(leafletArea => {
-        // Find corresponding magazine area by name or just use first area's schedule
-        const magazineArea = areas?.find(a => 
-          a.name.toLowerCase().includes(leafletArea.name.toLowerCase()) || 
-          leafletArea.name.toLowerCase().includes(a.name.toLowerCase())
-        ) || areas?.[0];
-        
-        return {
-          ...leafletArea,
-          schedule: magazineArea?.schedule || leafletArea.schedule || []
-        };
-      });
-      
       return {
-        areas: leafletAreasWithMagazineSchedule,
-        isLoading: leafletAreasLoading || isLoading,
-        isError: !!leafletAreasError || isError
+        areas: (leafletAreas || []).map(a => ({
+          ...a,
+          schedule: a.schedule || []
+        })),
+        isLoading: leafletAreasLoading,
+        isError: !!leafletAreasError
       };
     }
     return {
