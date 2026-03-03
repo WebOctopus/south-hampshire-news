@@ -1,31 +1,35 @@
 
 
-## Fix: Campaign Overview — Start Date Year & Campaign Cost VAT
+## Change: Payment Section Labels in Booking Details
 
 ### Changes in `src/components/dashboard/BookingDetailsDialog.tsx`
 
-**1. Start Date — append year when only a month name is present (line 342)**
+**1. Label text (lines 547-549)**
 
-Currently `formatStartDate` returns plain month names as-is (e.g. "April"). Change the fallback to append the current year (or derive from booking creation date):
+Change `'Your selected payment method:'` to `'Your selected to pay:'` and `'Select your payment method:'` to `'Select your payment:'`.
 
-```typescript
-// Line 342: instead of just returning monthString
-// Append year from booking.created_at or current year
-const year = new Date(booking.created_at).getFullYear();
-return `${monthString} ${year}`;
-```
+**2. Display names for payment options (line 573)**
 
-**2. Campaign Cost — add "+ VAT" suffix (lines 381-383)**
+Instead of showing `option.display_name` directly, map the values contextually:
+- "6 Months Full Payment" → "6 months in advance"
+- "12 Months Full Payment" → "12 months in advance"
+- Keep "Monthly Direct Debit" as-is (or adjust if needed)
 
-After both `formatPrice(...)` return expressions, append `+ " + VAT"`:
+Add a small helper inline or above the map:
 
 ```typescript
-return formatPrice(...) + ' + VAT';
+const getPaymentDisplayLabel = (displayName: string) => {
+  if (displayName.includes('6 Months')) return '6 months in advance';
+  if (displayName.includes('12 Months')) return '12 months in advance';
+  return displayName;
+};
 ```
+
+Then use `getPaymentDisplayLabel(option.display_name)` at line 573.
 
 ### Files Changed
 
 | File | Change |
 |---|---|
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Line ~342: append year to plain month names in `formatStartDate`; Lines ~381,383: append "+ VAT" to campaign cost display |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Lines 547-549: update label text; Line 573: map display names to "X months in advance" |
 
