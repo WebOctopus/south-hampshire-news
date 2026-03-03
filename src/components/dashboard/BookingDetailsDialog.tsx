@@ -545,8 +545,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                   {/* Show payment options - if none selected, show all available options */}
                   <p className="text-sm text-muted-foreground">
                     {booking.selections?.payment_option_id 
-                      ? 'Your selected payment method:' 
-                      : 'Select your payment method:'}
+                      ? 'Your selected to pay:' 
+                      : 'Select your payment:'}
                   </p>
 
                   <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
@@ -570,7 +570,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                           <div className="flex-1">
                             <Label htmlFor={option.id} className="cursor-pointer">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium">{option.display_name}</span>
+                                <span className="font-medium">{option.display_name.includes('6 Months') ? '6 months in advance' : option.display_name.includes('12 Months') ? '12 months in advance' : option.display_name}</span>
                                 <span className="font-bold text-lg">
                                   {formatPrice(totalAmount)} + VAT
                                   {option.option_type === 'direct_debit' && <span className="text-sm text-muted-foreground">/month</span>}
