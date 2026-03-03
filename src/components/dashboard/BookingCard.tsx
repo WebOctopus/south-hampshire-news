@@ -42,27 +42,29 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
   
   const { data: paymentOptions = [] } = usePaymentOptions();
   
-  // Get the selected payment option and calculate display amount
-  const selectedPaymentOption = booking.selections?.payment_option_id;
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOption);
-  const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-  const designFee = booking.pricing_breakdown?.designFee || 0;
-  
-  const displayAmount = selectedOption && paymentOptions.length > 0
-    ? calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee)
-    : booking.final_total;
+  // Get the selected payment option type
+  const selectedPaymentOptionType = booking.selections?.payment_option_id;
+
+  // Use stored monthly_price for monthly option instead of recalculating
+  const displayAmount = (() => {
+    if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+      return booking.monthly_price;
+    }
+    const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+    if (selectedOption && paymentOptions.length > 0) {
+      const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+      const designFee = booking.pricing_breakdown?.designFee || 0;
+      return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+    }
+    return booking.final_total;
+  })();
     
   const getPaymentLabel = () => {
-    if (!selectedOption) return '+ VAT';
+    if (!selectedPaymentOptionType) return '+ VAT';
     
-    if (selectedOption.option_type === 'monthly') {
+    if (selectedPaymentOptionType === 'monthly') {
       return 'Monthly Payment';
-    } else if (selectedOption.option_type === 'lump_sum') {
-      if (selectedOption.display_name.includes('6')) {
-        return '6 Month Payment';
-      } else if (selectedOption.display_name.includes('12')) {
-        return '12 Month Payment';
-      }
+    } else if (selectedPaymentOptionType === 'lump_sum') {
       return '+ VAT';
     }
     return '+ VAT';
@@ -237,7 +239,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2 text-sm">
             <div>
-              {selectedOption?.option_type === 'monthly' ? (
+              {selectedPaymentOptionType === 'monthly' ? (
                 <>
                   <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
                     {formatPrice(displayAmount)} + vat
