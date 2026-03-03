@@ -1,35 +1,21 @@
 
 
-## Change: Payment Section Labels in Booking Details
+## Change: BookingCard "Total Cost" label → "+ VAT"
 
-### Changes in `src/components/dashboard/BookingDetailsDialog.tsx`
+### What changes
 
-**1. Label text (lines 547-549)**
+In `src/components/dashboard/BookingCard.tsx`, line 254:
 
-Change `'Your selected payment method:'` to `'Your selected to pay:'` and `'Select your payment method:'` to `'Select your payment:'`.
+Change `{getPaymentLabel()}` from returning `'Total Cost'` to `'+ VAT'` for all non-monthly payment types. The price figure on line 252 already shows the ex-VAT amount, so just the label needs updating.
 
-**2. Display names for payment options (line 573)**
+**Specific edit**: In `getPaymentLabel()` (lines 55-69), replace every `'Total Cost'` return with `'+ VAT'`. That covers:
+- Line 56: no selected option fallback
+- Line 66: lump_sum fallback  
+- Line 68: default fallback
 
-Instead of showing `option.display_name` directly, map the values contextually:
-- "6 Months Full Payment" → "6 months in advance"
-- "12 Months Full Payment" → "12 months in advance"
-- Keep "Monthly Direct Debit" as-is (or adjust if needed)
-
-Add a small helper inline or above the map:
-
-```typescript
-const getPaymentDisplayLabel = (displayName: string) => {
-  if (displayName.includes('6 Months')) return '6 months in advance';
-  if (displayName.includes('12 Months')) return '12 months in advance';
-  return displayName;
-};
-```
-
-Then use `getPaymentDisplayLabel(option.display_name)` at line 573.
-
-### Files Changed
+### Files changed
 
 | File | Change |
 |---|---|
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Lines 547-549: update label text; Line 573: map display names to "X months in advance" |
+| `src/components/dashboard/BookingCard.tsx` | Replace all `'Total Cost'` returns in `getPaymentLabel()` with `'+ VAT'` |
 
