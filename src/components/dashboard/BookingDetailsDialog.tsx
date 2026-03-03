@@ -339,7 +339,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                           const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                           return `${monthNames[monthNumber - 1]} ${year}`;
                         }
-                        return monthString;
+                        const year = new Date(booking.created_at).getFullYear();
+                        return `${monthString} ${year}`;
                       };
                       return <p className="text-sm">
                             <span className="font-medium">Start Date:</span>{' '}
@@ -378,9 +379,9 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                           const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
                           const designFee = booking.pricing_breakdown?.designFee || 0;
                           if (selectedOption && paymentOptions.length > 0) {
-                            return formatPrice(calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee));
+                            return formatPrice(calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee)) + ' + VAT';
                           }
-                          return formatPrice(booking.final_total || booking.monthly_price);
+                          return formatPrice(booking.final_total || booking.monthly_price) + ' + VAT';
                         })()}
                         </span>
                       </p>
