@@ -1529,7 +1529,11 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <Label>Status</Label>
-                  <p className="capitalize">{viewingQuote.status || 'Draft'}</p>
+                  <p>{viewingQuote.status === 'bogof_return_interest' ? 'Awaiting Contact' :
+                    viewingQuote.status === 'active' ? 'Active' :
+                    viewingQuote.status === 'approved' ? 'Approved' :
+                    viewingQuote.status === 'pending' ? 'Pending' :
+                    'Draft'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
