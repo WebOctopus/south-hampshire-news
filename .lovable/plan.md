@@ -1,60 +1,31 @@
 
 
-## Fix: Leafleting Webhook Sending UUIDs Instead of Names
+## Fix: Campaign Overview — Start Date Year & Campaign Cost VAT
 
-### Root Cause
+### Changes in `src/components/dashboard/BookingDetailsDialog.tsx`
 
-When a leafleting booking is submitted, the code resolves `ad_size` and `duration` names using the fixed-term/bogof lookup tables (`adSizes` from `ad_sizes` table, `durations`/`subscriptionDurations` from `pricing_durations`). But leafleting uses different tables: `leaflet_sizes` (with `label` field, not `name`) and `leaflet_campaign_durations`. Since the UUID doesn't exist in the wrong table, the resolver falls through and returns the raw UUID.
+**1. Start Date — append year when only a month name is present (line 342)**
 
-### Changes
-
-#### 1. `src/components/AdvertisingStepForm.tsx`
-
-**Add leaflet-specific lookups to the data fetching** (around line 61): Import `useLeafletSizes` and fetch `leafletSizes` data.
-
-**Fix the ad_size/duration resolution** (lines 791-807): When `selectedPricingModel === 'leafleting'`, look up the ad size from `leafletSizes` (using `.label`) and duration from `leafletDurations` (using `.name`) instead of the fixed/bogof tables.
-
-**Pass leaflet lookups to the webhook resolver** (line 795): Add `leafletSizes` and `leafletDurations` to the lookups object.
-
-#### 2. `src/lib/webhookPayloadResolver.ts`
-
-**Extend `CrmLookups` interface**: Add `leafletSizes` (with `label` field) and `leafletDurations` arrays.
-
-**Update `resolveAdSizeName`**: Also search `leafletSizes` by `label` as a fallback.
-
-**Update `resolveDurationName`**: Also search `leafletDurations` by `name` as a fallback.
-
-### Technical Detail
-
-The `leaflet_sizes` table uses `label` (e.g. "A5 Flyer") not `name`. The resolver needs a small interface addition:
+Currently `formatStartDate` returns plain month names as-is (e.g. "April"). Change the fallback to append the current year (or derive from booking creation date):
 
 ```typescript
-interface LeafletSizeLookup {
-  id: string;
-  label: string;
-}
-
-interface CrmLookups {
-  // ...existing fields
-  leafletSizes?: LeafletSizeLookup[];
-  leafletDurations?: DurationLookup[];
-}
+// Line 342: instead of just returning monthString
+// Append year from booking.created_at or current year
+const year = new Date(booking.created_at).getFullYear();
+return `${monthString} ${year}`;
 ```
 
-And `resolveAdSizeName` becomes:
+**2. Campaign Cost — add "+ VAT" suffix (lines 381-383)**
+
+After both `formatPrice(...)` return expressions, append `+ " + VAT"`:
+
 ```typescript
-function resolveAdSizeName(id, lookups) {
-  if (!id) return undefined;
-  return lookups.adSizes?.find(a => a.id === id)?.name
-    ?? lookups.leafletSizes?.find(a => a.id === id)?.label
-    ?? id;
-}
+return formatPrice(...) + ' + VAT';
 ```
 
 ### Files Changed
 
 | File | Change |
 |---|---|
-| `src/lib/webhookPayloadResolver.ts` | Add `leafletSizes` and `leafletDurations` to `CrmLookups`; update `resolveAdSizeName` and `resolveDurationName` to check them |
-| `src/components/AdvertisingStepForm.tsx` | Import `useLeafletSizes`; resolve leaflet ad_size/duration from correct tables; pass `leafletSizes` and `leafletDurations` in webhook lookups |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Line ~342: append year to plain month names in `formatStartDate`; Lines ~381,383: append "+ VAT" to campaign cost display |
 
