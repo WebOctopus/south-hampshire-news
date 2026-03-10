@@ -731,7 +731,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
             </FormSection>
 
             {/* Section 5: Create Account */}
-            <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Account">
+            <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Dashboard">
               <div>
                 <Label htmlFor="password">Password *</Label>
                 <Input
