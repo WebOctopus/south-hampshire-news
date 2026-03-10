@@ -1,46 +1,14 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Update Quote Display Labels in Dashboard
 
-### Root Cause
+The "Leafleting" text and "Draft" badge are both hardcoded in `src/pages/Dashboard.tsx`.
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+### Changes to `src/pages/Dashboard.tsx`
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+1. **Rename "Draft" to "Saved Quote"** — In the `getStatusBadge` function (~line 1183-1184), change the label from "Draft" to "Saved Quote". Also update the fallback text in the View Quote dialog (~line 1536).
 
-### Fix
+2. **"Leafleting" campaign type label** — The text comes from a pricing_model mapping (~lines 1234-1238 and 1523-1527). Currently hardcoded as `'Leafleting'`. This can be changed to whatever label you prefer (e.g., "Leaflet Distribution Campaign" to match the booking summary). Also appears in the View Quote dialog and in `DeleteQuoteDialog.tsx` (line 53, which just shows `quote.pricing_model` raw).
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
-
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
-
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
-```
-
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
-
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+These are display-only labels — no database changes needed. The underlying `pricing_model` value stays as `'leafleting'` and `status` stays as `'draft'` in the database.
 
