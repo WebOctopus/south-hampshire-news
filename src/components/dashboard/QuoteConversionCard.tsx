@@ -183,16 +183,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
         </div>
 
         {/* Action Buttons */}
-        <div className={isReturningBogofCustomer ? "grid grid-cols-2 gap-2" : "grid grid-cols-3 gap-2"}>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => onEdit(quote)}
-            disabled={isReturningBogofCustomer}
-          >
-            <Edit className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
+        <div className={isReturningBogofCustomer ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
           <Button 
             variant="outline" 
             size="sm"
