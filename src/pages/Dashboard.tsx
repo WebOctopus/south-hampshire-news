@@ -1282,7 +1282,6 @@ const Dashboard = () => {
         <h3 className="text-lg font-semibold text-foreground">Latest Quote</h3>
         <QuoteConversionCard 
           quote={quotes[0] || null}
-          onEdit={setEditingQuote}
           onView={setViewingQuote}
           onDelete={handleDeleteQuoteClick}
           onBookNow={handleBookNow}
