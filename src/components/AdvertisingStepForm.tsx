@@ -1076,6 +1076,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 onDesignChoiceChange={(needsDesign) => setCampaignData(prev => ({ ...prev, needsDesign }))}
                 designFee={campaignData.designFee}
                 pricingModel={selectedPricingModel}
+                advertisingContent={advertisingContent}
+                onContentSave={updateAdvertisingField}
               />
               
               {selectedPricingModel === 'leafleting' ? (
