@@ -351,28 +351,39 @@ const ProductDesignerManagement = () => {
               <div className="space-y-2">
                 {formData.features?.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
-                    <div className="flex-1 grid grid-cols-3 gap-2">
+                    <div className="flex-1 flex items-center gap-2">
                       <Input
+                        className="flex-1"
                         placeholder="Feature label"
                         value={feature.label}
                         onChange={(e) => updateFeature(index, 'label', e.target.value)}
                       />
-                      {typeof feature.value === 'boolean' ? (
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={feature.value}
-                            onCheckedChange={(checked) => updateFeature(index, 'value', checked)}
-                          />
-                          <span className="text-sm">Boolean</span>
-                        </div>
-                      ) : (
+                      <Select
+                        value={feature.value === true ? 'included' : feature.value === false ? 'not_included' : 'custom'}
+                        onValueChange={(val) => {
+                          if (val === 'included') updateFeature(index, 'value', true);
+                          else if (val === 'not_included') updateFeature(index, 'value', false);
+                          else updateFeature(index, 'value', '');
+                        }}
+                      >
+                        <SelectTrigger className="w-[160px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="included">✓ Included</SelectItem>
+                          <SelectItem value="not_included">✗ Not included</SelectItem>
+                          <SelectItem value="custom">Custom text</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {typeof feature.value === 'string' && (
                         <Input
-                          placeholder="Feature value"
-                          value={feature.value as string}
+                          className="w-[140px]"
+                          placeholder="e.g. From £99"
+                          value={feature.value}
                           onChange={(e) => updateFeature(index, 'value', e.target.value)}
                         />
                       )}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <Switch
                           checked={feature.highlight}
                           onCheckedChange={(checked) => updateFeature(index, 'highlight', checked)}
@@ -380,14 +391,6 @@ const ProductDesignerManagement = () => {
                         <Label className="text-xs">Highlight</Label>
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toggleFeatureType(index)}
-                    >
-                      {typeof feature.value === 'boolean' ? 'Text' : 'Bool'}
-                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
