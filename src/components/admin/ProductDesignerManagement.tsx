@@ -182,7 +182,7 @@ const ProductDesignerManagement = () => {
   const addFeature = () => {
     setFormData({
       ...formData,
-      features: [...(formData.features || []), { label: '', value: '', highlight: false }],
+      features: [...(formData.features || []), { label: '', value: '', highlight: false, subtext: '' }],
     });
   };
 

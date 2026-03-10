@@ -6,6 +6,7 @@ export interface ProductPackageFeature {
   label: string;
   value: string | boolean;
   highlight: boolean;
+  subtext?: string;
 }
 
 export interface ProductPackage {

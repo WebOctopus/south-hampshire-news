@@ -46,6 +46,9 @@ const FeatureRow: React.FC<{ feature: ProductPackageFeature }> = ({ feature }) =
             {feature.value}
           </div>
         )}
+        {feature.subtext && (
+          <div className="text-xs text-muted-foreground mt-0.5">{feature.subtext}</div>
+        )}
       </div>
     </div>
   );
