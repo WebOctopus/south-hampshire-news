@@ -6,6 +6,7 @@ import { formatPrice } from '@/lib/pricingCalculator';
 import { usePricingData } from '@/hooks/usePricingData';
 import { useStepForm } from '@/components/StepForm';
 import { Separator } from '@/components/ui/separator';
+import { EditableText } from '@/components/inline-editor';
 
 interface FixedTermBasketSummaryProps {
   selectedAreas: string[];
@@ -14,6 +15,8 @@ interface FixedTermBasketSummaryProps {
   selectedMonths: Record<string, string[]>;
   pricingBreakdown: any;
   onNext?: () => void;
+  advertisingContent?: any;
+  onContentSave?: (path: string, value: string) => void;
 }
 
 export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
