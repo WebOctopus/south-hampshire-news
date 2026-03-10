@@ -1,46 +1,30 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Make Booking Summary Info Points Editable Across All 3 Packages
 
-### Root Cause
+The "Design Service", "What You're Booking", "Investment Shown", "Immediate Confirmation", and "Guaranteed Reach" info blurbs appear in 3 components with slightly different text per package type. We will make all of them editable via the Edit Page button.
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+### Changes
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+**`src/hooks/useAdvertisingContent.ts`** — Add a `bookingSummary` section to `defaultAdvertisingContent` with keys for each info point per package type:
+- `bogof.designServiceText`, `bogof.whatYoureBookingText`, `bogof.investmentShownText`, `bogof.immediateConfirmationText`, `bogof.guaranteedReachText`
+- `fixed.designServiceText`, `fixed.whatYoureBookingText`, `fixed.investmentShownText`, `fixed.immediateConfirmationText`
+- `leafleting.whatYoureBookingText`, `leafleting.investmentShownText`, `leafleting.immediateConfirmationText`
 
-### Fix
+Each key gets the current hardcoded text as default.
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+**`src/components/BookingSummaryStep.tsx`** (BOGOF package):
+- Add optional `advertisingContent` and `onContentSave` props
+- Import `EditableText` and wrap each info point description in `EditableText` reading from `advertisingContent?.bookingSummary?.bogof.*`
 
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
+**`src/components/FixedTermBasketSummary.tsx`** (Fixed Term package):
+- Add optional `advertisingContent` and `onContentSave` props
+- Wrap each info point description in `EditableText` reading from `advertisingContent?.bookingSummary?.fixed.*`
 
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
-```
+**`src/components/LeafletBasketSummary.tsx`** (Leafleting package):
+- Add optional `advertisingContent` and `onContentSave` props
+- Wrap each info point description in `EditableText` reading from `advertisingContent?.bookingSummary?.leafleting.*`
 
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
-
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+**`src/components/AdvertisingStepForm.tsx`**:
+- Pass `advertisingContent` and `onContentSave` props to all instances of `BookingSummaryStep`, `FixedTermBasketSummary`, and `LeafletBasketSummary` (6 call sites total).
 
