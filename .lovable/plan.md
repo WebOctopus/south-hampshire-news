@@ -1,26 +1,46 @@
 
 
-## Make Design Fee Step Editable via "Edit Page"
+## Fix: Booking card showing £1,080 instead of £90/month
 
-### Changes
+### Root Cause
 
-**`src/hooks/useAdvertisingContent.ts`** — Add a `designFee` section to `defaultAdvertisingContent`:
-- `pageHeading`: "Artwork Design Service"
-- `pageDescription`: "Do you need help designing your advertisement?"
-- `alertText`: "Professional artwork is essential for effective advertising. Our design team can create eye-catching materials that drive results."
-- `cardTitle`: "Artwork Design Fee"
-- `cardDescription`: "Select whether you need our professional design services"
-- `yesLabel`: "Yes, please contact me to start the design process"
-- `yesDescription`: "Our professional design team will work with you to create compelling artwork that captures attention and drives customer engagement."
-- `bullet1`: "Professional design consultation"
-- `bullet2`: "Unlimited revisions until you're satisfied"
-- `bullet3`: "Print-ready artwork delivered"
-- `noLabel`: "No, finished artwork will be supplied"
-- `noDescription`: "You'll provide your own print-ready artwork that meets our specifications. No design fee will be added to your booking."
-- `noNote`: "Artwork must be supplied in high-resolution print-ready format (PDF, AI, or EPS)"
-- `footerNote`: "The design fee covers the creation of your artwork. If you choose to supply your own artwork, please ensure it meets our technical specifications."
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-**`src/components/DesignFeeStep.tsx`** — Accept optional `advertisingContent` and `onContentSave` props. Wrap all hardcoded text strings in `<EditableText>` components reading from `advertisingContent?.designFee` with fallbacks to defaults.
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-**`src/components/AdvertisingStepForm.tsx`** — Pass `advertisingContent` and `onContentSave` (the `updateAdvertisingField` function) to both `DesignFeeStep` instances.
+### Fix
+
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
+
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
+
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
