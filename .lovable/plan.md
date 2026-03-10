@@ -1,46 +1,33 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Fix: Resolve Area UUIDs to Names in Quote/Booking Emails
+
+### Problem
+The webhook calls use `resolveWebhookPayload()` to convert area UUIDs to human-readable names, but the email calls send raw UUIDs for `selected_areas`, `bogof_paid_areas`, and `bogof_free_areas`. This means customers receive emails with UUIDs like `ac09feed-d807-4d98-...` instead of area names like "Eastleigh" or "Winchester".
 
 ### Root Cause
+Four email invocation points pass raw UUID arrays directly instead of resolving them to area names first:
+1. `AdvertisingStepForm.tsx` — quote email (~line 449-451)
+2. `AdvertisingStepForm.tsx` — booking email (~line 863-865)
+3. `CreateBookingForm.tsx` — quote email (~line 275-277)
+4. `CreateBookingForm.tsx` — booking email (~line 407-409)
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+### Solution
+Create a small helper function to resolve area IDs to names, and use it in all four email call sites. The `areas` lookup data is already available in scope at each location.
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
-
-### Fix
-
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
-
-**Lines 46-53**: Replace the calculation logic with:
+**New helper** (added near top of each file or as a shared util):
 ```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
-
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
+const resolveAreaNames = (ids: string[], areas: any[]) =>
+  ids.map(id => areas?.find(a => a.id === id)?.name || id);
 ```
 
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
+**Changes in `AdvertisingStepForm.tsx`** (2 email calls):
+- Replace `selected_areas: effectiveSelectedAreas` with `selected_areas: resolveAreaNames(effectiveSelectedAreas, areas || [])`
+- Replace `bogof_paid_areas: campaignData.bogofPaidAreas || []` with `bogof_paid_areas: resolveAreaNames(campaignData.bogofPaidAreas || [], areas || [])`
+- Replace `bogof_free_areas: campaignData.bogofFreeAreas || []` with `bogof_free_areas: resolveAreaNames(campaignData.bogofFreeAreas || [], areas || [])`
 
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+**Changes in `CreateBookingForm.tsx`** (2 email calls):
+- Same pattern — resolve all three area arrays using the `areas` lookup before passing to the email function.
 
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+No changes needed to the edge function itself — it already displays these values as-is.
 
