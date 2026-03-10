@@ -92,6 +92,8 @@ export const defaultAdvertisingContent = {
     bogofHeading: "Select Areas for 3+ Repeat Package",
     bogofAlertTitle: "3+ Repeat Package:",
     bogofAlertDescription: 'For every "paid for" area, choose a "free for 3 issues" area. Select your paid areas first, then choose your free areas.',
+    pageHeading: "Select Areas & Publication Schedule",
+    pageDescription: "Choose your areas and set up your campaign timeline",
     paidAreasHeading: "Paid Areas",
     paidAreasDescription: "These are the areas you will pay for throughout your campaign. Maximum 7 areas",
     freeAreasHeading: "FREE Bonus Areas",

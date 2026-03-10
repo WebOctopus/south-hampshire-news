@@ -569,10 +569,18 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
           <MapPin className="h-6 w-6" />
-          Select Areas & Publication Schedule
+          <EditableText
+            path="areaSelection.pageHeading"
+            value={advertisingContent?.areaSelection?.pageHeading || "Select Areas & Publication Schedule"}
+            onSave={(val) => updateAdvertisingField?.('areaSelection.pageHeading', val)}
+          />
         </h2>
         <p className="text-muted-foreground">
-          Choose your areas and set up your campaign timeline
+          <EditableText
+            path="areaSelection.pageDescription"
+            value={advertisingContent?.areaSelection?.pageDescription || "Choose your areas and set up your campaign timeline"}
+            onSave={(val) => updateAdvertisingField?.('areaSelection.pageDescription', val)}
+          />
         </p>
       </div>
 
