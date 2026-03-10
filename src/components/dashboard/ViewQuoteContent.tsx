@@ -38,6 +38,22 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
   const selections = quote.selections as any;
   const monthsByArea: Record<string, string[]> = selections?.months || {};
 
+  // Fallback: derive distribution months from distribution_start_date + duration_multiplier
+  const deriveFallbackMonths = (): string[] => {
+    if (!quote.distribution_start_date) return [];
+    const issueCount = quote.duration_multiplier || 1;
+    const startDate = new Date(quote.distribution_start_date);
+    const months: string[] = [];
+    for (let i = 0; i < issueCount; i++) {
+      const d = new Date(startDate.getFullYear(), startDate.getMonth() + (i * 2)); // bimonthly
+      months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    }
+    return months;
+  };
+
+  const hasMonthsData = Object.keys(monthsByArea).length > 0;
+  const fallbackMonths = !hasMonthsData ? deriveFallbackMonths() : [];
+
   const formatMonthLabel = (monthStr: string, area: any) => {
     // Try to find a delivery date from the area's schedule
     const schedule = area.schedule as any[] | undefined;
@@ -60,7 +76,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
   };
 
   const AreaCard = ({ area, isFree = false }: { area: any; isFree?: boolean }) => {
-    const areaMonths = monthsByArea[area.id] || [];
+    const areaMonths = hasMonthsData ? (monthsByArea[area.id] || []) : fallbackMonths;
     const formattedDates = areaMonths.map(m => formatMonthLabel(m, area));
 
     return (
