@@ -35,21 +35,56 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
   const freeAreas = areas.filter((a: any) => quote.bogof_free_area_ids?.includes(a.id));
   const selectedAreas = areas.filter((a: any) => quote.selected_area_ids?.includes(a.id));
 
-  const AreaCard = ({ area, isFree = false }: { area: any; isFree?: boolean }) => (
-    <div className={`p-3 rounded-lg border ${isFree ? 'border-emerald-200 bg-emerald-50/50' : 'border-border bg-muted/30'}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isFree ? <Gift className="h-4 w-4 text-emerald-600" /> : <MapPin className="h-4 w-4 text-muted-foreground" />}
-          <span className="font-medium">{area.name}</span>
-          {isFree && <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700 bg-emerald-50">FREE</Badge>}
+  const selections = quote.selections as any;
+  const monthsByArea: Record<string, string[]> = selections?.months || {};
+
+  const formatMonthLabel = (monthStr: string, area: any) => {
+    // Try to find a delivery date from the area's schedule
+    const schedule = area.schedule as any[] | undefined;
+    if (schedule) {
+      const entry = schedule.find((s: any) => s.month === monthStr);
+      if (entry?.deliveryDate || entry?.delivery_date) {
+        const d = new Date(entry.deliveryDate || entry.delivery_date);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+      }
+    }
+    // Fallback: format YYYY-MM as "Mon YYYY"
+    const [y, m] = monthStr.split('-');
+    if (y && m) {
+      const d = new Date(Number(y), Number(m) - 1);
+      return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+    }
+    return monthStr;
+  };
+
+  const AreaCard = ({ area, isFree = false }: { area: any; isFree?: boolean }) => {
+    const areaMonths = monthsByArea[area.id] || [];
+    const formattedDates = areaMonths.map(m => formatMonthLabel(m, area));
+
+    return (
+      <div className={`p-3 rounded-lg border ${isFree ? 'border-emerald-200 bg-emerald-50/50' : 'border-border bg-muted/30'}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isFree ? <Gift className="h-4 w-4 text-emerald-600" /> : <MapPin className="h-4 w-4 text-muted-foreground" />}
+            <span className="font-medium">{area.name}</span>
+            {isFree && <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700 bg-emerald-50">FREE</Badge>}
+          </div>
         </div>
+        <div className="mt-1 ml-6 text-sm text-muted-foreground">
+          <span>{(area.circulation || 0).toLocaleString()} circulation</span>
+          {area.postcodes && <span className="ml-2">· {typeof area.postcodes === 'string' ? area.postcodes : Array.isArray(area.postcodes) ? area.postcodes.join(', ') : ''}</span>}
+        </div>
+        {formattedDates.length > 0 && (
+          <div className="mt-1 ml-6 text-sm text-muted-foreground flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>{formattedDates.join(', ')}</span>
+          </div>
+        )}
       </div>
-      <div className="mt-1 ml-6 text-sm text-muted-foreground">
-        <span>{(area.circulation || 0).toLocaleString()} circulation</span>
-        {area.postcodes && <span className="ml-2">· {typeof area.postcodes === 'string' ? area.postcodes : Array.isArray(area.postcodes) ? area.postcodes.join(', ') : ''}</span>}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const hasAreas = paidAreas.length > 0 || freeAreas.length > 0 || selectedAreas.length > 0;
 
