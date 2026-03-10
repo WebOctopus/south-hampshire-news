@@ -162,29 +162,8 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     fetchUserData();
   }, []);
 
-  const businessSectors = [
-    "Accounting & Finance",
-    "Advertising & Marketing", 
-    "Architecture & Construction",
-    "Arts & Entertainment",
-    "Automotive",
-    "Beauty & Wellness",
-    "Consulting",
-    "Education & Training",
-    "Engineering",
-    "Food & Beverage",
-    "Healthcare & Medical",
-    "Hospitality & Tourism",
-    "Information Technology",
-    "Legal Services",
-    "Manufacturing",
-    "Non-profit",
-    "Real Estate",
-    "Retail & E-commerce",
-    "Sports & Recreation",
-    "Transportation & Logistics",
-    "Other"
-  ];
+
+
 
   const handleApplyVoucher = async () => {
     if (!formData.voucherCode?.trim()) {
