@@ -191,10 +191,16 @@ export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelect
     <div className="space-y-8">
       <div className="text-center space-y-4">
         <h2 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          Choose Your Advertising Package
+          <EditableText
+            value={advertisingContent?.pricingOptions?.pageHeading || "Choose Your Advertising Package"}
+            onSave={(val) => onContentSave?.('pricingOptions.pageHeading', val)}
+          />
         </h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Select the package that best fits your business needs. Each option is designed for different advertising goals and budgets.
+          <EditableText
+            value={advertisingContent?.pricingOptions?.pageDescription || "Select the package that best fits your business needs. Each option is designed for different advertising goals and budgets."}
+            onSave={(val) => onContentSave?.('pricingOptions.pageDescription', val)}
+          />
         </p>
       </div>
 
