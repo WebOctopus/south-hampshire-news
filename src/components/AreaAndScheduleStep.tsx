@@ -568,7 +568,13 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
       <div className="space-y-6">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <MapPin className="h-5 w-5" />
-          {pricingModel === 'bogof' ? 'Select Areas for 3+ Repeat Package' : 
+          {pricingModel === 'bogof' ? (
+            <EditableText
+              value={advertisingContent?.areaSelection?.bogofHeading || 'Select Areas for 3+ Repeat Package'}
+              onSave={(val) => onContentSave?.('areaSelection.bogofHeading', val)}
+              as="span"
+            />
+          ) : 
            pricingModel === 'leafleting' ? 'Select Leafleting Areas' : 'Select Areas for Fixed Term'}
         </h3>
 
@@ -576,8 +582,17 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
           <Alert>
             <Users className="h-4 w-4" />
             <AlertDescription>
-              <strong>3+ Repeat Package:</strong> For every "paid for" area, choose a "free for 3 issues" area. 
-              Select your paid areas first, then choose your free areas.
+              <EditableText
+                value={advertisingContent?.areaSelection?.bogofAlertTitle || '3+ Repeat Package:'}
+                onSave={(val) => onContentSave?.('areaSelection.bogofAlertTitle', val)}
+                as="span"
+                className="font-bold"
+              />{' '}
+              <EditableText
+                value={advertisingContent?.areaSelection?.bogofAlertDescription || 'For every "paid for" area, choose a "free for 3 issues" area. Select your paid areas first, then choose your free areas.'}
+                onSave={(val) => onContentSave?.('areaSelection.bogofAlertDescription', val)}
+                as="span"
+              />
             </AlertDescription>
           </Alert>
         )}
