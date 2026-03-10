@@ -50,7 +50,7 @@ export default function DeleteQuoteDialog({
           <div className="space-y-1 text-sm text-gray-600">
             <div className="flex justify-between">
               <span>Campaign Type:</span>
-              <span className="font-medium capitalize">{quote.pricing_model}</span>
+              <span className="font-medium">{quote.pricing_model === 'bogof' ? '3+ Repeat Package' : quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' ? 'Fixed Term' : quote.pricing_model === 'leafleting' ? 'Leaflet Distribution' : quote.pricing_model}</span>
             </div>
             <div className="flex justify-between">
               <span>Total Investment:</span>
