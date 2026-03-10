@@ -7,7 +7,6 @@ import { formatPrice } from '@/lib/pricingCalculator';
 
 interface QuoteConversionCardProps {
   quote: any;
-  onEdit: (quote: any) => void;
   onView: (quote: any) => void;
   onDelete?: (quote: any) => void;
   isDeleting?: boolean;
