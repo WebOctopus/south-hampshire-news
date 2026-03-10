@@ -82,7 +82,9 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
   selectedMonths,
   pricingBreakdown,
   onNext,
-  onMonthsChange
+  onMonthsChange,
+  advertisingContent,
+  onContentSave
 }) => {
   const { leafletAreas, leafletSizes, leafletDurations } = useLeafletData();
   const { nextStep } = useStepForm();
