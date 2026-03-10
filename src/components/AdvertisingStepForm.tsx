@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { getFraudDetectionData } from '@/hooks/useBogofEligibility';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
+import { useAdvertisingContent } from '@/hooks/useAdvertisingContent';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
