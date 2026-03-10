@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Package, Clock, Edit, Download, CheckCircle, Trash2, AlertCircle } from 'lucide-react';
+import { Package, Clock, Download, CheckCircle, Trash2, AlertCircle } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 
 interface QuoteConversionCardProps {
