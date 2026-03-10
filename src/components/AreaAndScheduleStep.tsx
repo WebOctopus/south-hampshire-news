@@ -101,7 +101,9 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
   onPricingChange,
   onNext,
   campaignData,
-  currentStep = 2
+  currentStep = 2,
+  advertisingContent,
+  onContentSave
 }) => {
   const { areas, durations, subscriptionDurations, isLoading, isError } = usePricingData();
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
