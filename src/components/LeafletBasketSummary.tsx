@@ -6,6 +6,7 @@ import { formatPrice } from '@/lib/pricingCalculator';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { useStepForm } from '@/components/StepForm';
 import { parse } from 'date-fns';
+import { EditableText } from '@/components/inline-editor';
 
 interface LeafletBasketSummaryProps {
   selectedAreas: string[];
@@ -15,6 +16,8 @@ interface LeafletBasketSummaryProps {
   pricingBreakdown: any;
   onNext?: () => void;
   onMonthsChange?: (months: Record<string, string[]>) => void;
+  advertisingContent?: any;
+  onContentSave?: (path: string, value: string) => void;
 }
 
 // Helper function to format month display to full "Month YYYY" format
