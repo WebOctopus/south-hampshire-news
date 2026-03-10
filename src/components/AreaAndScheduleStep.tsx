@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { EditableText } from '@/components/inline-editor';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -80,8 +81,10 @@ interface AreaAndScheduleStepProps {
   onMonthsChange: (months: Record<string, string[]>) => void;
   onPricingChange?: (pricingData: any) => void;
   onNext: () => void;
-  campaignData?: any; // Add campaign data prop for mobile pricing summary
-  currentStep?: number; // Add current step for mobile pricing summary
+  campaignData?: any;
+  currentStep?: number;
+  advertisingContent?: any;
+  onContentSave?: (path: string, value: string) => void;
 }
 
 export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
@@ -98,7 +101,9 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
   onPricingChange,
   onNext,
   campaignData,
-  currentStep = 2
+  currentStep = 2,
+  advertisingContent,
+  onContentSave
 }) => {
   const { areas, durations, subscriptionDurations, isLoading, isError } = usePricingData();
   const { data: leafletAreas, isLoading: leafletAreasLoading, error: leafletAreasError } = useLeafletAreas();
@@ -563,7 +568,13 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
       <div className="space-y-6">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <MapPin className="h-5 w-5" />
-          {pricingModel === 'bogof' ? 'Select Areas for 3+ Repeat Package' : 
+          {pricingModel === 'bogof' ? (
+            <EditableText
+              value={advertisingContent?.areaSelection?.bogofHeading || 'Select Areas for 3+ Repeat Package'}
+              onSave={(val) => onContentSave?.('areaSelection.bogofHeading', val)}
+              as="span"
+            />
+          ) : 
            pricingModel === 'leafleting' ? 'Select Leafleting Areas' : 'Select Areas for Fixed Term'}
         </h3>
 
@@ -571,8 +582,17 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
           <Alert>
             <Users className="h-4 w-4" />
             <AlertDescription>
-              <strong>3+ Repeat Package:</strong> For every "paid for" area, choose a "free for 3 issues" area. 
-              Select your paid areas first, then choose your free areas.
+              <EditableText
+                value={advertisingContent?.areaSelection?.bogofAlertTitle || '3+ Repeat Package:'}
+                onSave={(val) => onContentSave?.('areaSelection.bogofAlertTitle', val)}
+                as="span"
+                className="font-bold"
+              />{' '}
+              <EditableText
+                value={advertisingContent?.areaSelection?.bogofAlertDescription || 'For every "paid for" area, choose a "free for 3 issues" area. Select your paid areas first, then choose your free areas.'}
+                onSave={(val) => onContentSave?.('areaSelection.bogofAlertDescription', val)}
+                as="span"
+              />
             </AlertDescription>
           </Alert>
         )}
@@ -582,12 +602,20 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             {/* Paid Areas Section */}
             <div className="space-y-3 md:space-y-4 min-w-0">
               <div className="flex items-center gap-1 md:gap-2">
-                <h4 className="font-medium text-sm md:text-base">Paid Areas</h4>
+                <EditableText
+                  value={advertisingContent?.areaSelection?.paidAreasHeading || 'Paid Areas'}
+                  onSave={(val) => onContentSave?.('areaSelection.paidAreasHeading', val)}
+                  as="h4"
+                  className="font-medium text-sm md:text-base"
+                />
                 <Badge variant="default" className="text-xs">Required</Badge>
               </div>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                These are the areas you will pay for throughout your campaign. Maximum 7 areas ({bogofPaidAreas.length}/7).
-              </p>
+              <EditableText
+                value={advertisingContent?.areaSelection?.paidAreasDescription || 'These are the areas you will pay for throughout your campaign. Maximum 7 areas'}
+                onSave={(val) => onContentSave?.('areaSelection.paidAreasDescription', val)}
+                as="p"
+                className="text-xs md:text-sm text-muted-foreground"
+              />
               
               <div className="grid grid-cols-1 gap-2 md:gap-4">
                 {effectiveAreas
@@ -636,14 +664,30 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             {bogofPaidAreas.length > 0 && (
               <div className="space-y-3 md:space-y-4 min-w-0">
                 <div className="flex items-center gap-1 md:gap-2">
-                  <h4 className="font-medium text-sm md:text-base">FREE Bonus Areas</h4>
-                  <Badge variant="secondary" className="text-xs">6 Months Free</Badge>
+                  <EditableText
+                    value={advertisingContent?.areaSelection?.freeAreasHeading || 'FREE Bonus Areas'}
+                    onSave={(val) => onContentSave?.('areaSelection.freeAreasHeading', val)}
+                    as="h4"
+                    className="font-medium text-sm md:text-base"
+                  />
+                  <Badge variant="secondary" className="text-xs">
+                    <EditableText
+                      value={advertisingContent?.areaSelection?.freeAreasBadge || '6 Months Free'}
+                      onSave={(val) => onContentSave?.('areaSelection.freeAreasBadge', val)}
+                      as="span"
+                    />
+                  </Badge>
                 </div>
                 <p className="text-xs md:text-sm text-muted-foreground">
                   {bogofPaidAreas.length === 7 
                     ? 'All remaining areas automatically selected as FREE bonus areas!'
-                    : `Select additional areas to receive for FREE for 6 months. 
-                      You can choose up to ${bogofPaidAreas.length} free area${bogofPaidAreas.length > 1 ? 's' : ''}.`
+                    : (
+                      <EditableText
+                        value={advertisingContent?.areaSelection?.freeAreasDescription || 'Select additional areas to receive for FREE for 6 months.'}
+                        onSave={(val) => onContentSave?.('areaSelection.freeAreasDescription', val)}
+                        as="span"
+                      />
+                    )
                   }
                 </p>
                 

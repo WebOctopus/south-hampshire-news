@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { getFraudDetectionData } from '@/hooks/useBogofEligibility';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
+import { useAdvertisingContent } from '@/hooks/useAdvertisingContent';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -61,6 +62,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const { data: leafletDurations } = useLeafletCampaignDurations();
   const { leafletAreas, leafletSizes } = useLeafletData();
   const { data: paymentOptions } = usePaymentOptions();
+  const { content: advertisingContent, updateField: updateAdvertisingField } = useAdvertisingContent();
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
   const [currentStep, setCurrentStep] = useState(1);
@@ -1029,6 +1031,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   pricingBreakdown: campaignData.pricingBreakdown
                 }}
                 currentStep={currentStep}
+                advertisingContent={advertisingContent}
+                onContentSave={updateAdvertisingField}
               />
               
 {selectedPricingModel === 'leafleting' ? (
@@ -1148,6 +1152,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingBreakdown: campaignData.pricingBreakdown
               }}
               currentStep={currentStep}
+              advertisingContent={advertisingContent}
+              onContentSave={updateAdvertisingField}
             />
             
 {selectedPricingModel === 'leafleting' ? (

@@ -1,41 +1,46 @@
 
 
-## Make BOGOF Area Selection Text Editable via "Edit Page"
+## Fix: Booking card showing £1,080 instead of £90/month
 
-### Problem
-The BOGOF area selection section in `AreaAndScheduleStep.tsx` has hardcoded text that admins cannot change without code edits.
+### Root Cause
 
-### Solution
-Add a new `areaSelection` section to the `defaultAdvertisingContent` in `useAdvertisingContent.ts`, then wrap the relevant text elements in `EditableText` components in `AreaAndScheduleStep.tsx`.
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-### Changes
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-**File: `src/hooks/useAdvertisingContent.ts`**
-- Add an `areaSelection` key to `defaultAdvertisingContent` with defaults for:
-  - `bogofHeading`: "Select Areas for 3+ Repeat Package"
-  - `bogofAlertTitle`: "3+ Repeat Package:"
-  - `bogofAlertDescription`: 'For every "paid for" area, choose a "free for 3 issues" area. Select your paid areas first, then choose your free areas.'
-  - `paidAreasHeading`: "Paid Areas"
-  - `paidAreasDescription`: "These are the areas you will pay for throughout your campaign. Maximum 7 areas"
-  - `freeAreasHeading`: "FREE Bonus Areas"
-  - `freeAreasBadge`: "6 Months Free"
-  - `freeAreasDescription`: "Select additional areas to receive for FREE for 6 months."
+### Fix
 
-**File: `src/components/AreaAndScheduleStep.tsx`**
-- Accept `advertisingContent` and `onContentSave` as optional props (passed from the parent step form which already has the content hook)
-- Import `EditableText` and `useEditMode` from the inline editor
-- Wrap each of the above text strings in `<EditableText>` components that read from `advertisingContent.areaSelection` and call `onContentSave` on change
-- Non-admin users see plain text as before (EditableText renders normally when edit mode is off)
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
 
-**File: `src/components/AdvertisingStepForm.tsx`** (or whichever parent passes props to AreaAndScheduleStep)
-- Pass `advertisingContent` and the save mutation down to `AreaAndScheduleStep`
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
 
-### Editable fields (visible in the screenshot)
-1. Section heading ("Select Areas for 3+ Repeat Package")
-2. Alert box text (the package description)
-3. "Paid Areas" heading
-4. Paid areas description text
-5. "FREE Bonus Areas" heading
-6. "6 Months Free" badge text
-7. Free areas description text
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
+
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
