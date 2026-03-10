@@ -10,9 +10,12 @@ import { getIcon } from '@/lib/iconMap';
 import { useBogofEligibility } from '@/hooks/useBogofEligibility';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { EditableText } from '@/components/inline-editor';
 
 interface PricingOptionsStepProps {
   onSelectOption: (option: 'fixed' | 'bogof' | 'leafleting') => void;
+  advertisingContent?: any;
+  onContentSave?: (path: string, value: string) => void;
 }
 
 const FeatureRow: React.FC<{ feature: ProductPackageFeature }> = ({ feature }) => {
