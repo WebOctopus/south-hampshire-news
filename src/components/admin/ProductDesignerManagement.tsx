@@ -113,6 +113,16 @@ const ProductDesignerManagement = () => {
     features: [],
   });
 
+  const featureSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const featureIds = (formData.features || []).map((_: any, i: number) => `feature-${i}`);
+  const handleFeatureDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !formData.features) return;
+    const oldIndex = featureIds.indexOf(active.id as string);
+    const newIndex = featureIds.indexOf(over.id as string);
+    setFormData(prev => ({ ...prev, features: arrayMove(prev.features || [], oldIndex, newIndex) }));
+  }, [formData.features, featureIds]);
+
   const handleEdit = (pkg: ProductPackage) => {
     setSelectedPackage(pkg);
     setFormData(pkg);
