@@ -57,7 +57,7 @@ const FeatureRow: React.FC<{ feature: ProductPackageFeature }> = ({ feature }) =
   );
 };
 
-export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelectOption }) => {
+export const PricingOptionsStep: React.FC<PricingOptionsStepProps> = ({ onSelectOption, advertisingContent, onContentSave }) => {
   const { nextStep, currentStep } = useStepForm();
   const mountedRef = useRef(true);
   const hasRefetchedRef = useRef(false);
