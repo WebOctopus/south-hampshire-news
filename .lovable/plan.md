@@ -1,46 +1,20 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Make Booking Type & Duration Fields Editable
 
-### Root Cause
+Add editable text for the "Booking Type" and "Minimum Duration" fields across all 3 package summary components.
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+### Changes
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+**`src/hooks/useAdvertisingContent.ts`** — Add to the existing `bookingSummary` section:
+- `bogof.bookingTypeText`: "3+ Repeat Package for New Advertisers including Buy One Area Get One Area Free"
+- `bogof.minimumDurationText`: "3 issues per area = 6 months"
+- `fixed.bookingTypeText`: "Fixed Term"
+- `leafleting.bookingTypeText`: "Leaflet Distribution Campaign"
 
-### Fix
+**`src/components/BookingSummaryStep.tsx`** — Wrap the Booking Type value (line 240) and Minimum Duration value (line 244) in `EditableText` linked to `bookingSummary.bogof.bookingTypeText` and `bookingSummary.bogof.minimumDurationText`.
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+**`src/components/FixedTermBasketSummary.tsx`** — Wrap the Booking Type value (line 128) in `EditableText` linked to `bookingSummary.fixed.bookingTypeText`.
 
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
-
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
-```
-
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
-
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+**`src/components/LeafletBasketSummary.tsx`** — Wrap the Booking Type value (line 161) in `EditableText` linked to `bookingSummary.leafleting.bookingTypeText`.
 
