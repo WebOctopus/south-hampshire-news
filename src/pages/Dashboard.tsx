@@ -1523,7 +1523,7 @@ const Dashboard = () => {
                     {viewingQuote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
                      viewingQuote.pricing_model === 'fixed' ? 'Fixed Term' :
                      viewingQuote.pricing_model === 'fixed_term' ? 'Fixed Term' : 
-                     viewingQuote.pricing_model === 'leafleting' ? 'Leafleting' : 
+                     viewingQuote.pricing_model === 'leafleting' ? 'Leaflet Distribution' : 
                      viewingQuote.pricing_model}
                   </p>
                 </div>
