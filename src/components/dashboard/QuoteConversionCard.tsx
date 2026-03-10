@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Package, Clock, Download, CheckCircle, Trash2, AlertCircle } from 'lucide-react';
+import { Package, Clock, Eye, CheckCircle, Trash2, AlertCircle } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 
 interface QuoteConversionCardProps {
@@ -172,8 +172,8 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
             size="sm"
             onClick={() => onView(quote)}
           >
-            <Download className="h-4 w-4 mr-1" />
-            View PDF
+            <Eye className="h-4 w-4 mr-1" />
+            View
           </Button>
           {onBookNow && (
             <Button 
