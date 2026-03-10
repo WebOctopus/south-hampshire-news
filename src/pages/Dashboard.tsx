@@ -1181,7 +1181,7 @@ const Dashboard = () => {
         return <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">Awaiting Contact</Badge>;
       }
       if (quote.status === 'draft') {
-        return <Badge variant="outline">Draft</Badge>;
+        return <Badge variant="outline">Saved Quote</Badge>;
       }
       if (quote.status === 'active' || quote.status === 'approved') {
         return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">Active</Badge>;
