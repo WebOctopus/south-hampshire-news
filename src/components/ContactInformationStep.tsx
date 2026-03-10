@@ -48,8 +48,8 @@ interface FormData {
   city: string;
   password: string;
   voucherCode?: string;
-  legalDocumentsAccepted: boolean;
-}
+  legalDocumentsAccepted?: boolean;
+
 
 // Trust Badge Component
 const TrustBadge: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
