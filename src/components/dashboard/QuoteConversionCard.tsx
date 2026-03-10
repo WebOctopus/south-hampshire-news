@@ -19,8 +19,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
     return null;
   }
 
-  const isReturningBogofCustomer = quote.status === 'bogof_return_interest';
-  const isDraft = quote.status === 'draft' || !quote.status;
+  const isDraft = quote.status === 'draft' || quote.status === 'bogof_return_interest' || !quote.status;
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
