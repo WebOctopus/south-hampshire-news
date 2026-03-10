@@ -18,6 +18,74 @@ import { iconOptions, getIcon } from '@/lib/iconMap';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
+interface SortableFeatureRowProps {
+  id: string;
+  feature: ProductPackageFeature;
+  index: number;
+  updateFeature: (index: number, field: string, value: any) => void;
+  removeFeature: (index: number) => void;
+}
+
+const SortableFeatureRow = ({ id, feature, index, updateFeature, removeFeature }: SortableFeatureRowProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 p-3 border rounded-lg bg-background">
+      <button type="button" className="cursor-grab touch-none text-muted-foreground hover:text-foreground" {...attributes} {...listeners}>
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className="flex-1 flex items-center gap-2">
+        <Input
+          className="flex-1"
+          placeholder="Feature label"
+          value={feature.label}
+          onChange={(e) => updateFeature(index, 'label', e.target.value)}
+        />
+        <Select
+          value={feature.value === true ? 'included' : feature.value === false ? 'not_included' : 'custom'}
+          onValueChange={(val) => {
+            if (val === 'included') updateFeature(index, 'value', true);
+            else if (val === 'not_included') updateFeature(index, 'value', false);
+            else updateFeature(index, 'value', '');
+          }}
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="included">✓ Included</SelectItem>
+            <SelectItem value="not_included">✗ Not included</SelectItem>
+            <SelectItem value="custom">Custom text</SelectItem>
+          </SelectContent>
+        </Select>
+        {typeof feature.value === 'string' && (
+          <Input
+            className="w-[140px]"
+            placeholder="e.g. From £99"
+            value={feature.value}
+            onChange={(e) => updateFeature(index, 'value', e.target.value)}
+          />
+        )}
+        <div className="flex items-center gap-1">
+          <Switch
+            checked={feature.highlight}
+            onCheckedChange={(checked) => updateFeature(index, 'highlight', checked)}
+          />
+          <Label className="text-xs">Highlight</Label>
+        </div>
+      </div>
+      <Button type="button" variant="ghost" size="sm" onClick={() => removeFeature(index)}>
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+};
+
 const ProductDesignerManagement = () => {
   const { data: packages, isLoading } = useProductPackages(true);
   const updatePackage = useUpdateProductPackage();
