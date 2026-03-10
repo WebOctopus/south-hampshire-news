@@ -123,6 +123,7 @@ export const defaultAdvertisingContent = {
       immediateConfirmationText: "Receive instant confirmation and campaign details after booking",
     },
     leafleting: {
+      bookingTypeText: "Leaflet Distribution Campaign",
       whatYoureBookingText: "Professional leaflet distribution service to your selected areas with guaranteed delivery to homes",
       investmentShownText: "Your total includes all distribution costs and VAT. No hidden fees or surprise charges",
       immediateConfirmationText: "Receive instant confirmation and campaign details after booking",
