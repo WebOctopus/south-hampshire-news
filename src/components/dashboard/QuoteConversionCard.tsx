@@ -172,8 +172,8 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
             size="sm"
             onClick={() => onView(quote)}
           >
-            <Download className="h-4 w-4 mr-1" />
-            View PDF
+            <Eye className="h-4 w-4 mr-1" />
+            View
           </Button>
           {onBookNow && (
             <Button 
