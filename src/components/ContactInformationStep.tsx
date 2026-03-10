@@ -48,8 +48,9 @@ interface FormData {
   city: string;
   password: string;
   voucherCode?: string;
-  legalDocumentsAccepted: boolean;
+  legalDocumentsAccepted?: boolean;
 }
+
 
 // Trust Badge Component
 const TrustBadge: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
@@ -128,8 +129,8 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     city: "",
     password: "",
     voucherCode: "",
-    legalDocumentsAccepted: false,
   });
+
   
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
@@ -323,14 +324,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    if (!formData.legalDocumentsAccepted) {
-      toast({
-        title: "Legal Documents Required", 
-        description: "Please accept the legal documents to proceed.",
-        variant: "destructive",
-      });
-      return;
-    }
+
 
     if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
@@ -370,14 +364,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    if (!formData.legalDocumentsAccepted) {
-      toast({
-        title: "Legal Documents Required", 
-        description: "Please accept the legal documents to proceed.",
-        variant: "destructive",
-      });
-      return;
-    }
+
 
     if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
@@ -745,7 +732,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
             </FormSection>
 
             {/* Section 5: Create Account */}
-            <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Account">
+            <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Dashboard">
               <div>
                 <Label htmlFor="password">Password *</Label>
                 <Input
@@ -763,172 +750,12 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                 </p>
               </div>
               
-              {/* Legal Documents Acceptance */}
-              <div className="flex items-start space-x-3 p-4 bg-blue-50/80 border border-blue-200 rounded-lg mt-4">
-                <Checkbox
-                  id="legalDocuments"
-                  checked={formData.legalDocumentsAccepted}
-                  onCheckedChange={(checked) => 
-                    setFormData(prev => ({ ...prev, legalDocumentsAccepted: !!checked }))
-                  }
-                  disabled={submitting}
-                  className="mt-0.5"
-                />
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="legalDocuments" className="text-sm font-medium cursor-pointer">
-                      I accept the T&C's *
-                    </Label>
-                    <Dialog open={legalDocumentsOpen} onOpenChange={setLegalDocumentsOpen}>
-                      <DialogTrigger asChild>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 hover:text-blue-800">
-                          <Info className="h-4 w-4 mr-1" />
-                          View Documents
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Legal Documents</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-6 text-sm">
-                          
-                          {/* Terms & Conditions */}
-                          <div className="space-y-3">
-                            <h3 className="text-lg font-semibold text-foreground">Terms & Conditions</h3>
-                            <div className="space-y-2 text-muted-foreground">
-                              <p>By using our advertising services, you agree to the following terms:</p>
-                              <ul className="list-disc list-inside space-y-1 ml-4">
-                                <li>Payment terms: Full payment required before print date</li>
-                                <li>Campaign specifications are final once approved</li>
-                                <li>We reserve the right to refuse advertising content that violates our content policy</li>
-                                <li>Delivery dates are estimates and may vary due to external factors</li>
-                              </ul>
-                            </div>
-                          </div>
-
-                          {/* Service Agreement */}
-                          <div className="space-y-3">
-                            <h3 className="text-lg font-semibold text-foreground">Service Agreement</h3>
-                            <div className="space-y-2 text-muted-foreground">
-                              <p>This agreement outlines the specific details of your advertising campaign:</p>
-                              <ul className="list-disc list-inside space-y-1 ml-4">
-                                <li>Campaign duration and distribution schedule</li>
-                                <li>Target areas and circulation numbers</li>
-                                <li>Advertisement specifications and design requirements</li>
-                                <li>Quality standards and printing specifications</li>
-                                <li>Distribution methods and tracking procedures</li>
-                                <li>Performance metrics and reporting standards</li>
-                              </ul>
-                            </div>
-                          </div>
-
-                          {/* Data Protection Notice */}
-                          <div className="space-y-3">
-                            <h3 className="text-lg font-semibold text-foreground">Data Protection Notice</h3>
-                            <div className="space-y-2 text-muted-foreground">
-                              <p>We are committed to protecting your personal information:</p>
-                              <ul className="list-disc list-inside space-y-1 ml-4">
-                                <li>Personal data is collected only for service delivery purposes</li>
-                                <li>Information is stored securely and encrypted</li>
-                                <li>Data is not shared with third parties without consent</li>
-                                <li>You have the right to access, modify, or delete your data</li>
-                                <li>We comply with GDPR and UK data protection regulations</li>
-                                <li>Data retention policy: Information kept for 7 years for accounting purposes</li>
-                              </ul>
-                            </div>
-                          </div>
-
-                          {/* Privacy Policy */}
-                          <div className="space-y-3">
-                            <h3 className="text-lg font-semibold text-foreground">Privacy Policy</h3>
-                            <div className="space-y-2 text-muted-foreground">
-                              <p>Our privacy policy explains how we collect and use your information:</p>
-                              <ul className="list-disc list-inside space-y-1 ml-4">
-                                <li>Website cookies are used to improve user experience</li>
-                                <li>Analytics data helps us improve our services</li>
-                                <li>Marketing communications are opt-in only</li>
-                                <li>Account information is used for service delivery and support</li>
-                                <li>Payment information is processed by secure third-party providers</li>
-                                <li>You can update privacy preferences in your account settings</li>
-                              </ul>
-                            </div>
-                          </div>
-
-                          <div className="border-t pt-4 mt-6">
-                            <p className="text-xs text-muted-foreground">
-                              Last updated: September 2024. These documents will be available for download in your account dashboard after booking completion.
-                            </p>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                  <p className="text-xs text-blue-700">
-                    By checking this box, you acknowledge that you have read and agree to our terms of service, 
-                    data protection policies, and service agreement.
-                  </p>
-                </div>
-              </div>
             </FormSection>
           </form>
         </CardContent>
       </Card>
 
-      {/* What Happens Next Section */}
-      <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-8 border border-slate-100">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-community-green/10 flex items-center justify-center">
-            <CheckCircle2 className="h-5 w-5 text-community-green" />
-          </div>
-          <h3 className="text-xl font-semibold text-community-navy">What Happens Next?</h3>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            <TimelineStep 
-              number={1} 
-              title="Account Created" 
-              description="Your quote is saved and you can access it anytime" 
-            />
-            <TimelineStep 
-              number={2} 
-              title="Confirmation Email" 
-              description="Campaign details sent to your inbox" 
-            />
-          </div>
-          <div>
-            <TimelineStep 
-              number={3} 
-              title="Design Team Contact" 
-              description="If design is included, we'll be in touch within 24 hours" 
-            />
-            <TimelineStep 
-              number={4} 
-              title="Campaign Goes Live" 
-              description="Your ads reach 142,000 homes across Hampshire" 
-              isLast 
-            />
-          </div>
-        </div>
 
-        {/* Inline Trust Cues */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-8 pt-6 border-t border-slate-100">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Phone className="h-4 w-4 text-community-green" />
-            <span>Questions? <strong className="text-community-navy">023 8026 6388</strong></span>
-          </div>
-          <div className="hidden md:block w-1 h-1 rounded-full bg-slate-300" />
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Shield className="h-4 w-4 text-community-green" />
-            <span>Secure & Encrypted</span>
-          </div>
-          <div className="hidden md:block w-1 h-1 rounded-full bg-slate-300" />
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Calendar className="h-4 w-4 text-community-green" />
-            <span>Established 2005</span>
-          </div>
-        </div>
-      </div>
 
       {submitting && (
         <div className="text-center py-4">
