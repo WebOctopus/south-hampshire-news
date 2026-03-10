@@ -1533,7 +1533,7 @@ const Dashboard = () => {
                     viewingQuote.status === 'active' ? 'Active' :
                     viewingQuote.status === 'approved' ? 'Approved' :
                     viewingQuote.status === 'pending' ? 'Pending' :
-                    'Draft'}</p>
+                    'Saved Quote'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">

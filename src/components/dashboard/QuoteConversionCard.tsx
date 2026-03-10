@@ -49,7 +49,7 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
     switch (pricingModel) {
       case 'fixed': return 'Fixed Term';
       case 'bogof': return '3+ Repeat Package for New Advertisers';
-      case 'leafleting': return 'Leafleting Service';
+      case 'leafleting': return 'Leaflet Distribution';
       case 'subscription': return 'Subscription';
       default: return pricingModel;
     }
