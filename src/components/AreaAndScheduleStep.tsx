@@ -190,7 +190,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
       }
     } else {
       newPaidAreas = bogofPaidAreas.filter(id => id !== areaId);
-      newFreeAreas = bogofFreeAreas;
+      newFreeAreas = bogofFreeAreas.slice(0, newPaidAreas.length);
     }
     
     onBogofAreasChange(newPaidAreas, newFreeAreas);
