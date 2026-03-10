@@ -664,14 +664,30 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             {bogofPaidAreas.length > 0 && (
               <div className="space-y-3 md:space-y-4 min-w-0">
                 <div className="flex items-center gap-1 md:gap-2">
-                  <h4 className="font-medium text-sm md:text-base">FREE Bonus Areas</h4>
-                  <Badge variant="secondary" className="text-xs">6 Months Free</Badge>
+                  <EditableText
+                    value={advertisingContent?.areaSelection?.freeAreasHeading || 'FREE Bonus Areas'}
+                    onSave={(val) => onContentSave?.('areaSelection.freeAreasHeading', val)}
+                    as="h4"
+                    className="font-medium text-sm md:text-base"
+                  />
+                  <Badge variant="secondary" className="text-xs">
+                    <EditableText
+                      value={advertisingContent?.areaSelection?.freeAreasBadge || '6 Months Free'}
+                      onSave={(val) => onContentSave?.('areaSelection.freeAreasBadge', val)}
+                      as="span"
+                    />
+                  </Badge>
                 </div>
                 <p className="text-xs md:text-sm text-muted-foreground">
                   {bogofPaidAreas.length === 7 
                     ? 'All remaining areas automatically selected as FREE bonus areas!'
-                    : `Select additional areas to receive for FREE for 6 months. 
-                      You can choose up to ${bogofPaidAreas.length} free area${bogofPaidAreas.length > 1 ? 's' : ''}.`
+                    : (
+                      <EditableText
+                        value={advertisingContent?.areaSelection?.freeAreasDescription || 'Select additional areas to receive for FREE for 6 months.'}
+                        onSave={(val) => onContentSave?.('areaSelection.freeAreasDescription', val)}
+                        as="span"
+                      />
+                    )
                   }
                 </p>
                 
