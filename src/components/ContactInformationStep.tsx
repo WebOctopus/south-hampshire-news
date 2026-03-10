@@ -860,61 +860,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
         </CardContent>
       </Card>
 
-      {/* What Happens Next Section */}
-      <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-8 border border-slate-100">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-community-green/10 flex items-center justify-center">
-            <CheckCircle2 className="h-5 w-5 text-community-green" />
-          </div>
-          <h3 className="text-xl font-semibold text-community-navy">What Happens Next?</h3>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            <TimelineStep 
-              number={1} 
-              title="Account Created" 
-              description="Your quote is saved and you can access it anytime" 
-            />
-            <TimelineStep 
-              number={2} 
-              title="Confirmation Email" 
-              description="Campaign details sent to your inbox" 
-            />
-          </div>
-          <div>
-            <TimelineStep 
-              number={3} 
-              title="Design Team Contact" 
-              description="If design is included, we'll be in touch within 24 hours" 
-            />
-            <TimelineStep 
-              number={4} 
-              title="Campaign Goes Live" 
-              description="Your ads reach 142,000 homes across Hampshire" 
-              isLast 
-            />
-          </div>
-        </div>
 
-        {/* Inline Trust Cues */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-8 pt-6 border-t border-slate-100">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Phone className="h-4 w-4 text-community-green" />
-            <span>Questions? <strong className="text-community-navy">023 8026 6388</strong></span>
-          </div>
-          <div className="hidden md:block w-1 h-1 rounded-full bg-slate-300" />
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Shield className="h-4 w-4 text-community-green" />
-            <span>Secure & Encrypted</span>
-          </div>
-          <div className="hidden md:block w-1 h-1 rounded-full bg-slate-300" />
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Calendar className="h-4 w-4 text-community-green" />
-            <span>Established 2005</span>
-          </div>
-        </div>
-      </div>
 
       {submitting && (
         <div className="text-center py-4">
