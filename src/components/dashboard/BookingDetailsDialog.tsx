@@ -30,6 +30,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   } = useToast();
   // Initialize with the payment option selected in step 4
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(booking?.selections?.payment_option_id || null);
+  const [legalDocumentsAccepted, setLegalDocumentsAccepted] = useState(false);
+  const [legalDocumentsOpen, setLegalDocumentsOpen] = useState(false);
   const {
     data: paymentOptions = []
   } = usePaymentOptions();
