@@ -1199,15 +1199,7 @@ const Dashboard = () => {
             </CollapsibleTrigger>
           </div>
 
-          {quotes.length > 0 && quotes[0]?.status === 'bogof_return_interest' && (
-            <Alert className="mb-4 border-amber-200 bg-amber-50">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-800">
-                <strong>Returning Customer Quote Saved</strong><br />
-                This quote was saved because you've previously used our 3+ Repeat Package offer. Our team will contact you within 24 hours with exclusive returning customer rates!
-              </AlertDescription>
-            </Alert>
-          )}
+
 
           <CollapsibleContent>
             <div className="border rounded-lg overflow-hidden">

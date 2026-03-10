@@ -19,7 +19,6 @@ const getPricingModelLabel = (model: string) => {
 
 const getStatusLabel = (status: string) => {
   switch (status) {
-    case 'bogof_return_interest': return 'Awaiting Contact';
     case 'active': return 'Active';
     case 'approved': return 'Approved';
     case 'pending': return 'Pending';

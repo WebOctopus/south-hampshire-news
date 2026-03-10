@@ -166,7 +166,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
         </div>
 
         {/* Action Buttons */}
-        <div className={isReturningBogofCustomer ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
+        <div className="grid grid-cols-2 gap-2">
           <Button 
             variant="outline" 
             size="sm"
@@ -175,7 +175,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
             <Download className="h-4 w-4 mr-1" />
             View PDF
           </Button>
-          {!isReturningBogofCustomer && onBookNow && (
+          {onBookNow && (
             <Button 
               size="sm"
               onClick={() => onBookNow(quote)}
