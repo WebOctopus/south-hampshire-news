@@ -753,7 +753,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         </CardContent>
       </Card>
 
-      {/* 3 Payment Options */}
+      {/* Payment Options */}
       {pricingBreakdown && (
         <Card className="border-primary/50">
           <CardHeader>
