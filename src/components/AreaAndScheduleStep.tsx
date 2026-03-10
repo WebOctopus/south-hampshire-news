@@ -755,7 +755,13 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                       })}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">Select at least one paid area to unlock your free bonus areas.</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    <EditableText
+                      value={advertisingContent?.areaSelection?.freeAreasUnlockText || "Select at least one paid area to unlock your free bonus areas."}
+                      onSave={(val) => onContentSave?.('areaSelection.freeAreasUnlockText', val)}
+                      as="span"
+                    />
+                  </p>
                 )}
               </div>
           </div>
