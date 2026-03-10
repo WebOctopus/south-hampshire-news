@@ -13,7 +13,7 @@ interface QuoteConversionCardProps {
   onBookNow?: (quote: any) => void;
 }
 
-export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, isDeleting, onBookNow }: QuoteConversionCardProps) {
+export default function QuoteConversionCard({ quote, onView, onDelete, isDeleting, onBookNow }: QuoteConversionCardProps) {
   // Add null safety check
   if (!quote) {
     return null;
