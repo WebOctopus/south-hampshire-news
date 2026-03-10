@@ -19,8 +19,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
     return null;
   }
 
-  const isReturningBogofCustomer = quote.status === 'bogof_return_interest';
-  const isDraft = quote.status === 'draft' || !quote.status;
+  const isDraft = quote.status === 'draft' || quote.status === 'bogof_return_interest' || !quote.status;
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -28,7 +27,6 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
       case 'approved': return 'bg-green-100 text-green-800 border-green-200';
       case 'pending': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'draft': return 'bg-yellow-100 text-yellow-800 border-yellow-200'; // Saved Quote
-      case 'bogof_return_interest': return 'bg-amber-100 text-amber-800 border-amber-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -39,7 +37,6 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
       case 'approved': return 'Approved';
       case 'pending': return 'Pending';
       case 'draft': return 'Saved Quote';
-      case 'bogof_return_interest': return 'Awaiting Contact';
       default: return 'Saved Quote';
     }
   };
@@ -71,8 +68,6 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
           ? 'border-2 border-amber-400 shadow-md hover:shadow-lg bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30' 
           : quote.status === 'active' || quote.status === 'approved'
           ? 'border-2 border-emerald-400 shadow-md hover:shadow-lg bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30'
-          : isReturningBogofCustomer
-          ? 'border-2 border-amber-400 shadow-md hover:shadow-lg bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30'
           : 'hover:shadow-md'
       }`}
     >
@@ -134,20 +129,8 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
       </CardHeader>
       
       <CardContent className="space-y-4 relative">
-        {/* Special Message for Returning BOGOF Customers */}
-        {isReturningBogofCustomer && (
-          <Alert className="border-amber-400 bg-amber-50/80 backdrop-blur-sm">
-            <CheckCircle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-900">
-              <span className="font-semibold">Returning Customer - Awaiting Contact</span>
-              <br />
-              <span className="text-sm">Our team will contact you shortly with exclusive returning customer rates for the 3+ Repeat Package.</span>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Draft Alert */}
-        {isDraft && !isReturningBogofCustomer && (
+        {isDraft && (
           <Alert className="border-amber-400 bg-amber-50/80 backdrop-blur-sm">
             <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-900 font-medium">
@@ -183,7 +166,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
         </div>
 
         {/* Action Buttons */}
-        <div className={isReturningBogofCustomer ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
+        <div className="grid grid-cols-2 gap-2">
           <Button 
             variant="outline" 
             size="sm"
@@ -192,7 +175,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
             <Download className="h-4 w-4 mr-1" />
             View PDF
           </Button>
-          {!isReturningBogofCustomer && onBookNow && (
+          {onBookNow && (
             <Button 
               size="sm"
               onClick={() => onBookNow(quote)}
