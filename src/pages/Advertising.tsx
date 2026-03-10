@@ -1226,8 +1226,6 @@ const CalculatorTest = () => {
         </div>
       </section>
 
-      {/* CTA Enquiry Form Section */}
-      <EnquiryFormSection />
 
       {/* Top Website Features Section */}
 
