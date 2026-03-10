@@ -389,7 +389,13 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                   <span className="text-primary font-medium">📦</span>
                   <div>
                     <p className="font-medium">WHAT YOU'RE BOOKING:</p>
-                    <p className="text-muted-foreground">Professional leaflet distribution service to your selected areas with guaranteed delivery to homes</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.leafleting?.whatYoureBookingText || "Professional leaflet distribution service to your selected areas with guaranteed delivery to homes"}
+                        onSave={(val) => onContentSave?.('bookingSummary.leafleting.whatYoureBookingText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -397,7 +403,13 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                   <span className="text-primary font-medium">💰</span>
                   <div>
                     <p className="font-medium">INVESTMENT SHOWN:</p>
-                    <p className="text-muted-foreground">Your total includes all distribution costs and VAT. No hidden fees or surprise charges</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.leafleting?.investmentShownText || "Your total includes all distribution costs and VAT. No hidden fees or surprise charges"}
+                        onSave={(val) => onContentSave?.('bookingSummary.leafleting.investmentShownText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -405,7 +417,13 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                   <span className="text-primary font-medium">⚡</span>
                   <div>
                     <p className="font-medium">IMMEDIATE CONFIRMATION:</p>
-                    <p className="text-muted-foreground">Receive instant confirmation and campaign details after booking</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.leafleting?.immediateConfirmationText || "Receive instant confirmation and campaign details after booking"}
+                        onSave={(val) => onContentSave?.('bookingSummary.leafleting.immediateConfirmationText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
               </div>

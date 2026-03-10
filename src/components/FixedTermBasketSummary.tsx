@@ -309,7 +309,13 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   <span className="text-primary font-medium">🎨</span>
                   <div>
                     <p className="font-medium">DESIGN SERVICE:</p>
-                    <p className="text-muted-foreground">By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.fixed?.designServiceText || "By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one."}
+                        onSave={(val) => onContentSave?.('bookingSummary.fixed.designServiceText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -317,7 +323,13 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   <span className="text-primary font-medium">📦</span>
                   <div>
                     <p className="font-medium">WHAT YOU'RE BOOKING:</p>
-                    <p className="text-muted-foreground">A Fixed Term advertising package with guaranteed distribution to your selected areas</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.fixed?.whatYoureBookingText || "A Fixed Term advertising package with guaranteed distribution to your selected areas"}
+                        onSave={(val) => onContentSave?.('bookingSummary.fixed.whatYoureBookingText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -325,7 +337,13 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   <span className="text-primary font-medium">💰</span>
                   <div>
                     <p className="font-medium">INVESTMENT SHOWN:</p>
-                    <p className="text-muted-foreground">Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.fixed?.investmentShownText || "Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges"}
+                        onSave={(val) => onContentSave?.('bookingSummary.fixed.investmentShownText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -333,7 +351,13 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   <span className="text-primary font-medium">⚡</span>
                   <div>
                     <p className="font-medium">IMMEDIATE CONFIRMATION:</p>
-                    <p className="text-muted-foreground">Receive instant confirmation and campaign details after booking</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.fixed?.immediateConfirmationText || "Receive instant confirmation and campaign details after booking"}
+                        onSave={(val) => onContentSave?.('bookingSummary.fixed.immediateConfirmationText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
               </div>
