@@ -1507,76 +1507,7 @@ const Dashboard = () => {
             </DialogDescription>
           </DialogHeader>
           {viewingQuote && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Campaign Type</Label>
-                  <p>
-                    {viewingQuote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
-                     viewingQuote.pricing_model === 'fixed' ? 'Fixed Term' :
-                     viewingQuote.pricing_model === 'fixed_term' ? 'Fixed Term' : 
-                     viewingQuote.pricing_model === 'leafleting' ? 'Leaflet Distribution' : 
-                     viewingQuote.pricing_model}
-                  </p>
-                </div>
-                <div>
-                  <Label>Status</Label>
-                  <p>{viewingQuote.status === 'bogof_return_interest' ? 'Awaiting Contact' :
-                    viewingQuote.status === 'active' ? 'Active' :
-                    viewingQuote.status === 'approved' ? 'Approved' :
-                    viewingQuote.status === 'pending' ? 'Pending' :
-                    'Saved Quote'}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Monthly Price</Label>
-                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.monthly_price || 0)} + VAT</p>
-                </div>
-                <div>
-                  <Label>Final Total</Label>
-                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.final_total || 0)} + VAT</p>
-                </div>
-              </div>
-              {viewingQuote.total_circulation > 0 && (
-                <div>
-                  <Label>Total Circulation</Label>
-                  <p>{(viewingQuote.total_circulation || 0).toLocaleString()}</p>
-                </div>
-              )}
-              {viewingQuote.contact_name && (
-                <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Contact Information</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Name</Label>
-                      <p>{viewingQuote.contact_name}</p>
-                    </div>
-                    {viewingQuote.email && (
-                      <div>
-                        <Label>Email</Label>
-                        <p>{viewingQuote.email}</p>
-                      </div>
-                    )}
-                    {viewingQuote.phone && (
-                      <div>
-                        <Label>Phone</Label>
-                        <p>{viewingQuote.phone}</p>
-                      </div>
-                    )}
-                    {viewingQuote.company && (
-                      <div>
-                        <Label>Company</Label>
-                        <p>{viewingQuote.company}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="border-t pt-4 text-sm text-muted-foreground">
-                <p>Created: {new Date(viewingQuote.created_at).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-              </div>
-            </div>
+            <ViewQuoteContent quote={viewingQuote} />
           )}
         </DialogContent>
       </Dialog>
