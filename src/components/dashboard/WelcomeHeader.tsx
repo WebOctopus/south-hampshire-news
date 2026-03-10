@@ -49,7 +49,7 @@ export default function WelcomeHeader({
           {greeting}, {displayName}! 👋
         </h1>
         <p className="text-xl text-muted-foreground mb-4">
-          {hasPaidBookings && paidBookingsReach > 0 ? `Your advert is in the process of being seen by ${paidBookingsReach.toLocaleString()} number of homes` : unpaidBookingsReach > 0 ? `You're one step away from reaching ${unpaidBookingsReach.toLocaleString()} homes in your area!` : totalReach > 0 ? `You're one step away from reaching ${totalReach.toLocaleString()} homes in your area!` : "Start creating your advertising campaign today!"}
+          {hasPaidBookings && paidBookingsReach > 0 ? `Your advert is in the process of being seen by ${paidBookingsReach.toLocaleString()} number of homes` : unpaidBookingsReach > 0 ? `You're one step away from reaching up to 142,000 Discover readers' homes!` : totalReach > 0 ? `You're one step away from reaching up to 142,000 Discover readers' homes!` : "Start creating your advertising campaign today!"}
         </p>
       </div>
 
