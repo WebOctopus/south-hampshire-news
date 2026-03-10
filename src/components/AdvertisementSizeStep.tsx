@@ -344,51 +344,23 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
         </p>
       </div>
 
-      {/* View Toggle */}
-      <div className="flex justify-center">
-        <div className="bg-muted rounded-lg p-1 flex">
-          <Button
-            variant={previewMode === 'grid' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPreviewMode('grid')}
-            className="rounded-md"
-          >
-            Advert Sizes
-          </Button>
-          <Button
-            variant={previewMode === 'magazine' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPreviewMode('magazine')}
-            className="rounded-md"
-            disabled={!selectedAdSize}
-          >
-            Magazine Preview
-          </Button>
-        </div>
-      </div>
-
-      {previewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {(Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}) as typeof adSizes)
             .filter((size) => {
-              // Filter sizes based on pricing model using available_for array
               if (pricingModel === 'bogof') {
-                // For 3+ Repeat Package (bogof), only show sizes available for subscription pricing
                 return size.available_for?.includes('subscription');
               } else {
-                // For fixed pricing, show sizes with fixed pricing
                 return size.available_for?.includes('fixed') || size.base_price_per_area > 0;
               }
             })
             .sort((a, b) => {
-              // Calculate area for each ad size to sort by size (largest to smallest)
               const getArea = (size: any) => {
                 const dimensions = size.dimensions?.split('x') || ['0', '0'];
                 const width = parseFloat(dimensions[0].replace('mm', '').trim()) || 0;
                 const height = parseFloat(dimensions[1].replace('mm', '').trim()) || 0;
                 return width * height;
               };
-              return getArea(b) - getArea(a); // Sort descending (largest first)
+              return getArea(b) - getArea(a);
             })
             .map((size) => {
             const isSelected = selectedAdSize === size.id;
@@ -427,9 +399,6 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
             );
           })}
         </div>
-      ) : (
-        renderMagazinePreview()
-      )}
 
       {/* Summary Section */}
       {showSummary && renderSummary()}
