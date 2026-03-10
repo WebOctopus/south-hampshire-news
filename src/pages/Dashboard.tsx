@@ -1512,43 +1512,6 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!editingQuote} onOpenChange={() => setEditingQuote(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Quote</DialogTitle>
-          </DialogHeader>
-          {editingQuote && (
-            <EditQuoteForm
-              quote={editingQuote}
-              onSave={async (updatedQuote) => {
-                try {
-                  const { error } = await supabase
-                    .from('quotes')
-                    .update(updatedQuote)
-                    .eq('id', editingQuote.id);
-                  
-                  if (error) throw error;
-                  
-                  toast({
-                    title: 'Quote Updated',
-                    description: 'Your quote has been updated successfully.'
-                  });
-                  
-                  setEditingQuote(null);
-                  loadQuotes();
-                } catch (error: any) {
-                  toast({
-                    title: 'Error',
-                    description: error.message,
-                    variant: 'destructive'
-                  });
-                }
-              }}
-              onCancel={() => setEditingQuote(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       <DeleteQuoteDialog
         open={!!quoteToDelete}
