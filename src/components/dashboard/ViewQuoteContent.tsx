@@ -1,0 +1,161 @@
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { formatPrice } from '@/lib/pricingCalculator';
+import { useAreas } from '@/hooks/usePricingData';
+import { MapPin, Gift } from 'lucide-react';
+
+interface ViewQuoteContentProps {
+  quote: any;
+}
+
+const getPricingModelLabel = (model: string) => {
+  switch (model) {
+    case 'bogof': return '3+ Repeat Package for New Advertisers';
+    case 'fixed': case 'fixed_term': return 'Fixed Term';
+    case 'leafleting': return 'Leaflet Distribution';
+    default: return model;
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'bogof_return_interest': return 'Awaiting Contact';
+    case 'active': return 'Active';
+    case 'approved': return 'Approved';
+    case 'pending': return 'Pending';
+    default: return 'Saved Quote';
+  }
+};
+
+export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
+  const { data: areas = [] } = useAreas();
+
+  const isBogof = quote.pricing_model === 'bogof';
+  
+  const paidAreas = areas.filter((a: any) => quote.bogof_paid_area_ids?.includes(a.id));
+  const freeAreas = areas.filter((a: any) => quote.bogof_free_area_ids?.includes(a.id));
+  const selectedAreas = areas.filter((a: any) => quote.selected_area_ids?.includes(a.id));
+
+  const AreaCard = ({ area, isFree = false }: { area: any; isFree?: boolean }) => (
+    <div className={`p-3 rounded-lg border ${isFree ? 'border-emerald-200 bg-emerald-50/50' : 'border-border bg-muted/30'}`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {isFree ? <Gift className="h-4 w-4 text-emerald-600" /> : <MapPin className="h-4 w-4 text-muted-foreground" />}
+          <span className="font-medium">{area.name}</span>
+          {isFree && <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700 bg-emerald-50">FREE</Badge>}
+        </div>
+      </div>
+      <div className="mt-1 ml-6 text-sm text-muted-foreground">
+        <span>{(area.circulation || 0).toLocaleString()} circulation</span>
+        {area.postcodes && <span className="ml-2">· {typeof area.postcodes === 'string' ? area.postcodes : Array.isArray(area.postcodes) ? area.postcodes.join(', ') : ''}</span>}
+      </div>
+    </div>
+  );
+
+  const hasAreas = paidAreas.length > 0 || freeAreas.length > 0 || selectedAreas.length > 0;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Campaign Type</Label>
+          <p>{getPricingModelLabel(quote.pricing_model)}</p>
+        </div>
+        <div>
+          <Label>Status</Label>
+          <p>{getStatusLabel(quote.status)}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Monthly Price</Label>
+          <p className="font-semibold text-lg">{formatPrice(quote.monthly_price || 0)} + VAT</p>
+        </div>
+        <div>
+          <Label>Final Total</Label>
+          <p className="font-semibold text-lg">{formatPrice(quote.final_total || 0)} + VAT</p>
+        </div>
+      </div>
+      {quote.total_circulation > 0 && (
+        <div>
+          <Label>Total Circulation</Label>
+          <p>{(quote.total_circulation || 0).toLocaleString()}</p>
+        </div>
+      )}
+
+      {/* Area Selection Section */}
+      {hasAreas && (
+        <div className="border-t pt-4">
+          <h4 className="font-medium mb-3 flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Area Selection {isBogof && '(Buy 1 Get 1 Free)'}
+          </h4>
+          
+          {isBogof ? (
+            <div className="space-y-4">
+              {paidAreas.length > 0 && (
+                <div>
+                  <Label className="text-sm mb-2 block">Paid Areas</Label>
+                  <div className="space-y-2">
+                    {paidAreas.map((area: any) => (
+                      <AreaCard key={area.id} area={area} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {freeAreas.length > 0 && (
+                <div>
+                  <Label className="text-sm mb-2 block">FREE Bonus Areas</Label>
+                  <div className="space-y-2">
+                    {freeAreas.map((area: any) => (
+                      <AreaCard key={area.id} area={area} isFree />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {selectedAreas.map((area: any) => (
+                <AreaCard key={area.id} area={area} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {quote.contact_name && (
+        <div className="border-t pt-4">
+          <h4 className="font-medium mb-2">Contact Information</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Name</Label>
+              <p>{quote.contact_name}</p>
+            </div>
+            {quote.email && (
+              <div>
+                <Label>Email</Label>
+                <p>{quote.email}</p>
+              </div>
+            )}
+            {quote.phone && (
+              <div>
+                <Label>Phone</Label>
+                <p>{quote.phone}</p>
+              </div>
+            )}
+            {quote.company && (
+              <div>
+                <Label>Company</Label>
+                <p>{quote.company}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      <div className="border-t pt-4 text-sm text-muted-foreground">
+        <p>Created: {new Date(quote.created_at).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+      </div>
+    </div>
+  );
+}

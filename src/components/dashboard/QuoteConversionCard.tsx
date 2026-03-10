@@ -2,19 +2,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Package, Clock, Edit, Download, CheckCircle, Trash2, AlertCircle } from 'lucide-react';
+import { Package, Clock, Download, CheckCircle, Trash2, AlertCircle } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 
 interface QuoteConversionCardProps {
   quote: any;
-  onEdit: (quote: any) => void;
   onView: (quote: any) => void;
   onDelete?: (quote: any) => void;
   isDeleting?: boolean;
   onBookNow?: (quote: any) => void;
 }
 
-export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, isDeleting, onBookNow }: QuoteConversionCardProps) {
+export default function QuoteConversionCard({ quote, onView, onDelete, isDeleting, onBookNow }: QuoteConversionCardProps) {
   // Add null safety check
   if (!quote) {
     return null;
@@ -184,16 +183,7 @@ export default function QuoteConversionCard({ quote, onEdit, onView, onDelete, i
         </div>
 
         {/* Action Buttons */}
-        <div className={isReturningBogofCustomer ? "grid grid-cols-2 gap-2" : "grid grid-cols-3 gap-2"}>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => onEdit(quote)}
-            disabled={isReturningBogofCustomer}
-          >
-            <Edit className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
+        <div className={isReturningBogofCustomer ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 gap-2"}>
           <Button 
             variant="outline" 
             size="sm"

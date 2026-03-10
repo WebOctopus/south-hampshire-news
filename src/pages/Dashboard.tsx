@@ -18,11 +18,12 @@ import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle } from 'lucide-react';
+import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle, MapPin, Gift } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { format } from 'date-fns';
-import EditQuoteForm from '@/components/EditQuoteForm';
+import { useAreas } from '@/hooks/usePricingData';
+import ViewQuoteContent from '@/components/dashboard/ViewQuoteContent';
 import PasswordSetupDialog from '@/components/PasswordSetupDialog';
 import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 import WelcomeHeader from '@/components/dashboard/WelcomeHeader';
@@ -50,7 +51,7 @@ const Dashboard = () => {
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [viewingQuote, setViewingQuote] = useState<any | null>(null);
-  const [editingQuote, setEditingQuote] = useState<any | null>(null);
+  
   const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
   const [quoteToDelete, setQuoteToDelete] = useState<any | null>(null);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -1254,13 +1255,6 @@ const Dashboard = () => {
                             View
                           </Button>
                           <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingQuote(quote)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDeleteQuoteClick(quote)}
@@ -1289,7 +1283,6 @@ const Dashboard = () => {
         <h3 className="text-lg font-semibold text-foreground">Latest Quote</h3>
         <QuoteConversionCard 
           quote={quotes[0] || null}
-          onEdit={setEditingQuote}
           onView={setViewingQuote}
           onDelete={handleDeleteQuoteClick}
           onBookNow={handleBookNow}
@@ -1515,117 +1508,11 @@ const Dashboard = () => {
             </DialogDescription>
           </DialogHeader>
           {viewingQuote && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Campaign Type</Label>
-                  <p>
-                    {viewingQuote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
-                     viewingQuote.pricing_model === 'fixed' ? 'Fixed Term' :
-                     viewingQuote.pricing_model === 'fixed_term' ? 'Fixed Term' : 
-                     viewingQuote.pricing_model === 'leafleting' ? 'Leaflet Distribution' : 
-                     viewingQuote.pricing_model}
-                  </p>
-                </div>
-                <div>
-                  <Label>Status</Label>
-                  <p>{viewingQuote.status === 'bogof_return_interest' ? 'Awaiting Contact' :
-                    viewingQuote.status === 'active' ? 'Active' :
-                    viewingQuote.status === 'approved' ? 'Approved' :
-                    viewingQuote.status === 'pending' ? 'Pending' :
-                    'Saved Quote'}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Monthly Price</Label>
-                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.monthly_price || 0)} + VAT</p>
-                </div>
-                <div>
-                  <Label>Final Total</Label>
-                  <p className="font-semibold text-lg">{formatPrice(viewingQuote.final_total || 0)} + VAT</p>
-                </div>
-              </div>
-              {viewingQuote.total_circulation > 0 && (
-                <div>
-                  <Label>Total Circulation</Label>
-                  <p>{(viewingQuote.total_circulation || 0).toLocaleString()}</p>
-                </div>
-              )}
-              {viewingQuote.contact_name && (
-                <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Contact Information</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Name</Label>
-                      <p>{viewingQuote.contact_name}</p>
-                    </div>
-                    {viewingQuote.email && (
-                      <div>
-                        <Label>Email</Label>
-                        <p>{viewingQuote.email}</p>
-                      </div>
-                    )}
-                    {viewingQuote.phone && (
-                      <div>
-                        <Label>Phone</Label>
-                        <p>{viewingQuote.phone}</p>
-                      </div>
-                    )}
-                    {viewingQuote.company && (
-                      <div>
-                        <Label>Company</Label>
-                        <p>{viewingQuote.company}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="border-t pt-4 text-sm text-muted-foreground">
-                <p>Created: {new Date(viewingQuote.created_at).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-              </div>
-            </div>
+            <ViewQuoteContent quote={viewingQuote} />
           )}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!editingQuote} onOpenChange={() => setEditingQuote(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Quote</DialogTitle>
-          </DialogHeader>
-          {editingQuote && (
-            <EditQuoteForm
-              quote={editingQuote}
-              onSave={async (updatedQuote) => {
-                try {
-                  const { error } = await supabase
-                    .from('quotes')
-                    .update(updatedQuote)
-                    .eq('id', editingQuote.id);
-                  
-                  if (error) throw error;
-                  
-                  toast({
-                    title: 'Quote Updated',
-                    description: 'Your quote has been updated successfully.'
-                  });
-                  
-                  setEditingQuote(null);
-                  loadQuotes();
-                } catch (error: any) {
-                  toast({
-                    title: 'Error',
-                    description: error.message,
-                    variant: 'destructive'
-                  });
-                }
-              }}
-              onCancel={() => setEditingQuote(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       <DeleteQuoteDialog
         open={!!quoteToDelete}
