@@ -1,46 +1,26 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Save Distribution Start Date to Dedicated Column
 
-### Root Cause
+### Problem
+The `distribution_start_date` column exists in the database and ViewQuoteContent displays it, but it's never populated when saving quotes. The start date is stored only inside the `selections` JSON blob.
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+### Changes
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+**`src/components/AdvertisingStepForm.tsx`** (two quote insert payloads, ~line 340 and ~line 631):
+- Add `distribution_start_date` to both quote payloads, derived from `campaignData.selectedStartingIssue` or the first value in `campaignData.selectedMonths`
+- Format: the value is already a `YYYY-MM` string; append `-01` to make it a valid date, or store as-is if the column accepts text
 
-### Fix
+**`src/components/dashboard/CreateBookingForm.tsx`** (~line 181):
+- Add `distribution_start_date` to the quote payload, derived from `selectedMonths` (first selected month) or the starting issue selection
+- Same derivation logic: take the first month value from `selectedMonths` or `selectedStartingIssue`
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
-
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
-
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
+### Derivation logic (all three locations)
+```ts
+distribution_start_date: campaignData.selectedStartingIssue 
+  || (Object.values(campaignData.selectedMonths || {})[0]?.[0]) 
+  || null
 ```
 
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
-
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+This ensures that all new quotes will have `distribution_start_date` populated and visible in the View Quote dialog. Existing quotes without this field will simply not show the row (the conditional rendering already handles that).
 
