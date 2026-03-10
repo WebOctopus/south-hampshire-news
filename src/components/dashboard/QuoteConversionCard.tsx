@@ -129,20 +129,8 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
       </CardHeader>
       
       <CardContent className="space-y-4 relative">
-        {/* Special Message for Returning BOGOF Customers */}
-        {isReturningBogofCustomer && (
-          <Alert className="border-amber-400 bg-amber-50/80 backdrop-blur-sm">
-            <CheckCircle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-900">
-              <span className="font-semibold">Returning Customer - Awaiting Contact</span>
-              <br />
-              <span className="text-sm">Our team will contact you shortly with exclusive returning customer rates for the 3+ Repeat Package.</span>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Draft Alert */}
-        {isDraft && !isReturningBogofCustomer && (
+        {isDraft && (
           <Alert className="border-amber-400 bg-amber-50/80 backdrop-blur-sm">
             <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-900 font-medium">
