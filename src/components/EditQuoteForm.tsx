@@ -553,7 +553,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
       {(pricingBreakdown || quote.final_total) && (
         <Card>
           <CardHeader>
-            <CardTitle>3 Payment Options</CardTitle>
+            <CardTitle>{paymentOptions.length} Payment Option{paymentOptions.length !== 1 ? 's' : ''}</CardTitle>
           </CardHeader>
           <CardContent>
             {(() => {

@@ -569,7 +569,7 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">3 Payment Options</CardTitle>
+              <CardTitle className="text-xl">{paymentOptions.length} Payment Option{paymentOptions.length !== 1 ? 's' : ''}</CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup 

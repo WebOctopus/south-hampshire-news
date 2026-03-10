@@ -759,7 +759,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
               <PoundSterling className="h-5 w-5" />
-              3 Payment Options
+              {paymentOptions.length} Payment Option{paymentOptions.length !== 1 ? 's' : ''}
               <span className="text-destructive">*</span>
             </CardTitle>
             {!selectedPaymentOption && (
