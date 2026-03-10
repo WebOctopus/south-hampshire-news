@@ -45,7 +45,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const { data: agencyData } = useAgencyDiscount();
   const { getPreviewImageForSize, getPublicUrl } = useAdPreviewImages();
-  const [previewMode, setPreviewMode] = useState<'grid' | 'magazine'>('grid');
+  
 
   const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
 
