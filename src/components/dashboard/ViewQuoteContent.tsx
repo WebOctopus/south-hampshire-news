@@ -82,6 +82,15 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
           <p>{(quote.total_circulation || 0).toLocaleString()}</p>
         </div>
       )}
+      {quote.distribution_start_date && (
+        <div>
+          <Label>Distribution Start Date</Label>
+          <p className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            {new Date(quote.distribution_start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+      )}
 
       {/* Area Selection Section */}
       {hasAreas && (
