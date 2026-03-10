@@ -201,6 +201,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0) as number,
         duration_discount_percent: ('durationDiscount' in pricingBreakdown ? (pricingBreakdown.durationDiscount || 0) : 0) as number,
         agency_discount_percent: profile?.agency_discount_percent || 0,
+        distribution_start_date: selectedMonths && Object.values(selectedMonths)[0]?.[0] ? `${Object.values(selectedMonths)[0][0]}-01` : null,
         pricing_breakdown: pricingBreakdown as any,
         selections: {
           areas: pricingModel === 'leafleting' ? selectedAreas : (pricingModel === 'bogof' ? { paid: bogofPaidAreas, free: bogofFreeAreas } : selectedAreas),
