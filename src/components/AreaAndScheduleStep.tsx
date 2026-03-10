@@ -80,8 +80,10 @@ interface AreaAndScheduleStepProps {
   onMonthsChange: (months: Record<string, string[]>) => void;
   onPricingChange?: (pricingData: any) => void;
   onNext: () => void;
-  campaignData?: any; // Add campaign data prop for mobile pricing summary
-  currentStep?: number; // Add current step for mobile pricing summary
+  campaignData?: any;
+  currentStep?: number;
+  advertisingContent?: any;
+  onContentSave?: (path: string, value: string) => void;
 }
 
 export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({

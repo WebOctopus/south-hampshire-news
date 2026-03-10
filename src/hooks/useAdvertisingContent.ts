@@ -88,6 +88,16 @@ export const defaultAdvertisingContent = {
     ],
     footerTagline: "Double Your Reach. Double Your Impact.",
   },
+  areaSelection: {
+    bogofHeading: "Select Areas for 3+ Repeat Package",
+    bogofAlertTitle: "3+ Repeat Package:",
+    bogofAlertDescription: 'For every "paid for" area, choose a "free for 3 issues" area. Select your paid areas first, then choose your free areas.',
+    paidAreasHeading: "Paid Areas",
+    paidAreasDescription: "These are the areas you will pay for throughout your campaign. Maximum 7 areas",
+    freeAreasHeading: "FREE Bonus Areas",
+    freeAreasBadge: "6 Months Free",
+    freeAreasDescription: "Select additional areas to receive for FREE for 6 months.",
+  },
 };
 
 export type AdvertisingContent = typeof defaultAdvertisingContent;
