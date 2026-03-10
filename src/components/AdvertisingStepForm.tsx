@@ -1087,6 +1087,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   selectedDuration={campaignData.selectedDuration}
                   selectedMonths={campaignData.selectedMonths}
                   pricingBreakdown={campaignData.pricingBreakdown}
+                  advertisingContent={advertisingContent}
+                  onContentSave={updateAdvertisingField}
                 />
               ) : (
                 <BookingSummaryStep
@@ -1103,6 +1105,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   onStartingIssueChange={(issue) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: issue }))}
                   needsDesign={campaignData.needsDesign}
                   designFee={campaignData.designFee}
+                  advertisingContent={advertisingContent}
+                  onContentSave={updateAdvertisingField}
                 />
               )}
               
@@ -1212,6 +1216,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedDuration={campaignData.selectedDuration}
                 selectedMonths={campaignData.selectedMonths}
                 pricingBreakdown={campaignData.pricingBreakdown}
+                advertisingContent={advertisingContent}
+                onContentSave={updateAdvertisingField}
               />
             ) : selectedPricingModel === 'fixed' ? (
               <FixedTermBasketSummary
@@ -1220,6 +1226,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 selectedDuration={campaignData.selectedDuration}
                 selectedMonths={campaignData.selectedMonths}
                 pricingBreakdown={campaignData.pricingBreakdown}
+                advertisingContent={advertisingContent}
+                onContentSave={updateAdvertisingField}
               />
             ) : (
               <BookingSummaryStep
@@ -1236,6 +1244,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 onStartingIssueChange={(issue) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: issue }))}
                 needsDesign={campaignData.needsDesign}
                 designFee={campaignData.designFee}
+                advertisingContent={advertisingContent}
+                onContentSave={updateAdvertisingField}
               />
             )}
             

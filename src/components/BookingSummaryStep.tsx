@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { EditableText } from '@/components/inline-editor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -32,6 +33,8 @@ interface BookingSummaryStepProps {
   // New props to ensure design fee shows in cost breakdown even if breakdown missing it
   needsDesign?: boolean;
   designFee?: number;
+  advertisingContent?: any;
+  onContentSave?: (path: string, value: string) => void;
 }
 
 export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
@@ -48,7 +51,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   onStartingIssueChange,
   onNext,
   needsDesign = false,
-  designFee = 0
+  designFee = 0,
+  advertisingContent,
+  onContentSave
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
@@ -673,7 +678,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
               {/* Design Service Blurb */}
               <div className="mt-4 p-3 bg-muted/50 rounded-md text-sm">
                 <p className="font-medium mb-1">DESIGN SERVICE:</p>
-                <p className="text-muted-foreground">By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.</p>
+                <p className="text-muted-foreground">
+                  <EditableText
+                    value={advertisingContent?.bookingSummary?.bogof?.designServiceText || "By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one."}
+                    onSave={(val) => onContentSave?.('bookingSummary.bogof.designServiceText', val)}
+                    as="span"
+                  />
+                </p>
               </div>
 
               {/* What You're Booking */}
@@ -682,7 +693,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   <span className="text-primary font-medium">📦</span>
                   <div>
                     <p className="font-medium">WHAT YOU'RE BOOKING:</p>
-                    <p className="text-muted-foreground">A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.bogof?.whatYoureBookingText || "A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication"}
+                        onSave={(val) => onContentSave?.('bookingSummary.bogof.whatYoureBookingText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -690,7 +707,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   <span className="text-primary font-medium">💰</span>
                   <div>
                     <p className="font-medium">INVESTMENT SHOWN:</p>
-                    <p className="text-muted-foreground">Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.bogof?.investmentShownText || "Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges"}
+                        onSave={(val) => onContentSave?.('bookingSummary.bogof.investmentShownText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -698,7 +721,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   <span className="text-primary font-medium">⚡</span>
                   <div>
                     <p className="font-medium">IMMEDIATE CONFIRMATION:</p>
-                    <p className="text-muted-foreground">Book now for instant campaign confirmation and priority page position or call us for help and advice.</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.bogof?.immediateConfirmationText || "Book now for instant campaign confirmation and priority page position or call us for help and advice."}
+                        onSave={(val) => onContentSave?.('bookingSummary.bogof.immediateConfirmationText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -707,7 +736,13 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   <span className="text-primary font-medium">🎯</span>
                   <div>
                     <p className="font-medium">GUARANTEED REACH:</p>
-                    <p className="text-muted-foreground">Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time.</p>
+                    <p className="text-muted-foreground">
+                      <EditableText
+                        value={advertisingContent?.bookingSummary?.bogof?.guaranteedReachText || "Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time."}
+                        onSave={(val) => onContentSave?.('bookingSummary.bogof.guaranteedReachText', val)}
+                        as="span"
+                      />
+                    </p>
                   </div>
                 </div>
               </div>
