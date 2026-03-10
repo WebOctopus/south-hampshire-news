@@ -1006,7 +1006,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               stepLabels={stepLabels}
               onStepChange={handleStepChange}
             >
-              <PricingOptionsStep onSelectOption={handleSelectOption} />
+              <PricingOptionsStep onSelectOption={handleSelectOption} advertisingContent={advertisingContent} onContentSave={updateAdvertisingField} />
               
               <AreaAndScheduleStep 
                 pricingModel={selectedPricingModel}
@@ -1128,7 +1128,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             stepLabels={stepLabels}
             onStepChange={handleStepChange}
           >
-            <PricingOptionsStep onSelectOption={handleSelectOption} />
+            <PricingOptionsStep onSelectOption={handleSelectOption} advertisingContent={advertisingContent} onContentSave={updateAdvertisingField} />
             
             <AreaAndScheduleStep 
               pricingModel={selectedPricingModel}

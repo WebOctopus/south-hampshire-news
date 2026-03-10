@@ -88,6 +88,10 @@ export const defaultAdvertisingContent = {
     ],
     footerTagline: "Double Your Reach. Double Your Impact.",
   },
+  pricingOptions: {
+    pageHeading: "Choose Your Advertising Package",
+    pageDescription: "Select the package that best fits your business needs. Each option is designed for different advertising goals and budgets.",
+  },
   areaSelection: {
     bogofHeading: "Select Areas for 3+ Repeat Package",
     bogofAlertTitle: "3+ Repeat Package:",
