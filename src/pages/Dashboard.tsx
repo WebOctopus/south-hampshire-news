@@ -22,7 +22,7 @@ import { Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle, MapP
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { format } from 'date-fns';
-import EditQuoteForm from '@/components/EditQuoteForm';
+import { useAreas } from '@/hooks/usePricingData';
 import PasswordSetupDialog from '@/components/PasswordSetupDialog';
 import ChangePasswordDialog from '@/components/ChangePasswordDialog';
 import WelcomeHeader from '@/components/dashboard/WelcomeHeader';
