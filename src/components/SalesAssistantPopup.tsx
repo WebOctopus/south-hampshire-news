@@ -59,7 +59,7 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
       title: "Review Your Booking & Choose Payment",
       description: "Your basket is ready! Review your selections and choose your preferred payment option.",
       tips: [
-        "💰 3 Payment Options: Choose full payment (6 or 12 months) or monthly plan",
+        "💰 Multiple Payment Options: Choose full payment or monthly plan",
         "💸 Save 10%: Pay for 12 months upfront for extra savings",
         "📊 Monthly Plan: Spread costs over 6 months minimum",
         "🎯 Amazing Value: See your cost per 1,000 homes reached",
