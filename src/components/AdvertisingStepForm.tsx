@@ -1087,6 +1087,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   selectedDuration={campaignData.selectedDuration}
                   selectedMonths={campaignData.selectedMonths}
                   pricingBreakdown={campaignData.pricingBreakdown}
+                  advertisingContent={advertisingContent}
+                  onContentSave={updateAdvertisingField}
                 />
               ) : (
                 <BookingSummaryStep
