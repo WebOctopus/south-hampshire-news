@@ -1,46 +1,21 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Remove "Awaiting Contact" Badge from Saved Quotes
 
-### Root Cause
+The "Awaiting Contact" status (`bogof_return_interest`) is set when a returning BOGOF customer submits a new quote. It was meant to signal the sales team. On the customer dashboard it's confusing.
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+### Changes
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+**`src/pages/Dashboard.tsx`**:
+- Remove the `bogof_return_interest` special case in `getStatusBadge()` (~line 1181-1183) so it falls through to showing nothing or "Saved Quote"
+- Remove the amber Alert banner that appears when the first quote has this status (~lines 1205-1213)
 
-### Fix
+**`src/components/dashboard/QuoteConversionCard.tsx`**:
+- Remove the `bogof_return_interest` case from `getStatusColor()` and `getStatusLabel()` — let it default to "Saved Quote"
+- Remove the `isReturningBogofCustomer` variable if no longer used
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+**`src/components/dashboard/ViewQuoteContent.tsx`**:
+- Remove the `bogof_return_interest` case from `getStatusLabel()` — defaults to "Saved Quote"
 
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
-
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
-```
-
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
-
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+The underlying `status` value stays in the database (still useful for admin/sales), but customers will just see "Saved Quote".
 
