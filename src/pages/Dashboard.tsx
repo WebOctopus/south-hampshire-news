@@ -50,7 +50,7 @@ const Dashboard = () => {
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [viewingQuote, setViewingQuote] = useState<any | null>(null);
-  const [editingQuote, setEditingQuote] = useState<any | null>(null);
+  
   const [deletingQuoteId, setDeletingQuoteId] = useState<string | null>(null);
   const [quoteToDelete, setQuoteToDelete] = useState<any | null>(null);
   const [bookings, setBookings] = useState<any[]>([]);
