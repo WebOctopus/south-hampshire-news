@@ -128,8 +128,8 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     city: "",
     password: "",
     voucherCode: "",
-    legalDocumentsAccepted: false,
   });
+
   
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
