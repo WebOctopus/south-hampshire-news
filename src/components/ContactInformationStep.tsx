@@ -162,29 +162,8 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
     fetchUserData();
   }, []);
 
-  const businessSectors = [
-    "Accounting & Finance",
-    "Advertising & Marketing", 
-    "Architecture & Construction",
-    "Arts & Entertainment",
-    "Automotive",
-    "Beauty & Wellness",
-    "Consulting",
-    "Education & Training",
-    "Engineering",
-    "Food & Beverage",
-    "Healthcare & Medical",
-    "Hospitality & Tourism",
-    "Information Technology",
-    "Legal Services",
-    "Manufacturing",
-    "Non-profit",
-    "Real Estate",
-    "Retail & E-commerce",
-    "Sports & Recreation",
-    "Transportation & Logistics",
-    "Other"
-  ];
+
+
 
   const handleApplyVoucher = async () => {
     if (!formData.voucherCode?.trim()) {
@@ -595,7 +574,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                     />
                   </div>
                 )}
-                {formData.businessType === 'non_profit' ? (
+                {formData.businessType === 'non_profit' && (
                   <div>
                     <Label htmlFor="charityNumber">Charity Registration Number</Label>
                     <Input
@@ -607,26 +586,6 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                       disabled={submitting}
                       className="mt-1.5"
                     />
-                  </div>
-                ) : (
-                  <div>
-                    <Label htmlFor="companySector">Business Sector</Label>
-                    <Select 
-                      value={formData.companySector} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, companySector: value }))}
-                      disabled={submitting}
-                    >
-                      <SelectTrigger className="mt-1.5">
-                        <SelectValue placeholder="Select your business sector" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {businessSectors.map((sector) => (
-                          <SelectItem key={sector} value={sector}>
-                            {sector}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 )}
               </div>
