@@ -237,11 +237,21 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                 <>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
-                    <p className="font-medium">3+ Repeat Package for New Advertisers including Buy One Area Get One Area Free</p>
+                    <EditableText
+                      value={advertisingContent?.bookingSummary?.bogof?.bookingTypeText || "3+ Repeat Package for New Advertisers including Buy One Area Get One Area Free"}
+                      onSave={(val) => onContentSave?.('bookingSummary.bogof.bookingTypeText', val)}
+                      as="p"
+                      className="font-medium"
+                    />
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Minimum Duration</Label>
-                    <p className="font-medium">3 issues per area = 6 months</p>
+                    <EditableText
+                      value={advertisingContent?.bookingSummary?.bogof?.minimumDurationText || "3 issues per area = 6 months"}
+                      onSave={(val) => onContentSave?.('bookingSummary.bogof.minimumDurationText', val)}
+                      as="p"
+                      className="font-medium"
+                    />
                   </div>
                 </>
               )}

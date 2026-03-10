@@ -125,7 +125,12 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
               
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
-                <p className="font-medium">Fixed Term</p>
+                <EditableText
+                  value={advertisingContent?.bookingSummary?.fixed?.bookingTypeText || "Fixed Term"}
+                  onSave={(val) => onContentSave?.('bookingSummary.fixed.bookingTypeText', val)}
+                  as="p"
+                  className="font-medium"
+                />
               </div>
 
               <Separator />

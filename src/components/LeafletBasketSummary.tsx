@@ -158,7 +158,12 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
               
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
-                <p className="font-medium">Leaflet Distribution Campaign</p>
+                <EditableText
+                  value={advertisingContent?.bookingSummary?.leafleting?.bookingTypeText || "Leaflet Distribution Campaign"}
+                  onSave={(val) => onContentSave?.('bookingSummary.leafleting.bookingTypeText', val)}
+                  as="p"
+                  className="font-medium"
+                />
               </div>
 
               <div>

@@ -107,6 +107,8 @@ export const defaultAdvertisingContent = {
   },
   bookingSummary: {
     bogof: {
+      bookingTypeText: "3+ Repeat Package for New Advertisers including Buy One Area Get One Area Free",
+      minimumDurationText: "3 issues per area = 6 months",
       designServiceText: "By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.",
       whatYoureBookingText: "A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
       investmentShownText: "Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
@@ -114,12 +116,14 @@ export const defaultAdvertisingContent = {
       guaranteedReachText: "Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time.",
     },
     fixed: {
+      bookingTypeText: "Fixed Term",
       designServiceText: "By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.",
       whatYoureBookingText: "A Fixed Term advertising package with guaranteed distribution to your selected areas",
       investmentShownText: "Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
       immediateConfirmationText: "Receive instant confirmation and campaign details after booking",
     },
     leafleting: {
+      bookingTypeText: "Leaflet Distribution Campaign",
       whatYoureBookingText: "Professional leaflet distribution service to your selected areas with guaranteed delivery to homes",
       investmentShownText: "Your total includes all distribution costs and VAT. No hidden fees or surprise charges",
       immediateConfirmationText: "Receive instant confirmation and campaign details after booking",
