@@ -9,7 +9,7 @@ import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator'
 import { cn } from '@/lib/utils';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
-import { useAdPreviewImages } from '@/hooks/useAdPreviewImages';
+
 
 interface AdvertisementSizeStepProps {
   selectedAdSize: string;
