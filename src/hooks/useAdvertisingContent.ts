@@ -103,6 +103,7 @@ export const defaultAdvertisingContent = {
     freeAreasHeading: "FREE Bonus Areas",
     freeAreasBadge: "6 Months Free",
     freeAreasDescription: "Select additional areas to receive for FREE for 6 months.",
+    freeAreasUnlockText: "Select at least one paid area to unlock your free bonus areas.",
   },
   designFee: {
     pageHeading: "Artwork Design Service",
