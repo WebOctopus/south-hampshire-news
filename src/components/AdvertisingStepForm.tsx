@@ -1031,6 +1031,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   pricingBreakdown: campaignData.pricingBreakdown
                 }}
                 currentStep={currentStep}
+                advertisingContent={advertisingContent}
+                onContentSave={updateAdvertisingField}
               />
               
 {selectedPricingModel === 'leafleting' ? (
