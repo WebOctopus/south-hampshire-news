@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { EditableText } from '@/components/inline-editor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
