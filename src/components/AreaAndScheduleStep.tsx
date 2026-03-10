@@ -602,12 +602,20 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             {/* Paid Areas Section */}
             <div className="space-y-3 md:space-y-4 min-w-0">
               <div className="flex items-center gap-1 md:gap-2">
-                <h4 className="font-medium text-sm md:text-base">Paid Areas</h4>
+                <EditableText
+                  value={advertisingContent?.areaSelection?.paidAreasHeading || 'Paid Areas'}
+                  onSave={(val) => onContentSave?.('areaSelection.paidAreasHeading', val)}
+                  as="h4"
+                  className="font-medium text-sm md:text-base"
+                />
                 <Badge variant="default" className="text-xs">Required</Badge>
               </div>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                These are the areas you will pay for throughout your campaign. Maximum 7 areas ({bogofPaidAreas.length}/7).
-              </p>
+              <EditableText
+                value={advertisingContent?.areaSelection?.paidAreasDescription || 'These are the areas you will pay for throughout your campaign. Maximum 7 areas'}
+                onSave={(val) => onContentSave?.('areaSelection.paidAreasDescription', val)}
+                as="p"
+                className="text-xs md:text-sm text-muted-foreground"
+              />
               
               <div className="grid grid-cols-1 gap-2 md:gap-4">
                 {effectiveAreas
