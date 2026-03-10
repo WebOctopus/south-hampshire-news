@@ -35,53 +35,61 @@ const SortableFeatureRow = ({ id, feature, index, updateFeature, removeFeature }
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2 p-3 border rounded-lg bg-background">
-      <button type="button" className="cursor-grab touch-none text-muted-foreground hover:text-foreground" {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className="flex items-start gap-2 p-3 border rounded-lg bg-background">
+      <button type="button" className="cursor-grab touch-none text-muted-foreground hover:text-foreground mt-2.5" {...attributes} {...listeners}>
         <GripVertical className="h-4 w-4" />
       </button>
-      <div className="flex-1 flex items-center gap-2">
-        <Input
-          className="flex-1"
-          placeholder="Feature label"
-          value={feature.label}
-          onChange={(e) => updateFeature(index, 'label', e.target.value)}
-        />
-        <Select
-          value={feature.value === true ? 'included' : feature.value === false ? 'not_included' : 'custom'}
-          onValueChange={(val) => {
-            if (val === 'included') updateFeature(index, 'value', true);
-            else if (val === 'not_included') updateFeature(index, 'value', false);
-            else updateFeature(index, 'value', '');
-          }}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="included">✓ Included</SelectItem>
-            <SelectItem value="not_included">✗ Not included</SelectItem>
-            <SelectItem value="custom">Custom text</SelectItem>
-          </SelectContent>
-        </Select>
-        {typeof feature.value === 'string' && (
+      <div className="flex-1 space-y-2">
+        <div className="flex items-center gap-2">
           <Input
-            className="w-[140px]"
-            placeholder="e.g. From £99"
-            value={feature.value}
-            onChange={(e) => updateFeature(index, 'value', e.target.value)}
+            className="flex-1"
+            placeholder="Feature label"
+            value={feature.label}
+            onChange={(e) => updateFeature(index, 'label', e.target.value)}
           />
-        )}
-        <div className="flex items-center gap-1">
-          <Switch
-            checked={feature.highlight}
-            onCheckedChange={(checked) => updateFeature(index, 'highlight', checked)}
-          />
-          <Label className="text-xs">Highlight</Label>
+          <Select
+            value={feature.value === true ? 'included' : feature.value === false ? 'not_included' : 'custom'}
+            onValueChange={(val) => {
+              if (val === 'included') updateFeature(index, 'value', true);
+              else if (val === 'not_included') updateFeature(index, 'value', false);
+              else updateFeature(index, 'value', '');
+            }}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="included">✓ Included</SelectItem>
+              <SelectItem value="not_included">✗ Not included</SelectItem>
+              <SelectItem value="custom">Custom text</SelectItem>
+            </SelectContent>
+          </Select>
+          {typeof feature.value === 'string' && (
+            <Input
+              className="w-[140px]"
+              placeholder="e.g. From £99"
+              value={feature.value}
+              onChange={(e) => updateFeature(index, 'value', e.target.value)}
+            />
+          )}
+          <div className="flex items-center gap-1">
+            <Switch
+              checked={feature.highlight}
+              onCheckedChange={(checked) => updateFeature(index, 'highlight', checked)}
+            />
+            <Label className="text-xs">Highlight</Label>
+          </div>
+          <Button type="button" variant="ghost" size="sm" onClick={() => removeFeature(index)}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
+        <Input
+          className="text-xs"
+          placeholder="Subtext (optional) — e.g. additional detail shown below the feature"
+          value={feature.subtext || ''}
+          onChange={(e) => updateFeature(index, 'subtext', e.target.value)}
+        />
       </div>
-      <Button type="button" variant="ghost" size="sm" onClick={() => removeFeature(index)}>
-        <X className="h-4 w-4" />
-      </Button>
     </div>
   );
 };
@@ -174,7 +182,7 @@ const ProductDesignerManagement = () => {
   const addFeature = () => {
     setFormData({
       ...formData,
-      features: [...(formData.features || []), { label: '', value: '', highlight: false }],
+      features: [...(formData.features || []), { label: '', value: '', highlight: false, subtext: '' }],
     });
   };
 
@@ -470,11 +478,16 @@ const ProductDesignerManagement = () => {
                 <Button className="w-full mb-4">{formData.cta_text}</Button>
                 <div className="space-y-1">
                   {formData.features?.map((feature, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <span className={feature.highlight ? 'font-medium' : ''}>{feature.label}</span>
-                      <span className={feature.highlight ? 'text-primary font-medium' : 'text-muted-foreground'}>
-                        {typeof feature.value === 'boolean' ? (feature.value ? '✓' : '✗') : feature.value}
-                      </span>
+                    <div key={index} className="text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className={feature.highlight ? 'font-medium' : ''}>{feature.label}</span>
+                        <span className={feature.highlight ? 'text-primary font-medium' : 'text-muted-foreground'}>
+                          {typeof feature.value === 'boolean' ? (feature.value ? '✓' : '✗') : feature.value}
+                        </span>
+                      </div>
+                      {feature.subtext && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{feature.subtext}</p>
+                      )}
                     </div>
                   ))}
                 </div>
