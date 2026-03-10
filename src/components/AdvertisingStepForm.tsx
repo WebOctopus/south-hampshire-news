@@ -1244,6 +1244,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 onStartingIssueChange={(issue) => setCampaignData(prev => ({ ...prev, selectedStartingIssue: issue }))}
                 needsDesign={campaignData.needsDesign}
                 designFee={campaignData.designFee}
+                advertisingContent={advertisingContent}
+                onContentSave={updateAdvertisingField}
               />
             )}
             
