@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle, Ruler, Eye, Palette } from 'lucide-react';
+import { Loader2, AlertCircle, Ruler, Palette } from 'lucide-react';
 import { usePricingData } from '@/hooks/usePricingData';
 import { calculateAdvertisingPrice, formatPrice } from '@/lib/pricingCalculator';
 import { cn } from '@/lib/utils';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
-import { useAdPreviewImages } from '@/hooks/useAdPreviewImages';
+
 
 interface AdvertisementSizeStepProps {
   selectedAdSize: string;
@@ -44,8 +44,8 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
 }) => {
   const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading, isError } = usePricingData();
   const { data: agencyData } = useAgencyDiscount();
-  const { getPreviewImageForSize, getPublicUrl } = useAdPreviewImages();
-  const [previewMode, setPreviewMode] = useState<'grid' | 'magazine'>('grid');
+  
+  
 
   const agencyDiscountPercent = agencyData?.agencyDiscountPercent || 0;
 
@@ -141,94 +141,6 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
     );
   };
 
-  const renderMagazinePreview = () => {
-    const selectedSize = adSizes?.find(size => size.id === selectedAdSize);
-    if (!selectedSize) return null;
-
-    return (
-      <div className="bg-background border rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Eye className="h-5 w-5" />
-          A5 Magazine Preview
-        </h3>
-        
-        <div className="flex justify-center">
-          <div className="relative">
-            {/* A5 Magazine representation (148mm x 210mm scaled down) */}
-            <div 
-              className="border-2 border-gray-300 bg-white shadow-lg rounded-sm relative"
-              style={{ width: '200px', height: '284px' }}
-            >
-              {/* Magazine header */}
-              <div className="bg-primary text-primary-foreground text-xs font-bold p-2 text-center">
-                Your Local Magazine
-              </div>
-              
-              {/* Sample content area */}
-              <div className="p-3 space-y-2">
-                <div className="h-2 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-1.5 bg-gray-200 rounded w-full"></div>
-                <div className="h-1.5 bg-gray-200 rounded w-2/3"></div>
-              </div>
-              
-              {/* Advertisement placement */}
-              <div 
-                className="absolute border-2 border-primary bg-primary/10 rounded flex items-center justify-center"
-                style={{
-                  // Position based on typical ad placements
-                  top: selectedSize.name.includes('Full Page') ? '0' : '80px',
-                  left: selectedSize.name.includes('Full Page') ? '0' : '10px',
-                  right: selectedSize.name.includes('Full Page') ? '0' : '10px',
-                  width: selectedSize.name.includes('Full Page') ? '100%' : 
-                         selectedSize.name.includes('1/2') ? '180px' :
-                         selectedSize.name.includes('1/4') ? '90px' :
-                         selectedSize.name.includes('1/6') ? '60px' :
-                         selectedSize.name.includes('1/8') ? '90px' : '120px',
-                  height: selectedSize.name.includes('Full Page') ? '100%' :
-                          selectedSize.name.includes('1/2') ? '120px' :
-                          selectedSize.name.includes('1/4') ? '120px' :
-                          selectedSize.name.includes('1/6') ? '80px' :
-                          selectedSize.name.includes('1/8') ? '60px' : '100px',
-                }}
-              >
-                {(() => {
-                  const previewImage = getPreviewImageForSize(selectedSize.id);
-                  if (previewImage) {
-                    return (
-                      <img
-                        src={getPublicUrl(previewImage.image_url)}
-                        alt={selectedSize.name}
-                        className="w-full h-full object-cover rounded"
-                      />
-                    );
-                  }
-                  return (
-                    <div className="text-center p-2">
-                      <p className="text-xs font-bold text-primary">YOUR AD</p>
-                      <p className="text-xs text-primary/80">{selectedSize.name}</p>
-                      <p className="text-xs text-primary/60">{selectedSize.dimensions}</p>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-            
-            {/* Size indicator */}
-            <div className="absolute -bottom-8 left-0 right-0 text-center">
-              <Badge variant="outline" className="text-xs">
-                {selectedSize.name} - {selectedSize.dimensions}
-              </Badge>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          This preview shows approximately how your {selectedSize.name} advertisement 
-          would appear in our A5 magazine format.
-        </div>
-      </div>
-    );
-  };
 
   if (pricingModel === 'leafleting') {
     return (
@@ -432,51 +344,23 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
         </p>
       </div>
 
-      {/* View Toggle */}
-      <div className="flex justify-center">
-        <div className="bg-muted rounded-lg p-1 flex">
-          <Button
-            variant={previewMode === 'grid' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPreviewMode('grid')}
-            className="rounded-md"
-          >
-            Advert Sizes
-          </Button>
-          <Button
-            variant={previewMode === 'magazine' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPreviewMode('magazine')}
-            className="rounded-md"
-            disabled={!selectedAdSize}
-          >
-            Magazine Preview
-          </Button>
-        </div>
-      </div>
-
-      {previewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {(Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}) as typeof adSizes)
             .filter((size) => {
-              // Filter sizes based on pricing model using available_for array
               if (pricingModel === 'bogof') {
-                // For 3+ Repeat Package (bogof), only show sizes available for subscription pricing
                 return size.available_for?.includes('subscription');
               } else {
-                // For fixed pricing, show sizes with fixed pricing
                 return size.available_for?.includes('fixed') || size.base_price_per_area > 0;
               }
             })
             .sort((a, b) => {
-              // Calculate area for each ad size to sort by size (largest to smallest)
               const getArea = (size: any) => {
                 const dimensions = size.dimensions?.split('x') || ['0', '0'];
                 const width = parseFloat(dimensions[0].replace('mm', '').trim()) || 0;
                 const height = parseFloat(dimensions[1].replace('mm', '').trim()) || 0;
                 return width * height;
               };
-              return getArea(b) - getArea(a); // Sort descending (largest first)
+              return getArea(b) - getArea(a);
             })
             .map((size) => {
             const isSelected = selectedAdSize === size.id;
@@ -515,9 +399,6 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
             );
           })}
         </div>
-      ) : (
-        renderMagazinePreview()
-      )}
 
       {/* Summary Section */}
       {showSummary && renderSummary()}
