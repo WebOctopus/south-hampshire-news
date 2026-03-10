@@ -363,14 +363,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    if (!formData.legalDocumentsAccepted) {
-      toast({
-        title: "Legal Documents Required", 
-        description: "Please accept the legal documents to proceed.",
-        variant: "destructive",
-      });
-      return;
-    }
+
 
     if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
