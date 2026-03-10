@@ -25,7 +25,9 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   selectedDuration,
   selectedMonths,
   pricingBreakdown,
-  onNext
+  onNext,
+  advertisingContent,
+  onContentSave
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { nextStep } = useStepForm();
