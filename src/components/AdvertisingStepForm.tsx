@@ -62,6 +62,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   const { data: leafletDurations } = useLeafletCampaignDurations();
   const { leafletAreas, leafletSizes } = useLeafletData();
   const { data: paymentOptions } = usePaymentOptions();
+  const { content: advertisingContent, updateField: updateAdvertisingField } = useAdvertisingContent();
   
   const [selectedPricingModel, setSelectedPricingModel] = useState<'fixed' | 'bogof' | 'leafleting'>('fixed');
   const [currentStep, setCurrentStep] = useState(1);
