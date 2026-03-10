@@ -538,8 +538,18 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Select Areas & Publication Schedule</h2>
-          <p className="text-muted-foreground">Choose your areas and schedule your campaign</p>
+          <h2 className="text-2xl font-bold mb-2">
+            <EditableText
+              value={advertisingContent?.areaSelection?.pageHeading || "Select Areas & Publication Schedule"}
+              onSave={(val) => onContentSave?.('areaSelection.pageHeading', val)}
+            />
+          </h2>
+          <p className="text-muted-foreground">
+            <EditableText
+              value={advertisingContent?.areaSelection?.pageDescription || "Choose your areas and schedule your campaign"}
+              onSave={(val) => onContentSave?.('areaSelection.pageDescription', val)}
+            />
+          </p>
         </div>
         
         <Alert variant="destructive">
@@ -557,10 +567,16 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
           <MapPin className="h-6 w-6" />
-          Select Areas & Publication Schedule
+          <EditableText
+            value={advertisingContent?.areaSelection?.pageHeading || "Select Areas & Publication Schedule"}
+            onSave={(val) => onContentSave?.('areaSelection.pageHeading', val)}
+          />
         </h2>
         <p className="text-muted-foreground">
-          Choose your areas and set up your campaign timeline
+          <EditableText
+            value={advertisingContent?.areaSelection?.pageDescription || "Choose your areas and set up your campaign timeline"}
+            onSave={(val) => onContentSave?.('areaSelection.pageDescription', val)}
+          />
         </p>
       </div>
 
