@@ -18,7 +18,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle } from 'lucide-react';
+import { Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle, MapPin, Gift } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { format } from 'date-fns';
