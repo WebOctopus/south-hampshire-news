@@ -37,7 +37,6 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
       case 'approved': return 'Approved';
       case 'pending': return 'Pending';
       case 'draft': return 'Saved Quote';
-      case 'bogof_return_interest': return 'Awaiting Contact';
       default: return 'Saved Quote';
     }
   };
