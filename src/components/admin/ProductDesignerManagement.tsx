@@ -478,11 +478,16 @@ const ProductDesignerManagement = () => {
                 <Button className="w-full mb-4">{formData.cta_text}</Button>
                 <div className="space-y-1">
                   {formData.features?.map((feature, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <span className={feature.highlight ? 'font-medium' : ''}>{feature.label}</span>
-                      <span className={feature.highlight ? 'text-primary font-medium' : 'text-muted-foreground'}>
-                        {typeof feature.value === 'boolean' ? (feature.value ? '✓' : '✗') : feature.value}
-                      </span>
+                    <div key={index} className="text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className={feature.highlight ? 'font-medium' : ''}>{feature.label}</span>
+                        <span className={feature.highlight ? 'text-primary font-medium' : 'text-muted-foreground'}>
+                          {typeof feature.value === 'boolean' ? (feature.value ? '✓' : '✗') : feature.value}
+                        </span>
+                      </div>
+                      {feature.subtext && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{feature.subtext}</p>
+                      )}
                     </div>
                   ))}
                 </div>
