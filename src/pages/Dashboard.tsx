@@ -1178,10 +1178,7 @@ const Dashboard = () => {
 
   const renderSavedQuotesDropdown = () => {
     const getStatusBadge = (quote: any) => {
-      if (quote.status === 'bogof_return_interest') {
-        return <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">Awaiting Contact</Badge>;
-      }
-      if (quote.status === 'draft') {
+      if (quote.status === 'draft' || quote.status === 'bogof_return_interest') {
         return <Badge variant="outline">Saved Quote</Badge>;
       }
       if (quote.status === 'active' || quote.status === 'approved') {
