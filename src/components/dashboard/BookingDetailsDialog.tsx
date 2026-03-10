@@ -1,12 +1,13 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CalendarDays, MapPin, Users, FileText, Download, CreditCard, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { CalendarDays, MapPin, Users, FileText, Download, CreditCard, CheckCircle, AlertCircle, Loader2, Info } from 'lucide-react';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useGoCardless } from '@/hooks/useGoCardless';
 import { supabase } from '@/integrations/supabase/client';
