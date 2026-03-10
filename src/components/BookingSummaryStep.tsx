@@ -51,7 +51,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   onStartingIssueChange,
   onNext,
   needsDesign = false,
-  designFee = 0
+  designFee = 0,
+  advertisingContent,
+  onContentSave
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
