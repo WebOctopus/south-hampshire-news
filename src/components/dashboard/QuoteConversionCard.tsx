@@ -68,8 +68,6 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
           ? 'border-2 border-amber-400 shadow-md hover:shadow-lg bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30' 
           : quote.status === 'active' || quote.status === 'approved'
           ? 'border-2 border-emerald-400 shadow-md hover:shadow-lg bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30'
-          : isReturningBogofCustomer
-          ? 'border-2 border-amber-400 shadow-md hover:shadow-lg bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30'
           : 'hover:shadow-md'
       }`}
     >
