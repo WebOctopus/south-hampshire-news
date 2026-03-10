@@ -356,6 +356,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
         duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
         agency_discount_percent: Number(campaignData.pricingBreakdown?.agencyDiscountPercent) || 0,
+        distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (Object.values(campaignData.selectedMonths || {})[0]?.[0] ? `${Object.values(campaignData.selectedMonths || {})[0]?.[0]}-01` : null),
         pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
         selections: {
           pricingModel: selectedPricingModel,
@@ -654,6 +655,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
           duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
           agency_discount_percent: Number(campaignData.pricingBreakdown?.agencyDiscountPercent) || 0,
+          distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (Object.values(campaignData.selectedMonths || {})[0]?.[0] ? `${Object.values(campaignData.selectedMonths || {})[0]?.[0]}-01` : null),
           pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
           selections: {
             pricingModel: selectedPricingModel,
