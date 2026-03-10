@@ -2,7 +2,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { useAreas } from '@/hooks/usePricingData';
-import { MapPin, Gift } from 'lucide-react';
+import { MapPin, Gift, Calendar } from 'lucide-react';
 
 interface ViewQuoteContentProps {
   quote: any;
@@ -80,6 +80,15 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
         <div>
           <Label>Total Circulation</Label>
           <p>{(quote.total_circulation || 0).toLocaleString()}</p>
+        </div>
+      )}
+      {quote.distribution_start_date && (
+        <div>
+          <Label>Distribution Start Date</Label>
+          <p className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            {new Date(quote.distribution_start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
         </div>
       )}
 
