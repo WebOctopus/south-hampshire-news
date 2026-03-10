@@ -661,8 +661,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             </div>
 
             {/* Free Areas Section */}
-            {bogofPaidAreas.length > 0 && (
-              <div className="space-y-3 md:space-y-4 min-w-0">
+            <div className="space-y-3 md:space-y-4 min-w-0">
                 <div className="flex items-center gap-1 md:gap-2">
                   <EditableText
                     value={advertisingContent?.areaSelection?.freeAreasHeading || 'FREE Bonus Areas'}
@@ -691,55 +690,58 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                   }
                 </p>
                 
-                <div className="grid grid-cols-1 gap-2 md:gap-4">
-                  {effectiveAreas
-                    .filter(area => !bogofPaidAreas.includes(area.id))
-                    .map((area) => {
-                      const isSelected = bogofFreeAreas.includes(area.id);
-                      const isDisabled = bogofPaidAreas.length === 7 || (!isSelected && bogofFreeAreas.length >= bogofPaidAreas.length);
-                      
-                      return (
-                        <Card 
-                          key={`free-${area.id}`} 
-                          className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-                            isSelected ? 'ring-2 ring-green-500 border-green-500' : ''
-                          } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          onClick={() => !isDisabled && handleBogofFreeAreaChange(area.id, !isSelected)}
-                        >
-                          <CardContent className="p-2 md:p-4">
-                            <div className="flex items-start space-x-2 md:space-x-3">
-                              <Checkbox
-                                id={`free-${area.id}`}
-                                checked={isSelected}
-                                disabled={isDisabled}
-                                onCheckedChange={(checked) => handleBogofFreeAreaChange(area.id, checked as boolean)}
-                                className="mt-0.5 md:mt-1 scale-75 md:scale-100"
-                              />
-                              <div className="flex-1 space-y-1 md:space-y-2 min-w-0">
-                                <div className="space-y-1">
-                                  <Label htmlFor={`free-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight block">
-                                    {area.name}
-                                  </Label>
-                                  <div className="flex items-center gap-1 md:gap-2">
-                                    <Badge variant="outline" className="text-[10px] md:text-xs whitespace-nowrap">
-                                      {(area as any).circulation?.toLocaleString() || 0} homes
-                                    </Badge>
-                                    {isSelected && (
-                                      <Badge variant="secondary" className="text-[10px] md:text-xs bg-green-100 text-green-800">
-                                        FREE
+                {bogofPaidAreas.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-2 md:gap-4">
+                    {effectiveAreas
+                      .filter(area => !bogofPaidAreas.includes(area.id))
+                      .map((area) => {
+                        const isSelected = bogofFreeAreas.includes(area.id);
+                        const isDisabled = bogofPaidAreas.length === 7 || (!isSelected && bogofFreeAreas.length >= bogofPaidAreas.length);
+                        
+                        return (
+                          <Card 
+                            key={`free-${area.id}`} 
+                            className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                              isSelected ? 'ring-2 ring-green-500 border-green-500' : ''
+                            } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={() => !isDisabled && handleBogofFreeAreaChange(area.id, !isSelected)}
+                          >
+                            <CardContent className="p-2 md:p-4">
+                              <div className="flex items-start space-x-2 md:space-x-3">
+                                <Checkbox
+                                  id={`free-${area.id}`}
+                                  checked={isSelected}
+                                  disabled={isDisabled}
+                                  onCheckedChange={(checked) => handleBogofFreeAreaChange(area.id, checked as boolean)}
+                                  className="mt-0.5 md:mt-1 scale-75 md:scale-100"
+                                />
+                                <div className="flex-1 space-y-1 md:space-y-2 min-w-0">
+                                  <div className="space-y-1">
+                                    <Label htmlFor={`free-${area.id}`} className="text-xs md:text-sm font-medium cursor-pointer leading-tight block">
+                                      {area.name}
+                                    </Label>
+                                    <div className="flex items-center gap-1 md:gap-2">
+                                      <Badge variant="outline" className="text-[10px] md:text-xs whitespace-nowrap">
+                                        {(area as any).circulation?.toLocaleString() || 0} homes
                                       </Badge>
-                                    )}
+                                      {isSelected && (
+                                        <Badge variant="secondary" className="text-[10px] md:text-xs bg-green-100 text-green-800">
+                                          FREE
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">Select at least one paid area to unlock your free bonus areas.</p>
+                )}
               </div>
-            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

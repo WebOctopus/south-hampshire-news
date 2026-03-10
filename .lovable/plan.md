@@ -1,16 +1,46 @@
 
 
-## Always Show FREE Bonus Areas Section
+## Fix: Booking card showing £1,080 instead of £90/month
 
-### Change
+### Root Cause
 
-In `src/components/AreaAndScheduleStep.tsx` (lines 664-742), remove the `{bogofPaidAreas.length > 0 && (` conditional wrapper so the FREE Bonus Areas heading, badge, and description are always visible. Instead, conditionally render the area cards: show them only when `bogofPaidAreas.length > 0`, otherwise display a muted hint like "Select at least one paid area to unlock your free bonus areas."
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-### File: `src/components/AreaAndScheduleStep.tsx`
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-- **Line 664**: Remove the `{bogofPaidAreas.length > 0 && (` guard
-- **Line 742**: Remove the matching closing `)}`
-- **Lines 694-740** (the area cards grid): Wrap in `{bogofPaidAreas.length > 0 ? (...cards...) : (<p className="text-sm text-muted-foreground italic">Select at least one paid area to unlock your free bonus areas.</p>)}`
+### Fix
 
-Single file change, no new dependencies.
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
+
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
+
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
