@@ -32,6 +32,8 @@ interface BookingSummaryStepProps {
   // New props to ensure design fee shows in cost breakdown even if breakdown missing it
   needsDesign?: boolean;
   designFee?: number;
+  advertisingContent?: any;
+  onContentSave?: (path: string, value: string) => void;
 }
 
 export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
