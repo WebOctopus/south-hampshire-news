@@ -1291,11 +1291,6 @@ const Dashboard = () => {
           totalInvestment={quotes[0]?.final_total || 1000}
         />
       </div>
-      
-      <div className="space-y-6">
-        <CampaignTimeline quote={quotes[0] || null} />
-        <SuccessStories />
-      </div>
     </div>
   );
 
