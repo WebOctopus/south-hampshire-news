@@ -16,7 +16,8 @@ import {
   Calendar,
   ClipboardCheck,
   Star,
-  Mail
+  Mail,
+  FolderOpen
 } from "lucide-react"
 
 import {
