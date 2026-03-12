@@ -1,37 +1,46 @@
 
 
-## Backfill and Organise Media Library
+## Fix: Booking card showing £1,080 instead of £90/month
 
-### Current State
-- 41 static images in `public/lovable-uploads/` (logos, magazine covers, hero background, ad previews, icons)
-- 8 Supabase storage buckets with uploaded files (business-images, event-images, story-images, magazine-covers, ad-preview-images, competition-images, media-library, invoices)
-- The `media_library` table has no folder/category column for organisation
+### Root Cause
 
-### Changes
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-1. **Add `folder` column to `media_library` table** via migration — nullable text field for organising files into categories like "Logos", "Magazine Covers", "Hero Images", "Ad Previews", "Map Assets", etc.
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-2. **Add a "Backfill from Storage" button** to `MediaLibraryManagement.tsx`:
-   - Scans all public Supabase storage buckets (`business-images`, `event-images`, `story-images`, `magazine-covers`, `ad-preview-images`, `competition-images`)
-   - For each file found, checks if it already exists in `media_library` (by `file_path`)
-   - Creates `media_library` records for new files, auto-assigning folders based on the source bucket (e.g., bucket `magazine-covers` → folder "Magazine Covers")
-   - Shows a progress indicator and summary of what was imported
+### Fix
 
-3. **Add folder filter UI** to `MediaLibraryManagement.tsx`:
-   - Dropdown or chip filter above the file grid to filter by folder
-   - Editable folder field in the edit metadata dialog
-   - Display folder badge on each file card
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
 
-4. **Register static lovable-uploads**: The backfill will also insert records for the known static images in `public/lovable-uploads/` with descriptive names and folders:
-   - `discover-logo.png`, `discover-logo-2.png` → folder "Logos"
-   - `2f7e4e32...png` → folder "Hero Images"
-   - 8 magazine cover images → folder "Magazine Covers"
-   - Remaining unused images → folder "Uncategorised"
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
 
-   These will use the local path (`/lovable-uploads/...`) as `file_path` since they're static assets.
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
 
-### Technical Details
-- Storage bucket listing uses `supabase.storage.from(bucket).list()` which returns file metadata
-- The backfill is idempotent — running it multiple times won't create duplicates (checked by `file_path`)
-- The `folder` column is a free-text field, not an enum, so users can create custom folders
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
