@@ -103,6 +103,11 @@ const menuItems = [
     title: "Email Templates",
     icon: Mail,
     section: "email-templates"
+  },
+  {
+    title: "Media Library",
+    icon: FolderOpen,
+    section: "media-library"
   }
 ]
 

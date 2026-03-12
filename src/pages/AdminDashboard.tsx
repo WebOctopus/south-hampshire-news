@@ -715,6 +715,9 @@ const AdminDashboard = () => {
       case 'email-templates':
         return <EmailTemplatesManagement />;
 
+      case 'media-library':
+        return <MediaLibraryManagement />;
+
       default:
         return <div>Section not found</div>;
     }
