@@ -31,6 +31,7 @@ import { BusinessEditForm } from '@/components/admin/BusinessEditForm';
 import { ClaimRequestsManagement } from '@/components/admin/ClaimRequestsManagement';
 import FeaturedAdvertisersManagement from '@/components/admin/FeaturedAdvertisersManagement';
 import EmailTemplatesManagement from '@/components/admin/EmailTemplatesManagement';
+import MediaLibraryManagement from '@/components/admin/MediaLibraryManagement';
 import { User } from '@supabase/supabase-js';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-react';
 
