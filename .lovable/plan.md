@@ -1,33 +1,46 @@
 
 
-## Media Library for Admin Dashboard
+## Fix: Booking card showing £1,080 instead of £90/month
 
-The project already has a `media_library` table in Supabase with columns: `id`, `file_name`, `file_path`, `file_type`, `file_size`, `alt_text`, `caption`, `uploaded_by`, `created_at`. RLS policies allow public SELECT and admin-only management. There's no dedicated storage bucket for the media library yet.
+### Root Cause
 
-### Changes
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-1. **Create a `media-library` storage bucket** via migration — public, with RLS policies allowing admin uploads and public reads.
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-2. **Create `src/components/admin/MediaLibraryManagement.tsx`**:
-   - Grid/list view of all uploaded media files
-   - Upload zone (drag & drop or click) supporting images and documents (PDF, DOCX, etc.)
-   - File metadata display: name, type, size, upload date, alt text, caption
-   - Edit alt text and caption inline
-   - Delete files (removes from both storage and DB)
-   - Copy public URL to clipboard
-   - Search/filter by file name or type
-   - Thumbnail previews for images, icon placeholders for documents
+### Fix
 
-3. **Add sidebar entry** in `AdminSidebar.tsx`:
-   - Add "Media Library" item with `ImageIcon` (or `FolderOpen`), section: `media-library`
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
 
-4. **Add case in `AdminDashboard.tsx`**:
-   - Import and render `MediaLibraryManagement` for the `media-library` section
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
 
-### Technical Details
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
 
-- Upload flow: file → Supabase Storage (`media-library` bucket) → insert record into `media_library` table with file metadata and public URL
-- File types: images (JPG, PNG, GIF, WebP), documents (PDF, DOCX, XLSX), max 20MB
-- Storage bucket RLS: authenticated admin users can upload/delete; public can read
-- The existing `media_library` table schema is sufficient — no DB migration needed for the table itself
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
