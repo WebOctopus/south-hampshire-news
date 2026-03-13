@@ -621,7 +621,12 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                               // Remove from free areas if it was there
                               setBogofFreeAreas(bogofFreeAreas.filter(id => id !== area.id));
                             } else {
-                              setBogofPaidAreas(bogofPaidAreas.filter(id => id !== area.id));
+                              const newPaidAreas = bogofPaidAreas.filter(id => id !== area.id);
+                              setBogofPaidAreas(newPaidAreas);
+                              // Auto-trim free areas so count never exceeds paid count
+                              if (bogofFreeAreas.length > newPaidAreas.length) {
+                                setBogofFreeAreas(prev => prev.slice(0, newPaidAreas.length));
+                              }
                             }
                           }}
                         />
