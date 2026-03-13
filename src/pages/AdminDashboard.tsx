@@ -61,6 +61,7 @@ const AdminDashboard = () => {
   const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
   const [passwordTarget, setPasswordTarget] = useState<any>(null);
   const [newPassword, setNewPassword] = useState('');
+  const [sendPasswordEmail, setSendPasswordEmail] = useState(false);
   const [userActionLoading, setUserActionLoading] = useState(false);
   
   const [storyForm, setStoryForm] = useState({
