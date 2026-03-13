@@ -32,6 +32,8 @@ interface EmailPayload {
   status?: string;
   pricing_breakdown?: any;
   selections?: any;
+  is_admin_created?: boolean;
+  generated_password?: string;
 }
 
 function applyTemplate(html: string, vars: Record<string, string>): string {
