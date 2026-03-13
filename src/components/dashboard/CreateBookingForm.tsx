@@ -73,7 +73,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   const [selectedLeafletSize, setSelectedLeafletSize] = useState<string>('');
   
   // Load data
-  const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
+  const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading: pricingLoading } = usePricingData();
   const { leafletAreas, leafletDurations, leafletSizes, isLoading: leafletLoading } = useLeafletData();
   const { data: paymentOptions = [] } = usePaymentOptions();
 
@@ -158,6 +158,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
       
       if (!durationData || !adSize) return null;
 
+      const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
+
       return calculateAdvertisingPrice(
         areasToUse,
         selectedAdSize,
@@ -165,14 +167,14 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         pricingModel === 'bogof',
         areas || [],
         adSizes || [],
-        durations || [],
+        relevantDurations || [],
         subscriptionDurations || [],
-        [],
+        volumeDiscounts || [],
         pricingModel === 'bogof' ? bogofFreeAreas : [],
         0 // Don't apply agency discount to display - matches frontend calculator
       );
     }
-  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, leafletAreas, leafletDurations]);
+  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, leafletAreas, leafletDurations]);
 
   const isFormValid = () => {
     // Payment option is required for all booking types
