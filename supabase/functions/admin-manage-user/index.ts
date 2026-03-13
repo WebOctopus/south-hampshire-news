@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
@@ -29,17 +29,16 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } =
-      await anonClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user: callerUser }, error: userError } = await anonClient.auth.getUser();
+    if (userError || !callerUser) {
+      console.error("Auth verification failed:", userError?.message);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const callerId = claimsData.claims.sub;
+    const callerId = callerUser.id;
 
     // Use service role client to check admin role
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
@@ -52,6 +51,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (!roleCheck) {
+      console.error("Admin role check failed for user:", callerId);
       return new Response(JSON.stringify({ error: "Forbidden: admin only" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -231,12 +231,11 @@ Deno.serve(async (req) => {
       }
 
       case "create_user": {
-        const { email, password, display_name, send_email } = await req.json().catch(() => ({}));
-        // email/password already destructured from the outer json parse, use those
-        const createEmail = extraFields.email || email;
-        const createPassword = extraFields.password || password;
-        const createDisplayName = extraFields.display_name || display_name;
-        const createSendEmail = extraFields.send_email ?? send_email;
+        // All fields already destructured from the single req.json() call above
+        const createEmail = body.email;
+        const createPassword = body.password;
+        const createDisplayName = body.display_name;
+        const createSendEmail = body.send_email;
 
         if (!createEmail || !createPassword) {
           return new Response(
