@@ -22,7 +22,7 @@ import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { format } from 'date-fns';
-import { useAreas } from '@/hooks/usePricingData';
+import { useAreas, useAdSizes } from '@/hooks/usePricingData';
 import ViewQuoteContent from '@/components/dashboard/ViewQuoteContent';
 import PasswordSetupDialog from '@/components/PasswordSetupDialog';
 import ChangePasswordDialog from '@/components/ChangePasswordDialog';
@@ -70,6 +70,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { data: adSizes } = useAdSizes();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -1208,6 +1209,7 @@ const Dashboard = () => {
                   <tr>
                     <th className="text-left p-4 font-semibold">Date Created</th>
                     <th className="text-left p-4 font-semibold">Campaign Type</th>
+                    <th className="text-left p-4 font-semibold">Ad Size</th>
                     <th className="text-left p-4 font-semibold">Cost (+VAT)</th>
                     <th className="text-right p-4 font-semibold">Actions</th>
                   </tr>
@@ -1229,6 +1231,12 @@ const Dashboard = () => {
                           </span>
                           {getStatusBadge(quote)}
                         </div>
+                      </td>
+                      <td className="p-4">
+                        {(() => {
+                          const adSize = adSizes?.find((s: any) => s.id === quote.ad_size_id);
+                          return adSize ? `${adSize.name}` : '—';
+                        })()}
                       </td>
                       <td className="p-4">
                         <div className="flex flex-col">

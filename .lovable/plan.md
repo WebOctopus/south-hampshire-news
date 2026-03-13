@@ -1,22 +1,46 @@
 
 
-## Add Ad Size to Quote Details and Saved Quotes Table
+## Fix: Booking card showing £1,080 instead of £90/month
 
-### Changes
+### Root Cause
 
-**1. `src/pages/Dashboard.tsx`** (Saved Quotes table)
-- Import `useAdSizes` from `usePricingData` (or query ad_sizes directly)
-- Add a new `<th>Ad Size</th>` column between "Campaign Type" and "Cost (+VAT)" (line 1211)
-- Add a corresponding `<td>` that resolves `quote.ad_size_id` to the ad size name using the fetched ad sizes data
-- For leafleting quotes (no ad_size_id), show "N/A" or dash
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-**2. `src/components/dashboard/ViewQuoteContent.tsx`** (View Quote dialog)
-- Import and use `useAdSizes` to resolve `quote.ad_size_id` into a human-readable name
-- Add an "Ad Size" field in the top grid (between Campaign Type/Status and Monthly Price/Final Total)
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-### Data Resolution
-The `ad_sizes` table has `id`, `name`, and `dimensions`. Display format: ad size name (e.g. "Quarter Page") with dimensions as secondary text.
+### Fix
 
-### Hook
-Use `useAdSizes` from `usePricingData` which already queries the `ad_sizes` table and is used elsewhere in the app.
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
+
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
+
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 

@@ -1,7 +1,7 @@
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/pricingCalculator';
-import { useAreas } from '@/hooks/usePricingData';
+import { useAreas, useAdSizes } from '@/hooks/usePricingData';
 import { MapPin, Gift, Calendar } from 'lucide-react';
 
 interface ViewQuoteContentProps {
@@ -28,8 +28,10 @@ const getStatusLabel = (status: string) => {
 
 export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
   const { data: areas = [] } = useAreas();
+  const { data: adSizes = [] } = useAdSizes();
 
   const isBogof = quote.pricing_model === 'bogof';
+  const adSize = adSizes.find((s: any) => s.id === quote.ad_size_id);
   
   const paidAreas = areas.filter((a: any) => quote.bogof_paid_area_ids?.includes(a.id));
   const freeAreas = areas.filter((a: any) => quote.bogof_free_area_ids?.includes(a.id));
@@ -116,6 +118,12 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
           <p>{getStatusLabel(quote.status)}</p>
         </div>
       </div>
+      {adSize && (
+        <div>
+          <Label>Ad Size</Label>
+          <p>{adSize.name} <span className="text-sm text-muted-foreground">({adSize.dimensions})</span></p>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Monthly Price</Label>
