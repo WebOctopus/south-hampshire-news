@@ -34,6 +34,7 @@ interface EmailPayload {
   selections?: any;
   is_admin_created?: boolean;
   generated_password?: string;
+  is_existing_user?: boolean;
 }
 
 function applyTemplate(html: string, vars: Record<string, string>): string {
