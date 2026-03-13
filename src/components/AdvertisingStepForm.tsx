@@ -899,8 +899,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       if (isAdminCreating) {
         toast({
-          title: "Booking Created for Customer!",
-          description: `Booking saved and credentials emailed to ${contactData.email}.`,
+          title: isNewUser ? "Booking Created for Customer!" : "Booking Created for Existing Customer!",
+          description: isNewUser
+            ? `Booking saved and credentials emailed to ${contactData.email}.`
+            : `Booking saved. A login link has been sent to ${contactData.email}. They can use "Forgot Password" if needed.`,
         });
         setTimeout(() => {
           navigate('/admin');
