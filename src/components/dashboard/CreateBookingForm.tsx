@@ -530,7 +530,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
           </div>
 
           {/* Returning BOGOF Customer Notice */}
-          {pricingModel === 'bogof' && isReturningBogofCustomer && (
+          {pricingModel === 'bogof' && isReturningBogofCustomer && !isAdmin && (
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <Phone className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-sm">
