@@ -6,9 +6,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Info, AlertCircle, Phone, Calendar, Shield, Clock, CheckCircle2, Mail, MapPin, Lock, User, Building2, Sparkles } from 'lucide-react';
+import { Loader2, Info, AlertCircle, Phone, Calendar, Shield, Clock, CheckCircle2, Mail, MapPin, Lock, User, Building2, Sparkles, UserPlus } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,7 @@ import { Search } from 'lucide-react';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useBogofEligibility } from '@/hooks/useBogofEligibility';
+import { useAuth } from '@/contexts/AuthContext';
 
 
 interface ContactInformationStepProps {
