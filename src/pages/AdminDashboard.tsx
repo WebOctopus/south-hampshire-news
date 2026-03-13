@@ -65,6 +65,11 @@ const AdminDashboard = () => {
   const [sendPasswordEmail, setSendPasswordEmail] = useState(false);
   const [userActionLoading, setUserActionLoading] = useState(false);
   
+  // Create user states
+  const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
+  const [createUserForm, setCreateUserForm] = useState({ email: '', password: '', displayName: '' });
+  const [sendCreateEmail, setSendCreateEmail] = useState(false);
+  
   const [storyForm, setStoryForm] = useState({
     title: '',
     content: '',
