@@ -709,8 +709,11 @@ const AdminDashboard = () => {
             </div>
             
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>User Roles & Agency Management</CardTitle>
+                <Button onClick={() => { setCreateUserForm({ email: '', password: '', displayName: '' }); setSendCreateEmail(false); setIsCreateUserOpen(true); }}>
+                  <UserPlus className="h-4 w-4 mr-2" /> Create User
+                </Button>
               </CardHeader>
               <CardContent>
                 {users.length === 0 ? (
