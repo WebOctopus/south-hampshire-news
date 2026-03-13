@@ -118,6 +118,12 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
           <p>{getStatusLabel(quote.status)}</p>
         </div>
       </div>
+      {adSize && (
+        <div>
+          <Label>Ad Size</Label>
+          <p>{adSize.name} <span className="text-sm text-muted-foreground">({adSize.dimensions})</span></p>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Monthly Price</Label>

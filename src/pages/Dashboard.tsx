@@ -1232,6 +1232,12 @@ const Dashboard = () => {
                         </div>
                       </td>
                       <td className="p-4">
+                        {(() => {
+                          const adSize = adSizes?.find((s: any) => s.id === quote.ad_size_id);
+                          return adSize ? `${adSize.name}` : '—';
+                        })()}
+                      </td>
+                      <td className="p-4">
                         <div className="flex flex-col">
                           <span className="font-semibold">£{quote.monthly_price?.toFixed(2) || '0.00'}</span>
                           <span className="text-xs text-muted-foreground">
