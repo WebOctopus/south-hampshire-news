@@ -1,28 +1,46 @@
 
 
-## Fix: GoCardless Payment "Edge Function returned a non-2xx status code"
+## Fix: Booking card showing £1,080 instead of £90/month
 
 ### Root Cause
 
-All three GoCardless edge functions have outdated CORS headers that are missing Supabase client platform headers. The browser's preflight OPTIONS request is rejected before the function body ever executes, which is why there are zero logs for `create-gocardless-mandate`.
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-The required but missing headers are: `x-supabase-client-platform`, `x-supabase-client-platform-version`, `x-supabase-client-runtime`, `x-supabase-client-runtime-version`.
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-### Changes (3 files)
+### Fix
 
-**1. `supabase/functions/create-gocardless-mandate/index.ts`** (line 6)
-Update `corsHeaders` to include all Supabase client headers.
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
 
-**2. `supabase/functions/create-gocardless-payment/index.ts`** (line 6)
-Same CORS header fix.
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
 
-**3. `supabase/functions/complete-gocardless-redirect/index.ts`** (line 6)
-Same CORS header fix.
-
-All three get this updated header value:
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
 ```
-'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version'
+
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
 ```
 
-No other changes needed. The payment flow logic itself is correct; it just never gets past the CORS preflight.
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
