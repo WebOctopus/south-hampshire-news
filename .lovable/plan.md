@@ -1,46 +1,43 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Fix: Dashboard CreateBookingForm pricing parity with front-end calculator
 
-### Root Cause
+### Problem
+The dashboard's `CreateBookingForm` calls `calculateAdvertisingPrice` with an **empty array `[]` for `volumeDiscounts`** (line 170), while the front-end calculator (`Advertising.tsx` line 230) passes the actual `volumeDiscounts` data from `usePricingData()`. The dashboard also doesn't destructure `volumeDiscounts` from the hook at all.
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+This means any volume discount tiers configured in the database are ignored in the dashboard form, causing price discrepancies when multiple areas are selected.
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+Additionally, the front-end passes the `relevantDurations` (filtered by model type) as the `durations` parameter, while the dashboard always passes the full `durations` array regardless of model. This could cause incorrect duration lookups.
 
-### Fix
+### Changes (1 file)
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+**`src/components/dashboard/CreateBookingForm.tsx`**:
 
-**Lines 46-53**: Replace the calculation logic with:
+1. **Line 76**: Add `volumeDiscounts` to the destructured values from `usePricingData()`.
+
+2. **Lines 161-173**: Update the `calculateAdvertisingPrice` call to:
+   - Pass the correct `relevantDurations` (fixed durations for fixed model, subscription durations for BOGOF) instead of always passing `durations`.
+   - Pass actual `volumeDiscounts` instead of `[]`.
+
+This makes the dashboard call signature identical to `Advertising.tsx`:
 ```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
+const relevantDurations = pricingModel === 'bogof' 
+  ? subscriptionDurations : durations;
 
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
+return calculateAdvertisingPrice(
+  areasToUse,
+  selectedAdSize,
+  selectedDuration,
+  pricingModel === 'bogof',
+  areas || [],
+  adSizes || [],
+  relevantDurations || [],
+  subscriptionDurations || [],
+  volumeDiscounts || [],  // was: []
+  pricingModel === 'bogof' ? bogofFreeAreas : [],
+  0
+);
 ```
 
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
-
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+No UI/UX changes. Same form layout and behavior, just correct pricing math.
 
