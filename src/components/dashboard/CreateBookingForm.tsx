@@ -133,8 +133,34 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     setSelectedLeafletSize('');
   }, [pricingModel]);
 
+  // Auto-select first available duration when pricing model changes (mirrors Advertising.tsx)
+  useEffect(() => {
+    const relevantDurations = pricingModel === 'leafleting' 
+      ? leafletDurations 
+      : pricingModel === 'bogof' ? subscriptionDurations : durations;
+    
+    if (relevantDurations && relevantDurations.length > 0 && !selectedDuration && 
+        (pricingModel !== 'leafleting' || !selectedLeafletDuration)) {
+      const target = pricingModel === 'leafleting' ? 'leaflet' : 'ad';
+      if (target === 'leaflet') {
+        const defaultDuration = (relevantDurations as any[]).find(d => d.is_default) || relevantDurations[0];
+        if (defaultDuration) setSelectedLeafletDuration(defaultDuration.id);
+      } else {
+        const defaultDuration = (relevantDurations as any[]).find(d => d.is_default) || relevantDurations[0];
+        if (defaultDuration) setSelectedDuration(defaultDuration.id);
+      }
+    }
+  }, [pricingModel, durations, subscriptionDurations, leafletDurations]);
+
+  // Track design fee and integrate into pricing (mirrors AdvertisingStepForm)
+  const designFeeAmount = useMemo(() => {
+    if (!includeDesign || !selectedAdSize) return 0;
+    const size = adSizes?.find(s => s.id === selectedAdSize);
+    return (size as any)?.design_fee || 0;
+  }, [includeDesign, selectedAdSize, adSizes]);
+
   // Calculate pricing based on selections
-  const pricingBreakdown = useMemo(() => {
+  const pricingBreakdownRaw = useMemo(() => {
     if (pricingModel === 'leafleting') {
       if (!selectedAreas.length || !selectedLeafletDuration) return null;
       
@@ -174,7 +200,22 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         0 // Don't apply agency discount to display - matches frontend calculator
       );
     }
-  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, leafletAreas, leafletDurations]);
+  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, leafletAreas, leafletDurations]);
+
+  // Integrate design fee into pricingBreakdown (mirrors AdvertisingStepForm lines 148-198)
+  const pricingBreakdown = useMemo(() => {
+    if (!pricingBreakdownRaw) return null;
+    if (designFeeAmount > 0 && includeDesign) {
+      const baseWithoutDesign = pricingBreakdownRaw.finalTotal;
+      return {
+        ...pricingBreakdownRaw,
+        designFee: designFeeAmount,
+        finalTotalBeforeDesign: baseWithoutDesign,
+        finalTotal: baseWithoutDesign + designFeeAmount,
+      };
+    }
+    return { ...pricingBreakdownRaw, designFee: 0 };
+  }, [pricingBreakdownRaw, designFeeAmount, includeDesign]);
 
   const isFormValid = () => {
     // Payment option is required for all booking types
@@ -580,7 +621,12 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                               // Remove from free areas if it was there
                               setBogofFreeAreas(bogofFreeAreas.filter(id => id !== area.id));
                             } else {
-                              setBogofPaidAreas(bogofPaidAreas.filter(id => id !== area.id));
+                              const newPaidAreas = bogofPaidAreas.filter(id => id !== area.id);
+                              setBogofPaidAreas(newPaidAreas);
+                              // Auto-trim free areas so count never exceeds paid count
+                              if (bogofFreeAreas.length > newPaidAreas.length) {
+                                setBogofFreeAreas(prev => prev.slice(0, newPaidAreas.length));
+                              }
                             }
                           }}
                         />
@@ -702,7 +748,11 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                     <SelectValue placeholder="Choose ad size" />
                   </SelectTrigger>
                   <SelectContent>
-                    {adSizes?.map((size) => (
+                    {adSizes?.filter(size => {
+                      const availableFor = size.available_for as string[] | null;
+                      if (!availableFor || availableFor.length === 0) return true;
+                      return availableFor.includes(pricingModel === 'bogof' ? 'subscription' : 'fixed');
+                    }).map((size) => (
                       <SelectItem key={size.id} value={size.id}>
                         {size.name} - {size.dimensions}
                       </SelectItem>
@@ -786,7 +836,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             {(() => {
               const baseTotal = pricingBreakdown.finalTotal || 0;
               const circulation = pricingBreakdown.totalCirculation || 0;
-              const designFee = includeDesign && 'designFee' in pricingBreakdown ? (pricingBreakdown as any).designFee || 0 : 0;
+              const designFee = (pricingBreakdown as any).designFee || 0;
               
               if (!baseTotal) return null;
 
