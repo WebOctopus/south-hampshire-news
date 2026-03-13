@@ -160,7 +160,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   }, [includeDesign, selectedAdSize, adSizes]);
 
   // Calculate pricing based on selections
-  const pricingBreakdown = useMemo(() => {
+  const pricingBreakdownRaw = useMemo(() => {
     if (pricingModel === 'leafleting') {
       if (!selectedAreas.length || !selectedLeafletDuration) return null;
       
