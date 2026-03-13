@@ -905,6 +905,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             monthly_price: bookingPayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
+            // Admin-created booking: include credentials in the email
+            ...(isAdminCreating ? {
+              is_admin_created: true,
+              generated_password: contactData.generatedPassword || contactData.password,
+            } : {}),
           }
         });
         console.log('Booking confirmation email sent');
@@ -912,21 +917,30 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         console.error('Booking confirmation email error:', emailError);
       }
 
-      // Store information for the dashboard
-      if (isNewUser) {
-        localStorage.setItem('newUserFromCalculator', 'true');
-      }
-      localStorage.setItem('justCreatedBooking', 'true');
-      
-      toast({
-        title: isNewUser ? "Account Created!" : "Booking Created!",
-        description: "Redirecting you to your dashboard where you can set up payment...",
-      });
+      if (isAdminCreating) {
+        toast({
+          title: "Booking Created for Customer!",
+          description: `Booking saved and credentials emailed to ${contactData.email}.`,
+        });
+        setTimeout(() => {
+          navigate('/admin');
+        }, 1500);
+      } else {
+        // Store information for the dashboard
+        if (isNewUser) {
+          localStorage.setItem('newUserFromCalculator', 'true');
+        }
+        localStorage.setItem('justCreatedBooking', 'true');
+        
+        toast({
+          title: isNewUser ? "Account Created!" : "Booking Created!",
+          description: "Redirecting you to your dashboard where you can set up payment...",
+        });
 
-      // Redirect to dashboard instead of directly to GoCardless
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      }
       
     } catch (error: any) {
       console.error('Error in handleContactInfoBook:', error);
