@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, user_id, password, role } = await req.json();
+    const { action, user_id, password, role, send_email, user_email } = await req.json();
 
     if (!action || !user_id) {
       return new Response(
@@ -109,6 +109,74 @@ Deno.serve(async (req) => {
         );
         if (error) throw error;
         result = { success: true, message: "Password updated successfully" };
+
+        // Optionally send email with new password via Resend
+        if (send_email && user_email) {
+          const resendApiKey = Deno.env.get("RESEND_API_KEY");
+          if (resendApiKey) {
+            // Try to fetch template from email_templates table
+            let htmlBody = '';
+            const { data: template } = await adminClient
+              .from('email_templates')
+              .select('html_body, subject')
+              .eq('name', 'password_set_admin')
+              .single();
+
+            if (template?.html_body) {
+              htmlBody = template.html_body
+                .replace(/\{\{password\}\}/g, password)
+                .replace(/\{\{email\}\}/g, user_email);
+            } else {
+              // Fallback branded HTML email
+              htmlBody = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px;">
+                  <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
+                  </div>
+                  <h2 style="color: #333; text-align: center;">Your Password Has Been Updated</h2>
+                  <p style="color: #555; font-size: 16px;">Hello,</p>
+                  <p style="color: #555; font-size: 16px;">Your account password has been updated by an administrator. You can now log in with the following credentials:</p>
+                  <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                    <p style="margin: 0 0 8px 0; color: #777; font-size: 14px;">Email</p>
+                    <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; font-weight: bold;">${user_email}</p>
+                    <p style="margin: 0 0 8px 0; color: #777; font-size: 14px;">New Password</p>
+                    <p style="margin: 0; color: #333; font-size: 18px; font-weight: bold; letter-spacing: 1px;">${password}</p>
+                  </div>
+                  <p style="color: #555; font-size: 16px;">We recommend changing your password after logging in for security purposes.</p>
+                  <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+                  <div style="text-align: center; color: #999; font-size: 12px;">
+                    <p>📞 023 8026 6388 &nbsp; ✉ discover@discovermagazines.co.uk</p>
+                    <p>📍 30 Leigh Road, Eastleigh, SO50 9DT Hampshire</p>
+                    <p style="margin-top: 10px;">Connecting South Hampshire communities since 2014</p>
+                  </div>
+                </div>
+              `;
+            }
+
+            const emailSubject = template?.subject || 'Your account password has been updated';
+
+            try {
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${resendApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  from: 'Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>',
+                  to: [user_email],
+                  subject: emailSubject,
+                  html: htmlBody,
+                }),
+              });
+              result.email_sent = true;
+            } catch (emailError) {
+              console.error('Failed to send password email:', emailError);
+              result.email_sent = false;
+              result.email_error = 'Failed to send email';
+            }
+          }
+        }
         break;
       }
 

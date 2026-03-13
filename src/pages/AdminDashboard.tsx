@@ -34,6 +34,7 @@ import FeaturedAdvertisersManagement from '@/components/admin/FeaturedAdvertiser
 import EmailTemplatesManagement from '@/components/admin/EmailTemplatesManagement';
 import MediaLibraryManagement from '@/components/admin/MediaLibraryManagement';
 import { User } from '@supabase/supabase-js';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2, Trash2, KeyRound } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -61,6 +62,7 @@ const AdminDashboard = () => {
   const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
   const [passwordTarget, setPasswordTarget] = useState<any>(null);
   const [newPassword, setNewPassword] = useState('');
+  const [sendPasswordEmail, setSendPasswordEmail] = useState(false);
   const [userActionLoading, setUserActionLoading] = useState(false);
   
   const [storyForm, setStoryForm] = useState({
@@ -242,10 +244,17 @@ const AdminDashboard = () => {
   const handleSetPassword = async () => {
     if (!passwordTarget || !newPassword) return;
     try {
-      await invokeAdminAction('set_password', passwordTarget.user_id, { password: newPassword });
-      toast({ title: "Success", description: "Password updated successfully." });
+      const targetEmail = userEmails[passwordTarget.user_id];
+      await invokeAdminAction('set_password', passwordTarget.user_id, { 
+        password: newPassword,
+        send_email: sendPasswordEmail,
+        user_email: targetEmail
+      });
+      const emailMsg = sendPasswordEmail && targetEmail ? ` Email sent to ${targetEmail}.` : '';
+      toast({ title: "Success", description: `Password updated successfully.${emailMsg}` });
       setIsSetPasswordOpen(false);
       setNewPassword('');
+      setSendPasswordEmail(false);
       setPasswordTarget(null);
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -744,8 +753,9 @@ const AdminDashboard = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
-                                      setPasswordTarget(u);
+                              setPasswordTarget(u);
                                       setNewPassword('');
+                                      setSendPasswordEmail(false);
                                       setIsSetPasswordOpen(true);
                                     }}
                                   >
@@ -806,6 +816,21 @@ const AdminDashboard = () => {
                       minLength={6}
                     />
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="send-password-email"
+                      checked={sendPasswordEmail}
+                      onCheckedChange={(checked) => setSendPasswordEmail(checked === true)}
+                    />
+                    <Label htmlFor="send-password-email" className="text-sm font-normal cursor-pointer">
+                      Send password to user via email
+                    </Label>
+                  </div>
+                  {sendPasswordEmail && (
+                    <p className="text-xs text-muted-foreground">
+                      An email will be sent to {userEmails[passwordTarget?.user_id] || 'the user'} with their new password.
+                    </p>
+                  )}
                   <div className="flex gap-2">
                     <Button 
                       onClick={handleSetPassword} 

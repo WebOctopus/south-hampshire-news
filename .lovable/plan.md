@@ -1,26 +1,46 @@
 
 
-## Add "Email New Password" Option to Set Password Dialog
+## Fix: Booking card showing £1,080 instead of £90/month
 
-### What We'll Build
-Add a checkbox/toggle in the "Set User Password" dialog that lets the admin optionally send an email to the user with their new password via Resend. Uses the existing Resend integration and sender identity (`Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>`).
+### Root Cause
 
-### Changes
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-1. **Update `supabase/functions/admin-manage-user/index.ts`**
-   - Add a `send_email` boolean and `user_email` string to the `set_password` action
-   - When `send_email` is true, use Resend (via `RESEND_API_KEY`) to send a branded email containing the new password to the user
-   - Email from: `Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>`
-   - Attempt to fetch a `password_set_admin` template from the `email_templates` table; fall back to a hardcoded branded HTML email
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-2. **Update `src/pages/AdminDashboard.tsx`**
-   - Add a checkbox "Send password to user via email" in the Set Password dialog (below the password input)
-   - Add state for `sendPasswordEmail` (default: false)
-   - Pass `send_email: true` and `user_email` to the edge function when checked
-   - Show confirmation in toast when email is sent
+### Fix
 
-### Technical Details
-- Resend SDK and `RESEND_API_KEY` are already available in secrets
-- The edge function already has the user's email available via `list_users_with_email` action or can fetch it with `adminClient.auth.admin.getUserById()`
-- No new secrets or migrations needed
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
+
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
+
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
