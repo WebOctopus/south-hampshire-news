@@ -200,7 +200,22 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         0 // Don't apply agency discount to display - matches frontend calculator
       );
     }
-  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, leafletAreas, leafletDurations]);
+  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, leafletAreas, leafletDurations]);
+
+  // Integrate design fee into pricingBreakdown (mirrors AdvertisingStepForm lines 148-198)
+  const pricingBreakdownWithDesign = useMemo(() => {
+    if (!pricingBreakdown) return null;
+    if (designFeeAmount > 0 && includeDesign) {
+      const baseWithoutDesign = pricingBreakdown.finalTotal;
+      return {
+        ...pricingBreakdown,
+        designFee: designFeeAmount,
+        finalTotalBeforeDesign: baseWithoutDesign,
+        finalTotal: baseWithoutDesign + designFeeAmount,
+      };
+    }
+    return { ...pricingBreakdown, designFee: 0 };
+  }, [pricingBreakdown, designFeeAmount, includeDesign]);
 
   const isFormValid = () => {
     // Payment option is required for all booking types
