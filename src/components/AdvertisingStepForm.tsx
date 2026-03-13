@@ -278,33 +278,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             email: contactData.email,
             password: generatedPassword,
             display_name: fullName,
-            send_email: false, // We'll send credentials in the quote email instead
+            send_email: false,
+            allow_existing_user: true,
           }
         });
 
         if (createError || createResult?.error) {
           const errMsg = createResult?.error || createError?.message || 'Failed to create customer account';
-          // If user already exists, try to find their ID
-          if (errMsg.includes('already') || errMsg.includes('exists')) {
-            isNewUser = false;
-            // Look up existing user via admin function
-            const { data: listResult } = await supabase.functions.invoke('admin-manage-user', {
-              body: { action: 'list_users' }
-            });
-            const existingUser = listResult?.users?.find((u: any) => u.email === contactData.email);
-            if (existingUser) {
-              userId = existingUser.id;
-            } else {
-              toast({ title: "Error", description: "User exists but could not be found. Please try again.", variant: "destructive" });
-              return;
-            }
-          } else {
-            toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
-            return;
-          }
-        } else {
-          userId = createResult?.user_id || createResult?.user?.id;
+          toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
+          return;
         }
+
+        userId = createResult?.user_id || createResult?.user?.id;
+        isNewUser = !createResult?.is_existing_user;
 
         if (!userId) {
           toast({ title: "Error", description: "Failed to create customer account.", variant: "destructive" });
@@ -504,8 +490,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       if (isAdminCreating) {
         toast({
-          title: "Quote Created for Customer!",
-          description: `Quote saved and credentials emailed to ${contactData.email}. The customer can log in to view their quote.`,
+          title: isNewUser ? "Quote Created for Customer!" : "Quote Created for Existing Customer!",
+          description: isNewUser
+            ? `Quote saved and credentials emailed to ${contactData.email}.`
+            : `Quote saved. A login link has been sent to ${contactData.email}. They can use "Forgot Password" if needed.`,
         });
         // Admin stays on current page or goes to admin dashboard
         setTimeout(() => {
@@ -601,30 +589,18 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             password: generatedPassword,
             display_name: fullName,
             send_email: false,
+            allow_existing_user: true,
           }
         });
 
         if (createError || createResult?.error) {
           const errMsg = createResult?.error || createError?.message || 'Failed to create customer account';
-          if (errMsg.includes('already') || errMsg.includes('exists')) {
-            isNewUser = false;
-            const { data: listResult } = await supabase.functions.invoke('admin-manage-user', {
-              body: { action: 'list_users' }
-            });
-            const existingUser = listResult?.users?.find((u: any) => u.email === contactData.email);
-            if (existingUser) {
-              userId = existingUser.id;
-            } else {
-              toast({ title: "Error", description: "User exists but could not be found.", variant: "destructive" });
-              return;
-            }
-          } else {
-            toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
-            return;
-          }
-        } else {
-          userId = createResult?.user_id || createResult?.user?.id;
+          toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
+          return;
         }
+
+        userId = createResult?.user_id || createResult?.user?.id;
+        isNewUser = !createResult?.is_existing_user;
       } else {
         // Normal flow — sign up the user
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -923,8 +899,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       if (isAdminCreating) {
         toast({
-          title: "Booking Created for Customer!",
-          description: `Booking saved and credentials emailed to ${contactData.email}.`,
+          title: isNewUser ? "Booking Created for Customer!" : "Booking Created for Existing Customer!",
+          description: isNewUser
+            ? `Booking saved and credentials emailed to ${contactData.email}.`
+            : `Booking saved. A login link has been sent to ${contactData.email}. They can use "Forgot Password" if needed.`,
         });
         setTimeout(() => {
           navigate('/admin');

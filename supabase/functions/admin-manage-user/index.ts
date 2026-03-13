@@ -236,6 +236,7 @@ Deno.serve(async (req) => {
         const createPassword = body.password;
         const createDisplayName = body.display_name;
         const createSendEmail = body.send_email;
+        const allowExistingUser = body.allow_existing_user === true;
 
         if (!createEmail || !createPassword) {
           return new Response(
@@ -256,8 +257,30 @@ Deno.serve(async (req) => {
           email_confirm: true,
           user_metadata: createDisplayName ? { display_name: createDisplayName } : undefined,
         });
-        if (createError) throw createError;
-        result = { success: true, message: "User created successfully", user_id: newUser.user?.id };
+
+        if (createError) {
+          // Handle existing user gracefully when allow_existing_user is set
+          if (allowExistingUser && (createError as any).code === 'email_exists') {
+            // Look up existing user by email
+            const { data: listData, error: listError } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+            if (listError) throw listError;
+            const existingUser = listData.users.find((u: any) => u.email === createEmail);
+            if (existingUser) {
+              result = {
+                success: true,
+                message: "Existing user found",
+                user_id: existingUser.id,
+                user: { id: existingUser.id, email: existingUser.email },
+                is_existing_user: true,
+              };
+              break;
+            }
+            throw new Error("User exists but could not be resolved");
+          }
+          throw createError;
+        }
+
+        result = { success: true, message: "User created successfully", user_id: newUser.user?.id, is_existing_user: false };
 
         // Optionally send credentials email
         if (createSendEmail && createEmail) {
