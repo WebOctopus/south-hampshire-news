@@ -1,46 +1,32 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Fix: Dashboard CreateBookingForm pricing parity with front-end calculator
 
-### Root Cause
+### Problems Found
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+1. **BOGOF can't save/book** — No auto-selection of default duration when switching pricing model. The front-end (Advertising.tsx lines 235-259) auto-selects the first available duration; the dashboard just clears it and requires manual selection, but there's no visible feedback that duration is missing.
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+2. **Monthly price incorrect** — The dashboard doesn't integrate the design fee into `pricingBreakdown.finalTotal` like the front-end does (AdvertisingStepForm lines 148-198). When "include design" is checked, the front-end adds the design fee to finalTotal and stores `finalTotalBeforeDesign`. The dashboard passes `designFee: 0` to `calculatePaymentAmount` because `pricingBreakdown` from `calculateAdvertisingPrice` never contains a `designFee` field.
 
-### Fix
+3. **BOGOF free area auto-trim missing** — Per project constraint, when a paid area is deselected, free areas should auto-trim so free count never exceeds paid count. The dashboard doesn't do this.
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+4. **Ad sizes not filtered by `available_for`** — The front-end filters ad sizes by pricing model (e.g., only showing sizes available for "fixed" or "subscription"). The dashboard shows all active ad sizes regardless.
 
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
+5. **No auto-duration selection** — When the pricing model changes, the front-end auto-selects the first/default duration. The dashboard clears it but never auto-selects.
 
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
-```
+### Changes (1 file)
 
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
+**`src/components/dashboard/CreateBookingForm.tsx`**:
 
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+1. **Add auto-duration selection** (new useEffect after line 134): When pricing model changes and durations are loaded, auto-select the first available duration (mirroring Advertising.tsx lines 235-259).
 
-### Files Changed
+2. **Add design fee to pricingBreakdown** (new useEffect): When `includeDesign` is true, look up the design fee from the selected ad size and add it to `pricingBreakdown.finalTotal`, storing `finalTotalBeforeDesign`. Remove it when unchecked. This mirrors AdvertisingStepForm lines 148-198.
 
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+3. **Add BOGOF free area auto-trim** (update paid area onCheckedChange handler around line 583): When a paid area is deselected, trim `bogofFreeAreas` from the end so its length never exceeds `bogofPaidAreas.length`.
+
+4. **Filter ad sizes by `available_for`**: In the ad size dropdown (line 705), filter `adSizes` to only show sizes whose `available_for` array includes the current pricing model type (`'fixed'` or `'subscription'` for BOGOF).
+
+5. **Fix payment option designFee parameter** (line 789): Extract the actual design fee from pricingBreakdown (after step 2 adds it) rather than checking `'designFee' in pricingBreakdown` which was unreliable.
+
+6. **Pass designFee to calculatePaymentAmount correctly**: Use `pricingBreakdown.designFee || 0` for the designFee parameter so payment option amounts match the front-end.
 
