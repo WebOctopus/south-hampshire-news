@@ -6,7 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -33,7 +34,7 @@ import FeaturedAdvertisersManagement from '@/components/admin/FeaturedAdvertiser
 import EmailTemplatesManagement from '@/components/admin/EmailTemplatesManagement';
 import MediaLibraryManagement from '@/components/admin/MediaLibraryManagement';
 import { User } from '@supabase/supabase-js';
-import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-react';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2, Trash2, KeyRound } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -42,6 +43,7 @@ const AdminDashboard = () => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [businessCount, setBusinessCount] = useState(0);
   const [users, setUsers] = useState<any[]>([]);
+  const [userEmails, setUserEmails] = useState<Record<string, string>>({});
   const [stories, setStories] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState('overview');
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
@@ -54,6 +56,13 @@ const AdminDashboard = () => {
   const debouncedBusinessSearch = useDebounce(businessSearchTerm, 300);
   const [businessPage, setBusinessPage] = useState(0);
   const BUSINESSES_PER_PAGE = 25;
+  
+  // User management states
+  const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
+  const [passwordTarget, setPasswordTarget] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [userActionLoading, setUserActionLoading] = useState(false);
+  
   const [storyForm, setStoryForm] = useState({
     title: '',
     content: '',
@@ -160,33 +169,42 @@ const AdminDashboard = () => {
 
   const loadUsers = async () => {
     try {
-      // First get all profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (profilesError) {
-        throw profilesError;
-      }
+      if (profilesError) throw profilesError;
 
-      // Then get all user roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role, created_at');
 
       if (rolesError) {
         console.error('Error loading user roles:', rolesError);
-        // Continue even if roles fail to load
       }
 
-      // Combine the data
       const combinedUsers = (profilesData || []).map(profile => ({
         ...profile,
         user_roles: (rolesData || []).filter(role => role.user_id === profile.user_id)
       }));
 
       setUsers(combinedUsers);
+
+      // Fetch emails via edge function
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('admin-manage-user', {
+            body: { action: 'list_users_with_email', user_id: 'all' },
+          });
+          if (!emailError && emailData?.emailMap) {
+            setUserEmails(emailData.emailMap);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch user emails:', e);
+      }
     } catch (error) {
       console.error('Error loading users:', error);
       toast({
@@ -194,6 +212,53 @@ const AdminDashboard = () => {
         description: "Failed to load users",
         variant: "destructive"
       });
+    }
+  };
+
+  const invokeAdminAction = async (action: string, userId: string, extraData?: Record<string, any>) => {
+    setUserActionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-manage-user', {
+        body: { action, user_id: userId, ...extraData },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    } finally {
+      setUserActionLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (targetUser: any) => {
+    try {
+      await invokeAdminAction('delete_user', targetUser.user_id);
+      toast({ title: "Success", description: "User deleted successfully." });
+      loadUsers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleSetPassword = async () => {
+    if (!passwordTarget || !newPassword) return;
+    try {
+      await invokeAdminAction('set_password', passwordTarget.user_id, { password: newPassword });
+      toast({ title: "Success", description: "Password updated successfully." });
+      setIsSetPasswordOpen(false);
+      setNewPassword('');
+      setPasswordTarget(null);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleUpdateRole = async (targetUser: any, newRole: string) => {
+    try {
+      await invokeAdminAction('update_role', targetUser.user_id, { role: newRole });
+      toast({ title: "Success", description: `Role updated to ${newRole}.` });
+      loadUsers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
@@ -597,7 +662,7 @@ const AdminDashboard = () => {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">User Management</h2>
-              <p className="text-muted-foreground">Manage user roles, permissions, and agency memberships.</p>
+              <p className="text-muted-foreground">Manage user roles, permissions, and agency memberships. These settings control access to the booking & quote dashboard.</p>
             </div>
             
             <Card>
@@ -615,7 +680,7 @@ const AdminDashboard = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Display Name</TableHead>
-                          <TableHead>User ID</TableHead>
+                          <TableHead>Email</TableHead>
                           <TableHead>Role</TableHead>
                           <TableHead>Agency Status</TableHead>
                           <TableHead>Agency Name</TableHead>
@@ -624,64 +689,139 @@ const AdminDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {users.map((user) => (
-                          <TableRow key={user.user_id}>
-                            <TableCell className="font-medium">
-                              {user.display_name || 'No name'}
-                            </TableCell>
-                            <TableCell className="font-mono text-xs">
-                              {user.user_id?.slice(0, 8)}...
-                            </TableCell>
-                            <TableCell>
-                              {user.user_roles && user.user_roles.length > 0 ? (
+                        {users.map((u) => {
+                          const currentRole = u.user_roles && u.user_roles.length > 0 ? u.user_roles[0].role : 'user';
+                          return (
+                            <TableRow key={u.user_id}>
+                              <TableCell className="font-medium">
+                                {u.display_name || 'No name'}
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {userEmails[u.user_id] || <span className="text-muted-foreground italic">Loading...</span>}
+                              </TableCell>
+                              <TableCell>
+                                <Select
+                                  value={currentRole}
+                                  onValueChange={(val) => handleUpdateRole(u, val)}
+                                >
+                                  <SelectTrigger className="w-[110px] h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="user">User</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell>
                                 <span className={`px-2 py-1 rounded-full text-xs ${
-                                  user.user_roles[0].role === 'admin' 
-                                    ? 'bg-purple-100 text-purple-800' 
-                                    : 'bg-blue-100 text-blue-800'
+                                  u.is_agency_member 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-muted text-muted-foreground'
                                 }`}>
-                                  {user.user_roles[0].role}
+                                  {u.is_agency_member ? 'Agency Member' : 'Regular User'}
                                 </span>
-                              ) : (
-                                <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
-                                  user
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                user.is_agency_member 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {user.is_agency_member ? 'Agency Member' : 'Regular User'}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              {user.agency_name || '-'}
-                            </TableCell>
-                            <TableCell>
-                              {user.is_agency_member ? `${user.agency_discount_percent || 0}%` : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingUser(user);
-                                  setIsUserEditDialogOpen(true);
-                                }}
-                              >
-                                Edit
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                              </TableCell>
+                              <TableCell>
+                                {u.agency_name || '-'}
+                              </TableCell>
+                              <TableCell>
+                                {u.is_agency_member ? `${u.agency_discount_percent || 0}%` : '-'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingUser(u);
+                                      setIsUserEditDialogOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="h-3 w-3 mr-1" /> Edit
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setPasswordTarget(u);
+                                      setNewPassword('');
+                                      setIsSetPasswordOpen(true);
+                                    }}
+                                  >
+                                    <KeyRound className="h-3 w-3 mr-1" /> Password
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="destructive" size="sm">
+                                        <Trash2 className="h-3 w-3 mr-1" /> Delete
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete User Account</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This will permanently delete the account for <strong>{u.display_name || userEmails[u.user_id] || 'this user'}</strong>. 
+                                          All their bookings, quotes, and data will be removed. This action cannot be undone.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteUser(u)}>
+                                          Delete User
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* Set Password Dialog */}
+            <Dialog open={isSetPasswordOpen} onOpenChange={setIsSetPasswordOpen}>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>Set User Password</DialogTitle>
+                  <DialogDescription>
+                    Set a new password for {passwordTarget?.display_name || userEmails[passwordTarget?.user_id] || 'this user'}.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Minimum 6 characters"
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleSetPassword} 
+                      disabled={newPassword.length < 6 || userActionLoading}
+                      className="flex-1"
+                    >
+                      {userActionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Set Password
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsSetPasswordOpen(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         );
 

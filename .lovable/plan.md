@@ -1,41 +1,46 @@
 
 
-## Admin User Management: Delete Users, Set Passwords, Role Assignment
+## Fix: Booking card showing £1,080 instead of £90/month
 
-### What We'll Build
+### Root Cause
 
-Expand the User Management section in the admin dashboard with three new capabilities:
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-1. **Delete User** -- Admin can delete a user account entirely (removes from `auth.users`, which cascades to `profiles`, `user_roles`, bookings, quotes, etc.)
-2. **Set/Reset Password** -- Admin can set a specific password for a user (useful for onboarding or support)
-3. **Role Management** -- Admin can promote/demote users (admin vs regular user) directly from the edit dialog
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
-All of these operations require the Supabase Admin API (`service_role` key), so they must go through an Edge Function.
+### Fix
 
-### Changes
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
 
-1. **Create Edge Function `supabase/functions/admin-manage-user/index.ts`**
-   - Accepts actions: `delete_user`, `set_password`, `update_role`
-   - Validates the caller is an admin (checks `user_roles` table using service role)
-   - `delete_user`: calls `supabase.auth.admin.deleteUser(userId)`
-   - `set_password`: calls `supabase.auth.admin.updateUserById(userId, { password })`
-   - `update_role`: inserts/deletes from `user_roles` table
-   - Uses `SUPABASE_SERVICE_ROLE_KEY` (already configured)
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
 
-2. **Update `src/pages/AdminDashboard.tsx`** -- User Management section:
-   - Add **Delete** button (with confirmation dialog) per user row
-   - Add **Set Password** button that opens a dialog to enter a new password
-   - Add **Role** selector (admin/user) in the edit dialog
-   - Add email display in the user table for identification
-   - Wire all actions to call the new edge function
-   - Note: These actions affect the user's access to the booking/quote dashboard (`/dashboard`)
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
 
-3. **Update `loadUsers`** to also fetch user email from profiles or display it if available
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
 
-### Technical Details
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
 
-- The Edge Function uses `SUPABASE_SERVICE_ROLE_KEY` to perform admin-level auth operations (delete user, update password). This key is already in secrets.
-- Caller authentication: The edge function verifies the JWT from the Authorization header, then checks the `user_roles` table to confirm the caller has the `admin` role.
-- Deleting a user cascades via `ON DELETE CASCADE` on `profiles.user_id` and `user_roles.user_id`, cleaning up related data automatically.
-- Password requirements: minimum 6 characters (Supabase default).
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
