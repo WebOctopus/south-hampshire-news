@@ -231,12 +231,11 @@ Deno.serve(async (req) => {
       }
 
       case "create_user": {
-        const { email, password, display_name, send_email } = await req.json().catch(() => ({}));
-        // email/password already destructured from the outer json parse, use those
-        const createEmail = extraFields.email || email;
-        const createPassword = extraFields.password || password;
-        const createDisplayName = extraFields.display_name || display_name;
-        const createSendEmail = extraFields.send_email ?? send_email;
+        // All fields already destructured from the single req.json() call above
+        const createEmail = body.email;
+        const createPassword = body.password;
+        const createDisplayName = body.display_name;
+        const createSendEmail = body.send_email;
 
         if (!createEmail || !createPassword) {
           return new Response(
