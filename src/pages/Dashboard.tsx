@@ -1208,6 +1208,7 @@ const Dashboard = () => {
                   <tr>
                     <th className="text-left p-4 font-semibold">Date Created</th>
                     <th className="text-left p-4 font-semibold">Campaign Type</th>
+                    <th className="text-left p-4 font-semibold">Ad Size</th>
                     <th className="text-left p-4 font-semibold">Cost (+VAT)</th>
                     <th className="text-right p-4 font-semibold">Actions</th>
                   </tr>
