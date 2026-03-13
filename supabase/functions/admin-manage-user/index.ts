@@ -58,15 +58,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, user_id, password, role, send_email, user_email } = await req.json();
+    const body = await req.json();
+    const { action, user_id, password, role, send_email, user_email, ...extraFields } = body;
 
-    if (!action || !user_id) {
+    if (!action) {
       return new Response(
-        JSON.stringify({ error: "action and user_id are required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "action is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // create_user doesn't need user_id; all others do
+    if (action !== 'create_user' && !user_id) {
+      return new Response(
+        JSON.stringify({ error: "user_id is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -221,6 +227,98 @@ Deno.serve(async (req) => {
           emailMap[u.id] = u.email || "";
         }
         result = { emailMap };
+        break;
+      }
+
+      case "create_user": {
+        const { email, password, display_name, send_email } = await req.json().catch(() => ({}));
+        // email/password already destructured from the outer json parse, use those
+        const createEmail = extraFields.email || email;
+        const createPassword = extraFields.password || password;
+        const createDisplayName = extraFields.display_name || display_name;
+        const createSendEmail = extraFields.send_email ?? send_email;
+
+        if (!createEmail || !createPassword) {
+          return new Response(
+            JSON.stringify({ error: "email and password are required" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (createPassword.length < 6) {
+          return new Response(
+            JSON.stringify({ error: "Password must be at least 6 characters" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+          email: createEmail,
+          password: createPassword,
+          email_confirm: true,
+          user_metadata: createDisplayName ? { display_name: createDisplayName } : undefined,
+        });
+        if (createError) throw createError;
+        result = { success: true, message: "User created successfully", user_id: newUser.user?.id };
+
+        // Optionally send credentials email
+        if (createSendEmail && createEmail) {
+          const resendApiKey = Deno.env.get("RESEND_API_KEY");
+          if (resendApiKey) {
+            const { data: template } = await adminClient
+              .from('email_templates')
+              .select('html_body, subject')
+              .eq('name', 'new_user_credentials')
+              .single();
+
+            let htmlBody = template?.html_body
+              ? template.html_body
+                  .replace(/\{\{password\}\}/g, createPassword)
+                  .replace(/\{\{email\}\}/g, createEmail)
+                  .replace(/\{\{display_name\}\}/g, createDisplayName || createEmail)
+              : `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px;">
+                  <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
+                  </div>
+                  <h2 style="color: #333; text-align: center;">Welcome! Your Account Has Been Created</h2>
+                  <p style="color: #555; font-size: 16px;">Hello${createDisplayName ? ' ' + createDisplayName : ''},</p>
+                  <p style="color: #555; font-size: 16px;">An account has been created for you. You can log in with the following credentials:</p>
+                  <div style="background: #f5f5f5; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                    <p style="margin: 0 0 8px 0; color: #777; font-size: 14px;">Email</p>
+                    <p style="margin: 0 0 16px 0; color: #333; font-size: 16px; font-weight: bold;">${createEmail}</p>
+                    <p style="margin: 0 0 8px 0; color: #777; font-size: 14px;">Password</p>
+                    <p style="margin: 0; color: #333; font-size: 18px; font-weight: bold; letter-spacing: 1px;">${createPassword}</p>
+                  </div>
+                  <p style="color: #555; font-size: 16px;">We recommend changing your password after logging in for security purposes.</p>
+                  <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+                  <div style="text-align: center; color: #999; font-size: 12px;">
+                    <p>📞 023 8026 6388 &nbsp; ✉ discover@discovermagazines.co.uk</p>
+                    <p>📍 30 Leigh Road, Eastleigh, SO50 9DT Hampshire</p>
+                  </div>
+                </div>
+              `;
+
+            try {
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${resendApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  from: 'Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>',
+                  to: [createEmail],
+                  subject: template?.subject || 'Your new account credentials',
+                  html: htmlBody,
+                }),
+              });
+              result.email_sent = true;
+            } catch (emailError) {
+              console.error('Failed to send credentials email:', emailError);
+              result.email_sent = false;
+            }
+          }
+        }
         break;
       }
 

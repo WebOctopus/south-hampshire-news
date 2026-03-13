@@ -35,7 +35,7 @@ import EmailTemplatesManagement from '@/components/admin/EmailTemplatesManagemen
 import MediaLibraryManagement from '@/components/admin/MediaLibraryManagement';
 import { User } from '@supabase/supabase-js';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2, Trash2, KeyRound } from 'lucide-react';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2, Trash2, KeyRound, UserPlus } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -64,6 +64,11 @@ const AdminDashboard = () => {
   const [newPassword, setNewPassword] = useState('');
   const [sendPasswordEmail, setSendPasswordEmail] = useState(false);
   const [userActionLoading, setUserActionLoading] = useState(false);
+  
+  // Create user states
+  const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
+  const [createUserForm, setCreateUserForm] = useState({ email: '', password: '', displayName: '' });
+  const [sendCreateEmail, setSendCreateEmail] = useState(false);
   
   const [storyForm, setStoryForm] = useState({
     title: '',
@@ -268,6 +273,35 @@ const AdminDashboard = () => {
       loadUsers();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!createUserForm.email || !createUserForm.password) return;
+    setUserActionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-manage-user', {
+        body: {
+          action: 'create_user',
+          user_id: 'new',
+          email: createUserForm.email,
+          password: createUserForm.password,
+          display_name: createUserForm.displayName || undefined,
+          send_email: sendCreateEmail,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const emailMsg = sendCreateEmail ? ` Credentials sent to ${createUserForm.email}.` : '';
+      toast({ title: "Success", description: `User created successfully.${emailMsg}` });
+      setIsCreateUserOpen(false);
+      setCreateUserForm({ email: '', password: '', displayName: '' });
+      setSendCreateEmail(false);
+      loadUsers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setUserActionLoading(false);
     }
   };
 
@@ -675,8 +709,11 @@ const AdminDashboard = () => {
             </div>
             
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>User Roles & Agency Management</CardTitle>
+                <Button onClick={() => { setCreateUserForm({ email: '', password: '', displayName: '' }); setSendCreateEmail(false); setIsCreateUserOpen(true); }}>
+                  <UserPlus className="h-4 w-4 mr-2" /> Create User
+                </Button>
               </CardHeader>
               <CardContent>
                 {users.length === 0 ? (
@@ -841,6 +878,73 @@ const AdminDashboard = () => {
                       Set Password
                     </Button>
                     <Button variant="outline" onClick={() => setIsSetPasswordOpen(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Create User Dialog */}
+            <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>Create New User</DialogTitle>
+                  <DialogDescription>
+                    Create a new user account. The user will be able to log in immediately.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="create-email">Email</Label>
+                    <Input
+                      id="create-email"
+                      type="email"
+                      value={createUserForm.email}
+                      onChange={(e) => setCreateUserForm(f => ({ ...f, email: e.target.value }))}
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="create-display-name">Display Name (optional)</Label>
+                    <Input
+                      id="create-display-name"
+                      value={createUserForm.displayName}
+                      onChange={(e) => setCreateUserForm(f => ({ ...f, displayName: e.target.value }))}
+                      placeholder="John Smith"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="create-password">Password</Label>
+                    <Input
+                      id="create-password"
+                      type="password"
+                      value={createUserForm.password}
+                      onChange={(e) => setCreateUserForm(f => ({ ...f, password: e.target.value }))}
+                      placeholder="Minimum 6 characters"
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="send-create-email"
+                      checked={sendCreateEmail}
+                      onCheckedChange={(checked) => setSendCreateEmail(checked === true)}
+                    />
+                    <Label htmlFor="send-create-email" className="text-sm font-normal cursor-pointer">
+                      Send credentials to user via email
+                    </Label>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleCreateUser}
+                      disabled={!createUserForm.email || createUserForm.password.length < 6 || userActionLoading}
+                      className="flex-1"
+                    >
+                      {userActionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                      Create User
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsCreateUserOpen(false)}>
                       Cancel
                     </Button>
                   </div>
