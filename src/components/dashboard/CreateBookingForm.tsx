@@ -158,6 +158,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
       
       if (!durationData || !adSize) return null;
 
+      const relevantDurations = pricingModel === 'bogof' ? subscriptionDurations : durations;
+
       return calculateAdvertisingPrice(
         areasToUse,
         selectedAdSize,
@@ -165,9 +167,9 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         pricingModel === 'bogof',
         areas || [],
         adSizes || [],
-        durations || [],
+        relevantDurations || [],
         subscriptionDurations || [],
-        [],
+        volumeDiscounts || [],
         pricingModel === 'bogof' ? bogofFreeAreas : [],
         0 // Don't apply agency discount to display - matches frontend calculator
       );
