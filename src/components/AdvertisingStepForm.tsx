@@ -587,30 +587,18 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             password: generatedPassword,
             display_name: fullName,
             send_email: false,
+            allow_existing_user: true,
           }
         });
 
         if (createError || createResult?.error) {
           const errMsg = createResult?.error || createError?.message || 'Failed to create customer account';
-          if (errMsg.includes('already') || errMsg.includes('exists')) {
-            isNewUser = false;
-            const { data: listResult } = await supabase.functions.invoke('admin-manage-user', {
-              body: { action: 'list_users' }
-            });
-            const existingUser = listResult?.users?.find((u: any) => u.email === contactData.email);
-            if (existingUser) {
-              userId = existingUser.id;
-            } else {
-              toast({ title: "Error", description: "User exists but could not be found.", variant: "destructive" });
-              return;
-            }
-          } else {
-            toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
-            return;
-          }
-        } else {
-          userId = createResult?.user_id || createResult?.user?.id;
+          toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
+          return;
         }
+
+        userId = createResult?.user_id || createResult?.user?.id;
+        isNewUser = !createResult?.is_existing_user;
       } else {
         // Normal flow — sign up the user
         const { data: authData, error: authError } = await supabase.auth.signUp({
