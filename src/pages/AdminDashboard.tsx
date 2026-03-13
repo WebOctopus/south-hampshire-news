@@ -884,6 +884,73 @@ const AdminDashboard = () => {
                 </div>
               </DialogContent>
             </Dialog>
+
+            {/* Create User Dialog */}
+            <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>Create New User</DialogTitle>
+                  <DialogDescription>
+                    Create a new user account. The user will be able to log in immediately.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="create-email">Email</Label>
+                    <Input
+                      id="create-email"
+                      type="email"
+                      value={createUserForm.email}
+                      onChange={(e) => setCreateUserForm(f => ({ ...f, email: e.target.value }))}
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="create-display-name">Display Name (optional)</Label>
+                    <Input
+                      id="create-display-name"
+                      value={createUserForm.displayName}
+                      onChange={(e) => setCreateUserForm(f => ({ ...f, displayName: e.target.value }))}
+                      placeholder="John Smith"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="create-password">Password</Label>
+                    <Input
+                      id="create-password"
+                      type="password"
+                      value={createUserForm.password}
+                      onChange={(e) => setCreateUserForm(f => ({ ...f, password: e.target.value }))}
+                      placeholder="Minimum 6 characters"
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="send-create-email"
+                      checked={sendCreateEmail}
+                      onCheckedChange={(checked) => setSendCreateEmail(checked === true)}
+                    />
+                    <Label htmlFor="send-create-email" className="text-sm font-normal cursor-pointer">
+                      Send credentials to user via email
+                    </Label>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleCreateUser}
+                      disabled={!createUserForm.email || createUserForm.password.length < 6 || userActionLoading}
+                      className="flex-1"
+                    >
+                      {userActionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                      Create User
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsCreateUserOpen(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         );
 
