@@ -169,33 +169,42 @@ const AdminDashboard = () => {
 
   const loadUsers = async () => {
     try {
-      // First get all profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (profilesError) {
-        throw profilesError;
-      }
+      if (profilesError) throw profilesError;
 
-      // Then get all user roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role, created_at');
 
       if (rolesError) {
         console.error('Error loading user roles:', rolesError);
-        // Continue even if roles fail to load
       }
 
-      // Combine the data
       const combinedUsers = (profilesData || []).map(profile => ({
         ...profile,
         user_roles: (rolesData || []).filter(role => role.user_id === profile.user_id)
       }));
 
       setUsers(combinedUsers);
+
+      // Fetch emails via edge function
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('admin-manage-user', {
+            body: { action: 'list_users_with_email', user_id: 'all' },
+          });
+          if (!emailError && emailData?.emailMap) {
+            setUserEmails(emailData.emailMap);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch user emails:', e);
+      }
     } catch (error) {
       console.error('Error loading users:', error);
       toast({
@@ -203,6 +212,53 @@ const AdminDashboard = () => {
         description: "Failed to load users",
         variant: "destructive"
       });
+    }
+  };
+
+  const invokeAdminAction = async (action: string, userId: string, extraData?: Record<string, any>) => {
+    setUserActionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-manage-user', {
+        body: { action, user_id: userId, ...extraData },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    } finally {
+      setUserActionLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (targetUser: any) => {
+    try {
+      await invokeAdminAction('delete_user', targetUser.user_id);
+      toast({ title: "Success", description: "User deleted successfully." });
+      loadUsers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleSetPassword = async () => {
+    if (!passwordTarget || !newPassword) return;
+    try {
+      await invokeAdminAction('set_password', passwordTarget.user_id, { password: newPassword });
+      toast({ title: "Success", description: "Password updated successfully." });
+      setIsSetPasswordOpen(false);
+      setNewPassword('');
+      setPasswordTarget(null);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleUpdateRole = async (targetUser: any, newRole: string) => {
+    try {
+      await invokeAdminAction('update_role', targetUser.user_id, { role: newRole });
+      toast({ title: "Success", description: `Role updated to ${newRole}.` });
+      loadUsers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
