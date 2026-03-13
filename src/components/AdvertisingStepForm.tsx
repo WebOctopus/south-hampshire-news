@@ -477,10 +477,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             monthly_price: quotePayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
-            // Admin-created quote: include credentials in the email
+            // Admin-created quote: include credentials or login link in the email
             ...(isAdminCreating ? {
               is_admin_created: true,
-              generated_password: contactData.generatedPassword || contactData.password,
+              ...(isNewUser
+                ? { generated_password: contactData.generatedPassword || contactData.password }
+                : { is_existing_user: true }),
             } : {}),
           }
         });
