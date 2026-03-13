@@ -35,7 +35,7 @@ import EmailTemplatesManagement from '@/components/admin/EmailTemplatesManagemen
 import MediaLibraryManagement from '@/components/admin/MediaLibraryManagement';
 import { User } from '@supabase/supabase-js';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2, Trash2, KeyRound } from 'lucide-react';
+import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2, Trash2, KeyRound, UserPlus } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
