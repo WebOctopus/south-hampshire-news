@@ -247,7 +247,7 @@ ${isBooking
     ? "Thank you for booking with Discover Magazine! We've received your booking and here's a summary of what you've selected."
     : "Thank you for your interest in advertising with Discover Magazine! Your quote has been saved and you can access it anytime from your dashboard."}
 </p>
-${payload.is_admin_created && payload.generated_password ? buildLoginCredentialsHtml(payload.email, payload.generated_password) : ''}
+${payload.is_admin_created && payload.generated_password ? buildLoginCredentialsHtml(payload.email, payload.generated_password) : (payload.is_admin_created && payload.is_existing_user ? buildExistingUserLoginHtml() : '')}
 <div style="background-color:#f0fdf4;border-radius:8px;padding:20px;margin-bottom:25px;">
 <h2 style="color:#166534;font-size:18px;margin:0 0 12px;">Your ${isBooking ? "Booking" : "Quote"} Summary</h2>
 <table style="width:100%;border-collapse:collapse;">
