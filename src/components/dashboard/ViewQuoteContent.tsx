@@ -28,8 +28,10 @@ const getStatusLabel = (status: string) => {
 
 export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
   const { data: areas = [] } = useAreas();
+  const { data: adSizes = [] } = useAdSizes();
 
   const isBogof = quote.pricing_model === 'bogof';
+  const adSize = adSizes.find((s: any) => s.id === quote.ad_size_id);
   
   const paidAreas = areas.filter((a: any) => quote.bogof_paid_area_ids?.includes(a.id));
   const freeAreas = areas.filter((a: any) => quote.bogof_free_area_ids?.includes(a.id));
