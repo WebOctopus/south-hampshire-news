@@ -58,15 +58,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, user_id, password, role, send_email, user_email } = await req.json();
+    const body = await req.json();
+    const { action, user_id, password, role, send_email, user_email, ...extraFields } = body;
 
-    if (!action || !user_id) {
+    if (!action) {
       return new Response(
-        JSON.stringify({ error: "action and user_id are required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "action is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // create_user doesn't need user_id; all others do
+    if (action !== 'create_user' && !user_id) {
+      return new Response(
+        JSON.stringify({ error: "user_id is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
