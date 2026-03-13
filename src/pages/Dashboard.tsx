@@ -70,6 +70,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { data: adSizes } = useAdSizes();
 
   const [formData, setFormData] = useState({
     name: '',
