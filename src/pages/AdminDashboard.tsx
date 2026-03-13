@@ -815,6 +815,21 @@ const AdminDashboard = () => {
                       minLength={6}
                     />
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="send-password-email"
+                      checked={sendPasswordEmail}
+                      onCheckedChange={(checked) => setSendPasswordEmail(checked === true)}
+                    />
+                    <Label htmlFor="send-password-email" className="text-sm font-normal cursor-pointer">
+                      Send password to user via email
+                    </Label>
+                  </div>
+                  {sendPasswordEmail && (
+                    <p className="text-xs text-muted-foreground">
+                      An email will be sent to {userEmails[passwordTarget?.user_id] || 'the user'} with their new password.
+                    </p>
+                  )}
                   <div className="flex gap-2">
                     <Button 
                       onClick={handleSetPassword} 
