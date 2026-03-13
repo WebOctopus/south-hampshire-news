@@ -174,7 +174,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         0 // Don't apply agency discount to display - matches frontend calculator
       );
     }
-  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, leafletAreas, leafletDurations]);
+  }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, includeDesign, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, leafletAreas, leafletDurations]);
 
   const isFormValid = () => {
     // Payment option is required for all booking types
