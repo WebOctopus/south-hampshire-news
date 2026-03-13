@@ -748,7 +748,11 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                     <SelectValue placeholder="Choose ad size" />
                   </SelectTrigger>
                   <SelectContent>
-                    {adSizes?.map((size) => (
+                    {adSizes?.filter(size => {
+                      const availableFor = size.available_for as string[] | null;
+                      if (!availableFor || availableFor.length === 0) return true;
+                      return availableFor.includes(pricingModel === 'bogof' ? 'subscription' : 'fixed');
+                    }).map((size) => (
                       <SelectItem key={size.id} value={size.id}>
                         {size.name} - {size.dimensions}
                       </SelectItem>
