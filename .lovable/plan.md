@@ -1,30 +1,46 @@
 
 
-## Bug Fix: "Failed to save quote to database"
+## Fix: Booking card showing £1,080 instead of £90/month
 
 ### Root Cause
 
-Line 359 in `AdvertisingStepForm.tsx` builds `distribution_start_date` from `selectedMonths`, which contains month **names** like `"May"` or `"April"` (not `YYYY-MM` format). This produces invalid date strings like `"May-01"` or `"April-01"`, which Postgres rejects for its `date` column type.
+In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
 
-From the edge function logs, we can see:
-```
-selectedMonths: { "area-id": ["May"], "area-id-2": ["April"] }
-```
-
-The code does:
-```typescript
-Object.values(campaignData.selectedMonths || {})[0]?.[0] + "-01"
-// Results in: "May-01" — invalid date!
-```
+This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
 
 ### Fix
 
-**File: `src/components/AdvertisingStepForm.tsx`** (line 359)
+In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
 
-Change the `distribution_start_date` logic to handle month names gracefully:
-- If `selectedStartingIssue` is present and is in `YYYY-MM` format, use it (existing behavior, works fine)
-- If falling back to `selectedMonths`, and the value is a month name (not `YYYY-MM`), set it to `null` instead of producing an invalid date string
-- This matches how bookings handle the same field — the booking webhook logs show `distribution_start_date: null` works fine
+**Lines 46-53**: Replace the calculation logic with:
+```typescript
+const selectedPaymentOptionType = booking.selections?.payment_option_id;
 
-Single-line change. No database or edge function changes needed.
+// Use stored monthly_price for monthly option instead of recalculating
+const displayAmount = (() => {
+  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
+    return booking.monthly_price;
+  }
+  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
+  if (selectedOption && paymentOptions.length > 0) {
+    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
+    const designFee = booking.pricing_breakdown?.designFee || 0;
+    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
+  }
+  return booking.final_total;
+})();
+```
+
+**Line 240**: Update the monthly check to use the string type instead of the option object:
+```typescript
+{selectedPaymentOptionType === 'monthly' ? (
+```
+
+This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
 
