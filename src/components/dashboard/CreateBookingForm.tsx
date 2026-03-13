@@ -73,7 +73,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   const [selectedLeafletSize, setSelectedLeafletSize] = useState<string>('');
   
   // Load data
-  const { areas, adSizes, durations, subscriptionDurations, isLoading: pricingLoading } = usePricingData();
+  const { areas, adSizes, durations, subscriptionDurations, volumeDiscounts, isLoading: pricingLoading } = usePricingData();
   const { leafletAreas, leafletDurations, leafletSizes, isLoading: leafletLoading } = useLeafletData();
   const { data: paymentOptions = [] } = usePaymentOptions();
 
