@@ -797,26 +797,28 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
               </div>
             </FormSection>
 
-            {/* Section 5: Create Account */}
-            <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Dashboard">
-              <div>
-                <Label htmlFor="password">Password *</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="At least 6 characters"
-                  disabled={submitting}
-                  className="mt-1.5"
-                />
-                <p className="text-xs text-muted-foreground mt-2">
-                  We'll create your account automatically and sign you in. Access your saved quotes anytime.
-                </p>
-              </div>
-              
-            </FormSection>
+            {/* Section 5: Create Account - Hidden when admin creating on behalf */}
+            {!isAdminCreating && (
+              <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Dashboard">
+                <div>
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="At least 6 characters"
+                    disabled={submitting}
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    We'll create your account automatically and sign you in. Access your saved quotes anytime.
+                  </p>
+                </div>
+                
+              </FormSection>
+            )}
           </form>
         </CardContent>
       </Card>
