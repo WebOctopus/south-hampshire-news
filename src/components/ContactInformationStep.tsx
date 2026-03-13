@@ -321,7 +321,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   };
 
   const handleSaveQuote = useCallback(async () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.postcode || !formData.addressLine1) {
       toast({
         title: "Missing Information", 
         description: "Please fill in all required fields.",
@@ -330,7 +330,15 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-
+    // Only require password if not admin creating on behalf
+    if (!isAdminCreating && !formData.password) {
+      toast({
+        title: "Missing Information", 
+        description: "Please enter a password to create your account.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
@@ -341,7 +349,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (!isAdminCreating && formData.password.length < 6) {
       toast({
         title: "Password Too Short",
         description: "Password must be at least 6 characters long.", 
@@ -352,13 +360,20 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
     setSubmitting(true);
     try {
-      await onSaveQuote(formData);
+      const submitData = { ...formData };
+      if (isAdminCreating) {
+        const generatedPassword = crypto.randomUUID().slice(0, 12);
+        submitData.isAdminCreating = true;
+        submitData.generatedPassword = generatedPassword;
+        submitData.password = generatedPassword;
+      }
+      await onSaveQuote(submitData);
     } catch (error) {
       console.error('Error saving quote:', error);
     } finally {
       setSubmitting(false);
     }
-  }, [formData, onSaveQuote, toast]);
+  }, [formData, isAdminCreating, onSaveQuote, toast]);
 
   const handleBookNow = useCallback(async () => {
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
