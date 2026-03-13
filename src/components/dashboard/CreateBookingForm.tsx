@@ -836,7 +836,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             {(() => {
               const baseTotal = pricingBreakdown.finalTotal || 0;
               const circulation = pricingBreakdown.totalCirculation || 0;
-              const designFee = includeDesign && 'designFee' in pricingBreakdown ? (pricingBreakdown as any).designFee || 0 : 0;
+              const designFee = (pricingBreakdown as any).designFee || 0;
               
               if (!baseTotal) return null;
 
