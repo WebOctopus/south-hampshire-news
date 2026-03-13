@@ -343,6 +343,7 @@ Deno.serve(async (req) => {
         const adminResult = await resend.emails.send({
           from: "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>",
           to: adminEmail.split(",").map((e: string) => e.trim()),
+          cc: ["discover@discovermagazines.co.uk"],
           subject: adminSubject,
           html: adminHtml,
         });
