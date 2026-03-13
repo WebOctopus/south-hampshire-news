@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (!roleCheck) {
+      console.error("Admin role check failed for user:", callerId);
       return new Response(JSON.stringify({ error: "Forbidden: admin only" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
