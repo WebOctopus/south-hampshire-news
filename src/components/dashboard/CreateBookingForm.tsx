@@ -131,7 +131,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
       return calculateLeafletingPrice(selectedAreas, leafletAreas || [], multiplier, duration.issues);
     } else {
       const areasToUse = pricingModel === 'bogof' 
-        ? [...bogofPaidAreas, ...bogofFreeAreas]
+        ? bogofPaidAreas
         : selectedAreas;
       
       if (!areasToUse.length || !selectedAdSize || !selectedDuration) return null;
