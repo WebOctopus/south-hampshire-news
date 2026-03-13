@@ -303,7 +303,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             return;
           }
         } else {
-          userId = createResult?.user?.id;
+          userId = createResult?.user_id || createResult?.user?.id;
         }
 
         if (!userId) {
