@@ -51,6 +51,8 @@ interface FormData {
   password: string;
   voucherCode?: string;
   legalDocumentsAccepted?: boolean;
+  isAdminCreating?: boolean;
+  generatedPassword?: string;
 }
 
 
