@@ -490,8 +490,10 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       if (isAdminCreating) {
         toast({
-          title: "Quote Created for Customer!",
-          description: `Quote saved and credentials emailed to ${contactData.email}. The customer can log in to view their quote.`,
+          title: isNewUser ? "Quote Created for Customer!" : "Quote Created for Existing Customer!",
+          description: isNewUser
+            ? `Quote saved and credentials emailed to ${contactData.email}.`
+            : `Quote saved. A login link has been sent to ${contactData.email}. They can use "Forgot Password" if needed.`,
         });
         // Admin stays on current page or goes to admin dashboard
         setTimeout(() => {
