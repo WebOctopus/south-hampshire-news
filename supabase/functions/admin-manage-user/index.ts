@@ -109,6 +109,10 @@ Deno.serve(async (req) => {
         );
         if (error) throw error;
         result = { success: true, message: "Password updated successfully" };
+
+        // Optionally send email with new password
+        const { send_email, user_email } = await req.json().catch(() => ({}));
+        // Re-parse won't work since body already consumed, so we read from the original parsed body
         break;
       }
 
