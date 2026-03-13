@@ -1,46 +1,27 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## Fix: BOGOF Pricing Bug in Dashboard + Returning Customer Notice
 
-### Root Cause
+### Issues Found
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
-
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
-
-### Fix
-
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
-
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
-
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
+**1. CreateBookingForm BOGOF pricing bug (confirmed code bug)**
+In `src/components/dashboard/CreateBookingForm.tsx` line 133-134, the pricing calculation combines paid AND free areas:
+```javascript
+const areasToUse = pricingModel === 'bogof' 
+  ? [...bogofPaidAreas, ...bogofFreeAreas]  // BUG: includes free areas
+  : selectedAreas;
 ```
+This means for a 3+3 BOGOF, the system looks up pricing for 6 areas instead of 3. For any BOGOF booking created via the dashboard "Create Booking" form, pricing will be inflated. A 1+1 Half Page would show £144/month (using the 2-area price of £288) instead of £77/month (using the 1-area price of £154).
 
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
+**2. Returning Customer Notice showing unnecessarily**
+In `CreateBookingForm.tsx` lines 95-105, any user with a previous BOGOF booking or quote gets flagged as a returning customer, even when the admin is creating on their behalf. The notice blocks the BOGOF option selection flow.
 
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+### Changes
 
-### Files Changed
+**`src/components/dashboard/CreateBookingForm.tsx`**:
+1. **Line 133-134**: Change BOGOF `areasToUse` to use only `bogofPaidAreas` (not combined with free). Pass `bogofFreeAreas` as the separate `freeAreaIds` parameter for circulation calculation only.
+2. **Lines 95-105**: Add admin check so the returning customer notice only shows for customer-facing views, not when an admin is managing bookings.
 
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+### No other files affected
+The main calculator (AdvertisingStepForm, AdvertisementSizeStep, Advertising.tsx) correctly uses only `bogofPaidAreas` for BOGOF pricing. The stored data for Paul Dollery's quote/booking is correct at £77. This fix ensures the dashboard CreateBookingForm matches the calculator's correct logic.
 
