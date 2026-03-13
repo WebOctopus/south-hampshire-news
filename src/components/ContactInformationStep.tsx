@@ -6,9 +6,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Info, AlertCircle, Phone, Calendar, Shield, Clock, CheckCircle2, Mail, MapPin, Lock, User, Building2, Sparkles } from 'lucide-react';
+import { Loader2, Info, AlertCircle, Phone, Calendar, Shield, Clock, CheckCircle2, Mail, MapPin, Lock, User, Building2, Sparkles, UserPlus } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,7 @@ import { Search } from 'lucide-react';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useBogofEligibility } from '@/hooks/useBogofEligibility';
+import { useAuth } from '@/contexts/AuthContext';
 
 
 interface ContactInformationStepProps {
@@ -49,6 +51,8 @@ interface FormData {
   password: string;
   voucherCode?: string;
   legalDocumentsAccepted?: boolean;
+  isAdminCreating?: boolean;
+  generatedPassword?: string;
 }
 
 
@@ -112,7 +116,9 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [isAdminCreating, setIsAdminCreating] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     businessType: 'limited_company',
     firstName: "",
@@ -315,7 +321,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
   };
 
   const handleSaveQuote = useCallback(async () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.postcode || !formData.addressLine1) {
       toast({
         title: "Missing Information", 
         description: "Please fill in all required fields.",
@@ -324,7 +330,15 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-
+    // Only require password if not admin creating on behalf
+    if (!isAdminCreating && !formData.password) {
+      toast({
+        title: "Missing Information", 
+        description: "Please enter a password to create your account.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
@@ -335,7 +349,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (!isAdminCreating && formData.password.length < 6) {
       toast({
         title: "Password Too Short",
         description: "Password must be at least 6 characters long.", 
@@ -346,16 +360,23 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
     setSubmitting(true);
     try {
-      await onSaveQuote(formData);
+      const submitData = { ...formData };
+      if (isAdminCreating) {
+        const generatedPassword = crypto.randomUUID().slice(0, 12);
+        submitData.isAdminCreating = true;
+        submitData.generatedPassword = generatedPassword;
+        submitData.password = generatedPassword;
+      }
+      await onSaveQuote(submitData);
     } catch (error) {
       console.error('Error saving quote:', error);
     } finally {
       setSubmitting(false);
     }
-  }, [formData, onSaveQuote, toast]);
+  }, [formData, isAdminCreating, onSaveQuote, toast]);
 
   const handleBookNow = useCallback(async () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.postcode || !formData.addressLine1) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.postcode || !formData.addressLine1) {
       toast({
         title: "Missing Information", 
         description: "Please fill in all required fields.",
@@ -364,7 +385,14 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-
+    if (!isAdminCreating && !formData.password) {
+      toast({
+        title: "Missing Information", 
+        description: "Please enter a password to create your account.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (formData.businessType !== 'sole_trader' && !formData.companyName) {
       toast({
@@ -375,7 +403,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (!isAdminCreating && formData.password.length < 6) {
       toast({
         title: "Password Too Short",
         description: "Password must be at least 6 characters long.", 
@@ -386,17 +414,24 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 
     setSubmitting(true);
     try {
+      const submitData = { ...formData };
+      if (isAdminCreating) {
+        const generatedPassword = crypto.randomUUID().slice(0, 12);
+        submitData.isAdminCreating = true;
+        submitData.generatedPassword = generatedPassword;
+        submitData.password = generatedPassword;
+      }
       if (onBookNow) {
-        await onBookNow(formData);
+        await onBookNow(submitData);
       } else {
-        await onSaveQuote(formData);
+        await onSaveQuote(submitData);
       }
     } catch (error) {
       console.error('Error booking:', error);
     } finally {
       setSubmitting(false);
     }
-  }, [formData, onBookNow, onSaveQuote, toast]);
+  }, [formData, isAdminCreating, onBookNow, onSaveQuote, toast]);
 
   React.useEffect(() => {
     (window as any).handleContactFormSave = handleSaveQuote;
@@ -455,6 +490,37 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       <Card className="border-slate-200/80 shadow-lg">
         <CardContent className="p-6 lg:p-8">
           <form className="space-y-6">
+            {/* Admin "On Behalf Of" Toggle */}
+            {isAdmin && (
+              <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center">
+                      <UserPlus className="h-5 w-5 text-amber-700" />
+                    </div>
+                    <div>
+                      <Label htmlFor="admin-on-behalf" className="text-amber-900 font-semibold text-base cursor-pointer">
+                        Create on behalf of a customer
+                      </Label>
+                      <p className="text-xs text-amber-700 mt-0.5">Admin mode — account & credentials created automatically</p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="admin-on-behalf"
+                    checked={isAdminCreating}
+                    onCheckedChange={setIsAdminCreating}
+                  />
+                </div>
+                {isAdminCreating && (
+                  <Alert className="mt-3 bg-amber-100/50 border-amber-200">
+                    <Info className="h-4 w-4 text-amber-700" />
+                    <AlertDescription className="text-amber-800 text-sm">
+                      A login will be created automatically and credentials emailed to the customer with their quote.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
             {/* Section 1: Business Type */}
             <FormSection icon={<Building2 className="h-5 w-5" />} title="Business Type">
               <RadioGroup
@@ -731,26 +797,28 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
               </div>
             </FormSection>
 
-            {/* Section 5: Create Account */}
-            <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Dashboard">
-              <div>
-                <Label htmlFor="password">Password *</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="At least 6 characters"
-                  disabled={submitting}
-                  className="mt-1.5"
-                />
-                <p className="text-xs text-muted-foreground mt-2">
-                  We'll create your account automatically and sign you in. Access your saved quotes anytime.
-                </p>
-              </div>
-              
-            </FormSection>
+            {/* Section 5: Create Account - Hidden when admin creating on behalf */}
+            {!isAdminCreating && (
+              <FormSection icon={<Lock className="h-5 w-5" />} title="Create Your Dashboard">
+                <div>
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="At least 6 characters"
+                    disabled={submitting}
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    We'll create your account automatically and sign you in. Access your saved quotes anytime.
+                  </p>
+                </div>
+                
+              </FormSection>
+            )}
           </form>
         </CardContent>
       </Card>

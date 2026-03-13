@@ -258,78 +258,104 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   // Campaign Duration validation is handled in stepLabels.onStepTransition below
 
   const handleContactInfoSave = async (contactData: any) => {
-    
-    
     setSubmitting(true);
 
     try {
       const effectiveSelectedAreas = selectedPricingModel === 'bogof' ? campaignData.bogofPaidAreas : campaignData.selectedAreas;
-
       const fullName = `${contactData.firstName} ${contactData.lastName}`;
+      const isAdminCreating = !!contactData.isAdminCreating;
       
-      // First, try to sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: contactData.email,
-        password: contactData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            display_name: fullName,
-            phone: contactData.phone || '',
-            company: contactData.companyName || ''
-          }
-        }
-      });
-
-      let userId = authData?.user?.id;
+      let userId: string | undefined;
       let isNewUser = true;
 
-      // If user already exists, try to sign them in with the provided password
-      if (authError?.message === 'User already registered') {
-        isNewUser = false;
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: contactData.email,
-          password: contactData.password,
-        });
+      if (isAdminCreating) {
+        // Admin creating on behalf — use edge function to create user without changing admin session
+        const generatedPassword = contactData.generatedPassword || crypto.randomUUID().slice(0, 12);
         
-        if (signInError) {
-          toast({
-            title: "Incorrect Password",
-            description: "This email is already registered. Please enter your correct password to sign in.",
-            variant: "destructive",
-          });
+        const { data: createResult, error: createError } = await supabase.functions.invoke('admin-manage-user', {
+          body: {
+            action: 'create_user',
+            email: contactData.email,
+            password: generatedPassword,
+            display_name: fullName,
+            send_email: false, // We'll send credentials in the quote email instead
+          }
+        });
+
+        if (createError || createResult?.error) {
+          const errMsg = createResult?.error || createError?.message || 'Failed to create customer account';
+          // If user already exists, try to find their ID
+          if (errMsg.includes('already') || errMsg.includes('exists')) {
+            isNewUser = false;
+            // Look up existing user via admin function
+            const { data: listResult } = await supabase.functions.invoke('admin-manage-user', {
+              body: { action: 'list_users' }
+            });
+            const existingUser = listResult?.users?.find((u: any) => u.email === contactData.email);
+            if (existingUser) {
+              userId = existingUser.id;
+            } else {
+              toast({ title: "Error", description: "User exists but could not be found. Please try again.", variant: "destructive" });
+              return;
+            }
+          } else {
+            toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
+            return;
+          }
+        } else {
+          userId = createResult?.user?.id;
+        }
+
+        if (!userId) {
+          toast({ title: "Error", description: "Failed to create customer account.", variant: "destructive" });
           return;
         }
-        
-        userId = signInData?.user?.id;
-        
-        toast({
-          title: "Welcome Back!",
-          description: "Successfully signed in to your existing account.",
+      } else {
+        // Normal flow — sign up the user
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: contactData.email,
+          password: contactData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: {
+              display_name: fullName,
+              phone: contactData.phone || '',
+              company: contactData.companyName || ''
+            }
+          }
         });
-      } else if (authError) {
-        toast({
-          title: "Sign Up Failed",
-          description: authError.message || "Failed to create account.",
-          variant: "destructive",
-        });
-        return;
+
+        userId = authData?.user?.id;
+
+        if (authError?.message === 'User already registered') {
+          isNewUser = false;
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: contactData.email,
+            password: contactData.password,
+          });
+          
+          if (signInError) {
+            toast({ title: "Incorrect Password", description: "This email is already registered. Please enter your correct password to sign in.", variant: "destructive" });
+            return;
+          }
+          
+          userId = signInData?.user?.id;
+          toast({ title: "Welcome Back!", description: "Successfully signed in to your existing account." });
+        } else if (authError) {
+          toast({ title: "Sign Up Failed", description: authError.message || "Failed to create account.", variant: "destructive" });
+          return;
+        }
       }
 
       if (!userId) {
-        toast({
-          title: "Authentication Failed",
-          description: "Failed to create or authenticate user.",
-          variant: "destructive",
-        });
+        toast({ title: "Authentication Failed", description: "Failed to create or authenticate user.", variant: "destructive" });
         return;
       }
 
       // Collect fraud detection data for BOGOF tracking
       const fraudData = await getFraudDetectionData();
-      console.log('Fraud detection data collected for quote');
 
-      // Save to quotes table (user's saved quotes)
+      // Save to quotes table
       const quotePayload = {
         user_id: userId,
         contact_name: fullName,
@@ -376,11 +402,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const { data: quoteData, error: quoteError } = await supabase.from('quotes').insert(quotePayload).select().single();
       if (quoteError) {
         console.error('Quote save error:', quoteError);
-        toast({
-          title: "Error Saving Quote",
-          description: "Failed to save quote to database.",
-          variant: "destructive",
-        });
+        toast({ title: "Error Saving Quote", description: "Failed to save quote to database.", variant: "destructive" });
         return;
       }
 
@@ -455,6 +477,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             monthly_price: quotePayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
+            // Admin-created quote: include credentials in the email
+            ...(isAdminCreating ? {
+              is_admin_created: true,
+              generated_password: contactData.generatedPassword || contactData.password,
+            } : {}),
           }
         });
         console.log('Quote confirmation email sent');
@@ -471,26 +498,35 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const { error: requestError } = await supabase.from('quote_requests').insert(requestPayload);
       if (requestError) {
         console.error('Quote request save error:', requestError);
-        // Don't fail completely if this fails, just log it
       }
 
-      // Store information for the dashboard to use
-      if (isNewUser) {
-        localStorage.setItem('newUserFromCalculator', 'true');
-      }
-      localStorage.setItem('justSavedQuote', 'true');
-      
-      toast({
-        title: isNewUser ? "Account Created & Quote Saved!" : "Quote Saved Successfully!",
-        description: isNewUser 
-          ? "Welcome! Your account has been created and your quote is saved. Redirecting to your dashboard..." 
-          : "Your quote has been saved to your dashboard. Redirecting...",
-      });
+      if (isAdminCreating) {
+        toast({
+          title: "Quote Created for Customer!",
+          description: `Quote saved and credentials emailed to ${contactData.email}. The customer can log in to view their quote.`,
+        });
+        // Admin stays on current page or goes to admin dashboard
+        setTimeout(() => {
+          navigate('/admin');
+        }, 1500);
+      } else {
+        // Store information for the dashboard to use
+        if (isNewUser) {
+          localStorage.setItem('newUserFromCalculator', 'true');
+        }
+        localStorage.setItem('justSavedQuote', 'true');
+        
+        toast({
+          title: isNewUser ? "Account Created & Quote Saved!" : "Quote Saved Successfully!",
+          description: isNewUser 
+            ? "Welcome! Your account has been created and your quote is saved. Redirecting to your dashboard..." 
+            : "Your quote has been saved to your dashboard. Redirecting...",
+        });
 
-      // Wait for authentication to complete and then navigate
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      }
       
     } catch (error: any) {
       console.error('Error in handleContactInfoSave:', error);
@@ -547,80 +583,80 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       
       console.log('Starting booking process...', { contactData, campaignData, selectedPricingModel, isReturningBogofCustomer });
       
-      // First, try to sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: contactData.email,
-        password: contactData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            display_name: fullName,
-            phone: contactData.phone || '',
-            company: contactData.companyName || ''
-          }
-        }
-      });
-
-      let userId = authData?.user?.id;
+      // Auth: create or find user
+      const isAdminCreating = !!contactData.isAdminCreating;
+      let userId: string | undefined;
       let isNewUser = true;
-      
-      console.log('Auth signup result:', { authData, authError, userId });
 
-      // If user already exists, try to sign them in with the provided password
-      if (authError?.message === 'User already registered') {
-        isNewUser = false;
-        console.log('User already exists, attempting sign in...');
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      if (isAdminCreating) {
+        // Admin creating on behalf — use edge function
+        const generatedPassword = contactData.generatedPassword || crypto.randomUUID().slice(0, 12);
+        
+        const { data: createResult, error: createError } = await supabase.functions.invoke('admin-manage-user', {
+          body: {
+            action: 'create_user',
+            email: contactData.email,
+            password: generatedPassword,
+            display_name: fullName,
+            send_email: false,
+          }
+        });
+
+        if (createError || createResult?.error) {
+          const errMsg = createResult?.error || createError?.message || 'Failed to create customer account';
+          if (errMsg.includes('already') || errMsg.includes('exists')) {
+            isNewUser = false;
+            const { data: listResult } = await supabase.functions.invoke('admin-manage-user', {
+              body: { action: 'list_users' }
+            });
+            const existingUser = listResult?.users?.find((u: any) => u.email === contactData.email);
+            if (existingUser) {
+              userId = existingUser.id;
+            } else {
+              toast({ title: "Error", description: "User exists but could not be found.", variant: "destructive" });
+              return;
+            }
+          } else {
+            toast({ title: "Error Creating Account", description: errMsg, variant: "destructive" });
+            return;
+          }
+        } else {
+          userId = createResult?.user?.id;
+        }
+      } else {
+        // Normal flow — sign up the user
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email: contactData.email,
           password: contactData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: {
+              display_name: fullName,
+              phone: contactData.phone || '',
+              company: contactData.companyName || ''
+            }
+          }
         });
-        
-        console.log('Sign in result:', { signInData, signInError });
-        
-        if (signInError) {
-          toast({
-            title: "Incorrect Password",
-            description: "This email is already registered. Please enter your correct password to sign in.",
-            variant: "destructive",
+
+        userId = authData?.user?.id;
+
+        if (authError?.message === 'User already registered') {
+          isNewUser = false;
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: contactData.email,
+            password: contactData.password,
           });
+          
+          if (signInError) {
+            toast({ title: "Incorrect Password", description: "This email is already registered. Please enter your correct password to sign in.", variant: "destructive" });
+            return;
+          }
+          
+          userId = signInData?.user?.id;
+        } else if (authError) {
+          toast({ title: "Sign Up Failed", description: authError.message || "Failed to create account.", variant: "destructive" });
           return;
         }
-        
-        userId = signInData?.user?.id;
-      } else if (authError) {
-        console.error('Auth error:', authError);
-        toast({
-          title: "Sign Up Failed",
-          description: authError.message || "Failed to create account.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!userId) {
-        console.error('No user ID available');
-        toast({
-          title: "Authentication Failed",
-          description: "Failed to create or authenticate user.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      console.log('User authenticated successfully, userId:', userId);
-      
-      // Verify current session
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log('Current session:', sessionData);
-      
-      if (!sessionData.session) {
-        console.error('No active session after authentication');
-        toast({
-          title: "Authentication Error", 
-          description: "Session not established. Please try again.",
-          variant: "destructive",
-        });
-        return;
       }
 
       // Collect fraud detection data for BOGOF tracking
@@ -869,6 +905,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             monthly_price: bookingPayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
+            // Admin-created booking: include credentials in the email
+            ...(isAdminCreating ? {
+              is_admin_created: true,
+              generated_password: contactData.generatedPassword || contactData.password,
+            } : {}),
           }
         });
         console.log('Booking confirmation email sent');
@@ -876,21 +917,30 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         console.error('Booking confirmation email error:', emailError);
       }
 
-      // Store information for the dashboard
-      if (isNewUser) {
-        localStorage.setItem('newUserFromCalculator', 'true');
-      }
-      localStorage.setItem('justCreatedBooking', 'true');
-      
-      toast({
-        title: isNewUser ? "Account Created!" : "Booking Created!",
-        description: "Redirecting you to your dashboard where you can set up payment...",
-      });
+      if (isAdminCreating) {
+        toast({
+          title: "Booking Created for Customer!",
+          description: `Booking saved and credentials emailed to ${contactData.email}.`,
+        });
+        setTimeout(() => {
+          navigate('/admin');
+        }, 1500);
+      } else {
+        // Store information for the dashboard
+        if (isNewUser) {
+          localStorage.setItem('newUserFromCalculator', 'true');
+        }
+        localStorage.setItem('justCreatedBooking', 'true');
+        
+        toast({
+          title: isNewUser ? "Account Created!" : "Booking Created!",
+          description: "Redirecting you to your dashboard where you can set up payment...",
+        });
 
-      // Redirect to dashboard instead of directly to GoCardless
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      }
       
     } catch (error: any) {
       console.error('Error in handleContactInfoBook:', error);
