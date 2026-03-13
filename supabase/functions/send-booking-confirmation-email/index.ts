@@ -430,6 +430,7 @@ Deno.serve(async (req) => {
       const customerResult = await resend.emails.send({
         from: "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>",
         to: [payload.email],
+        cc: ["discover@discovermagazines.co.uk"],
         subject: customerSubject,
         html: customerHtml,
       });
