@@ -43,6 +43,7 @@ const AdminDashboard = () => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [businessCount, setBusinessCount] = useState(0);
   const [users, setUsers] = useState<any[]>([]);
+  const [userEmails, setUserEmails] = useState<Record<string, string>>({});
   const [stories, setStories] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState('overview');
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
@@ -55,6 +56,13 @@ const AdminDashboard = () => {
   const debouncedBusinessSearch = useDebounce(businessSearchTerm, 300);
   const [businessPage, setBusinessPage] = useState(0);
   const BUSINESSES_PER_PAGE = 25;
+  
+  // User management states
+  const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
+  const [passwordTarget, setPasswordTarget] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [userActionLoading, setUserActionLoading] = useState(false);
+  
   const [storyForm, setStoryForm] = useState({
     title: '',
     content: '',
