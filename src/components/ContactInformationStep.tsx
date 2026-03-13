@@ -490,6 +490,37 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
       <Card className="border-slate-200/80 shadow-lg">
         <CardContent className="p-6 lg:p-8">
           <form className="space-y-6">
+            {/* Admin "On Behalf Of" Toggle */}
+            {isAdmin && (
+              <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center">
+                      <UserPlus className="h-5 w-5 text-amber-700" />
+                    </div>
+                    <div>
+                      <Label htmlFor="admin-on-behalf" className="text-amber-900 font-semibold text-base cursor-pointer">
+                        Create on behalf of a customer
+                      </Label>
+                      <p className="text-xs text-amber-700 mt-0.5">Admin mode — account & credentials created automatically</p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="admin-on-behalf"
+                    checked={isAdminCreating}
+                    onCheckedChange={setIsAdminCreating}
+                  />
+                </div>
+                {isAdminCreating && (
+                  <Alert className="mt-3 bg-amber-100/50 border-amber-200">
+                    <Info className="h-4 w-4 text-amber-700" />
+                    <AlertDescription className="text-amber-800 text-sm">
+                      A login will be created automatically and credentials emailed to the customer with their quote.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            )}
             {/* Section 1: Business Type */}
             <FormSection icon={<Building2 className="h-5 w-5" />} title="Business Type">
               <RadioGroup
