@@ -399,10 +399,12 @@ Deno.serve(async (req) => {
           // Shared
           total_cost: formatCurrency(payload.final_total),
           dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
-          // Admin-created credentials
+          // Admin-created credentials or login link
           login_credentials: payload.is_admin_created && payload.generated_password
             ? buildLoginCredentialsHtml(payload.email, payload.generated_password)
-            : "",
+            : (payload.is_admin_created && payload.is_existing_user
+              ? buildExistingUserLoginHtml()
+              : ""),
           login_email: payload.email,
           login_password: payload.is_admin_created && payload.generated_password ? payload.generated_password : "",
           login_url: "https://peacockpixelmedia.co.uk/auth",
@@ -412,6 +414,9 @@ Deno.serve(async (req) => {
         // If admin-created and template doesn't have login_credentials placeholder, append it
         if (payload.is_admin_created && payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           templatedHtml = templatedHtml.replace('</body>', buildLoginCredentialsHtml(payload.email, payload.generated_password) + '</body>');
+        }
+        if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
+          templatedHtml = templatedHtml.replace('</body>', buildExistingUserLoginHtml() + '</body>');
         }
         customerHtml = templatedHtml;
       } else {
