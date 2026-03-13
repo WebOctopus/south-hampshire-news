@@ -116,7 +116,9 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [isAdminCreating, setIsAdminCreating] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     businessType: 'limited_company',
     firstName: "",
