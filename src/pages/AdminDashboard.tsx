@@ -276,6 +276,35 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (!createUserForm.email || !createUserForm.password) return;
+    setUserActionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-manage-user', {
+        body: {
+          action: 'create_user',
+          user_id: 'new',
+          email: createUserForm.email,
+          password: createUserForm.password,
+          display_name: createUserForm.displayName || undefined,
+          send_email: sendCreateEmail,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const emailMsg = sendCreateEmail ? ` Credentials sent to ${createUserForm.email}.` : '';
+      toast({ title: "Success", description: `User created successfully.${emailMsg}` });
+      setIsCreateUserOpen(false);
+      setCreateUserForm({ email: '', password: '', displayName: '' });
+      setSendCreateEmail(false);
+      loadUsers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setUserActionLoading(false);
+    }
+  };
+
   const loadStories = async () => {
     const { data } = await supabase
       .from('stories')
