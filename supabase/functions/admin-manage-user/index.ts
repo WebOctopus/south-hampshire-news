@@ -29,17 +29,16 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } =
-      await anonClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user: callerUser }, error: userError } = await anonClient.auth.getUser();
+    if (userError || !callerUser) {
+      console.error("Auth verification failed:", userError?.message);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const callerId = claimsData.claims.sub;
+    const callerId = callerUser.id;
 
     // Use service role client to check admin role
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
