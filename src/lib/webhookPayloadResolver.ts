@@ -251,6 +251,11 @@ export function buildCrmWebhookPayload(raw: RawWebhookData, lookups: CrmLookups)
     if (freeAreas.length > 0) payload.bogof_free_areas = freeAreas;
   }
 
+  // Add pipeline tag for quotes only — bookings remain untouched
+  if (raw.record_type === 'quote') {
+    payload.pipeline_tag = 'saved_quote';
+  }
+
   // Include design fee if present
   if (raw.pricing_breakdown?.designFee) {
     payload.design_fee = raw.pricing_breakdown.designFee;
