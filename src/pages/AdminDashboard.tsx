@@ -752,8 +752,9 @@ const AdminDashboard = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
-                                      setPasswordTarget(u);
+                              setPasswordTarget(u);
                                       setNewPassword('');
+                                      setSendPasswordEmail(false);
                                       setIsSetPasswordOpen(true);
                                     }}
                                   >
