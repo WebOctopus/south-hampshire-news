@@ -93,9 +93,22 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     loadProfile();
   }, [user.id]);
 
-  // Check if user has previous BOGOF bookings
+  // Check if user has previous BOGOF bookings and if user is admin
   useEffect(() => {
     const checkBogofHistory = async () => {
+      // Check if user is admin - admins skip the returning customer notice
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .limit(1);
+      
+      if (roleData && roleData.length > 0) {
+        setIsReturningBogofCustomer(false);
+        return;
+      }
+
       const { data } = await supabase
         .from('bookings')
         .select('id')
