@@ -386,9 +386,21 @@ Deno.serve(async (req) => {
           // Shared
           total_cost: formatCurrency(payload.final_total),
           dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
+          // Admin-created credentials
+          login_credentials: payload.is_admin_created && payload.generated_password
+            ? buildLoginCredentialsHtml(payload.email, payload.generated_password)
+            : "",
+          login_email: payload.email,
+          login_password: payload.is_admin_created && payload.generated_password ? payload.generated_password : "",
+          login_url: "https://peacockpixelmedia.co.uk/auth",
         };
         customerSubject = applyTemplate(customerTemplate.subject, vars);
-        customerHtml = applyTemplate(customerTemplate.html_body, vars);
+        let templatedHtml = applyTemplate(customerTemplate.html_body, vars);
+        // If admin-created and template doesn't have login_credentials placeholder, append it
+        if (payload.is_admin_created && payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
+          templatedHtml = templatedHtml.replace('</body>', buildLoginCredentialsHtml(payload.email, payload.generated_password) + '</body>');
+        }
+        customerHtml = templatedHtml;
       } else {
         customerSubject = payload.record_type === "booking"
           ? "Your Discover Magazine Booking Confirmation"
