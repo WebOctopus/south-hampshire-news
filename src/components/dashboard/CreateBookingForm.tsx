@@ -46,9 +46,10 @@ interface CreateBookingFormProps {
   user: User;
   onBookingCreated?: () => void;
   onQuoteSaved?: () => void;
+  isAdmin?: boolean;
 }
 
-export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved }: CreateBookingFormProps) {
+export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved, isAdmin = false }: CreateBookingFormProps) {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   
@@ -92,9 +93,22 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     loadProfile();
   }, [user.id]);
 
-  // Check if user has previous BOGOF bookings
+  // Check if user has previous BOGOF bookings and if user is admin
   useEffect(() => {
     const checkBogofHistory = async () => {
+      // Check if user is admin - admins skip the returning customer notice
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .limit(1);
+      
+      if (roleData && roleData.length > 0) {
+        setIsReturningBogofCustomer(false);
+        return;
+      }
+
       const { data } = await supabase
         .from('bookings')
         .select('id')
@@ -131,7 +145,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
       return calculateLeafletingPrice(selectedAreas, leafletAreas || [], multiplier, duration.issues);
     } else {
       const areasToUse = pricingModel === 'bogof' 
-        ? [...bogofPaidAreas, ...bogofFreeAreas]
+        ? bogofPaidAreas
         : selectedAreas;
       
       if (!areasToUse.length || !selectedAdSize || !selectedDuration) return null;
@@ -529,7 +543,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
           </div>
 
           {/* Returning BOGOF Customer Notice */}
-          {pricingModel === 'bogof' && isReturningBogofCustomer && (
+          {pricingModel === 'bogof' && isReturningBogofCustomer && !isAdmin && (
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <Phone className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-sm">
