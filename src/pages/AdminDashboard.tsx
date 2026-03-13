@@ -243,10 +243,17 @@ const AdminDashboard = () => {
   const handleSetPassword = async () => {
     if (!passwordTarget || !newPassword) return;
     try {
-      await invokeAdminAction('set_password', passwordTarget.user_id, { password: newPassword });
-      toast({ title: "Success", description: "Password updated successfully." });
+      const targetEmail = userEmails[passwordTarget.user_id];
+      await invokeAdminAction('set_password', passwordTarget.user_id, { 
+        password: newPassword,
+        send_email: sendPasswordEmail,
+        user_email: targetEmail
+      });
+      const emailMsg = sendPasswordEmail && targetEmail ? ` Email sent to ${targetEmail}.` : '';
+      toast({ title: "Success", description: `Password updated successfully.${emailMsg}` });
       setIsSetPasswordOpen(false);
       setNewPassword('');
+      setSendPasswordEmail(false);
       setPasswordTarget(null);
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
