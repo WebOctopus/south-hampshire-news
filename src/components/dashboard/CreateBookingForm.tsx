@@ -133,6 +133,32 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     setSelectedLeafletSize('');
   }, [pricingModel]);
 
+  // Auto-select first available duration when pricing model changes (mirrors Advertising.tsx)
+  useEffect(() => {
+    const relevantDurations = pricingModel === 'leafleting' 
+      ? leafletDurations 
+      : pricingModel === 'bogof' ? subscriptionDurations : durations;
+    
+    if (relevantDurations && relevantDurations.length > 0 && !selectedDuration && 
+        (pricingModel !== 'leafleting' || !selectedLeafletDuration)) {
+      const target = pricingModel === 'leafleting' ? 'leaflet' : 'ad';
+      if (target === 'leaflet') {
+        const defaultDuration = (relevantDurations as any[]).find(d => d.is_default) || relevantDurations[0];
+        if (defaultDuration) setSelectedLeafletDuration(defaultDuration.id);
+      } else {
+        const defaultDuration = (relevantDurations as any[]).find(d => d.is_default) || relevantDurations[0];
+        if (defaultDuration) setSelectedDuration(defaultDuration.id);
+      }
+    }
+  }, [pricingModel, durations, subscriptionDurations, leafletDurations]);
+
+  // Track design fee and integrate into pricing (mirrors AdvertisingStepForm)
+  const designFeeAmount = useMemo(() => {
+    if (!includeDesign || !selectedAdSize) return 0;
+    const size = adSizes?.find(s => s.id === selectedAdSize);
+    return (size as any)?.design_fee || 0;
+  }, [includeDesign, selectedAdSize, adSizes]);
+
   // Calculate pricing based on selections
   const pricingBreakdown = useMemo(() => {
     if (pricingModel === 'leafleting') {
