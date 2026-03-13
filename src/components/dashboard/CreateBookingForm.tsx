@@ -203,19 +203,19 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   }, [pricingModel, selectedAreas, bogofPaidAreas, bogofFreeAreas, selectedAdSize, selectedDuration, selectedLeafletDuration, areas, adSizes, durations, subscriptionDurations, volumeDiscounts, leafletAreas, leafletDurations]);
 
   // Integrate design fee into pricingBreakdown (mirrors AdvertisingStepForm lines 148-198)
-  const pricingBreakdownWithDesign = useMemo(() => {
-    if (!pricingBreakdown) return null;
+  const pricingBreakdown = useMemo(() => {
+    if (!pricingBreakdownRaw) return null;
     if (designFeeAmount > 0 && includeDesign) {
-      const baseWithoutDesign = pricingBreakdown.finalTotal;
+      const baseWithoutDesign = pricingBreakdownRaw.finalTotal;
       return {
-        ...pricingBreakdown,
+        ...pricingBreakdownRaw,
         designFee: designFeeAmount,
         finalTotalBeforeDesign: baseWithoutDesign,
         finalTotal: baseWithoutDesign + designFeeAmount,
       };
     }
-    return { ...pricingBreakdown, designFee: 0 };
-  }, [pricingBreakdown, designFeeAmount, includeDesign]);
+    return { ...pricingBreakdownRaw, designFee: 0 };
+  }, [pricingBreakdownRaw, designFeeAmount, includeDesign]);
 
   const isFormValid = () => {
     // Payment option is required for all booking types
