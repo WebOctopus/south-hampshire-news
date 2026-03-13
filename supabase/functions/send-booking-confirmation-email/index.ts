@@ -34,6 +34,7 @@ interface EmailPayload {
   selections?: any;
   is_admin_created?: boolean;
   generated_password?: string;
+  is_existing_user?: boolean;
 }
 
 function applyTemplate(html: string, vars: Record<string, string>): string {
@@ -186,6 +187,18 @@ function buildLoginCredentialsHtml(email: string, password: string): string {
 </div>`;
 }
 
+function buildExistingUserLoginHtml(): string {
+  return `<div style="background-color:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:20px;margin-bottom:25px;">
+<h2 style="color:#1e40af;font-size:18px;margin:0 0 12px;">🔑 Access Your Dashboard</h2>
+<p style="color:#1e3a5f;font-size:14px;margin:0 0 15px;">A quote has been created for you. Log in to your existing account to view and manage it:</p>
+<table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+<tr><td align="center">
+<a href="https://peacockpixelmedia.co.uk/auth" style="display:inline-block;background-color:#1e40af;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:14px;">Log In to Your Dashboard</a>
+</td></tr></table>
+<p style="color:#6b7280;font-size:12px;margin:0;text-align:center;">Forgot your password? Use the "Forgot Password" link on the login page to reset it.</p>
+</div>`;
+}
+
 function buildCustomerEmailHtml(payload: EmailPayload): string {
   const isBooking = payload.record_type === "booking";
   const modelLabel = getPricingModelLabel(payload.pricing_model);
@@ -234,7 +247,7 @@ ${isBooking
     ? "Thank you for booking with Discover Magazine! We've received your booking and here's a summary of what you've selected."
     : "Thank you for your interest in advertising with Discover Magazine! Your quote has been saved and you can access it anytime from your dashboard."}
 </p>
-${payload.is_admin_created && payload.generated_password ? buildLoginCredentialsHtml(payload.email, payload.generated_password) : ''}
+${payload.is_admin_created && payload.generated_password ? buildLoginCredentialsHtml(payload.email, payload.generated_password) : (payload.is_admin_created && payload.is_existing_user ? buildExistingUserLoginHtml() : '')}
 <div style="background-color:#f0fdf4;border-radius:8px;padding:20px;margin-bottom:25px;">
 <h2 style="color:#166534;font-size:18px;margin:0 0 12px;">Your ${isBooking ? "Booking" : "Quote"} Summary</h2>
 <table style="width:100%;border-collapse:collapse;">
@@ -386,10 +399,12 @@ Deno.serve(async (req) => {
           // Shared
           total_cost: formatCurrency(payload.final_total),
           dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
-          // Admin-created credentials
+          // Admin-created credentials or login link
           login_credentials: payload.is_admin_created && payload.generated_password
             ? buildLoginCredentialsHtml(payload.email, payload.generated_password)
-            : "",
+            : (payload.is_admin_created && payload.is_existing_user
+              ? buildExistingUserLoginHtml()
+              : ""),
           login_email: payload.email,
           login_password: payload.is_admin_created && payload.generated_password ? payload.generated_password : "",
           login_url: "https://peacockpixelmedia.co.uk/auth",
@@ -399,6 +414,9 @@ Deno.serve(async (req) => {
         // If admin-created and template doesn't have login_credentials placeholder, append it
         if (payload.is_admin_created && payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           templatedHtml = templatedHtml.replace('</body>', buildLoginCredentialsHtml(payload.email, payload.generated_password) + '</body>');
+        }
+        if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
+          templatedHtml = templatedHtml.replace('</body>', buildExistingUserLoginHtml() + '</body>');
         }
         customerHtml = templatedHtml;
       } else {
