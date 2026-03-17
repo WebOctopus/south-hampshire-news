@@ -213,15 +213,17 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       console.error('Error setting up payment:', error);
     }
   };
-  const handleStripeCheckout = async () => {
+  const handleStripeCheckout = async (amountOverride?: number) => {
     if (!booking) return;
     setStripeLoading(true);
     try {
+      const amount = amountOverride || booking.final_total || booking.monthly_price;
       const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
         body: {
           bookingId: booking.id,
-          amount: booking.final_total || booking.monthly_price,
+          amount,
           customerEmail: booking.email,
+          isDeposit: !!amountOverride && amountOverride < (booking.final_total || booking.monthly_price),
           successUrl: `${window.location.origin}/payment-setup?booking_id=${booking.id}&stripe_success=true`,
           cancelUrl: `${window.location.origin}/dashboard`,
         },
