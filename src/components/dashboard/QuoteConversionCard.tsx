@@ -95,7 +95,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
               )}
               {(quote.status === 'active' || quote.status === 'approved') && (
                 <div className="flex items-center gap-1 text-emerald-600">
-                  <CheckCircle className="w-5 h-5 fill-emerald-600 text-white" />
+                  <Shield className="w-5 h-5 text-emerald-600" />
                 </div>
               )}
             </div>

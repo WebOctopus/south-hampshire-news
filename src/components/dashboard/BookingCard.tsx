@@ -294,7 +294,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
             }}
           >
             <CreditCard className="w-4 h-4 mr-2" />
-            Complete Payment Now
+            Set Up Payment Plan
           </Button>
         )}
 
