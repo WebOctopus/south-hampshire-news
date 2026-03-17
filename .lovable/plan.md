@@ -1,29 +1,25 @@
 
 
-## GoCardless Payment Gateway Fixes — Completed
+## Problem
 
-### Fixes Applied
+The address validation we added to `BookingDetailsDialog.tsx` blocks payment with a dead-end "Address Required" toast. The address is only present in `booking.selections` when the booking was converted from a quote (which collects address in `ContactInformationStep`). Bookings created directly via `CreateBookingForm` never save address fields, so those customers hit this wall with no way to proceed.
 
-**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
-- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
-- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
-- Added `else` branch showing error when no redirect_flow_id is present
-- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
+GoCardless's redirect flow actually has its own address collection page — the `prefilled_customer` fields are optional prefills, not requirements. The address validation is an unnecessary gate.
 
-**2. GoCardless webhook — billing_requests handler added**
-- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
-- Logs fulfilled, failed, and cancelled actions for debugging
-- No longer drops these events as "unhandled"
+## Solution
 
-**3. BookingDetailsDialog — Address validation added**
-- Validates address, city, and postcode before initiating GoCardless redirect
-- Shows toast error if address fields are missing or contain placeholders
-- Prevents invalid data from being sent to GoCardless API
+**Remove the blocking validation and make the address a prefill instead.** If address data exists in `booking.selections`, pass it to GoCardless as prefill. If not, pass empty strings and let GoCardless collect the address on their hosted page (which they already do).
 
-### Files Changed
+### Changes
 
-| File | Change |
-|---|---|
-| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
-| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+**1. `src/components/dashboard/BookingDetailsDialog.tsx`**
+- Remove the address validation block (lines 180-192) that shows the "Address Required" error toast
+- Keep the address field extraction but use it only as optional prefill data — empty strings are fine
+- GoCardless will prompt the customer for address details on their hosted page if not prefilled
+
+**2. `src/components/dashboard/CreateBookingForm.tsx`** (minor improvement)
+- Add address fields to the `selections` object when creating bookings directly, pulling from the user's profile if available
+- This ensures future bookings have prefill data, but is not a hard requirement
+
+This removes the friction point while still prefilling address data when available, and lets GoCardless handle address collection as part of their standard mandate setup flow.
+
