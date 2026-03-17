@@ -68,6 +68,9 @@ serve(async (req: Request) => {
         case 'subscriptions':
           await handleSubscriptionEvent(supabase, event);
           break;
+        case 'billing_requests':
+          await handleBillingRequestEvent(supabase, event);
+          break;
         default:
           console.log(`Unhandled resource type: ${event.resource_type}`);
       }
@@ -233,5 +236,20 @@ async function handleSubscriptionEvent(supabase: any, event: any) {
         console.error('Failed to generate invoice:', error);
       }
     }
+  }
+}
+
+async function handleBillingRequestEvent(supabase: any, event: any) {
+  const action = event.action;
+  const billingRequestId = event.links?.billing_request;
+
+  console.log(`Billing request ${billingRequestId} action: ${action}`);
+
+  // Track billing request lifecycle for debugging
+  // Key actions: created, flow_created, flow_visited, fulfilled, cancelled, failed
+  if (action === 'fulfilled') {
+    console.log('Billing request fulfilled — customer completed GoCardless flow');
+  } else if (action === 'failed' || action === 'cancelled') {
+    console.warn(`Billing request ${action}: ${billingRequestId}`);
   }
 }

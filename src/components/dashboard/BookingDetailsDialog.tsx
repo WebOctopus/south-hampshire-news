@@ -177,16 +177,30 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       });
       return;
     }
+    // Validate address before sending to GoCardless
+    const addressLine1 = booking.selections?.address || '';
+    const city = booking.selections?.city || '';
+    const postcode = booking.selections?.postcode || '';
+
+    if (!addressLine1 || !city || !postcode || postcode === 'POSTCODE') {
+      toast({
+        title: 'Address Required',
+        description: 'Please update your address details before setting up payment. Contact support if you need help.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       const result = await createMandate.mutateAsync({
         bookingId: booking.id,
         customerEmail: booking.email,
         customerName: booking.contact_name,
         customerAddress: {
-          addressLine1: booking.selections?.address || booking.contact_name || 'Address pending',
+          addressLine1,
           addressLine2: booking.selections?.addressLine2 || '',
-          city: booking.selections?.city || 'City pending',
-          postcode: booking.selections?.postcode || 'POSTCODE'
+          city,
+          postcode,
         }
       });
       if (result.redirectUrl) {
