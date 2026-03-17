@@ -1,61 +1,32 @@
 
 
-## GoCardless Payment Gateway Fixes — Completed
+## Fix: Password Credentials Not Included in Admin-On-Behalf Quote Emails
 
-### Fixes Applied
+### Problem
 
-**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
-- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
-- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
-- Added `else` branch showing error when no redirect_flow_id is present
-- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
+When an admin creates a quote on behalf of a customer, the confirmation email is sent but the login credentials (email + generated password) are not appearing in it. The system currently embeds credentials inline in the confirmation email rather than sending a separate password email.
 
-**2. GoCardless webhook — billing_requests handler added**
-- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
-- Logs fulfilled, failed, and cancelled actions for debugging
-- No longer drops these events as "unhandled"
+### Root Cause
 
-**3. BookingDetailsDialog — Address validation added**
-- Validates address, city, and postcode before initiating GoCardless redirect
-- Shows toast error if address fields are missing or contain placeholders
-- Prevents invalid data from being sent to GoCardless API
+There are two likely issues:
 
-### Files Changed
+1. **DB template fallback injection can fail silently.** When a DB template is found (line 377-446 of the edge function), the code tries to inject the credentials block before `</body>` if the template doesn't contain `{{login_credentials}}`. If the template HTML doesn't have a `</body>` tag (common with partial HTML templates), the `replace('</body>', ...)` call does nothing — credentials are silently dropped.
 
-| File | Change |
-|---|---|
-| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
-| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+2. **Password variable mismatch.** In `AdvertisingStepForm.tsx`, the password sent to create the user (line 273: `contactData.generatedPassword || crypto.randomUUID()`) could differ from what's passed to the email (line 470: `contactData.generatedPassword || contactData.password`). If the admin flow generates a NEW password at line 273 (because `contactData.generatedPassword` was falsy), that new password is used for account creation but the email payload gets `contactData.password` instead (which is empty in admin mode since the password field is hidden).
 
----
+### Solution
 
-## Fixed Term Pricing & Stripe Integration — Completed
+Two changes to ensure credentials always reach the customer:
 
-### Issues Fixed
+**1. Fix password consistency in `src/components/AdvertisingStepForm.tsx`** (quote flow, ~line 270-470):
+- Store the actual `generatedPassword` used for account creation and pass THAT to the email payload, not `contactData.generatedPassword || contactData.password`.
+- Same fix for the booking flow (~line 580-892).
 
-**1. Pricing fallback bug**
-- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
-- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
-
-**2. Stripe integration for Fixed Term payments**
-- Created `create-stripe-checkout` edge function for one-off card payments
-- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
-- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
-- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
-
-**3. Payment UI conditional logic**
-- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
-- All GoCardless-specific text/options hidden for Fixed Term
-- Secure payment info text updated to reference Stripe for Fixed Term
+**2. Fix template injection in `supabase/functions/send-booking-confirmation-email/index.ts`** (line 440-445):
+- Instead of relying on `</body>` replacement, prepend the credentials block at the top of the template body content (before the first content).
+- If the template has no `{{login_credentials}}` placeholder AND the email is admin-created with a generated password, insert the credentials block right after the opening greeting/content.
 
 ### Files Changed
+- `src/components/AdvertisingStepForm.tsx` — use the actual generated password variable in the email payload
+- `supabase/functions/send-booking-confirmation-email/index.ts` — make credentials injection more robust
 
-| File | Change |
-|---|---|
-| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
-| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
-| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
-| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
-| `supabase/config.toml` | Added Stripe function configs |
