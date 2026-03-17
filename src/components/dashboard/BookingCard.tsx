@@ -231,7 +231,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
           <Alert className="border-amber-400 bg-amber-50/80 backdrop-blur-sm">
             <CreditCard className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-900 font-medium">
-              Complete your booking payment to secure your advertising campaign
+              Set up your payment plan to start your advertising campaign
             </AlertDescription>
           </Alert>
         )}
