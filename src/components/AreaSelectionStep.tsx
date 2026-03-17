@@ -438,8 +438,18 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                 <div>Free bonus areas: {bogofFreeAreas.length}</div>
                 <div>Total areas: {bogofPaidAreas.length + bogofFreeAreas.length}</div>
                 {bogofPaidAreas.length > 0 && bogofFreeAreas.length < bogofPaidAreas.length && (
-                  <div className="mt-3 bg-warning/10 border border-warning/30 text-warning-foreground rounded-md p-3 text-sm">
-                    <span className="font-medium">🎁 Don't miss out!</span> You've selected {bogofFreeAreas.length} of {bogofPaidAreas.length} free area{bogofPaidAreas.length > 1 ? 's' : ''}. Choose {bogofPaidAreas.length - bogofFreeAreas.length} more to maximise your coverage at no extra cost!
+                  <div className="mt-3 bg-destructive/10 border border-destructive/30 text-destructive rounded-md p-3 text-sm space-y-2">
+                    <p>
+                      <span className="font-semibold">🎁 Don't miss out!</span> You must select {bogofPaidAreas.length - bogofFreeAreas.length} more free area{bogofPaidAreas.length - bogofFreeAreas.length > 1 ? 's' : ''} before you can continue. You're entitled to {bogofPaidAreas.length} free area{bogofPaidAreas.length > 1 ? 's' : ''} — make the most of it!
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => freeAreasRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    >
+                      ↑ Select Your Free Areas
+                    </Button>
                   </div>
                 )}
               </>
