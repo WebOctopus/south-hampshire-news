@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -164,9 +164,11 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
     }
   };
 
+  const freeAreasRef = useRef<HTMLDivElement>(null);
+
   const canProceed = () => {
     if (pricingModel === 'bogof') {
-      return bogofPaidAreas.length > 0;
+      return bogofPaidAreas.length > 0 && bogofFreeAreas.length === bogofPaidAreas.length;
     }
     return effectiveSelectedAreas.length > 0;
   };
@@ -299,7 +301,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
           </div>
 
           {/* Free Areas Section */}
-          <div className="space-y-4 min-w-0">
+          <div ref={freeAreasRef} className="space-y-4 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">FREE Bonus Areas</h3>
               <Badge variant="secondary">6 Months Free</Badge>
@@ -436,8 +438,18 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                 <div>Free bonus areas: {bogofFreeAreas.length}</div>
                 <div>Total areas: {bogofPaidAreas.length + bogofFreeAreas.length}</div>
                 {bogofPaidAreas.length > 0 && bogofFreeAreas.length < bogofPaidAreas.length && (
-                  <div className="mt-3 bg-warning/10 border border-warning/30 text-warning-foreground rounded-md p-3 text-sm">
-                    <span className="font-medium">🎁 Don't miss out!</span> You've selected {bogofFreeAreas.length} of {bogofPaidAreas.length} free area{bogofPaidAreas.length > 1 ? 's' : ''}. Choose {bogofPaidAreas.length - bogofFreeAreas.length} more to maximise your coverage at no extra cost!
+                  <div className="mt-3 bg-destructive/10 border border-destructive/30 text-destructive rounded-md p-3 text-sm space-y-2">
+                    <p>
+                      <span className="font-semibold">🎁 Don't miss out!</span> You must select {bogofPaidAreas.length - bogofFreeAreas.length} more free area{bogofPaidAreas.length - bogofFreeAreas.length > 1 ? 's' : ''} before you can continue. You're entitled to {bogofPaidAreas.length} free area{bogofPaidAreas.length > 1 ? 's' : ''} — make the most of it!
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => freeAreasRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    >
+                      ↑ Select Your Free Areas
+                    </Button>
                   </div>
                 )}
               </>
