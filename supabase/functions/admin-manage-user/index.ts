@@ -135,7 +135,9 @@ Deno.serve(async (req) => {
             } else {
               // Fallback branded HTML email
               htmlBody = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px;">
+                <table role="presentation" style="width:100%;border-collapse:collapse;"><tr><td align="center" style="padding:40px 0;">
+                <table role="presentation" width="600" style="width:600px;max-width:100%;border-collapse:collapse;background:#ffffff;border-radius:8px;overflow:hidden;">
+                  <tr><td style="padding:40px 20px;">
                   <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
                   </div>
@@ -155,7 +157,8 @@ Deno.serve(async (req) => {
                     <p>📍 30 Leigh Road, Eastleigh, SO50 9DT Hampshire</p>
                     <p style="margin-top: 10px;">Connecting South Hampshire communities since 2014</p>
                   </div>
-                </div>
+                  </td></tr>
+                </table></td></tr></table>
               `;
             }
 
@@ -298,7 +301,9 @@ Deno.serve(async (req) => {
                   .replace(/\{\{email\}\}/g, createEmail)
                   .replace(/\{\{display_name\}\}/g, createDisplayName || createEmail)
               : `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px;">
+                <table role="presentation" style="width:100%;border-collapse:collapse;"><tr><td align="center" style="padding:40px 0;">
+                <table role="presentation" width="600" style="width:600px;max-width:100%;border-collapse:collapse;background:#ffffff;border-radius:8px;overflow:hidden;">
+                  <tr><td style="padding:40px 20px;">
                   <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
                   </div>
@@ -317,7 +322,8 @@ Deno.serve(async (req) => {
                     <p>📞 023 8026 6388 &nbsp; ✉ discover@discovermagazines.co.uk</p>
                     <p>📍 30 Leigh Road, Eastleigh, SO50 9DT Hampshire</p>
                   </div>
-                </div>
+                  </td></tr>
+                </table></td></tr></table>
               `;
 
             try {
