@@ -1,61 +1,31 @@
 
 
-## GoCardless Payment Gateway Fixes — Completed
+## Fix: Admin-On-Behalf Emails Not Sending + Existing User Login Prompt
 
-### Fixes Applied
+### Problem
+Two issues:
+1. **Emails not sending at all** — The `send-booking-confirmation-email` edge function has zero logs, indicating it wasn't successfully deployed after the last edit. It needs to be redeployed.
+2. **Existing users should get a login prompt, not a new password** — The code logic for existing users already exists (sends `is_existing_user: true` and the edge function has `buildExistingUserLoginHtml()`), but it's not working because the function isn't deployed.
 
-**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
-- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
-- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
-- Added `else` branch showing error when no redirect_flow_id is present
-- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
+### Changes
 
-**2. GoCardless webhook — billing_requests handler added**
-- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
-- Logs fulfilled, failed, and cancelled actions for debugging
-- No longer drops these events as "unhandled"
+**1. Redeploy the edge function**
+- Deploy `send-booking-confirmation-email` — the previous edit added the robust credential injection logic but deployment may have failed or not completed.
 
-**3. BookingDetailsDialog — Address validation added**
-- Validates address, city, and postcode before initiating GoCardless redirect
-- Shows toast error if address fields are missing or contain placeholders
-- Prevents invalid data from being sent to GoCardless API
+**2. Verify existing user email path in `AdvertisingStepForm.tsx`**
+- The current code at line 471-476 already correctly differentiates:
+  - New user → sends `generated_password` for credential block
+  - Existing user → sends `is_existing_user: true` for login prompt block
+- No code change needed here — the logic is correct.
 
-### Files Changed
+**3. Verify edge function handles both paths**
+- `buildExistingUserLoginHtml()` (line 190-199) already renders a "Log In to Your Dashboard" block with a link to `/auth` and a "Forgot Password" reminder — this matches the user's requirement.
+- The fallback injection at line 454-463 correctly injects this block for existing users when the template lacks `{{login_credentials}}`.
+- No code change needed in the edge function either.
 
-| File | Change |
-|---|---|
-| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
-| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+### Root Cause
+The edge function was edited but not successfully deployed. Redeploying it should fix both issues — emails will send again, and existing users will get a login prompt instead of credentials.
 
----
+### Summary
+This is a deployment-only fix. No code changes required — just redeploy the `send-booking-confirmation-email` edge function.
 
-## Fixed Term Pricing & Stripe Integration — Completed
-
-### Issues Fixed
-
-**1. Pricing fallback bug**
-- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
-- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
-
-**2. Stripe integration for Fixed Term payments**
-- Created `create-stripe-checkout` edge function for one-off card payments
-- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
-- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
-- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
-
-**3. Payment UI conditional logic**
-- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
-- All GoCardless-specific text/options hidden for Fixed Term
-- Secure payment info text updated to reference Stripe for Fixed Term
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
-| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
-| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
-| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
-| `supabase/config.toml` | Added Stripe function configs |
