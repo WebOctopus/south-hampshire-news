@@ -1,29 +1,18 @@
 
 
-## GoCardless Payment Gateway Fixes — Completed
+## Fix `{{dimensions}}` in BOGOF Quote/Booking Templates
 
-### Fixes Applied
+### What happened
+The previous fix added `dimensions` to the variable mapping code in the Edge Function, but:
+1. The Edge Function may not have been fully redeployed before the BOGOF quote was sent
+2. The `available_variables` metadata for `quote_bogof_customer` and `booking_bogof_customer` templates doesn't include `dimensions`, which means the admin template editor won't show it as an available variable
 
-**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
-- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
-- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
-- Added `else` branch showing error when no redirect_flow_id is present
-- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
+### What's needed
+The code fix is already in place (the `dimensions` DB lookup and variable mapping works for all template types). Two small changes:
 
-**2. GoCardless webhook — billing_requests handler added**
-- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
-- Logs fulfilled, failed, and cancelled actions for debugging
-- No longer drops these events as "unhandled"
+**1. Database migration** — Add `dimensions` and `areas_selected` to the `available_variables` array for `quote_bogof_customer` and `booking_bogof_customer` templates (same as was done for the fixed templates)
 
-**3. BookingDetailsDialog — Address validation added**
-- Validates address, city, and postcode before initiating GoCardless redirect
-- Shows toast error if address fields are missing or contain placeholders
-- Prevents invalid data from being sent to GoCardless API
+**2. Redeploy Edge Function** — Already done. The function is now deployed with the dimensions lookup code.
 
-### Files Changed
+After this, any new BOGOF quote/booking emails will correctly resolve `{{dimensions}}` to the actual ad size dimensions from the database.
 
-| File | Change |
-|---|---|
-| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
-| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
