@@ -56,11 +56,17 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
       const designFee = booking.pricing_breakdown?.designFee || 0;
       return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
     }
+    // BOGOF bookings default to monthly price display
+    if (booking.pricing_model === 'bogof' && booking.monthly_price) {
+      return booking.monthly_price;
+    }
     return booking.final_total;
   })();
     
   const getPaymentLabel = () => {
-    if (!selectedPaymentOptionType) return '+ VAT';
+    if (!selectedPaymentOptionType) {
+      return booking.pricing_model === 'bogof' ? 'Monthly Payment' : '+ VAT';
+    }
     
     if (selectedPaymentOptionType === 'monthly') {
       return 'Monthly Payment';

@@ -1,26 +1,61 @@
 
 
-## Fix: BOGOF Booking Card Shows Full Total Instead of Monthly Price
+## GoCardless Payment Gateway Fixes — Completed
 
-### Problem
-When a BOGOF quote is converted to a booking via "View & Accept Terms", the booking's `selections` object has no `payment_option_id` yet (payment plan is chosen later). In `BookingCard.tsx`:
+### Fixes Applied
 
-1. `selectedPaymentOptionType` = `undefined` (no payment option chosen yet)
-2. Falls through all branches to line 59: `return booking.final_total`
-3. `final_total` for BOGOF is the full campaign cost (e.g. monthly × 12), not the monthly amount
-4. Label shows "+ VAT" instead of "Monthly Payment"
+**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
+- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
+- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
+- Added `else` branch showing error when no redirect_flow_id is present
+- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
 
-The card displays the annual total as if it were the price, when it should show `monthly_price` for BOGOF bookings that haven't selected a payment option yet.
+**2. GoCardless webhook — billing_requests handler added**
+- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
+- Logs fulfilled, failed, and cancelled actions for debugging
+- No longer drops these events as "unhandled"
 
-### Solution
+**3. BookingDetailsDialog — Address validation added**
+- Validates address, city, and postcode before initiating GoCardless redirect
+- Shows toast error if address fields are missing or contain placeholders
+- Prevents invalid data from being sent to GoCardless API
 
-**File: `src/components/dashboard/BookingCard.tsx`**
+### Files Changed
 
-Two changes in the `displayAmount` calculation and `getPaymentLabel`:
+| File | Change |
+|---|---|
+| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
+| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
 
-1. **`displayAmount` (lines 49-60)**: Before the final fallback `return booking.final_total`, add a check: if `booking.pricing_model === 'bogof'` and `booking.monthly_price` exists, return `booking.monthly_price`. This ensures BOGOF bookings default to monthly display even before a payment option is selected.
+---
 
-2. **`getPaymentLabel` (lines 62-71)**: When no `selectedPaymentOptionType` exists but `booking.pricing_model === 'bogof'`, return `'Monthly Payment'` instead of `'+ VAT'`.
+## Fixed Term Pricing & Stripe Integration — Completed
 
-This way, BOGOF bookings always default to showing the monthly price on the card, matching user expectations. Non-BOGOF bookings (fixed, leafleting) continue showing `final_total` with "+ VAT".
+### Issues Fixed
 
+**1. Pricing fallback bug**
+- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
+- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
+
+**2. Stripe integration for Fixed Term payments**
+- Created `create-stripe-checkout` edge function for one-off card payments
+- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
+- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
+- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
+
+**3. Payment UI conditional logic**
+- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
+- All GoCardless-specific text/options hidden for Fixed Term
+- Secure payment info text updated to reference Stripe for Fixed Term
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
+| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
+| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
+| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
+| `supabase/config.toml` | Added Stripe function configs |
