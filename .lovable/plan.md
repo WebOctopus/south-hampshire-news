@@ -27,3 +27,35 @@
 | `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
 | `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
 | `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+
+---
+
+## Fixed Term Pricing & Stripe Integration — Completed
+
+### Issues Fixed
+
+**1. Pricing fallback bug**
+- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
+- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
+
+**2. Stripe integration for Fixed Term payments**
+- Created `create-stripe-checkout` edge function for one-off card payments
+- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
+- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
+- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
+
+**3. Payment UI conditional logic**
+- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
+- All GoCardless-specific text/options hidden for Fixed Term
+- Secure payment info text updated to reference Stripe for Fixed Term
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
+| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
+| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
+| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
+| `supabase/config.toml` | Added Stripe function configs |
