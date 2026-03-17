@@ -1,61 +1,36 @@
 
 
-## GoCardless Payment Gateway Fixes — Completed
+## Fix Leafleting Booking: Area Display & Payment Method
 
-### Fixes Applied
+### Issues
 
-**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
-- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
-- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
-- Added `else` branch showing error when no redirect_flow_id is present
-- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
+1. **Area not loading** — `BookingDetailsDialog` only queries `pricing_areas` for area names. Leafleting bookings store area IDs from `leaflet_areas`, so the lookup returns nothing.
 
-**2. GoCardless webhook — billing_requests handler added**
-- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
-- Logs fulfilled, failed, and cancelled actions for debugging
-- No longer drops these events as "unhandled"
+2. **Wrong payment options** — Leafleting bookings fall into the GoCardless `else` branch (line 723), showing monthly/12-month Direct Debit options. Leafleting should use Stripe with specific rules:
+   - **25% deposit by card (Stripe)** as default
+   - **100% in full** if the leaflet distribution date is within 10 days
 
-**3. BookingDetailsDialog — Address validation added**
-- Validates address, city, and postcode before initiating GoCardless redirect
-- Shows toast error if address fields are missing or contain placeholders
-- Prevents invalid data from being sent to GoCardless API
+### Plan
 
-### Files Changed
+**Step 1: Fix area name lookup** (`BookingDetailsDialog.tsx`)
+- When `booking.pricing_model === 'leafleting'`, query `leaflet_areas` instead of `pricing_areas` for area name resolution.
+- Add a second query or make the existing one conditional on the pricing model.
 
-| File | Change |
-|---|---|
-| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
-| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+**Step 2: Add leafleting payment logic** (`BookingDetailsDialog.tsx`)
+- Add a new payment branch for `booking.pricing_model === 'leafleting'` (alongside the existing `fixed` branch).
+- Calculate whether distribution date is within 10 days using `booking.distribution_start_date` or `booking.leaflets_required_by`.
+- If within 10 days: show "Pay Full Amount by Card" via Stripe.
+- If more than 10 days: show "Pay 25% Deposit by Card" via Stripe, with the remaining 75% noted as due before distribution.
+- Both options use the existing `handleStripeCheckout` function, passing the correct amount (full or 25%).
 
----
+**Step 3: Update Stripe checkout amount** (`BookingDetailsDialog.tsx`)
+- Modify `handleStripeCheckout` to accept an optional amount override so it can send 25% for deposit payments.
+- Store whether this is a deposit or full payment in the booking metadata.
 
-## Fixed Term Pricing & Stripe Integration — Completed
+**Step 4: Update BookingCard labels** (`BookingCard.tsx`)
+- For leafleting bookings, show appropriate payment CTA text ("Pay Deposit" vs "Pay in Full").
 
-### Issues Fixed
+### Files to change
+1. `src/components/dashboard/BookingDetailsDialog.tsx` — area query fix + leafleting Stripe payment UI
+2. `src/components/dashboard/BookingCard.tsx` — leafleting-specific CTA label
 
-**1. Pricing fallback bug**
-- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
-- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
-
-**2. Stripe integration for Fixed Term payments**
-- Created `create-stripe-checkout` edge function for one-off card payments
-- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
-- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
-- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
-
-**3. Payment UI conditional logic**
-- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
-- All GoCardless-specific text/options hidden for Fixed Term
-- Secure payment info text updated to reference Stripe for Fixed Term
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
-| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
-| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
-| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
-| `supabase/config.toml` | Added Stripe function configs |
