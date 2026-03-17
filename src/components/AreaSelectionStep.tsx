@@ -164,9 +164,11 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
     }
   };
 
+  const freeAreasRef = useRef<HTMLDivElement>(null);
+
   const canProceed = () => {
     if (pricingModel === 'bogof') {
-      return bogofPaidAreas.length > 0;
+      return bogofPaidAreas.length > 0 && bogofFreeAreas.length === bogofPaidAreas.length;
     }
     return effectiveSelectedAreas.length > 0;
   };
