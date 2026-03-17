@@ -68,6 +68,9 @@ serve(async (req: Request) => {
         case 'subscriptions':
           await handleSubscriptionEvent(supabase, event);
           break;
+        case 'billing_requests':
+          await handleBillingRequestEvent(supabase, event);
+          break;
         default:
           console.log(`Unhandled resource type: ${event.resource_type}`);
       }

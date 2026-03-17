@@ -101,25 +101,22 @@ const PaymentSetup = () => {
           });
 
           if (paymentError) throw paymentError;
-        }
 
-          // Update booking payment status
+          // Update booking payment status to pending (webhook will confirm as 'paid')
           await supabase.from('bookings').update({
-            payment_status: 'paid',
+            payment_status: 'payment_pending',
             status: 'submitted',
           }).eq('id', bookingId);
 
           // Generate voucher if it's a BOGOF (3+ Repeat Package) booking
           if (booking.pricing_model === 'bogof') {
-            console.log('Generating voucher for BOGOF booking after payment...');
+            console.log('Generating voucher for BOGOF booking after payment setup...');
             
             try {
-              // Generate voucher code
               const { data: voucherCodeData, error: codeError } = await supabase
                 .rpc('generate_voucher_code');
 
               if (!codeError && voucherCodeData) {
-                // Calculate expiry date (6 months from now)
                 const expiryDate = new Date();
                 expiryDate.setMonth(expiryDate.getMonth() + 6);
 
@@ -150,7 +147,6 @@ const PaymentSetup = () => {
           setStatus('success');
           setMessage('Payment setup complete! Redirecting to your dashboard...');
           
-          // Set flag to show voucher notification
           if (booking.pricing_model === 'bogof') {
             localStorage.setItem('showVoucherNotification', 'true');
           }
@@ -163,6 +159,11 @@ const PaymentSetup = () => {
           setTimeout(() => {
             navigate('/dashboard');
           }, 2000);
+        } else {
+          // No redirect_flow_id — user landed here without completing GoCardless flow
+          setStatus('error');
+          setMessage('No payment redirect found. Please initiate payment from your booking details.');
+        }
 
       } catch (error: any) {
         console.error('Error setting up payment:', error);
