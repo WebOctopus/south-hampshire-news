@@ -175,6 +175,8 @@ export type Database = {
           selections: Json
           status: string
           subtotal: number | null
+          terms_accepted_at: string | null
+          terms_viewed_at: string | null
           title: string | null
           total_circulation: number | null
           updated_at: string
@@ -213,6 +215,8 @@ export type Database = {
           selections?: Json
           status?: string
           subtotal?: number | null
+          terms_accepted_at?: string | null
+          terms_viewed_at?: string | null
           title?: string | null
           total_circulation?: number | null
           updated_at?: string
@@ -251,6 +255,8 @@ export type Database = {
           selections?: Json
           status?: string
           subtotal?: number | null
+          terms_accepted_at?: string | null
+          terms_viewed_at?: string | null
           title?: string | null
           total_circulation?: number | null
           updated_at?: string
@@ -1724,6 +1730,7 @@ export type Database = {
           selections: Json
           status: string | null
           subtotal: number | null
+          terms_viewed_at: string | null
           title: string | null
           total_circulation: number | null
           updated_at: string
@@ -1755,6 +1762,7 @@ export type Database = {
           selections?: Json
           status?: string | null
           subtotal?: number | null
+          terms_viewed_at?: string | null
           title?: string | null
           total_circulation?: number | null
           updated_at?: string
@@ -1786,6 +1794,7 @@ export type Database = {
           selections?: Json
           status?: string | null
           subtotal?: number | null
+          terms_viewed_at?: string | null
           title?: string | null
           total_circulation?: number | null
           updated_at?: string

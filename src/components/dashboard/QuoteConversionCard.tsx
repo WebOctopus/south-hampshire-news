@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Package, Clock, Eye, CheckCircle, Trash2, AlertCircle } from 'lucide-react';
+import { Package, Clock, Eye, Shield, Trash2, AlertCircle } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 
 interface QuoteConversionCardProps {
@@ -95,7 +95,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
               )}
               {(quote.status === 'active' || quote.status === 'approved') && (
                 <div className="flex items-center gap-1 text-emerald-600">
-                  <CheckCircle className="w-5 h-5 fill-emerald-600 text-white" />
+                  <Shield className="w-5 h-5 text-emerald-600" />
                 </div>
               )}
             </div>
@@ -181,8 +181,8 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
               onClick={() => onBookNow(quote)}
               className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
             >
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Book Now
+              <Shield className="h-4 w-4 mr-1" />
+              View & Accept Terms
             </Button>
           )}
         </div>

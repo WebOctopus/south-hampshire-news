@@ -40,6 +40,7 @@ import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import CreateBookingForm from '@/components/dashboard/CreateBookingForm';
 import BookingTerms from '@/components/dashboard/BookingTerms';
+import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -65,6 +66,8 @@ const Dashboard = () => {
   const [voucherCount, setVoucherCount] = useState(0);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [quotesExpanded, setQuotesExpanded] = useState(true);
+  const [termsQuote, setTermsQuote] = useState<any>(null);
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
   const hasExistingBusiness = businesses.length > 0;
@@ -599,12 +602,16 @@ const Dashboard = () => {
     setQuoteToDelete(quote);
   };
 
-  const handleBookNow = async (quote: any) => {
+  const handleBookNow = (quote: any) => {
+    setTermsQuote(quote);
+    setTermsDialogOpen(true);
+  };
+
+  const handleTermsConfirm = async (quote: any) => {
     if (!user) return;
 
     setSubmitting(true);
     try {
-      // Create booking from quote data
       const bookingData = {
         user_id: user.id,
         contact_name: quote.contact_name,
@@ -629,7 +636,9 @@ const Dashboard = () => {
         selections: quote.selections,
         status: 'pending',
         notes: quote.notes,
-        webhook_payload: {}
+        webhook_payload: {},
+        terms_viewed_at: new Date().toISOString(),
+        terms_accepted_at: new Date().toISOString(),
       };
 
       const { error: bookingError } = await supabase
@@ -638,7 +647,6 @@ const Dashboard = () => {
 
       if (bookingError) throw bookingError;
 
-      // Delete the quote after successfully creating the booking
       const { error: deleteError } = await supabase
         .from('quotes')
         .delete()
@@ -647,11 +655,12 @@ const Dashboard = () => {
       if (deleteError) throw deleteError;
 
       toast({
-        title: "Booking Created!",
-        description: "Your campaign has been booked successfully. We'll be in touch soon!",
+        title: "Booking Confirmed!",
+        description: "Your terms have been accepted. Set up your payment plan to start your campaign.",
       });
 
-      // Reload both quotes and bookings, then switch to bookings tab
+      setTermsDialogOpen(false);
+      setTermsQuote(null);
       await Promise.all([loadQuotes(), loadBookings()]);
       setActiveTab('bookings');
     } catch (error: any) {
@@ -1535,6 +1544,14 @@ const Dashboard = () => {
         booking={selectedBooking}
         open={bookingDetailsOpen}
         onOpenChange={setBookingDetailsOpen}
+      />
+
+      <TermsAcceptanceDialog
+        quote={termsQuote}
+        open={termsDialogOpen}
+        onOpenChange={setTermsDialogOpen}
+        onConfirm={handleTermsConfirm}
+        isSubmitting={submitting}
       />
     </SidebarProvider>
   );
