@@ -1,31 +1,47 @@
 
 
-## Fix: Admin-On-Behalf Emails Not Sending + Existing User Login Prompt
+## Fix: Double VAT on Leafleting Stripe Checkout
 
 ### Problem
-Two issues:
-1. **Emails not sending at all** — The `send-booking-confirmation-email` edge function has zero logs, indicating it wasn't successfully deployed after the last edit. It needs to be redeployed.
-2. **Existing users should get a login prompt, not a new password** — The code logic for existing users already exists (sends `is_existing_user: true` and the edge function has `buildExistingUserLoginHtml()`), but it's not working because the function isn't deployed.
+The leafleting pricing calculator uses `price_with_vat` from the database, so `final_total` for leafleting bookings already includes VAT. The Stripe checkout edge function then adds another 20% VAT on top, resulting in double-taxation.
 
-### Changes
-
-**1. Redeploy the edge function**
-- Deploy `send-booking-confirmation-email` — the previous edit added the robust credential injection logic but deployment may have failed or not completed.
-
-**2. Verify existing user email path in `AdvertisingStepForm.tsx`**
-- The current code at line 471-476 already correctly differentiates:
-  - New user → sends `generated_password` for credential block
-  - Existing user → sends `is_existing_user: true` for login prompt block
-- No code change needed here — the logic is correct.
-
-**3. Verify edge function handles both paths**
-- `buildExistingUserLoginHtml()` (line 190-199) already renders a "Log In to Your Dashboard" block with a link to `/auth` and a "Forgot Password" reminder — this matches the user's requirement.
-- The fallback injection at line 454-463 correctly injects this block for existing users when the template lacks `{{login_credentials}}`.
-- No code change needed in the edge function either.
+- Stored `final_total` = £384 (VAT-inclusive)
+- 25% deposit = £96
+- Edge function adds 20% VAT → £115.20
+- **Should be**: ex-VAT £320, deposit £80, + VAT = £96
 
 ### Root Cause
-The edge function was edited but not successfully deployed. Redeploying it should fix both issues — emails will send again, and existing users will get a login prompt instead of credentials.
+`src/lib/leafletingCalculator.ts` line 45 sums `area.price_with_vat`, making `finalTotal` VAT-inclusive. But the Stripe edge function (line 52) assumes all amounts are ex-VAT and adds 20%.
 
-### Summary
-This is a deployment-only fix. No code changes required — just redeploy the `send-booking-confirmation-email` edge function.
+Fixed Term and BOGOF bookings store ex-VAT amounts, so the edge function works correctly for them. Only leafleting is affected.
+
+### Solution
+
+**File: `src/components/dashboard/BookingDetailsDialog.tsx`** (~line 606)
+
+When computing `fullAmount` for the Stripe checkout, check if the booking is leafleting. If so, divide `final_total` by 1.2 to convert back to ex-VAT before passing to Stripe (since the edge function will add VAT).
+
+```
+const fullAmount = booking.final_total || booking.monthly_price;
+// Leafleting final_total includes VAT already (price_with_vat from DB)
+// Stripe edge function adds VAT, so send ex-VAT amount
+const exVatAmount = booking.pricing_model === 'leafleting' 
+  ? Math.round((fullAmount / 1.2) * 100) / 100 
+  : fullAmount;
+```
+
+Then use `exVatAmount` for `depositAmount` and `payAmount` calculations, and in the display (`formatPrice(payAmount) + VAT`).
+
+**Also update the edge function product name** to not hardcode "Fixed Term":
+
+**File: `supabase/functions/create-stripe-checkout/index.ts`** (~line 63)
+
+Accept `pricing_model` from the request body and use it in the product name:
+```
+name: `Advertising Campaign - ${pricing_model === 'leafleting' ? 'Leafleting' : 'Fixed Term'}`
+```
+
+### Files Changed
+- `src/components/dashboard/BookingDetailsDialog.tsx` — convert leafleting VAT-inclusive amount to ex-VAT before sending to Stripe
+- `supabase/functions/create-stripe-checkout/index.ts` — accept pricing_model for dynamic product name
 
