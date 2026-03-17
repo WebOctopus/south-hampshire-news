@@ -32,6 +32,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(booking?.selections?.payment_option_id || null);
   const [legalDocumentsAccepted, setLegalDocumentsAccepted] = useState(false);
   const [legalDocumentsOpen, setLegalDocumentsOpen] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
   const {
     data: paymentOptions = []
   } = usePaymentOptions();
