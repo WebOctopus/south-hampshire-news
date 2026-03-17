@@ -1,46 +1,55 @@
 
 
-## Fix: Booking card showing £1,080 instead of £90/month
+## GoCardless Payment Gateway — Diagnosis and Fixes
 
-### Root Cause
+### What the system data shows
 
-In `BookingCard.tsx`, the display amount is calculated via `calculatePaymentAmount()` which depends on the `usePaymentOptions()` query loading first. If payment options haven't loaded yet (or the query fails), the fallback on line 51-53 uses `booking.final_total` (£1,080) instead of the monthly amount.
+I examined the edge function logs, database records, and code flow. Here's what's happening:
 
-This contradicts the existing constraint that **stored quote/booking values should be used for display** rather than recalculating independently.
+**Recent activity (today, 09:59 UTC):**
+- A mandate redirect flow was created successfully for booking `5a10f690` (£426 fixed campaign)
+- GoCardless webhook received `billing_requests` events (flow_created, created, flow_visited) — the customer visited the GoCardless page
+- The webhook handler logs `Unhandled resource type: billing_requests` for all three events — they're being dropped
 
-### Fix
+**Database state:**
+- All 6 mandates in the DB are from October 2025 (test data with `MD_TEST_` prefixes)
+- Multiple March 2026 bookings have GoCardless redirect flow IDs in their `notes` field but remain at `payment_status: 'pending'` — meaning customers were redirected to GoCardless but the return flow failed
+- Zero subscriptions have ever been recorded
+- No new payments since October 2025
 
-In `src/components/dashboard/BookingCard.tsx`, simplify the display logic to use the stored `booking.monthly_price` directly when the selected payment option is "monthly", rather than depending on a recalculation:
+### Root causes identified
 
-**Lines 46-53**: Replace the calculation logic with:
-```typescript
-const selectedPaymentOptionType = booking.selections?.payment_option_id;
+**Bug 1 — Critical: `PaymentSetup.tsx` premature "paid" update (line 106-110)**
+Lines 106-110 run OUTSIDE the `if (redirectFlowId)` block due to incorrect indentation/scoping. This means:
+- If the user lands on `/payment-setup?booking_id=X` without a `redirect_flow_id`, the booking is immediately marked as `payment_status: 'paid'` and `status: 'submitted'` — without any payment actually being processed
+- Even when the redirect flow IS present, the booking is marked 'paid' before GoCardless confirms the payment (the webhook should do this)
 
-// Use stored monthly_price for monthly option instead of recalculating
-const displayAmount = (() => {
-  if (selectedPaymentOptionType === 'monthly' && booking.monthly_price) {
-    return booking.monthly_price;
-  }
-  const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionType);
-  if (selectedOption && paymentOptions.length > 0) {
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || 0;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    return calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee);
-  }
-  return booking.final_total;
-})();
-```
+**Bug 2 — Webhook doesn't handle `billing_requests` resource type**
+GoCardless now sends `billing_requests` events as part of their Billing Request API flow. The webhook only handles `mandates`, `payments`, and `subscriptions`. The `billing_requests` events are logged as unhandled and dropped. This isn't necessarily causing failures but means status tracking is incomplete.
 
-**Line 240**: Update the monthly check to use the string type instead of the option object:
-```typescript
-{selectedPaymentOptionType === 'monthly' ? (
-```
+**Bug 3 — No error handling for customer address fallback**
+In `BookingDetailsDialog.tsx` line 186-189, the address fields fall back to placeholder strings like `'Address pending'` and `'POSTCODE'`. GoCardless may reject these as invalid, causing the redirect flow creation to fail for bookings that don't have address data stored in selections.
 
-This ensures the card always shows £90/month immediately using stored data, without waiting for payment options to load.
+### Planned fixes
 
-### Files Changed
+**1. Fix `PaymentSetup.tsx` scoping bug**
+Move lines 106-165 (the "paid" update, voucher generation, success state, and redirect) inside the `if (redirectFlowId)` block. Add an `else` branch that shows an error message when no redirect_flow_id is present (user hit the page incorrectly).
 
-| File | Change |
-|---|---|
-| `src/components/dashboard/BookingCard.tsx` | Use stored `monthly_price` for monthly display instead of recalculating |
+**2. Remove premature "paid" status**
+After the redirect flow completes and payment/subscription is created, set status to `payment_pending` or `subscription_pending` instead of `paid`. Let the GoCardless webhook handler set `paid` when payment is actually confirmed.
+
+**3. Add `billing_requests` handling to webhook**
+Add a basic handler for `billing_requests` events in the webhook to log them properly and potentially update booking metadata. At minimum, handle `fulfilled` action to know when the customer completed the flow.
+
+**4. Improve error handling in `BookingDetailsDialog`**
+Add validation before initiating payment: check that required address fields exist in `booking.selections` and show a toast asking the user to update their address if missing, rather than sending invalid data to GoCardless.
+
+**5. Add retry/status feedback**
+When a booking already has a redirect flow but payment_status is still 'pending', show a "Resume Payment" option in the booking details dialog instead of creating a new redirect flow.
+
+### Files to change
+
+- `src/pages/PaymentSetup.tsx` — Fix scoping bug, remove premature paid status
+- `supabase/functions/gocardless-webhook/index.ts` — Add billing_requests handler
+- `src/components/dashboard/BookingDetailsDialog.tsx` — Add address validation, resume payment option
 
