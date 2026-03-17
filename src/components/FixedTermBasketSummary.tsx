@@ -53,13 +53,19 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
       return '';
     }
     const months = selectedMonths[areaId] || [];
+    const MONTH_NAMES_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const MONTH_NAMES_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     return months.map(month => {
-      // Convert "2025-12" to "Dec '25"
-      const [year, monthNum] = month.split('-');
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const monthName = monthNames[parseInt(monthNum) - 1];
-      const shortYear = year.slice(2);
-      return `${monthName} '${shortYear}`;
+      if (month.includes('-')) {
+        const [year, monthNum] = month.split('-');
+        const monthName = MONTH_NAMES_SHORT[parseInt(monthNum) - 1];
+        const shortYear = year.slice(2);
+        return `${monthName} '${shortYear}`;
+      }
+      // Legacy plain month name — return as-is (no year available)
+      const idx = MONTH_NAMES_FULL.findIndex(n => n.toLowerCase() === month.toLowerCase());
+      if (idx !== -1) return MONTH_NAMES_FULL[idx];
+      return month;
     }).join(', ');
   };
 
