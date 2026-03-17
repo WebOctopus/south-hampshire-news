@@ -1,61 +1,24 @@
 
 
-## GoCardless Payment Gateway Fixes — Completed
+## Block Proceeding Without All Free Areas Selected (BOGOF)
 
-### Fixes Applied
+### Problem
+The `canProceed()` function only checks `bogofPaidAreas.length > 0` — it doesn't require free areas to match paid areas. Users can skip claiming free areas entirely.
 
-**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
-- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
-- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
-- Added `else` branch showing error when no redirect_flow_id is present
-- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
+### Changes
 
-**2. GoCardless webhook — billing_requests handler added**
-- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
-- Logs fulfilled, failed, and cancelled actions for debugging
-- No longer drops these events as "unhandled"
+**File: `src/components/AreaSelectionStep.tsx`**
 
-**3. BookingDetailsDialog — Address validation added**
-- Validates address, city, and postcode before initiating GoCardless redirect
-- Shows toast error if address fields are missing or contain placeholders
-- Prevents invalid data from being sent to GoCardless API
+1. **Update `canProceed()`** (line 168-169): For BOGOF, require `bogofFreeAreas.length === bogofPaidAreas.length` (free must equal paid).
 
-### Files Changed
+2. **Update the nudge alert** (line 438-442): Change from a soft nudge to a blocking message. Add a prompt to scroll back up and select free areas. Use stronger styling (e.g. destructive/red tone) and add a "Select Your Free Areas" button that scrolls to the free areas section.
 
-| File | Change |
-|---|---|
-| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
-| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+3. **Move the "Continue" button logic**: It already depends on `canProceed()`, so updating that function automatically blocks progression.
 
----
+4. **Add scroll-to-free-areas**: Add a `ref` on the free areas section heading, and a button in the alert that calls `scrollIntoView({ behavior: 'smooth' })` to bring users back to the free area cards.
 
-## Fixed Term Pricing & Stripe Integration — Completed
+### Result
+- Users cannot proceed until all free areas are claimed
+- Alert clearly states they must select free areas
+- A button scrolls them back up to the free area selection
 
-### Issues Fixed
-
-**1. Pricing fallback bug**
-- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
-- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
-
-**2. Stripe integration for Fixed Term payments**
-- Created `create-stripe-checkout` edge function for one-off card payments
-- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
-- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
-- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
-
-**3. Payment UI conditional logic**
-- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
-- All GoCardless-specific text/options hidden for Fixed Term
-- Secure payment info text updated to reference Stripe for Fixed Term
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
-| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
-| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
-| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
-| `supabase/config.toml` | Added Stripe function configs |
