@@ -177,19 +177,10 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       });
       return;
     }
-    // Validate address before sending to GoCardless
+    // Optional address prefill — GoCardless collects address on their hosted page if not provided
     const addressLine1 = booking.selections?.address || '';
     const city = booking.selections?.city || '';
-    const postcode = booking.selections?.postcode || '';
-
-    if (!addressLine1 || !city || !postcode || postcode === 'POSTCODE') {
-      toast({
-        title: 'Address Required',
-        description: 'Please update your address details before setting up payment. Contact support if you need help.',
-        variant: 'destructive',
-      });
-      return;
-    }
+    const postcode = (booking.selections?.postcode && booking.selections.postcode !== 'POSTCODE') ? booking.selections.postcode : '';
 
     try {
       const result = await createMandate.mutateAsync({
