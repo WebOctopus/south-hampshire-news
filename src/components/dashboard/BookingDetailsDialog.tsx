@@ -609,21 +609,37 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                   const isDeposit = isLeafleting && !isWithin10Days;
                   
                   return (
-                  /* Fixed Term: Stripe pay-in-full */
+                  /* Fixed Term / Leafleting: Stripe payment */
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Pay the full amount securely by card:
+                      {isDeposit 
+                        ? 'Pay a 25% deposit now to secure your leaflet distribution slot:' 
+                        : 'Pay the full amount securely by card:'}
                     </p>
 
                     <div className="p-4 border-2 border-primary bg-primary/5 rounded-lg">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">Pay Full Amount</span>
+                        <span className="font-medium">
+                          {isDeposit ? 'Pay 25% Deposit' : 'Pay Full Amount'}
+                        </span>
                         <span className="font-bold text-lg">
-                          {formatPrice(booking.final_total || booking.monthly_price)} + VAT
+                          {formatPrice(payAmount)} + VAT
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground">One-off card payment via Stripe</p>
+                      <p className="text-sm text-muted-foreground">
+                        {isDeposit 
+                          ? `One-off deposit payment via Stripe • Remaining ${formatPrice(fullAmount - depositAmount)} + VAT due before distribution`
+                          : 'One-off card payment via Stripe'}
+                      </p>
                     </div>
+
+                    {isLeafleting && !isDeposit && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <p className="text-sm text-amber-800">
+                          <strong>Full payment required:</strong> Your distribution date is within 10 days, so the full amount is due now.
+                        </p>
+                      </div>
+                    )}
 
                     {/* T&Cs Acceptance */}
                     <div className="flex items-start space-x-3 p-4 bg-blue-50/80 border border-blue-200 rounded-lg">
@@ -720,13 +736,13 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                     </div>
 
-                    <Button onClick={() => handleStripeCheckout()} disabled={!legalDocumentsAccepted || stripeLoading} className="w-full" size="lg">
+                    <Button onClick={() => handleStripeCheckout(payAmount)} disabled={!legalDocumentsAccepted || stripeLoading} className="w-full" size="lg">
                       {stripeLoading ? <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Redirecting to payment...
                         </> : <>
                           <CreditCard className="mr-2 h-4 w-4" />
-                          Pay Full Amount by Card
+                          {isDeposit ? 'Pay 25% Deposit by Card' : 'Pay Full Amount by Card'}
                         </>}
                     </Button>
 
@@ -737,7 +753,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </p>
                     </div>
                   </div>
-                ) : <div className="space-y-4">
+                );
+                })() : <div className="space-y-4">
                   {/* GoCardless payment options for bogof/subscription */}
                   <p className="text-sm text-muted-foreground">
                     {booking.selections?.payment_option_id 
