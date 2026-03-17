@@ -383,7 +383,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                           />
                           <div className="flex-1 space-y-2">
                             <div className="font-medium text-sm">
-                              {formatMonthDisplay(monthData.month)}
+                              {formatMonthWithSchedule(monthData.month, area.schedule || [])}
                             </div>
                             {monthData.copy_deadline && (
                               <div className="text-xs text-muted-foreground">
