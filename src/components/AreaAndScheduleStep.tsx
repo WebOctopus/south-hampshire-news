@@ -13,59 +13,18 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { formatDateUK, cn } from '@/lib/utils';
 import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeafletData';
 import { MobilePricingSummary } from '@/components/MobilePricingSummary';
-import { getAreaGroupedSchedules, isMonthAvailable } from '@/lib/issueSchedule';
+import { getAreaGroupedSchedules, isMonthAvailable, normalizeMonthToYYYYMM, formatMonthForDisplay } from '@/lib/issueSchedule';
 
-// Helper function to format month display
-const formatMonthDisplay = (monthString: string) => {
-  if (!monthString) {
-    return 'Invalid Date';
-  }
-  
-  let year: string, month: string;
-  
-  if (monthString.includes('-')) {
-    [year, month] = monthString.split('-');
-  } else if (monthString.includes(' ')) {
-    const parts = monthString.split(' ');
-    if (parts.length === 2) {
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ];
-      const monthIndex = monthNames.findIndex(name => name.toLowerCase() === parts[0].toLowerCase());
-      if (monthIndex !== -1) {
-        month = String(monthIndex + 1).padStart(2, '0');
-        year = parts[1];
-      } else {
-        return monthString;
-      }
-    } else {
-      return monthString;
-    }
-  } else {
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    const monthIndex = monthNames.findIndex(name => name.toLowerCase() === monthString.toLowerCase());
-    if (monthIndex !== -1) {
-      return monthString;
-    } else {
-      return monthString;
-    }
-  }
-  
-  const monthNumber = parseInt(month, 10);
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-  
-  if (monthNumber < 1 || monthNumber > 12 || !year) {
-    return monthString;
-  }
-  
-  return `${monthNames[monthNumber - 1]} ${year}`;
+// Helper: normalise a schedule month entry and return a readable "Month YYYY" label
+const formatMonthWithSchedule = (monthStr: string, schedule: any[]): string => {
+  if (!monthStr) return 'Invalid Date';
+  const normalised = normalizeMonthToYYYYMM(monthStr, schedule);
+  return formatMonthForDisplay(normalised);
+};
+
+// Helper: get the normalised YYYY-MM value for a schedule month entry
+const normaliseMonthValue = (monthStr: string, schedule: any[]): string => {
+  return normalizeMonthToYYYYMM(monthStr, schedule);
 };
 
 interface AreaAndScheduleStepProps {

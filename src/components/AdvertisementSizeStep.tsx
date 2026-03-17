@@ -272,12 +272,18 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
                   const area = areas?.find(a => a.id === areaId);
                   if (!area) return null;
                   const months = (selectedMonths && selectedMonths[areaId]) ? selectedMonths[areaId] : [];
+                  const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                  const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
                   const formattedMonths = months.map((m) => {
-                    if (!m || !m.includes('-')) return m;
-                    const [year, monthNum] = m.split('-');
-                    const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                    const name = names[parseInt(monthNum) - 1];
-                    return `${name} '${year.slice(2)}`;
+                    if (!m) return m;
+                    if (m.includes('-')) {
+                      const [year, monthNum] = m.split('-');
+                      return `${MONTH_SHORT[parseInt(monthNum) - 1]} '${year.slice(2)}`;
+                    }
+                    // Legacy plain month name
+                    const idx = MONTH_FULL.findIndex(n => n.toLowerCase() === m.toLowerCase());
+                    if (idx !== -1) return MONTH_FULL[idx];
+                    return m;
                   }).join(', ');
                   return (
                     <div key={areaId} className="ml-2 space-y-1">
