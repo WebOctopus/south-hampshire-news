@@ -1,61 +1,53 @@
 
+Goal: hard-block Step 2 in the live `/advertising#calculator` wizard until BOGOF has a valid paid/free pair count, and guide users back to free-area selection when invalid.
 
-## GoCardless Payment Gateway Fixes — Completed
+What I found (root cause):
+1. The active flow is `AdvertisingStepForm` + `AreaAndScheduleStep` (not `AreaSelectionStep`).
+2. Step transition validation (`AdvertisingStepForm` → `stepLabels.onStepTransition`) currently validates Step 2 only for `fixed` and `leafleting`, but not `bogof`.
+3. `AreaAndScheduleStep` has a `canProceed()` function, but StepForm’s global Next button does not use it, so it cannot enforce blocking by itself.
 
-### Fixes Applied
+Implementation plan:
 
-**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
-- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
-- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
-- Added `else` branch showing error when no redirect_flow_id is present
-- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
+1) Add hard validation for BOGOF when leaving Step 2  
+File: `src/components/AdvertisingStepForm.tsx`
+- In `onStepTransition`, inside `currentStep === 1`, add a `bogof` branch that blocks `nextStep()` unless:
+  - `campaignData.bogofPaidAreas.length > 0`
+  - `campaignData.bogofFreeAreas.length === campaignData.bogofPaidAreas.length`
+- On failure:
+  - show destructive toast with explicit copy like:  
+    “You now need to click a free area before we can continue to the next step.”
+  - auto-scroll back to the area selection section / free-area section.
 
-**2. GoCardless webhook — billing_requests handler added**
-- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
-- Logs fulfilled, failed, and cancelled actions for debugging
-- No longer drops these events as "unhandled"
+2) Add stable scroll targets in Step 2 UI  
+File: `src/components/AreaAndScheduleStep.tsx`
+- Add IDs (or refs) to:
+  - top of area selection block (e.g. `id="area-selection-section"`)
+  - free areas column (e.g. `id="bogof-free-areas-section"`)
+- This lets Step 2 validation reliably scroll users to the right place.
 
-**3. BookingDetailsDialog — Address validation added**
-- Validates address, city, and postcode before initiating GoCardless redirect
-- Shows toast error if address fields are missing or contain placeholders
-- Prevents invalid data from being sent to GoCardless API
+3) Show a clear inline blocking message in Step 2 summary  
+File: `src/components/AreaAndScheduleStep.tsx`
+- In the BOGOF selection summary, when paid/free counts are mismatched:
+  - show a high-visibility blocking alert message (not soft nudge)
+  - include remaining count (`paid - free`)
+  - include “Select Your Free Areas” button that scrolls to free-area section.
+- Keep messaging aligned with the toast so users get consistent instruction.
 
-### Files Changed
+4) Keep behaviour consistent for all forward navigation paths  
+File: `src/components/AdvertisingStepForm.tsx`
+- Ensure this validation blocks both:
+  - Bottom “Next” button
+  - Progress-circle forward jumps (StepForm already routes forward jumps through `onStepTransition`).
 
-| File | Change |
-|---|---|
-| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
-| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+Technical notes:
+- No database/schema changes.
+- No payment logic changes.
+- This is a front-end validation + UX guidance fix in the active wizard path only.
+- I will not rely on `AreaSelectionStep` for this fix since it is not the component currently driving this flow.
 
----
-
-## Fixed Term Pricing & Stripe Integration — Completed
-
-### Issues Fixed
-
-**1. Pricing fallback bug**
-- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
-- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
-
-**2. Stripe integration for Fixed Term payments**
-- Created `create-stripe-checkout` edge function for one-off card payments
-- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
-- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
-- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
-
-**3. Payment UI conditional logic**
-- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
-- All GoCardless-specific text/options hidden for Fixed Term
-- Secure payment info text updated to reference Stripe for Fixed Term
-
-### Files Changed
-
-| File | Change |
-|---|---|
-| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
-| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
-| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
-| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
-| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
-| `supabase/config.toml` | Added Stripe function configs |
+Validation checklist after implementation:
+1. BOGOF with 1 paid + 0 free → cannot leave Step 2.
+2. BOGOF with 2 paid + 1 free → cannot leave Step 2, sees explicit message, gets scrolled back.
+3. BOGOF with 2 paid + 2 free → can proceed to Step 3.
+4. Try clicking step circle directly to Step 3/4 with mismatch → still blocked.
+5. Deselect paid area after selecting frees → free count re-validates and blocks until counts match again.
