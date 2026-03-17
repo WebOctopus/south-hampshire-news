@@ -138,7 +138,7 @@ export function calculateAdvertisingPrice(
   } else {
     // For fixed pricing: use fixed pricing from database
     const fixedPricing = selectedAdSize.fixed_pricing_per_issue;
-    let basePrice = selectedAdSize.base_price_per_month;
+    let basePrice = selectedAdSize.base_price_per_area; // Fixed term uses base_price_per_area
     
     // Check if we have area-count specific pricing configured
     if (fixedPricing && typeof fixedPricing === 'object' && Object.keys(fixedPricing).length > 0) {
@@ -149,7 +149,7 @@ export function calculateAdvertisingPrice(
         // Log warning when area-count specific pricing is missing
         console.warn(
           `Missing fixed pricing for ${selectedAdSize.name} with ${areasCount} areas. ` +
-          `Falling back to base_price_per_month: £${basePrice}. ` +
+          `Falling back to base_price_per_area: £${basePrice}. ` +
           `Please configure pricing in Admin > Issue-Based Pricing.`
         );
       }
@@ -157,7 +157,7 @@ export function calculateAdvertisingPrice(
       // Log warning when no issue-based pricing exists at all
       console.warn(
         `No fixed issue-based pricing configured for ${selectedAdSize.name}. ` +
-        `Using fallback base_price_per_month: £${basePrice}. ` +
+        `Using fallback base_price_per_area: £${basePrice}. ` +
         `Please configure pricing in Admin > Issue-Based Pricing.`
       );
     }

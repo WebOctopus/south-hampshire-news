@@ -549,8 +549,148 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         </div>
                       </div>
                     </div>}
-                </div> : <div className="space-y-4">
-                  {/* Show payment options - if none selected, show all available options */}
+                </div> : booking.payment_status === 'paid' || booking.payment_status === 'confirmed' ? <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                      <div>
+                        <p className="font-medium">Payment Complete</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatPrice(booking.final_total || booking.monthly_price)} + VAT
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">Paid</Badge>
+                  </div> : booking.pricing_model === 'fixed' ? (
+                  /* Fixed Term: Stripe pay-in-full */
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Pay the full amount securely by card:
+                    </p>
+
+                    <div className="p-4 border-2 border-primary bg-primary/5 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">Pay Full Amount</span>
+                        <span className="font-bold text-lg">
+                          {formatPrice(booking.final_total || booking.monthly_price)} + VAT
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">One-off card payment via Stripe</p>
+                    </div>
+
+                    {/* T&Cs Acceptance */}
+                    <div className="flex items-start space-x-3 p-4 bg-blue-50/80 border border-blue-200 rounded-lg">
+                      <Checkbox
+                        id="legalDocumentsBooking"
+                        checked={legalDocumentsAccepted}
+                        onCheckedChange={(checked) => setLegalDocumentsAccepted(!!checked)}
+                        className="mt-0.5"
+                      />
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor="legalDocumentsBooking" className="text-sm font-medium cursor-pointer">
+                            I accept the T&C's *
+                          </Label>
+                          <Dialog open={legalDocumentsOpen} onOpenChange={setLegalDocumentsOpen}>
+                            <DialogTrigger asChild>
+                              <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 hover:text-blue-800">
+                                <Info className="h-4 w-4 mr-1" />
+                                View Documents
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Legal Documents</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-6 text-sm">
+                                <div className="space-y-3">
+                                  <h3 className="text-lg font-semibold text-foreground">Terms & Conditions</h3>
+                                  <div className="space-y-2 text-muted-foreground">
+                                    <p>By using our advertising services, you agree to the following terms:</p>
+                                    <ul className="list-disc list-inside space-y-1 ml-4">
+                                      <li>Payment terms: Full payment required before print date</li>
+                                      <li>Campaign specifications are final once approved</li>
+                                      <li>We reserve the right to refuse advertising content that violates our content policy</li>
+                                      <li>Delivery dates are estimates and may vary due to external factors</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                                <div className="space-y-3">
+                                  <h3 className="text-lg font-semibold text-foreground">Service Agreement</h3>
+                                  <div className="space-y-2 text-muted-foreground">
+                                    <p>This agreement outlines the specific details of your advertising campaign:</p>
+                                    <ul className="list-disc list-inside space-y-1 ml-4">
+                                      <li>Campaign duration and distribution schedule</li>
+                                      <li>Target areas and circulation numbers</li>
+                                      <li>Advertisement specifications and design requirements</li>
+                                      <li>Quality standards and printing specifications</li>
+                                      <li>Distribution methods and tracking procedures</li>
+                                      <li>Performance metrics and reporting standards</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                                <div className="space-y-3">
+                                  <h3 className="text-lg font-semibold text-foreground">Data Protection Notice</h3>
+                                  <div className="space-y-2 text-muted-foreground">
+                                    <p>We are committed to protecting your personal information:</p>
+                                    <ul className="list-disc list-inside space-y-1 ml-4">
+                                      <li>Personal data is collected only for service delivery purposes</li>
+                                      <li>Information is stored securely and encrypted</li>
+                                      <li>Data is not shared with third parties without consent</li>
+                                      <li>You have the right to access, modify, or delete your data</li>
+                                      <li>We comply with GDPR and UK data protection regulations</li>
+                                      <li>Data retention policy: Information kept for 7 years for accounting purposes</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                                <div className="space-y-3">
+                                  <h3 className="text-lg font-semibold text-foreground">Privacy Policy</h3>
+                                  <div className="space-y-2 text-muted-foreground">
+                                    <p>Our privacy policy explains how we collect and use your information:</p>
+                                    <ul className="list-disc list-inside space-y-1 ml-4">
+                                      <li>Website cookies are used to improve user experience</li>
+                                      <li>Analytics data helps us improve our services</li>
+                                      <li>Marketing communications are opt-in only</li>
+                                      <li>Account information is used for service delivery and support</li>
+                                      <li>Payment information is processed by secure third-party providers</li>
+                                      <li>You can update privacy preferences in your account settings</li>
+                                    </ul>
+                                  </div>
+                                </div>
+                                <div className="border-t pt-4 mt-6">
+                                  <p className="text-xs text-muted-foreground">
+                                    Last updated: September 2024. These documents will be available for download in your account dashboard after booking completion.
+                                  </p>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                        <p className="text-xs text-blue-700">
+                          By checking this box, you acknowledge that you have read and agree to our terms of service, 
+                          data protection policies, and service agreement.
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button onClick={handleStripeCheckout} disabled={!legalDocumentsAccepted || stripeLoading} className="w-full" size="lg">
+                      {stripeLoading ? <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Redirecting to payment...
+                        </> : <>
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Pay Full Amount by Card
+                        </>}
+                    </Button>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-800">
+                        <strong>Secure Payment:</strong> Your payment will be processed securely via Stripe. 
+                        You'll be redirected to a secure checkout page to complete your card payment.
+                      </p>
+                    </div>
+                  </div>
+                ) : <div className="space-y-4">
+                  {/* GoCardless payment options for bogof/subscription */}
                   <p className="text-sm text-muted-foreground">
                     {booking.selections?.payment_option_id 
                       ? 'Your selected to pay:' 
@@ -560,18 +700,13 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                   <RadioGroup value={selectedPaymentOption || ''} onValueChange={setSelectedPaymentOption}>
                     {paymentOptions
                       .filter(option => 
-                        // If a payment option was previously selected, show only that one
-                        // Otherwise, show all available options so user can select
                         !booking.selections?.payment_option_id || option.option_type === booking.selections.payment_option_id
                       )
                       .map(option => {
-                  // Use the same calculation logic as the booking summary
                   const baseTotal = booking.final_total || booking.monthly_price;
                   const pricingModel = booking.pricing_model || 'fixed';
                   const designFee = booking.pricing_breakdown?.designFee || 0;
                   const totalAmount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
-
-                  // Calculate savings for display
                   const discount = option.discount_percentage > 0 ? baseTotal * option.discount_percentage / 100 : 0;
                   return <div key={option.id} className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedPaymentOption === option.option_type ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onClick={() => setSelectedPaymentOption(option.option_type)}>
                           <RadioGroupItem value={option.option_type} id={option.id} className="mt-1" />
