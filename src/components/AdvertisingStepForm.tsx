@@ -987,6 +987,34 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             return;
           }
         }
+        if (selectedPricingModel === 'bogof') {
+          if (campaignData.bogofPaidAreas.length === 0) {
+            toast({
+              title: "Area Selection Required",
+              description: "Please select at least one paid area before continuing.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (campaignData.bogofFreeAreas.length !== campaignData.bogofPaidAreas.length) {
+            const remaining = campaignData.bogofPaidAreas.length - campaignData.bogofFreeAreas.length;
+            toast({
+              title: "Free Areas Required",
+              description: `You still need to select ${remaining} free bonus area${remaining !== 1 ? 's' : ''} before continuing. Scroll up and click your free areas now.`,
+              variant: "destructive",
+            });
+            document.getElementById('bogof-free-areas-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+          }
+          if (!campaignData.selectedMonths || Object.keys(campaignData.selectedMonths).length === 0) {
+            toast({
+              title: "Start Month Required",
+              description: "Please select a campaign start month before continuing.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
       }
 
       // Step 3: Payment option required for bogof and leafleting

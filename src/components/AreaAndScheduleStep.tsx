@@ -637,7 +637,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             </div>
 
             {/* Free Areas Section */}
-            <div className="space-y-3 md:space-y-4 min-w-0">
+            <div id="bogof-free-areas-section" className="space-y-3 md:space-y-4 min-w-0">
                 <div className="flex items-center gap-1 md:gap-2">
                   <EditableText
                     value={advertisingContent?.areaSelection?.freeAreasHeading || 'FREE Bonus Areas'}
