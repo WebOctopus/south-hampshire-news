@@ -181,8 +181,8 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
               onClick={() => onBookNow(quote)}
               className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
             >
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Book Now
+              <Shield className="h-4 w-4 mr-1" />
+              View & Accept Terms
             </Button>
           )}
         </div>
