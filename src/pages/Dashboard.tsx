@@ -39,6 +39,7 @@ import VouchersSection from '@/components/dashboard/VouchersSection';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import CreateBookingForm from '@/components/dashboard/CreateBookingForm';
+import BookingTerms from '@/components/dashboard/BookingTerms';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -1484,6 +1485,7 @@ const Dashboard = () => {
               {activeTab === 'quotes' && renderQuotes()}
               {activeTab === 'bookings' && renderBookings()}
               {activeTab === 'vouchers' && user && <VouchersSection user={user} />}
+              {activeTab === 'terms' && <BookingTerms />}
               {activeTab === 'profile' && renderProfileSettings()}
             </div>
           </div>

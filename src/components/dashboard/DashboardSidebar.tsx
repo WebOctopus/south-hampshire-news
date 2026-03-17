@@ -1,4 +1,4 @@
-import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift } from "lucide-react"
+import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift, Shield } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -95,6 +95,12 @@ export function DashboardSidebar({
       title: `Your Vouchers (${voucherCount})`,
       value: "vouchers",
       icon: Gift,
+      disabled: false
+    },
+    {
+      title: "Terms & Conditions",
+      value: "terms",
+      icon: Shield,
       disabled: false
     }
   ]
