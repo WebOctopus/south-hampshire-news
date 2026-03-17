@@ -66,6 +66,8 @@ const Dashboard = () => {
   const [voucherCount, setVoucherCount] = useState(0);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [quotesExpanded, setQuotesExpanded] = useState(true);
+  const [termsQuote, setTermsQuote] = useState<any>(null);
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
   const hasExistingBusiness = businesses.length > 0;
