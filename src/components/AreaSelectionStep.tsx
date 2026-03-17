@@ -436,7 +436,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
                 <div>Free bonus areas: {bogofFreeAreas.length}</div>
                 <div>Total areas: {bogofPaidAreas.length + bogofFreeAreas.length}</div>
                 {bogofPaidAreas.length > 0 && bogofFreeAreas.length < bogofPaidAreas.length && (
-                  <div className="mt-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-md p-3 text-sm">
+                  <div className="mt-3 bg-warning/10 border border-warning/30 text-warning-foreground rounded-md p-3 text-sm">
                     <span className="font-medium">🎁 Don't miss out!</span> You've selected {bogofFreeAreas.length} of {bogofPaidAreas.length} free area{bogofPaidAreas.length > 1 ? 's' : ''}. Choose {bogofPaidAreas.length - bogofFreeAreas.length} more to maximise your coverage at no extra cost!
                   </div>
                 )}
