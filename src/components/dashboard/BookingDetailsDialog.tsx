@@ -96,21 +96,23 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
     enabled: !!booking?.id && open
   });
 
-  // Query area names for display
+  // Query area names for display - use leaflet_areas for leafleting bookings, pricing_areas otherwise
   const {
     data: pricingAreas
   } = useQuery({
-    queryKey: ['pricing-areas-for-booking', booking?.id],
+    queryKey: ['areas-for-booking', booking?.id, booking?.pricing_model],
     queryFn: async () => {
       if (!booking) return [];
 
       // Get all area IDs that need to be fetched
       const allAreaIds = [...(booking.selected_area_ids || []), ...(booking.bogof_paid_area_ids || []), ...(booking.bogof_free_area_ids || [])].filter(Boolean);
       if (allAreaIds.length === 0) return [];
+      
+      const tableName = booking.pricing_model === 'leafleting' ? 'leaflet_areas' : 'pricing_areas';
       const {
         data,
         error
-      } = await supabase.from('pricing_areas').select('id, name').in('id', allAreaIds);
+      } = await supabase.from(tableName).select('id, name').in('id', allAreaIds);
       if (error) throw error;
       return data || [];
     },
@@ -211,15 +213,17 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       console.error('Error setting up payment:', error);
     }
   };
-  const handleStripeCheckout = async () => {
+  const handleStripeCheckout = async (amountOverride?: number) => {
     if (!booking) return;
     setStripeLoading(true);
     try {
+      const amount = amountOverride || booking.final_total || booking.monthly_price;
       const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
         body: {
           bookingId: booking.id,
-          amount: booking.final_total || booking.monthly_price,
+          amount,
           customerEmail: booking.email,
+          isDeposit: !!amountOverride && amountOverride < (booking.final_total || booking.monthly_price),
           successUrl: `${window.location.origin}/payment-setup?booking_id=${booking.id}&stripe_success=true`,
           cancelUrl: `${window.location.origin}/dashboard`,
         },
@@ -591,22 +595,51 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                     </div>
                     <Badge className="bg-green-100 text-green-800">Paid</Badge>
-                  </div> : booking.pricing_model === 'fixed' ? (
-                  /* Fixed Term: Stripe pay-in-full */
+                  </div> : booking.pricing_model === 'fixed' || booking.pricing_model === 'leafleting' ? (() => {
+                  // Calculate leafleting deposit logic
+                  const isLeafleting = booking.pricing_model === 'leafleting';
+                  const distributionDate = booking.distribution_start_date || booking.leaflets_required_by;
+                  const daysUntilDistribution = distributionDate 
+                    ? Math.ceil((new Date(distributionDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    : 999;
+                  const isWithin10Days = isLeafleting && daysUntilDistribution <= 10;
+                  const fullAmount = booking.final_total || booking.monthly_price;
+                  const depositAmount = Math.ceil(fullAmount * 0.25 * 100) / 100; // 25% rounded to 2dp
+                  const payAmount = (isLeafleting && !isWithin10Days) ? depositAmount : fullAmount;
+                  const isDeposit = isLeafleting && !isWithin10Days;
+                  
+                  return (
+                  /* Fixed Term / Leafleting: Stripe payment */
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Pay the full amount securely by card:
+                      {isDeposit 
+                        ? 'Pay a 25% deposit now to secure your leaflet distribution slot:' 
+                        : 'Pay the full amount securely by card:'}
                     </p>
 
                     <div className="p-4 border-2 border-primary bg-primary/5 rounded-lg">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">Pay Full Amount</span>
+                        <span className="font-medium">
+                          {isDeposit ? 'Pay 25% Deposit' : 'Pay Full Amount'}
+                        </span>
                         <span className="font-bold text-lg">
-                          {formatPrice(booking.final_total || booking.monthly_price)} + VAT
+                          {formatPrice(payAmount)} + VAT
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground">One-off card payment via Stripe</p>
+                      <p className="text-sm text-muted-foreground">
+                        {isDeposit 
+                          ? `One-off deposit payment via Stripe • Remaining ${formatPrice(fullAmount - depositAmount)} + VAT due before distribution`
+                          : 'One-off card payment via Stripe'}
+                      </p>
                     </div>
+
+                    {isLeafleting && !isDeposit && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <p className="text-sm text-amber-800">
+                          <strong>Full payment required:</strong> Your distribution date is within 10 days, so the full amount is due now.
+                        </p>
+                      </div>
+                    )}
 
                     {/* T&Cs Acceptance */}
                     <div className="flex items-start space-x-3 p-4 bg-blue-50/80 border border-blue-200 rounded-lg">
@@ -703,13 +736,13 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                     </div>
 
-                    <Button onClick={handleStripeCheckout} disabled={!legalDocumentsAccepted || stripeLoading} className="w-full" size="lg">
+                    <Button onClick={() => handleStripeCheckout(payAmount)} disabled={!legalDocumentsAccepted || stripeLoading} className="w-full" size="lg">
                       {stripeLoading ? <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Redirecting to payment...
                         </> : <>
                           <CreditCard className="mr-2 h-4 w-4" />
-                          Pay Full Amount by Card
+                          {isDeposit ? 'Pay 25% Deposit by Card' : 'Pay Full Amount by Card'}
                         </>}
                     </Button>
 
@@ -720,7 +753,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </p>
                     </div>
                   </div>
-                ) : <div className="space-y-4">
+                );
+                })() : <div className="space-y-4">
                   {/* GoCardless payment options for bogof/subscription */}
                   <p className="text-sm text-muted-foreground">
                     {booking.selections?.payment_option_id 
