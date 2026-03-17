@@ -637,7 +637,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             </div>
 
             {/* Free Areas Section */}
-            <div className="space-y-3 md:space-y-4 min-w-0">
+            <div id="bogof-free-areas-section" className="space-y-3 md:space-y-4 min-w-0">
                 <div className="flex items-center gap-1 md:gap-2">
                   <EditableText
                     value={advertisingContent?.areaSelection?.freeAreasHeading || 'FREE Bonus Areas'}
@@ -763,6 +763,29 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
           </div>
         )}
 
+        {/* BOGOF: Blocking alert when free areas are missing */}
+        {pricingModel === 'bogof' && bogofPaidAreas.length > 0 && bogofFreeAreas.length < bogofPaidAreas.length && (
+          <Alert variant="destructive" className="border-2 border-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex flex-col gap-2">
+              <span className="font-semibold">
+                You need to select {bogofPaidAreas.length - bogofFreeAreas.length} more free bonus area{bogofPaidAreas.length - bogofFreeAreas.length !== 1 ? 's' : ''} before you can continue.
+              </span>
+              <span className="text-sm">
+                For every paid area, you must choose a matching free area. Please scroll up and click your free areas now.
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-fit border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                onClick={() => document.getElementById('bogof-free-areas-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              >
+                ↑ Select Your Free Areas
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Selection Summary */}
         {((pricingModel === 'bogof' && (bogofPaidAreas.length > 0 || bogofFreeAreas.length > 0)) || 
           (pricingModel !== 'bogof' && selectedAreas.length > 0)) && (
@@ -772,7 +795,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
               {pricingModel === 'bogof' ? (
                 <>
                   <div>Paid areas: {bogofPaidAreas.length}</div>
-                  <div>Free bonus areas: {bogofFreeAreas.length}</div>
+                  <div>Free bonus areas: {bogofFreeAreas.length}{bogofFreeAreas.length < bogofPaidAreas.length ? ` (${bogofPaidAreas.length - bogofFreeAreas.length} remaining)` : ' ✓'}</div>
                   <div>Total areas: {bogofPaidAreas.length + bogofFreeAreas.length}</div>
                 </>
               ) : (
