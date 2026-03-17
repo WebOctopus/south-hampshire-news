@@ -375,20 +375,44 @@ Deno.serve(async (req) => {
       let customerHtml: string;
 
       if (customerTemplate) {
+        // Look up ad size dimensions from DB
+        let adDimensions = "N/A";
+        if (payload.ad_size) {
+          try {
+            const supabaseAdmin = createClient(
+              Deno.env.get("SUPABASE_URL")!,
+              Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+            );
+            const { data: adSizeData } = await supabaseAdmin
+              .from("ad_sizes")
+              .select("dimensions")
+              .eq("name", payload.ad_size)
+              .maybeSingle();
+            if (adSizeData?.dimensions) {
+              adDimensions = adSizeData.dimensions;
+            }
+          } catch (e) {
+            console.warn("Could not look up ad size dimensions:", e);
+          }
+        }
+
         // Build variable map covering all product types
         const paidAreas = payload.bogof_paid_areas?.length ? payload.bogof_paid_areas.join(", ") : "N/A";
         const freeAreas = payload.bogof_free_areas?.length ? payload.bogof_free_areas.join(", ") : "N/A";
+        const areasSelected = payload.selected_areas?.length ? payload.selected_areas.join(", ") : "N/A";
         const vars: Record<string, string> = {
           customer_name: (payload.contact_name || payload.email.split("@")[0]).split(" ")[0],
           package_type: modelLabel,
           // Fixed Term vars
           ad_size: payload.ad_size || "N/A",
+          dimensions: adDimensions,
           duration: payload.duration || "N/A",
           circulation: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
           monthly_price: formatCurrency(payload.monthly_price),
           duration_discount: payload.duration_discount_percent && payload.duration_discount_percent > 0
             ? `${payload.duration_discount_percent}%`
             : "None",
+          areas_selected: areasSelected,
           // Bogof vars
           paid_areas: paidAreas,
           free_areas: freeAreas,
