@@ -64,7 +64,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
   })();
     
   const getPaymentLabel = () => {
-    if (!selectedPaymentOptionType) return '+ VAT';
+    if (!selectedPaymentOptionType) {
+      return booking.pricing_model === 'bogof' ? 'Monthly Payment' : '+ VAT';
+    }
     
     if (selectedPaymentOptionType === 'monthly') {
       return 'Monthly Payment';
