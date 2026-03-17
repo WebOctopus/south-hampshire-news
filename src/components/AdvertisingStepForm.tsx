@@ -893,7 +893,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             ...(isAdminCreating ? {
               is_admin_created: true,
               ...(isNewUser
-                ? { generated_password: contactData.generatedPassword || contactData.password }
+                ? { generated_password: contactData._actualGeneratedPassword || contactData.generatedPassword || contactData.password }
                 : { is_existing_user: true }),
             } : {}),
           }

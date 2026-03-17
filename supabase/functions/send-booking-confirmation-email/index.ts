@@ -436,12 +436,31 @@ Deno.serve(async (req) => {
         };
         customerSubject = applyTemplate(customerTemplate.subject, vars);
         let templatedHtml = applyTemplate(customerTemplate.html_body, vars);
-        // If admin-created and template doesn't have login_credentials placeholder, append it
+        // If admin-created and template doesn't have login_credentials placeholder, append credentials block
         if (payload.is_admin_created && payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
-          templatedHtml = templatedHtml.replace('</body>', buildLoginCredentialsHtml(payload.email, payload.generated_password) + '</body>');
+          const credentialsBlock = buildLoginCredentialsHtml(payload.email, payload.generated_password);
+          // Try </body> first, then </table>, then just append at the end
+          if (templatedHtml.includes('</body>')) {
+            templatedHtml = templatedHtml.replace('</body>', credentialsBlock + '</body>');
+          } else if (templatedHtml.includes('</table>')) {
+            // Insert before the last closing </table> (common in email templates)
+            const lastTableIdx = templatedHtml.lastIndexOf('</table>');
+            templatedHtml = templatedHtml.slice(0, lastTableIdx) + credentialsBlock + templatedHtml.slice(lastTableIdx);
+          } else {
+            // Fallback: just append at the end
+            templatedHtml += credentialsBlock;
+          }
         }
         if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
-          templatedHtml = templatedHtml.replace('</body>', buildExistingUserLoginHtml() + '</body>');
+          const loginBlock = buildExistingUserLoginHtml();
+          if (templatedHtml.includes('</body>')) {
+            templatedHtml = templatedHtml.replace('</body>', loginBlock + '</body>');
+          } else if (templatedHtml.includes('</table>')) {
+            const lastTableIdx = templatedHtml.lastIndexOf('</table>');
+            templatedHtml = templatedHtml.slice(0, lastTableIdx) + loginBlock + templatedHtml.slice(lastTableIdx);
+          } else {
+            templatedHtml += loginBlock;
+          }
         }
         customerHtml = templatedHtml;
       } else {
