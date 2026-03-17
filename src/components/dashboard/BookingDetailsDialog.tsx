@@ -604,8 +604,13 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     : 999;
                   const isWithin10Days = isLeafleting && daysUntilDistribution <= 10;
                   const fullAmount = booking.final_total || booking.monthly_price;
-                  const depositAmount = Math.ceil(fullAmount * 0.25 * 100) / 100; // 25% rounded to 2dp
-                  const payAmount = (isLeafleting && !isWithin10Days) ? depositAmount : fullAmount;
+                   // Leafleting final_total includes VAT already (price_with_vat from DB)
+                   // Stripe edge function adds 20% VAT, so send ex-VAT amount for leafleting
+                   const exVatAmount = isLeafleting 
+                     ? Math.round((fullAmount / 1.2) * 100) / 100 
+                     : fullAmount;
+                   const depositAmount = Math.ceil(exVatAmount * 0.25 * 100) / 100; // 25% rounded to 2dp
+                   const payAmount = (isLeafleting && !isWithin10Days) ? depositAmount : exVatAmount;
                   const isDeposit = isLeafleting && !isWithin10Days;
                   
                   return (
