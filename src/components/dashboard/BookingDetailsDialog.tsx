@@ -633,7 +633,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {isDeposit 
-                          ? `One-off deposit payment via Stripe • Remaining ${formatPrice(fullAmount - depositAmount)} + VAT due before distribution`
+                          ? `One-off deposit payment via Stripe • Remaining ${formatPrice(exVatAmount - depositAmount)} + VAT due before distribution`
                           : 'One-off card payment via Stripe'}
                       </p>
                     </div>
