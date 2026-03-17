@@ -303,7 +303,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                         onMonthsChange(newSelectedMonths);
                       }}>
                         <div className="font-medium text-sm">
-                          {formatMonthDisplay(month)}
+                          {formatMonthWithSchedule(month, allAreas[0]?.schedule || [])}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           Applies to all {allAreas.length} selected areas
