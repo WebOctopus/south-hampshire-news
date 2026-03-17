@@ -20,7 +20,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { bookingId, amount, customerEmail, successUrl, cancelUrl } = await req.json();
+    const { bookingId, amount, customerEmail, successUrl, cancelUrl, pricingModel } = await req.json();
 
     if (!bookingId || !amount || !customerEmail) {
       return new Response(JSON.stringify({ error: 'Missing required fields: bookingId, amount, customerEmail' }), {
