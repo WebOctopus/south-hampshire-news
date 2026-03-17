@@ -96,21 +96,23 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
     enabled: !!booking?.id && open
   });
 
-  // Query area names for display
+  // Query area names for display - use leaflet_areas for leafleting bookings, pricing_areas otherwise
   const {
     data: pricingAreas
   } = useQuery({
-    queryKey: ['pricing-areas-for-booking', booking?.id],
+    queryKey: ['areas-for-booking', booking?.id, booking?.pricing_model],
     queryFn: async () => {
       if (!booking) return [];
 
       // Get all area IDs that need to be fetched
       const allAreaIds = [...(booking.selected_area_ids || []), ...(booking.bogof_paid_area_ids || []), ...(booking.bogof_free_area_ids || [])].filter(Boolean);
       if (allAreaIds.length === 0) return [];
+      
+      const tableName = booking.pricing_model === 'leafleting' ? 'leaflet_areas' : 'pricing_areas';
       const {
         data,
         error
-      } = await supabase.from('pricing_areas').select('id, name').in('id', allAreaIds);
+      } = await supabase.from(tableName).select('id, name').in('id', allAreaIds);
       if (error) throw error;
       return data || [];
     },
