@@ -1012,14 +1012,6 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             document.getElementById('bogof-free-areas-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
           }
-          if (!campaignData.selectedMonths || Object.keys(campaignData.selectedMonths).length === 0) {
-            toast({
-              title: "Start Month Required",
-              description: "Please select a campaign start month before continuing.",
-              variant: "destructive",
-            });
-            return;
-          }
         }
       }
 
