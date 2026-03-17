@@ -223,6 +223,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
           bookingId: booking.id,
           amount,
           customerEmail: booking.email,
+          pricingModel: booking.pricing_model,
           isDeposit: !!amountOverride && amountOverride < (booking.final_total || booking.monthly_price),
           successUrl: `${window.location.origin}/payment-setup?booking_id=${booking.id}&stripe_success=true`,
           cancelUrl: `${window.location.origin}/dashboard`,

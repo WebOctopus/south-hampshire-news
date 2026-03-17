@@ -60,7 +60,7 @@ serve(async (req) => {
           price_data: {
             currency: 'gbp',
             product_data: {
-              name: `Advertising Campaign - Fixed Term`,
+              name: `Advertising Campaign - ${pricingModel === 'leafleting' ? 'Leafleting' : 'Fixed Term'}`,
               description: `Booking for ${booking.contact_name}`,
             },
             unit_amount: amountWithVat,
