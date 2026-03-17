@@ -1,47 +1,61 @@
 
 
-## Fix: Double VAT on Leafleting Stripe Checkout
+## GoCardless Payment Gateway Fixes — Completed
 
-### Problem
-The leafleting pricing calculator uses `price_with_vat` from the database, so `final_total` for leafleting bookings already includes VAT. The Stripe checkout edge function then adds another 20% VAT on top, resulting in double-taxation.
+### Fixes Applied
 
-- Stored `final_total` = £384 (VAT-inclusive)
-- 25% deposit = £96
-- Edge function adds 20% VAT → £115.20
-- **Should be**: ex-VAT £320, deposit £80, + VAT = £96
+**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
+- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
+- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
+- Added `else` branch showing error when no redirect_flow_id is present
+- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
 
-### Root Cause
-`src/lib/leafletingCalculator.ts` line 45 sums `area.price_with_vat`, making `finalTotal` VAT-inclusive. But the Stripe edge function (line 52) assumes all amounts are ex-VAT and adds 20%.
+**2. GoCardless webhook — billing_requests handler added**
+- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
+- Logs fulfilled, failed, and cancelled actions for debugging
+- No longer drops these events as "unhandled"
 
-Fixed Term and BOGOF bookings store ex-VAT amounts, so the edge function works correctly for them. Only leafleting is affected.
-
-### Solution
-
-**File: `src/components/dashboard/BookingDetailsDialog.tsx`** (~line 606)
-
-When computing `fullAmount` for the Stripe checkout, check if the booking is leafleting. If so, divide `final_total` by 1.2 to convert back to ex-VAT before passing to Stripe (since the edge function will add VAT).
-
-```
-const fullAmount = booking.final_total || booking.monthly_price;
-// Leafleting final_total includes VAT already (price_with_vat from DB)
-// Stripe edge function adds VAT, so send ex-VAT amount
-const exVatAmount = booking.pricing_model === 'leafleting' 
-  ? Math.round((fullAmount / 1.2) * 100) / 100 
-  : fullAmount;
-```
-
-Then use `exVatAmount` for `depositAmount` and `payAmount` calculations, and in the display (`formatPrice(payAmount) + VAT`).
-
-**Also update the edge function product name** to not hardcode "Fixed Term":
-
-**File: `supabase/functions/create-stripe-checkout/index.ts`** (~line 63)
-
-Accept `pricing_model` from the request body and use it in the product name:
-```
-name: `Advertising Campaign - ${pricing_model === 'leafleting' ? 'Leafleting' : 'Fixed Term'}`
-```
+**3. BookingDetailsDialog — Address validation added**
+- Validates address, city, and postcode before initiating GoCardless redirect
+- Shows toast error if address fields are missing or contain placeholders
+- Prevents invalid data from being sent to GoCardless API
 
 ### Files Changed
-- `src/components/dashboard/BookingDetailsDialog.tsx` — convert leafleting VAT-inclusive amount to ex-VAT before sending to Stripe
-- `supabase/functions/create-stripe-checkout/index.ts` — accept pricing_model for dynamic product name
 
+| File | Change |
+|---|---|
+| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
+| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+
+---
+
+## Fixed Term Pricing & Stripe Integration — Completed
+
+### Issues Fixed
+
+**1. Pricing fallback bug**
+- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
+- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
+
+**2. Stripe integration for Fixed Term payments**
+- Created `create-stripe-checkout` edge function for one-off card payments
+- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
+- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
+- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
+
+**3. Payment UI conditional logic**
+- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
+- All GoCardless-specific text/options hidden for Fixed Term
+- Secure payment info text updated to reference Stripe for Fixed Term
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
+| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
+| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
+| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
+| `supabase/config.toml` | Added Stripe function configs |

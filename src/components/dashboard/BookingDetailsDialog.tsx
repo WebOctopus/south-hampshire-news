@@ -223,6 +223,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
           bookingId: booking.id,
           amount,
           customerEmail: booking.email,
+          pricingModel: booking.pricing_model,
           isDeposit: !!amountOverride && amountOverride < (booking.final_total || booking.monthly_price),
           successUrl: `${window.location.origin}/payment-setup?booking_id=${booking.id}&stripe_success=true`,
           cancelUrl: `${window.location.origin}/dashboard`,
@@ -604,8 +605,13 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     : 999;
                   const isWithin10Days = isLeafleting && daysUntilDistribution <= 10;
                   const fullAmount = booking.final_total || booking.monthly_price;
-                  const depositAmount = Math.ceil(fullAmount * 0.25 * 100) / 100; // 25% rounded to 2dp
-                  const payAmount = (isLeafleting && !isWithin10Days) ? depositAmount : fullAmount;
+                   // Leafleting final_total includes VAT already (price_with_vat from DB)
+                   // Stripe edge function adds 20% VAT, so send ex-VAT amount for leafleting
+                   const exVatAmount = isLeafleting 
+                     ? Math.round((fullAmount / 1.2) * 100) / 100 
+                     : fullAmount;
+                   const depositAmount = Math.ceil(exVatAmount * 0.25 * 100) / 100; // 25% rounded to 2dp
+                   const payAmount = (isLeafleting && !isWithin10Days) ? depositAmount : exVatAmount;
                   const isDeposit = isLeafleting && !isWithin10Days;
                   
                   return (
@@ -628,7 +634,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {isDeposit 
-                          ? `One-off deposit payment via Stripe • Remaining ${formatPrice(fullAmount - depositAmount)} + VAT due before distribution`
+                          ? `One-off deposit payment via Stripe • Remaining ${formatPrice(exVatAmount - depositAmount)} + VAT due before distribution`
                           : 'One-off card payment via Stripe'}
                       </p>
                     </div>
