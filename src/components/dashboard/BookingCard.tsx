@@ -294,7 +294,15 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
             }}
           >
             <CreditCard className="w-4 h-4 mr-2" />
-            Set Up Payment Plan
+            {booking.pricing_model === 'leafleting' 
+              ? (() => {
+                  const distDate = booking.selections?.distribution_start_date || booking.selections?.leaflets_required_by;
+                  const daysUntil = distDate ? Math.ceil((new Date(distDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 999;
+                  return daysUntil <= 10 ? 'Pay in Full by Card' : 'Pay 25% Deposit by Card';
+                })()
+              : booking.pricing_model === 'fixed' 
+                ? 'Pay Full Amount by Card'
+                : 'Set Up Payment Plan'}
           </Button>
         )}
 
