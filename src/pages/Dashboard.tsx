@@ -602,12 +602,16 @@ const Dashboard = () => {
     setQuoteToDelete(quote);
   };
 
-  const handleBookNow = async (quote: any) => {
+  const handleBookNow = (quote: any) => {
+    setTermsQuote(quote);
+    setTermsDialogOpen(true);
+  };
+
+  const handleTermsConfirm = async (quote: any) => {
     if (!user) return;
 
     setSubmitting(true);
     try {
-      // Create booking from quote data
       const bookingData = {
         user_id: user.id,
         contact_name: quote.contact_name,
@@ -632,7 +636,9 @@ const Dashboard = () => {
         selections: quote.selections,
         status: 'pending',
         notes: quote.notes,
-        webhook_payload: {}
+        webhook_payload: {},
+        terms_viewed_at: new Date().toISOString(),
+        terms_accepted_at: new Date().toISOString(),
       };
 
       const { error: bookingError } = await supabase
@@ -641,7 +647,6 @@ const Dashboard = () => {
 
       if (bookingError) throw bookingError;
 
-      // Delete the quote after successfully creating the booking
       const { error: deleteError } = await supabase
         .from('quotes')
         .delete()
@@ -650,11 +655,12 @@ const Dashboard = () => {
       if (deleteError) throw deleteError;
 
       toast({
-        title: "Booking Created!",
-        description: "Your campaign has been booked successfully. We'll be in touch soon!",
+        title: "Booking Confirmed!",
+        description: "Your terms have been accepted. Set up your payment plan to start your campaign.",
       });
 
-      // Reload both quotes and bookings, then switch to bookings tab
+      setTermsDialogOpen(false);
+      setTermsQuote(null);
       await Promise.all([loadQuotes(), loadBookings()]);
       setActiveTab('bookings');
     } catch (error: any) {
