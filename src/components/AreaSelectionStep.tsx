@@ -301,7 +301,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
           </div>
 
           {/* Free Areas Section */}
-          <div className="space-y-4 min-w-0">
+          <div ref={freeAreasRef} className="space-y-4 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">FREE Bonus Areas</h3>
               <Badge variant="secondary">6 Months Free</Badge>
