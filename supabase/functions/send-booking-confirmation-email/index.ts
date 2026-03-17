@@ -235,7 +235,7 @@ function buildCustomerEmailHtml(payload: EmailPayload): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f4f4f4;">
 <table role="presentation" style="width:100%;border-collapse:collapse;"><tr><td align="center" style="padding:40px 0;">
-<table role="presentation" style="width:600px;max-width:100%;border-collapse:collapse;background-color:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+<table role="presentation" width="600" style="width:600px;max-width:100%;border-collapse:collapse;background-color:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
 <tr><td style="background:linear-gradient(135deg,#166534 0%,#15803d 100%);padding:40px;text-align:center;">
 <h1 style="color:#fff;margin:0;font-size:28px;font-weight:bold;">${isBooking ? "Booking Confirmation" : "Quote Saved"}</h1>
 <p style="color:#bbf7d0;margin:10px 0 0;font-size:16px;">Discover Magazine</p>
