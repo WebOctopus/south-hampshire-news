@@ -96,6 +96,12 @@ export function DashboardSidebar({
       value: "vouchers",
       icon: Gift,
       disabled: false
+    },
+    {
+      title: "Terms & Conditions",
+      value: "terms",
+      icon: Shield,
+      disabled: false
     }
   ]
 
