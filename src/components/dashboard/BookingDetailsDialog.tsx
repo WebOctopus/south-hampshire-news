@@ -211,6 +211,36 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       console.error('Error setting up payment:', error);
     }
   };
+  const handleStripeCheckout = async () => {
+    if (!booking) return;
+    setStripeLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
+        body: {
+          bookingId: booking.id,
+          amount: booking.final_total || booking.monthly_price,
+          customerEmail: booking.email,
+          successUrl: `${window.location.origin}/payment-setup?booking_id=${booking.id}&stripe_success=true`,
+          cancelUrl: `${window.location.origin}/dashboard`,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error: any) {
+      console.error('Stripe checkout error:', error);
+      toast({
+        title: 'Payment Error',
+        description: error.message || 'Failed to start checkout. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setStripeLoading(false);
+    }
+  };
   const getPaymentStatus = () => {
     if (payments && payments.length > 0) {
       const latestPayment = payments[0];
