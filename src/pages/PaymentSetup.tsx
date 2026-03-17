@@ -17,6 +17,8 @@ const PaymentSetup = () => {
     const setupPayment = async () => {
       const bookingId = searchParams.get('booking_id');
       const redirectFlowId = searchParams.get('redirect_flow_id');
+      const stripeSuccess = searchParams.get('stripe_success');
+      const stripeSessionId = searchParams.get('stripe_session_id');
 
       if (!bookingId) {
         setStatus('error');
@@ -25,38 +27,60 @@ const PaymentSetup = () => {
       }
 
       try {
-        // Get booking details
-        const { data: booking, error: bookingError } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('id', bookingId)
-          .single();
+        // --- Stripe success flow ---
+        if (stripeSuccess === 'true' || stripeSessionId) {
+          // Update booking status (webhook will confirm final 'paid' status)
+          await supabase.from('bookings').update({
+            payment_status: 'payment_pending',
+            status: 'submitted',
+          }).eq('id', bookingId);
 
-        if (bookingError || !booking) {
-          throw new Error('Booking not found');
+          setStatus('success');
+          setMessage('Payment received! Redirecting to your dashboard...');
+
+          toast({
+            title: 'Payment Successful',
+            description: 'Your card payment has been processed successfully.',
+          });
+
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
+          return;
         }
 
-        // Get payment option separately
-        const paymentOptionData = booking.selections as any;
-        const paymentOptionId = paymentOptionData?.payment_option_id;
-
-        if (!paymentOptionId) {
-          throw new Error('Payment option not found');
-        }
-
-        const { data: paymentOption, error: paymentOptionError } = await supabase
-          .from('payment_options')
-          .select('*')
-          .eq('id', paymentOptionId)
-          .single();
-
-        if (paymentOptionError || !paymentOption) {
-          throw new Error('Payment option not found');
-        }
-
-        // If we have a redirect flow ID, we need to complete it first
+        // --- GoCardless redirect flow ---
         if (redirectFlowId) {
-          // Call edge function to complete redirect flow
+          // Get booking details
+          const { data: booking, error: bookingError } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('id', bookingId)
+            .single();
+
+          if (bookingError || !booking) {
+            throw new Error('Booking not found');
+          }
+
+          // Get payment option
+          const paymentOptionData = booking.selections as any;
+          const paymentOptionId = paymentOptionData?.payment_option_id;
+
+          if (!paymentOptionId) {
+            throw new Error('Payment option not found');
+          }
+
+          const { data: paymentOption, error: paymentOptionError } = await supabase
+            .from('payment_options')
+            .select('*')
+            .eq('id', paymentOptionId)
+            .single();
+
+          if (paymentOptionError || !paymentOption) {
+            throw new Error('Payment option not found');
+          }
+
+          // Complete redirect flow
           const { data: redirectData, error: redirectError } = await supabase.functions.invoke('complete-gocardless-redirect', {
             body: {
               redirectFlowId,
@@ -87,7 +111,7 @@ const PaymentSetup = () => {
             payment_status: 'mandate_created',
           }).eq('id', bookingId);
 
-          // Now create the payment/subscription
+          // Create the payment/subscription
           const isSubscription = paymentOption.option_type === 'direct_debit';
           
           const { error: paymentError } = await supabase.functions.invoke('create-gocardless-payment', {
@@ -102,16 +126,15 @@ const PaymentSetup = () => {
 
           if (paymentError) throw paymentError;
 
-          // Update booking payment status to pending (webhook will confirm as 'paid')
+          // Update booking payment status
           await supabase.from('bookings').update({
             payment_status: 'payment_pending',
             status: 'submitted',
           }).eq('id', bookingId);
 
-          // Generate voucher if it's a BOGOF (3+ Repeat Package) booking
+          // Generate voucher for BOGOF bookings
           if (booking.pricing_model === 'bogof') {
             console.log('Generating voucher for BOGOF booking after payment setup...');
-            
             try {
               const { data: voucherCodeData, error: codeError } = await supabase
                 .rpc('generate_voucher_code');
@@ -120,7 +143,7 @@ const PaymentSetup = () => {
                 const expiryDate = new Date();
                 expiryDate.setMonth(expiryDate.getMonth() + 6);
 
-                const voucherPayload = {
+                await supabase.from('vouchers').insert({
                   user_id: booking.user_id,
                   voucher_code: voucherCodeData,
                   voucher_type: 'percentage',
@@ -129,15 +152,7 @@ const PaymentSetup = () => {
                   description: '10% discount on leafleting services - Earned from 3+ Repeat Package booking',
                   expires_at: expiryDate.toISOString(),
                   created_from_booking_id: bookingId,
-                };
-
-                const { error: voucherError } = await supabase
-                  .from('vouchers')
-                  .insert(voucherPayload);
-
-                if (!voucherError) {
-                  console.log('Voucher created successfully after payment');
-                }
+                });
               }
             } catch (error) {
               console.error('Error creating voucher:', error);
@@ -160,7 +175,7 @@ const PaymentSetup = () => {
             navigate('/dashboard');
           }, 2000);
         } else {
-          // No redirect_flow_id — user landed here without completing GoCardless flow
+          // No redirect_flow_id and no stripe_success
           setStatus('error');
           setMessage('No payment redirect found. Please initiate payment from your booking details.');
         }
