@@ -270,13 +270,15 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       if (isAdminCreating) {
         // Admin creating on behalf — use edge function to create user without changing admin session
-        const generatedPassword = contactData.generatedPassword || crypto.randomUUID().slice(0, 12);
+      const generatedPassword = contactData.generatedPassword || crypto.randomUUID().slice(0, 12);
+        // Store the actual password used so it can be passed to the email payload later
+        const actualPasswordUsed = generatedPassword;
         
         const { data: createResult, error: createError } = await supabase.functions.invoke('admin-manage-user', {
           body: {
             action: 'create_user',
             email: contactData.email,
-            password: generatedPassword,
+            password: actualPasswordUsed,
             display_name: fullName,
             send_email: false,
             allow_existing_user: true,
@@ -291,6 +293,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
         userId = createResult?.user_id || createResult?.user?.id;
         isNewUser = !createResult?.is_existing_user;
+        // Stash the password so the email payload can reference it
+        contactData._actualGeneratedPassword = actualPasswordUsed;
 
         if (!userId) {
           toast({ title: "Error", description: "Failed to create customer account.", variant: "destructive" });
@@ -467,7 +471,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             ...(isAdminCreating ? {
               is_admin_created: true,
               ...(isNewUser
-                ? { generated_password: contactData.generatedPassword || contactData.password }
+                ? { generated_password: contactData._actualGeneratedPassword || contactData.generatedPassword || contactData.password }
                 : { is_existing_user: true }),
             } : {}),
           }
@@ -581,12 +585,13 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       if (isAdminCreating) {
         // Admin creating on behalf — use edge function
         const generatedPassword = contactData.generatedPassword || crypto.randomUUID().slice(0, 12);
+        const actualPasswordUsed = generatedPassword;
         
         const { data: createResult, error: createError } = await supabase.functions.invoke('admin-manage-user', {
           body: {
             action: 'create_user',
             email: contactData.email,
-            password: generatedPassword,
+            password: actualPasswordUsed,
             display_name: fullName,
             send_email: false,
             allow_existing_user: true,
@@ -601,6 +606,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
         userId = createResult?.user_id || createResult?.user?.id;
         isNewUser = !createResult?.is_existing_user;
+        contactData._actualGeneratedPassword = actualPasswordUsed;
       } else {
         // Normal flow — sign up the user
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -887,7 +893,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             ...(isAdminCreating ? {
               is_admin_created: true,
               ...(isNewUser
-                ? { generated_password: contactData.generatedPassword || contactData.password }
+                ? { generated_password: contactData._actualGeneratedPassword || contactData.generatedPassword || contactData.password }
                 : { is_existing_user: true }),
             } : {}),
           }
