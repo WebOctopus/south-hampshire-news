@@ -435,7 +435,8 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {availableMonths.map((monthData: any, index: number) => {
-                  const isSelected = areaSelectedMonths.includes(monthData.month);
+                  const normalisedValue = normaliseMonthValue(monthData.month, allMonths);
+                  const isSelected = areaSelectedMonths.includes(normalisedValue) || areaSelectedMonths.includes(monthData.month);
                   const isDisabled = !isSelected && areaSelectedMonths.length >= maxSelectableMonths;
                   
                   return (
@@ -452,8 +453,8 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                           disabled={isDisabled}
                           onChange={(e) => {
                             const newAreaMonths = e.target.checked
-                              ? [...areaSelectedMonths, monthData.month]
-                              : areaSelectedMonths.filter(m => m !== monthData.month);
+                              ? [...areaSelectedMonths, normalisedValue]
+                              : areaSelectedMonths.filter(m => m !== normalisedValue && m !== monthData.month);
                             
                             onMonthsChange({
                               ...selectedMonths,
@@ -464,7 +465,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                         />
                         <div className="flex-1 space-y-2">
                           <div className="font-medium text-sm">
-                            {formatMonthDisplay(monthData.month)}
+                            {formatMonthWithSchedule(monthData.month, allMonths)}
                           </div>
                           {monthData.copy_deadline && (
                             <div className="text-xs text-muted-foreground">
