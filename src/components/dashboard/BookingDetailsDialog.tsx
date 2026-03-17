@@ -595,7 +595,20 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                     </div>
                     <Badge className="bg-green-100 text-green-800">Paid</Badge>
-                  </div> : booking.pricing_model === 'fixed' ? (
+                  </div> : booking.pricing_model === 'fixed' || booking.pricing_model === 'leafleting' ? (() => {
+                  // Calculate leafleting deposit logic
+                  const isLeafleting = booking.pricing_model === 'leafleting';
+                  const distributionDate = booking.distribution_start_date || booking.leaflets_required_by;
+                  const daysUntilDistribution = distributionDate 
+                    ? Math.ceil((new Date(distributionDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    : 999;
+                  const isWithin10Days = isLeafleting && daysUntilDistribution <= 10;
+                  const fullAmount = booking.final_total || booking.monthly_price;
+                  const depositAmount = Math.ceil(fullAmount * 0.25 * 100) / 100; // 25% rounded to 2dp
+                  const payAmount = (isLeafleting && !isWithin10Days) ? depositAmount : fullAmount;
+                  const isDeposit = isLeafleting && !isWithin10Days;
+                  
+                  return (
                   /* Fixed Term: Stripe pay-in-full */
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
