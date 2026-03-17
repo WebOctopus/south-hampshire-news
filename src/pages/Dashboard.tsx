@@ -1545,6 +1545,14 @@ const Dashboard = () => {
         open={bookingDetailsOpen}
         onOpenChange={setBookingDetailsOpen}
       />
+
+      <TermsAcceptanceDialog
+        quote={termsQuote}
+        open={termsDialogOpen}
+        onOpenChange={setTermsDialogOpen}
+        onConfirm={handleTermsConfirm}
+        isSubmitting={submitting}
+      />
     </SidebarProvider>
   );
 };
