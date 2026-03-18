@@ -1,46 +1,61 @@
 
 
-## Fix: Leafleting Quote Email Missing Size, Month, and Leaflet Quantity
+## GoCardless Payment Gateway Fixes — Completed
 
-### Problem
-The email confirmation for leafleting quotes shows empty values for **Leaflet Size**, **Distribution Month Start**, and **Number of Leaflets Required**. Three bugs in `AdvertisingStepForm.tsx` lines 446-468:
+### Fixes Applied
 
-1. **Leaflet Size**: Line 446 looks up `campaignData.selectedAdSize` in the magazine `adSizes` array (not `leafletSizes`), so it returns `undefined` → email gets `ad_size: undefined`.
-2. **Duration/Month**: Line 447 looks up `campaignData.selectedDuration` in magazine `durations` (not `leafletDurations`), so it returns `undefined` → email gets `duration: undefined`.
-3. **Leaflet quantity (circulation)**: The `total_circulation` from `pricingBreakdown` is present, but the edge function template variable `number_of_leaflets` isn't being sent. The edge function uses `total_circulation` for the `{{total_circulation}}` variable but the leaflet email template likely uses `{{number_of_leaflets}}`.
+**1. PaymentSetup.tsx — Scoping bug fixed (Critical)**
+- Lines 106-165 were running OUTSIDE the `if (redirectFlowId)` block, causing bookings to be marked as "paid" without any payment
+- All post-payment logic (status update, voucher generation, success redirect) now correctly scoped inside the redirect flow block
+- Added `else` branch showing error when no redirect_flow_id is present
+- Changed premature `payment_status: 'paid'` to `payment_status: 'payment_pending'` — the webhook will set final "paid" status
 
-Additionally, the edge function (line 423) tries to get distribution start from `payload.selections?.distributionStartDate`, but the email payload doesn't include `selections` — it's only sent in the webhook call, not the email call.
+**2. GoCardless webhook — billing_requests handler added**
+- Added `handleBillingRequestEvent()` to handle `billing_requests` resource type events
+- Logs fulfilled, failed, and cancelled actions for debugging
+- No longer drops these events as "unhandled"
 
-### Solution
-
-**File: `src/components/AdvertisingStepForm.tsx` (lines 444-477)**
-
-Fix the email payload construction for leafleting quotes to use the correct data sources:
-
-```typescript
-// Line 446-448: Use leaflet-specific lookups when pricing model is leafleting
-const selectedAdSizeData = selectedPricingModel === 'leafleting'
-  ? leafletSizes?.find(a => a.id === campaignData.selectedAdSize)
-  : adSizes?.find(a => a.id === campaignData.selectedAdSize);
-const selectedDurationData = selectedPricingModel === 'leafleting'
-  ? leafletDurations?.find(d => d.id === campaignData.selectedDuration)
-  : (durations?.find(d => d.id === campaignData.selectedDuration) || 
-     subscriptionDurations?.find(d => d.id === campaignData.selectedDuration));
-
-// Line 459: Use .label for leaflet sizes, .name for ad sizes
-ad_size: selectedPricingModel === 'leafleting' 
-  ? (selectedAdSizeData as any)?.label 
-  : selectedAdSizeData?.name,
-
-// Line 460: Duration name
-duration: selectedDurationData?.name,
-
-// Add selections to the email payload so distribution_start resolves
-selections: quotePayload.selections,
-```
-
-This mirrors the pattern already used correctly in the webhook call (lines 401-411) but was missed for the email call.
+**3. BookingDetailsDialog — Address validation added**
+- Validates address, city, and postcode before initiating GoCardless redirect
+- Shows toast error if address fields are missing or contain placeholders
+- Prevents invalid data from being sent to GoCardless API
 
 ### Files Changed
-- `src/components/AdvertisingStepForm.tsx` — fix leafleting email payload to use `leafletSizes`/`leafletDurations` and include `selections`
 
+| File | Change |
+|---|---|
+| `src/pages/PaymentSetup.tsx` | Fixed scoping bug, changed to payment_pending status |
+| `supabase/functions/gocardless-webhook/index.ts` | Added billing_requests handler |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Added address validation before payment |
+
+---
+
+## Fixed Term Pricing & Stripe Integration — Completed
+
+### Issues Fixed
+
+**1. Pricing fallback bug**
+- Fixed `calculateAdvertisingPrice()` to use `base_price_per_area` (not `base_price_per_month`) when `fixed_pricing_per_issue` is empty
+- This ensures Fixed Term ad sizes show the correct price (e.g., £1.00 instead of £0.80)
+
+**2. Stripe integration for Fixed Term payments**
+- Created `create-stripe-checkout` edge function for one-off card payments
+- Created `stripe-webhook` edge function to handle `checkout.session.completed` events
+- Fixed Term bookings now show "Pay Full Amount by Card" button instead of GoCardless options
+- GoCardless flow preserved for 3+ Repeat (bogof) bookings only
+
+**3. Payment UI conditional logic**
+- BookingDetailsDialog detects `pricing_model === 'fixed'` and shows Stripe checkout
+- All GoCardless-specific text/options hidden for Fixed Term
+- Secure payment info text updated to reference Stripe for Fixed Term
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `src/lib/pricingCalculator.ts` | Fixed fallback from `base_price_per_month` to `base_price_per_area` |
+| `src/components/dashboard/BookingDetailsDialog.tsx` | Conditional Stripe vs GoCardless payment UI |
+| `src/pages/PaymentSetup.tsx` | Added Stripe success handling alongside GoCardless |
+| `supabase/functions/create-stripe-checkout/index.ts` | New: Stripe Checkout Session creation |
+| `supabase/functions/stripe-webhook/index.ts` | New: Stripe webhook handler |
+| `supabase/config.toml` | Added Stripe function configs |

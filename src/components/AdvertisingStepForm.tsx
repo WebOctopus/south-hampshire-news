@@ -443,9 +443,13 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // Send confirmation emails (non-blocking)
       try {
-        const selectedAdSizeData = adSizes?.find(a => a.id === campaignData.selectedAdSize);
-        const selectedDurationData = durations?.find(d => d.id === campaignData.selectedDuration) || 
-                                      subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+        const selectedAdSizeData = selectedPricingModel === 'leafleting'
+          ? leafletSizes?.find(a => a.id === campaignData.selectedAdSize)
+          : adSizes?.find(a => a.id === campaignData.selectedAdSize);
+        const selectedDurationData = selectedPricingModel === 'leafleting'
+          ? leafletDurations?.find(d => d.id === campaignData.selectedDuration)
+          : (durations?.find(d => d.id === campaignData.selectedDuration) || 
+             subscriptionDurations?.find(d => d.id === campaignData.selectedDuration));
         await supabase.functions.invoke('send-booking-confirmation-email', {
           body: {
             record_type: 'quote',
@@ -456,7 +460,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             phone: contactData.phone || '',
             company: contactData.companyName || '',
             title: quotePayload.title,
-            ad_size: selectedAdSizeData?.name,
+            ad_size: selectedPricingModel === 'leafleting'
+              ? (selectedAdSizeData as any)?.label
+              : (selectedAdSizeData as any)?.name,
             duration: selectedDurationData?.name,
             selected_areas: effectiveSelectedAreas.map(id => [...(areas || []), ...(leafletAreas || [])].find(a => a.id === id)?.name || id),
             bogof_paid_areas: (campaignData.bogofPaidAreas || []).map(id => areas?.find(a => a.id === id)?.name || id),
@@ -467,6 +473,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             monthly_price: quotePayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
+            selections: quotePayload.selections,
             // Admin-created quote: include credentials or login link in the email
             ...(isAdminCreating ? {
               is_admin_created: true,
