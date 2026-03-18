@@ -59,7 +59,7 @@ export default function TermsAcceptanceDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          <BookingTerms />
+          <BookingTerms pricingModel={quote?.pricing_model} />
 
           {/* Acceptance checkbox */}
           <div className="flex items-start space-x-3 p-4 bg-primary/5 border-2 border-primary/20 rounded-lg">
