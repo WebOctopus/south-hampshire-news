@@ -20,6 +20,19 @@ const subscriptionTerms = [
   'Inflationary increase applies per anniversary after 24 months from start of booking — no increase for 24 months',
 ];
 
+const fixedTermTerms = [
+  'Payment is due in full before publication',
+  'Fixed term bookings run for the agreed number of issues only',
+  'No automatic renewal — a new booking is required to continue',
+  'Cancellation is not available once artwork has been submitted for print',
+  'Design fees (if applicable) are non-refundable',
+  'Prices are exclusive of VAT',
+];
+
+interface BookingTermsProps {
+  pricingModel?: string;
+}
+
 export default function BookingTerms() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
