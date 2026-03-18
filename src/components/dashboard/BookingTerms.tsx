@@ -33,7 +33,9 @@ interface BookingTermsProps {
   pricingModel?: string;
 }
 
-export default function BookingTerms() {
+export default function BookingTerms({ pricingModel }: BookingTermsProps) {
+  const isFixed = pricingModel === 'fixed' || pricingModel === 'fixed_term';
+  const showBoth = !pricingModel; // no model = show all (e.g. standalone Terms page)
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
