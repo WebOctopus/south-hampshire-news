@@ -30,7 +30,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   } = useToast();
   // Initialize with the payment option selected in step 4
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(booking?.selections?.payment_option_id || null);
-  const [legalDocumentsAccepted, setLegalDocumentsAccepted] = useState(false);
+  const [legalDocumentsAccepted, setLegalDocumentsAccepted] = useState(!!booking?.terms_accepted_at);
   const [legalDocumentsOpen, setLegalDocumentsOpen] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
   const {
@@ -648,99 +648,108 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     )}
 
                     {/* T&Cs Acceptance */}
-                    <div className="flex items-start space-x-3 p-4 bg-blue-50/80 border border-blue-200 rounded-lg">
-                      <Checkbox
-                        id="legalDocumentsBooking"
-                        checked={legalDocumentsAccepted}
-                        onCheckedChange={(checked) => setLegalDocumentsAccepted(!!checked)}
-                        className="mt-0.5"
-                      />
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <Label htmlFor="legalDocumentsBooking" className="text-sm font-medium cursor-pointer">
-                            I accept the T&C's *
-                          </Label>
-                          <Dialog open={legalDocumentsOpen} onOpenChange={setLegalDocumentsOpen}>
-                            <DialogTrigger asChild>
-                              <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 hover:text-blue-800">
-                                <Info className="h-4 w-4 mr-1" />
-                                View Documents
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>Legal Documents</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-6 text-sm">
-                                <div className="space-y-3">
-                                  <h3 className="text-lg font-semibold text-foreground">Terms & Conditions</h3>
-                                  <div className="space-y-2 text-muted-foreground">
-                                    <p>By using our advertising services, you agree to the following terms:</p>
-                                    <ul className="list-disc list-inside space-y-1 ml-4">
-                                      <li>Payment terms: Full payment required before print date</li>
-                                      <li>Campaign specifications are final once approved</li>
-                                      <li>We reserve the right to refuse advertising content that violates our content policy</li>
-                                      <li>Delivery dates are estimates and may vary due to external factors</li>
-                                    </ul>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h3 className="text-lg font-semibold text-foreground">Service Agreement</h3>
-                                  <div className="space-y-2 text-muted-foreground">
-                                    <p>This agreement outlines the specific details of your advertising campaign:</p>
-                                    <ul className="list-disc list-inside space-y-1 ml-4">
-                                      <li>Campaign duration and distribution schedule</li>
-                                      <li>Target areas and circulation numbers</li>
-                                      <li>Advertisement specifications and design requirements</li>
-                                      <li>Quality standards and printing specifications</li>
-                                      <li>Distribution methods and tracking procedures</li>
-                                      <li>Performance metrics and reporting standards</li>
-                                    </ul>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h3 className="text-lg font-semibold text-foreground">Data Protection Notice</h3>
-                                  <div className="space-y-2 text-muted-foreground">
-                                    <p>We are committed to protecting your personal information:</p>
-                                    <ul className="list-disc list-inside space-y-1 ml-4">
-                                      <li>Personal data is collected only for service delivery purposes</li>
-                                      <li>Information is stored securely and encrypted</li>
-                                      <li>Data is not shared with third parties without consent</li>
-                                      <li>You have the right to access, modify, or delete your data</li>
-                                      <li>We comply with GDPR and UK data protection regulations</li>
-                                      <li>Data retention policy: Information kept for 7 years for accounting purposes</li>
-                                    </ul>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <h3 className="text-lg font-semibold text-foreground">Privacy Policy</h3>
-                                  <div className="space-y-2 text-muted-foreground">
-                                    <p>Our privacy policy explains how we collect and use your information:</p>
-                                    <ul className="list-disc list-inside space-y-1 ml-4">
-                                      <li>Website cookies are used to improve user experience</li>
-                                      <li>Analytics data helps us improve our services</li>
-                                      <li>Marketing communications are opt-in only</li>
-                                      <li>Account information is used for service delivery and support</li>
-                                      <li>Payment information is processed by secure third-party providers</li>
-                                      <li>You can update privacy preferences in your account settings</li>
-                                    </ul>
-                                  </div>
-                                </div>
-                                <div className="border-t pt-4 mt-6">
-                                  <p className="text-xs text-muted-foreground">
-                                    Last updated: September 2024. These documents will be available for download in your account dashboard after booking completion.
-                                  </p>
-                                </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
-                        <p className="text-xs text-blue-700">
-                          By checking this box, you acknowledge that you have read and agree to our terms of service, 
-                          data protection policies, and service agreement.
+                    {booking?.terms_accepted_at ? (
+                      <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                        <p className="text-sm text-green-700">
+                          Terms accepted on {new Date(booking.terms_accepted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex items-start space-x-3 p-4 bg-blue-50/80 border border-blue-200 rounded-lg">
+                        <Checkbox
+                          id="legalDocumentsBooking"
+                          checked={legalDocumentsAccepted}
+                          onCheckedChange={(checked) => setLegalDocumentsAccepted(!!checked)}
+                          className="mt-0.5"
+                        />
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <Label htmlFor="legalDocumentsBooking" className="text-sm font-medium cursor-pointer">
+                              I accept the T&C's *
+                            </Label>
+                            <Dialog open={legalDocumentsOpen} onOpenChange={setLegalDocumentsOpen}>
+                              <DialogTrigger asChild>
+                                <Button variant="link" size="sm" className="p-0 h-auto text-blue-600 hover:text-blue-800">
+                                  <Info className="h-4 w-4 mr-1" />
+                                  View Documents
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                                <DialogHeader>
+                                  <DialogTitle>Legal Documents</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-6 text-sm">
+                                  <div className="space-y-3">
+                                    <h3 className="text-lg font-semibold text-foreground">Terms & Conditions</h3>
+                                    <div className="space-y-2 text-muted-foreground">
+                                      <p>By using our advertising services, you agree to the following terms:</p>
+                                      <ul className="list-disc list-inside space-y-1 ml-4">
+                                        <li>Payment terms: Full payment required before print date</li>
+                                        <li>Campaign specifications are final once approved</li>
+                                        <li>We reserve the right to refuse advertising content that violates our content policy</li>
+                                        <li>Delivery dates are estimates and may vary due to external factors</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-3">
+                                    <h3 className="text-lg font-semibold text-foreground">Service Agreement</h3>
+                                    <div className="space-y-2 text-muted-foreground">
+                                      <p>This agreement outlines the specific details of your advertising campaign:</p>
+                                      <ul className="list-disc list-inside space-y-1 ml-4">
+                                        <li>Campaign duration and distribution schedule</li>
+                                        <li>Target areas and circulation numbers</li>
+                                        <li>Advertisement specifications and design requirements</li>
+                                        <li>Quality standards and printing specifications</li>
+                                        <li>Distribution methods and tracking procedures</li>
+                                        <li>Performance metrics and reporting standards</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-3">
+                                    <h3 className="text-lg font-semibold text-foreground">Data Protection Notice</h3>
+                                    <div className="space-y-2 text-muted-foreground">
+                                      <p>We are committed to protecting your personal information:</p>
+                                      <ul className="list-disc list-inside space-y-1 ml-4">
+                                        <li>Personal data is collected only for service delivery purposes</li>
+                                        <li>Information is stored securely and encrypted</li>
+                                        <li>Data is not shared with third parties without consent</li>
+                                        <li>You have the right to access, modify, or delete your data</li>
+                                        <li>We comply with GDPR and UK data protection regulations</li>
+                                        <li>Data retention policy: Information kept for 7 years for accounting purposes</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-3">
+                                    <h3 className="text-lg font-semibold text-foreground">Privacy Policy</h3>
+                                    <div className="space-y-2 text-muted-foreground">
+                                      <p>Our privacy policy explains how we collect and use your information:</p>
+                                      <ul className="list-disc list-inside space-y-1 ml-4">
+                                        <li>Website cookies are used to improve user experience</li>
+                                        <li>Analytics data helps us improve our services</li>
+                                        <li>Marketing communications are opt-in only</li>
+                                        <li>Account information is used for service delivery and support</li>
+                                        <li>Payment information is processed by secure third-party providers</li>
+                                        <li>You can update privacy preferences in your account settings</li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                  <div className="border-t pt-4 mt-6">
+                                    <p className="text-xs text-muted-foreground">
+                                      Last updated: September 2024. These documents will be available for download in your account dashboard after booking completion.
+                                    </p>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                          <p className="text-xs text-blue-700">
+                            By checking this box, you acknowledge that you have read and agree to our terms of service, 
+                            data protection policies, and service agreement.
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     <Button onClick={() => handleStripeCheckout(payAmount)} disabled={!legalDocumentsAccepted || stripeLoading} className="w-full" size="lg">
                       {stripeLoading ? <>
