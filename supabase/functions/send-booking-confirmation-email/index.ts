@@ -437,30 +437,42 @@ Deno.serve(async (req) => {
         customerSubject = applyTemplate(customerTemplate.subject, vars);
         let templatedHtml = applyTemplate(customerTemplate.html_body, vars);
         // If admin-created and template doesn't have login_credentials placeholder, append credentials block
+        // Helper to insert a block early in the email (before summary/footer, after intro)
+        const insertBlockEarly = (html: string, block: string): string => {
+          // Try to insert before a summary or next-steps section
+          const summaryMatch = html.match(/(Summary|What to do next|Your Quote|Your Booking)/i);
+          if (summaryMatch && summaryMatch.index !== undefined) {
+            // Walk back to find the start of the containing tag
+            const before = html.lastIndexOf('<', summaryMatch.index);
+            if (before !== -1) {
+              return html.slice(0, before) + block + html.slice(before);
+            }
+          }
+          // Try to insert before the footer (identifiable by branding text)
+          const footerMatch = html.match(/(Connecting South Hampshire|discovermagazines\.co\.uk|30 Leigh Road)/i);
+          if (footerMatch && footerMatch.index !== undefined) {
+            const before = html.lastIndexOf('<', footerMatch.index);
+            if (before !== -1) {
+              return html.slice(0, before) + block + html.slice(before);
+            }
+          }
+          // Insert after the first paragraph as early placement
+          const firstParaEnd = html.indexOf('</p>');
+          if (firstParaEnd !== -1) {
+            const insertAt = firstParaEnd + 4;
+            return html.slice(0, insertAt) + block + html.slice(insertAt);
+          }
+          // Last resort: append
+          return html + block;
+        };
+
         if (payload.is_admin_created && payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           const credentialsBlock = buildLoginCredentialsHtml(payload.email, payload.generated_password);
-          // Try </body> first, then </table>, then just append at the end
-          if (templatedHtml.includes('</body>')) {
-            templatedHtml = templatedHtml.replace('</body>', credentialsBlock + '</body>');
-          } else if (templatedHtml.includes('</table>')) {
-            // Insert before the last closing </table> (common in email templates)
-            const lastTableIdx = templatedHtml.lastIndexOf('</table>');
-            templatedHtml = templatedHtml.slice(0, lastTableIdx) + credentialsBlock + templatedHtml.slice(lastTableIdx);
-          } else {
-            // Fallback: just append at the end
-            templatedHtml += credentialsBlock;
-          }
+          templatedHtml = insertBlockEarly(templatedHtml, credentialsBlock);
         }
         if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           const loginBlock = buildExistingUserLoginHtml();
-          if (templatedHtml.includes('</body>')) {
-            templatedHtml = templatedHtml.replace('</body>', loginBlock + '</body>');
-          } else if (templatedHtml.includes('</table>')) {
-            const lastTableIdx = templatedHtml.lastIndexOf('</table>');
-            templatedHtml = templatedHtml.slice(0, lastTableIdx) + loginBlock + templatedHtml.slice(lastTableIdx);
-          } else {
-            templatedHtml += loginBlock;
-          }
+          templatedHtml = insertBlockEarly(templatedHtml, loginBlock);
         }
         customerHtml = templatedHtml;
       } else {
