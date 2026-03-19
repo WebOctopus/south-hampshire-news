@@ -33,7 +33,7 @@ const SAMPLE_DATA: Record<string, string> = {
   duration_discount: "10%",
   dashboard_url: "https://example.com/dashboard",
   type_label: "Booking",
-  model_label: "Fixed Term",
+  model_label: "Pay As You Go",
   email: "john@example.com",
   phone: "023 9298 9314",
   company: "Smith & Co Ltd",
