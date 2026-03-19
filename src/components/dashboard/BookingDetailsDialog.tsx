@@ -323,7 +323,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
     }).format(price);
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-2xl">
             {booking.title || 'Booking Details'}
