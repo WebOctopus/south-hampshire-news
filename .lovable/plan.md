@@ -1,25 +1,26 @@
 
 
-## Fix: Payment Button Disabled Despite Terms Already Accepted
+## Fix: Saved Quotes Cost Column Shows Wrong Amount
 
 ### Problem
-The "Pay Full Amount by Card" button is disabled because `legalDocumentsAccepted` state is initialized via `useState(!!booking?.terms_accepted_at)`. Since `useState` only runs its initializer once (on mount), if the `booking` prop arrives or changes after the component mounts, the state stays `false` — even though `terms_accepted_at` is set on the booking.
+Line 1253 in `src/pages/Dashboard.tsx` always displays `quote.monthly_price` for all pricing models. For Pay As You Go and Leafleting quotes, this should show `quote.final_total` (the campaign total), not the monthly price.
 
 ### Fix
-**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
+**File: `src/pages/Dashboard.tsx`** (line 1253)
 
-Add a `useEffect` after line 33 to sync the state when the booking changes:
+Change the cost display to be conditional on pricing model:
 
 ```tsx
-useEffect(() => {
-  if (booking?.terms_accepted_at) {
-    setLegalDocumentsAccepted(true);
-  }
-}, [booking?.terms_accepted_at]);
+<span className="font-semibold">
+  £{(quote.pricing_model === 'bogof' 
+    ? quote.monthly_price 
+    : quote.final_total
+  )?.toFixed(2) || '0.00'}
+</span>
 ```
 
-This ensures that when the dialog opens with a booking that already has `terms_accepted_at` set (from the quote acceptance flow), the button is correctly enabled.
+- **BOGOF**: show `monthly_price` (per month)
+- **Pay As You Go / Leafleting**: show `final_total` (campaign total)
 
-### Files Changed
-- `src/components/dashboard/BookingDetailsDialog.tsx` — add useEffect to sync `legalDocumentsAccepted` with `booking.terms_accepted_at`
+One line change in one file.
 
