@@ -721,8 +721,8 @@ const CalculatorTest = () => {
   const handleFixedTermContinue = () => {
     setShowFixedTermConfirmation(false);
     toast({
-      title: "Fixed Term Confirmed",
-      description: "You can continue with your Fixed Term booking."
+      title: "Pay As You Go Confirmed",
+      description: "You can continue with your Pay As You Go booking."
     });
   };
   const handleSwitchToSubscription = () => {
