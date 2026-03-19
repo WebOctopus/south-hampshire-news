@@ -54,7 +54,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
       </div>
 
       {/* Accordion sections */}
-      <Accordion type="multiple" defaultValue={["terms", "payment", "support"]} className="space-y-3">
+      <Accordion type="multiple" defaultValue={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
         {/* Subscription or Fixed Term Terms */}
         {(showBoth || !isFixed) && (
         <AccordionItem value="terms" className="border rounded-lg bg-card px-4 shadow-sm">
@@ -90,9 +90,9 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
             <div className="flex items-center gap-3 text-left">
               <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
               <div>
-                <span className="font-semibold text-foreground">Fixed Term Booking Terms</span>
+                <span className="font-semibold text-foreground">Pay As You Go Booking Terms</span>
                 <Badge variant="secondary" className="ml-2 text-[10px] align-middle">
-                  Fixed Term
+                  Pay As You Go
                 </Badge>
               </div>
             </div>
