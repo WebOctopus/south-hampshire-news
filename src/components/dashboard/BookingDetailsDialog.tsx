@@ -973,7 +973,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     </div>
                   </div>
 
-                  <Button onClick={handleSetupPayment} disabled={!selectedPaymentOption || !legalDocumentsAccepted || createMandate.isPending} className="w-full" size="lg">
+                  <Button onClick={handleSetupPayment} disabled={!selectedPaymentOption || (!legalDocumentsAccepted && !booking?.terms_accepted_at) || createMandate.isPending} className="w-full" size="lg">
                     {createMandate.isPending ? <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Setting up payment...
