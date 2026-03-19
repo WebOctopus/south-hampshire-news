@@ -54,7 +54,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
       </div>
 
       {/* Accordion sections */}
-      <Accordion type="multiple" defaultValue={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
+      <Accordion type="multiple" value={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
         {/* Subscription or Fixed Term Terms */}
         {(showBoth || !isFixed) && (
         <AccordionItem value="terms" className="border rounded-lg bg-card px-4 shadow-sm">
