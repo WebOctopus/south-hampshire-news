@@ -90,9 +90,9 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
             <div className="flex items-center gap-3 text-left">
               <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
               <div>
-                <span className="font-semibold text-foreground">Fixed Term Booking Terms</span>
+                <span className="font-semibold text-foreground">Pay As You Go Booking Terms</span>
                 <Badge variant="secondary" className="ml-2 text-[10px] align-middle">
-                  Fixed Term
+                  Pay As You Go
                 </Badge>
               </div>
             </div>
