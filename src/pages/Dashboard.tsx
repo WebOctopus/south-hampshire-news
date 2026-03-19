@@ -242,6 +242,13 @@ const Dashboard = () => {
       loadVoucherCount();
       checkAndUpdateFirstLogin();
       
+      // Check URL query parameter for tab selection (e.g. from email links)
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+      
       // Check if user came from calculator and set appropriate tab
       const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
       const justSavedQuote = localStorage.getItem('justSavedQuote');

@@ -260,7 +260,7 @@ ${nextStepsHtml}
 </div>
 <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:25px;">
 <tr><td align="center">
-<a href="https://peacockpixelmedia.co.uk/dashboard" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:14px 30px;border-radius:6px;font-weight:bold;font-size:16px;">Go to Your Dashboard</a>
+<a href="https://peacockpixelmedia.co.uk/dashboard${isBooking ? '' : '?tab=quotes'}" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:14px 30px;border-radius:6px;font-weight:bold;font-size:16px;">Go to Your Dashboard</a>
 </td></tr></table>
 <div style="background-color:#f9fafb;border-radius:8px;padding:20px;">
 <p style="color:#555;font-size:14px;margin:0 0 8px;"><strong>Need help?</strong></p>
