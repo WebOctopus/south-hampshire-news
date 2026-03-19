@@ -70,6 +70,7 @@ const Dashboard = () => {
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
+  const hasAppliedSmartDefault = useRef(false);
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
   const location = useLocation();
@@ -326,12 +327,34 @@ const Dashboard = () => {
     savePending();
   }, [user]);
 
-  // Set default tab based on whether user has existing business
+  // Smart default tab: show the most relevant advertising content on first load
   useEffect(() => {
-    if (hasExistingBusiness && !editingBusiness) {
+    if (hasAppliedSmartDefault.current || !user) return;
+    
+    // Don't override if URL param or localStorage flags already set the tab
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab')) return;
+    
+    const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
+    const justSavedQuote = localStorage.getItem('justSavedQuote');
+    const justCreatedBooking = localStorage.getItem('justCreatedBooking');
+    if (isNewUserFromCalculator || justSavedQuote || justCreatedBooking) return;
+    
+    // Prioritize advertising content so users don't miss quotes/bookings
+    if (bookings.length > 0) {
+      setActiveTab('bookings');
+      hasAppliedSmartDefault.current = true;
+    } else if (quotes.length > 0) {
+      setActiveTab('quotes');
+      hasAppliedSmartDefault.current = true;
+    } else if (hasExistingBusiness && !editingBusiness) {
       setActiveTab('listings');
+      hasAppliedSmartDefault.current = true;
+    } else {
+      setActiveTab('create-booking');
+      hasAppliedSmartDefault.current = true;
     }
-  }, [hasExistingBusiness, editingBusiness]);
+  }, [user, quotes, bookings, hasExistingBusiness, editingBusiness]);
 
   // Scroll to top when tab changes
   useEffect(() => {
