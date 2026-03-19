@@ -1,24 +1,34 @@
 
 
-## Limit BOGOF Quote Issues to First 3
+## Reorder Payment Options: Monthly Direct Debit First
 
 ### Problem
-The View Quote panel currently shows all scheduled issues (e.g. 6 months) for BOGOF (3+ Repeat Package) quotes. The customer only commits to the first 3 issues initially, so only those should be displayed.
+In the BookingDetailsDialog payment section for 3+ (BOGOF) bookings, the "12 months in advance" option appears above "Monthly Direct Debit". The user wants Monthly Direct Debit listed first.
 
 ### Solution
 
-**File: `src/components/dashboard/ViewQuoteContent.tsx`**
+**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
 
-In the `AreaCard` component (line ~81), when the quote is BOGOF, slice the months array to only the first 3 entries before formatting:
+Add a `.sort()` call (matching the pattern already used in `BookingSummaryStep.tsx` and `EditQuoteForm.tsx`) between the `.filter()` and `.map()` on line ~841:
 
 ```tsx
-const areaMonths = hasMonthsData ? (monthsByArea[area.id] || []) : fallbackMonths;
-const displayMonths = isBogof ? areaMonths.slice(0, 3) : areaMonths;
-const formattedDates = displayMonths.map(m => formatMonthLabel(m, area));
+.filter(option => 
+  !booking.selections?.payment_option_id || option.option_type === booking.selections.payment_option_id
+)
+.sort((a, b) => {
+  const getOrder = (option: any) => {
+    if (option.option_type === 'monthly') return 1;
+    if (option.display_name?.includes('6 Months')) return 2;
+    if (option.display_name?.includes('12 Months')) return 3;
+    return 4;
+  };
+  return getOrder(a) - getOrder(b);
+})
+.map(option => {
 ```
 
-Single line change — limits displayed issues to 3 for BOGOF quotes only. All other pricing models continue to show their full schedule.
+This ensures Monthly Direct Debit always appears first, consistent with the calculator and other forms.
 
 ### Files to change
-- `src/components/dashboard/ViewQuoteContent.tsx`
+- `src/components/dashboard/BookingDetailsDialog.tsx` — add sort before map
 
