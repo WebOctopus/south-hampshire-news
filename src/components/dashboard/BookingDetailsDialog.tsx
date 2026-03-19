@@ -109,12 +109,15 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       if (allAreaIds.length === 0) return [];
       
       const tableName = booking.pricing_model === 'leafleting' ? 'leaflet_areas' : 'pricing_areas';
-      const {
-        data,
-        error
-      } = await supabase.from(tableName).select('id, name, circulation, postcodes').in('id', allAreaIds);
-      if (error) throw error;
-      return data || [];
+      if (tableName === 'leaflet_areas') {
+        const { data, error } = await supabase.from('leaflet_areas').select('id, name, postcodes, bimonthly_circulation').in('id', allAreaIds);
+        if (error) throw error;
+        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: a.postcodes, circulation: a.bimonthly_circulation }));
+      } else {
+        const { data, error } = await supabase.from('pricing_areas').select('id, name, circulation, postcodes').in('id', allAreaIds);
+        if (error) throw error;
+        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: Array.isArray(a.postcodes) ? a.postcodes.join(', ') : '', circulation: a.circulation }));
+      }
     },
     enabled: !!booking && open
   });
