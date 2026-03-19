@@ -29,7 +29,7 @@ export default function DeleteQuoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" onCloseAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="text-center pb-4">
           <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
             <AlertTriangle className="h-6 w-6 text-red-600" />
