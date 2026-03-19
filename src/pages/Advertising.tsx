@@ -1309,7 +1309,7 @@ const CalculatorTest = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">
-              Are you sure you want to book Fixed Term?
+              Are you sure you want to book Pay As You Go?
             </DialogTitle>
             <DialogDescription className="text-center">
               If you booked this selection on our 3+ Repeat Package you would pay{" "}

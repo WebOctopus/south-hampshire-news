@@ -566,7 +566,7 @@ const AdvertisingCalculator = ({ children }: AdvertisingCalculatorProps) => {
                     <div className="space-y-4">
                       <div>
                         <p className="font-medium">
-                          <span className="font-bold">Booking Type:</span> Fixed Term
+                          <span className="font-bold">Booking Type:</span> Pay As You Go
                         </p>
                       </div>
                       

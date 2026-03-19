@@ -393,7 +393,7 @@ function generateInvoicePdf(invoice: any, booking: any): jsPDF {
   doc.setFont('helvetica', 'normal');
   doc.text('Advertising Campaign', 25, yPos);
   
-  const campaignType = booking.pricing_model === 'fixed' ? 'Fixed Term' : 
+  const campaignType = booking.pricing_model === 'fixed' ? 'Pay As You Go' : 
                        booking.pricing_model === 'subscription' ? 'Subscription' : 'BOGOF';
   doc.text(campaignType, 80, yPos);
   doc.text(formatPrice(booking.subtotal || 0), 160, yPos);

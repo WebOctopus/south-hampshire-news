@@ -1234,8 +1234,8 @@ const Dashboard = () => {
                         <div className="flex items-center gap-2">
                           <span>
                             {quote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
-                             quote.pricing_model === 'fixed' ? 'Fixed Term' :
-                             quote.pricing_model === 'fixed_term' ? 'Fixed Term' : 
+                             quote.pricing_model === 'fixed' ? 'Pay As You Go' :
+                             quote.pricing_model === 'fixed_term' ? 'Pay As You Go' : 
                              quote.pricing_model === 'leafleting' ? 'Leaflet Distribution' : 
                              quote.pricing_model}
                           </span>

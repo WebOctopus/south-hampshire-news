@@ -37,7 +37,7 @@ const SAMPLE_DATA: Record<string, string> = {
   email: "john@example.com",
   phone: "023 9298 9314",
   company: "Smith & Co Ltd",
-  details_table: '<table style="width:100%;"><tr><td>Package</td><td>Fixed Term</td></tr></table>',
+  details_table: '<table style="width:100%;"><tr><td>Package</td><td>Pay As You Go</td></tr></table>',
   admin_url: "https://example.com/admin",
   // Bogof-specific
   paid_areas: "Fareham, Gosport",

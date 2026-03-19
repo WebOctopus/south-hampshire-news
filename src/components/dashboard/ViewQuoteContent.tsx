@@ -11,7 +11,7 @@ interface ViewQuoteContentProps {
 const getPricingModelLabel = (model: string) => {
   switch (model) {
     case 'bogof': return '3+ Repeat Package for New Advertisers';
-    case 'fixed': case 'fixed_term': return 'Fixed Term';
+    case 'fixed': case 'fixed_term': return 'Pay As You Go';
     case 'leafleting': return 'Leaflet Distribution';
     default: return model;
   }

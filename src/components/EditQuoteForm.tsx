@@ -300,7 +300,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
           <RadioGroup value={pricingModel} onValueChange={(value: 'fixed' | 'bogof' | 'leafleting') => setPricingModel(value)}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="fixed" id="fixed" />
-              <Label htmlFor="fixed">Fixed Term</Label>
+              <Label htmlFor="fixed">Pay As You Go</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="bogof" id="bogof" />

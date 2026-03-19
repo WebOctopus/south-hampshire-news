@@ -336,7 +336,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                     <p className="font-medium">WHAT YOU'RE BOOKING:</p>
                     <p className="text-muted-foreground">
                       <EditableText
-                        value={advertisingContent?.bookingSummary?.fixed?.whatYoureBookingText || "A Fixed Term advertising package with guaranteed distribution to your selected areas"}
+                        value={advertisingContent?.bookingSummary?.fixed?.whatYoureBookingText || "A Pay As You Go advertising package with guaranteed distribution to your selected areas"}
                         onSave={(val) => onContentSave?.('bookingSummary.fixed.whatYoureBookingText', val)}
                         as="span"
                       />
