@@ -24,6 +24,7 @@ interface EmailTemplate {
 
 const SAMPLE_DATA: Record<string, string> = {
   customer_name: "John Smith",
+  business_name: "Smith & Co Ltd",
   package_type: "Pay As You Go",
   ad_size: "Half Page",
   duration: "6 months",
