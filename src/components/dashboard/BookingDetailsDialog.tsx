@@ -31,6 +31,12 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   // Initialize with the payment option selected in step 4
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<string | null>(booking?.selections?.payment_option_id || null);
   const [legalDocumentsAccepted, setLegalDocumentsAccepted] = useState(!!booking?.terms_accepted_at);
+
+  useEffect(() => {
+    if (booking?.terms_accepted_at) {
+      setLegalDocumentsAccepted(true);
+    }
+  }, [booking?.terms_accepted_at]);
   const [legalDocumentsOpen, setLegalDocumentsOpen] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
   const {
