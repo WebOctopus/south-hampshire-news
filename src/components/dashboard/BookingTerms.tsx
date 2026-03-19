@@ -170,8 +170,8 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="h-4 w-4 text-primary" />
-                  <a href="mailto:michael@discovermagazines.co.uk" className="text-primary hover:underline font-medium">
-                    michael@discovermagazines.co.uk
+                  <a href="mailto:accounts@discovermagazines.co.uk" className="text-primary hover:underline font-medium">
+                    accounts@discovermagazines.co.uk
                   </a>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
@@ -181,9 +181,6 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
                   </a>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground pt-1">
-                Michael Price — Accounts, Discover Magazines Ltd
-              </p>
             </div>
           </AccordionContent>
         </AccordionItem>
