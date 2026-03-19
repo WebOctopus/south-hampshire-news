@@ -24,7 +24,7 @@ interface EmailTemplate {
 
 const SAMPLE_DATA: Record<string, string> = {
   customer_name: "John Smith",
-  package_type: "Fixed Term",
+  package_type: "Pay As You Go",
   ad_size: "Half Page",
   duration: "6 months",
   circulation: "25,000",
@@ -33,11 +33,11 @@ const SAMPLE_DATA: Record<string, string> = {
   duration_discount: "10%",
   dashboard_url: "https://example.com/dashboard",
   type_label: "Booking",
-  model_label: "Fixed Term",
+  model_label: "Pay As You Go",
   email: "john@example.com",
   phone: "023 9298 9314",
   company: "Smith & Co Ltd",
-  details_table: '<table style="width:100%;"><tr><td>Package</td><td>Fixed Term</td></tr></table>',
+  details_table: '<table style="width:100%;"><tr><td>Package</td><td>Pay As You Go</td></tr></table>',
   admin_url: "https://example.com/admin",
   // Bogof-specific
   paid_areas: "Fareham, Gosport",

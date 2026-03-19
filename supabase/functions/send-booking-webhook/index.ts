@@ -42,7 +42,7 @@ serve(async (req) => {
       // Pricing Model Selection (Step 1)
       campaign: {
         pricingModel: step1Data.pricingModel,
-        pricingModelDisplay: step1Data.pricingModel === 'fixed' ? 'Fixed Term' : 
+        pricingModelDisplay: step1Data.pricingModel === 'fixed' ? 'Pay As You Go' : 
                             step1Data.pricingModel === 'bogof' ? '3+ Repeat Package' : 
                             'Leafleting Service'
       },

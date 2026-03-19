@@ -551,7 +551,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
               as="span"
             />
           ) : 
-           pricingModel === 'leafleting' ? 'Select Leafleting Areas' : 'Select Areas for Fixed Term'}
+           pricingModel === 'leafleting' ? 'Select Leafleting Areas' : 'Select Areas for Pay As You Go'}
         </h3>
 
         {pricingModel === 'bogof' && (

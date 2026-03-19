@@ -553,7 +553,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                     <RadioGroupItem value="fixed" id="fixed" className="sr-only" />
                     <Label htmlFor="fixed" className="cursor-pointer">
                       <div className="space-y-2">
-                        <div className="font-semibold">Fixed Term</div>
+                        <div className="font-semibold">Pay As You Go</div>
                         <div className="text-sm text-muted-foreground">One-time campaign with set duration</div>
                       </div>
                     </Label>

@@ -230,7 +230,7 @@ export const AdvertisementSizeStep: React.FC<AdvertisementSizeStepProps> = ({
         <h3 className="text-lg font-semibold mb-4">SUMMARY & COST TO BOOK</h3>
         <div className="space-y-3">
           <div className="text-sm">
-            <div className="mb-2"><span className="font-medium">Booking Type:</span> {pricingModel === 'bogof' ? '3+ Repeat Package' : 'Fixed Term'}</div>
+            <div className="mb-2"><span className="font-medium">Booking Type:</span> {pricingModel === 'bogof' ? '3+ Repeat Package' : 'Pay As You Go'}</div>
             
             <div className="mb-2"><span className="font-medium">Advert Size:</span> {(Array.isArray(adSizes) ? adSizes : Object.values(adSizes || {}) as typeof adSizes).find(size => size.id === selectedAdSize)?.name || 'Selected size'}</div>
             

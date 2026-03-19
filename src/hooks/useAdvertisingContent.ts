@@ -116,9 +116,9 @@ export const defaultAdvertisingContent = {
       guaranteedReachText: "Your ad will reach every household in your selected areas during the scheduled distribution period, on time, every time.",
     },
     fixed: {
-      bookingTypeText: "Fixed Term",
+      bookingTypeText: "Pay As You Go",
       designServiceText: "By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.",
-      whatYoureBookingText: "A Fixed Term advertising package with guaranteed distribution to your selected areas",
+      whatYoureBookingText: "A Pay As You Go advertising package with guaranteed distribution to your selected areas",
       investmentShownText: "Your total includes all costs - ad creation, distribution, and VAT. No hidden fees or surprise charges",
       immediateConfirmationText: "Receive instant confirmation and campaign details after booking",
     },
