@@ -112,7 +112,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       const {
         data,
         error
-      } = await supabase.from(tableName).select('id, name').in('id', allAreaIds);
+      } = await supabase.from(tableName).select('id, name, circulation, postcodes').in('id', allAreaIds);
       if (error) throw error;
       return data || [];
     },
