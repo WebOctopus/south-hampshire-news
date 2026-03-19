@@ -106,7 +106,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
     <div className="space-y-8 max-w-4xl mx-auto">
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold">YOUR BASKET</h2>
-        <p className="text-muted-foreground">Review your Fixed Term booking details</p>
+        <p className="text-muted-foreground">Review your Pay As You Go booking details</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
