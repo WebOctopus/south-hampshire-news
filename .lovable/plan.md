@@ -1,27 +1,41 @@
 
 
-## Auto-Expand All Accordion Sections in Terms & Conditions Panel
+## Fix: Quote View Dialog Close Causes Page Jump
 
 ### Problem
-The Terms & Conditions panel uses `defaultValue` to set initial open state, but accordion sections may still require clicking to expand in some scenarios (e.g., re-renders, state resets).
+Closing the "View Quote" dialog with the X button causes the page to jump to the bottom and spring back, despite `onCloseAutoFocus={(e) => e.preventDefault()}` already being in place.
+
+### Root Cause
+The `onCloseAutoFocus` fix alone may not be sufficient. Radix Dialog also fires `onPointerDownOutside` events and other focus-related behaviors that can trigger scroll jumps. Additionally, when `viewingQuote` is set to `null`, the re-render of the quote list can cause layout recalculation that shifts scroll position.
 
 ### Fix
-**File: `src/components/dashboard/BookingTerms.tsx`** (line 57)
+**File: `src/pages/Dashboard.tsx`** (line 1511)
 
-Change the `Accordion` from uncontrolled (`defaultValue`) to controlled (`value` + `onValueChange`) so all sections are always forced open and cannot be collapsed:
+Add `onOpenAutoFocus` prevention alongside `onCloseAutoFocus`, and also prevent pointer-down-outside scroll side effects:
 
 ```tsx
 // Before:
-<Accordion type="multiple" defaultValue={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
+<DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" onCloseAutoFocus={(e) => e.preventDefault()}>
 
 // After:
-<Accordion type="multiple" value={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
+<DialogContent 
+  className="max-w-2xl max-h-[80vh] overflow-y-auto" 
+  onCloseAutoFocus={(e) => e.preventDefault()}
+  onOpenAutoFocus={(e) => e.preventDefault()}
+>
 ```
 
-Using `value` (controlled) instead of `defaultValue` (uncontrolled) means the sections are permanently open and the down-arrow click does nothing — the content is always visible.
+Also apply the same fix to the `BookingDetailsDialog.tsx` DialogContent elements (lines 326, 737, 901) which are missing `onCloseAutoFocus` entirely — these will have the same scroll jump issue:
 
-Optionally, hide the chevron arrows on the `AccordionTrigger` elements since they're no longer functional, by adding a CSS class to hide the trigger's indicator icon.
+```tsx
+// Line 326:
+<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onCloseAutoFocus={(e) => e.preventDefault()}>
+
+// Lines 737, 901 (nested legal docs dialogs):
+<DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" onCloseAutoFocus={(e) => e.preventDefault()}>
+```
 
 ### Files to change
-- `src/components/dashboard/BookingTerms.tsx` — one-line change on line 57
+- `src/pages/Dashboard.tsx` — add `onOpenAutoFocus` to quote view dialog
+- `src/components/dashboard/BookingDetailsDialog.tsx` — add `onCloseAutoFocus` to 3 DialogContent elements
 
