@@ -1,25 +1,41 @@
 
 
-## Add `business_name` Variable to Email Templates
+## Fix: Grey "Pay in Full by Card" Button Not Redirecting to Stripe
 
-### What changes
+### Problem
+The "Pay Full Amount by Card" button appears greyed out (disabled) because the `legalDocumentsAccepted` state is `false`. Even though we added a `useEffect` to sync with `booking.terms_accepted_at`, the button disable condition `!legalDocumentsAccepted` may still evaluate to `true` in edge cases (e.g., stale state, re-renders where the effect hasn't fired yet).
 
-The `company` field from the booking contact form already captures the business name, but the variable name `company` isn't intuitive for email template editing. We'll add a `business_name` variable that pulls from the same `company` field on bookings.
+### Root Cause
+The button's `disabled` prop relies solely on `legalDocumentsAccepted` state, which can fall out of sync with the actual `terms_accepted_at` value on the booking.
 
-### Changes
+### Fix
+**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
 
-**1. Edge Function: `supabase/functions/send-booking-confirmation-email/index.ts`**
-- Add `business_name` to the `vars` object, mapped to `payload.company || ""` (same source as `company`)
-- Also add it to the admin notification vars (~line 330)
+Update the button's `disabled` condition on line 813 to also check `booking.terms_accepted_at` directly, making it impossible for the button to be disabled when terms are already recorded:
 
-**2. Admin UI: `src/components/admin/EmailTemplatesManagement.tsx`**
-- Add `business_name: "Smith & Co Ltd"` to the `SAMPLE_DATA` preview dictionary
+```tsx
+// Before (line 813):
+disabled={!legalDocumentsAccepted || stripeLoading}
 
-**3. Database: Update `available_variables` on all email templates**
-- Add `"business_name"` to the `available_variables` array for every template row so it appears as a clickable badge in the editor
+// After:
+disabled={(!legalDocumentsAccepted && !booking?.terms_accepted_at) || stripeLoading}
+```
 
-### How it works
-- Admins see `{{business_name}}` as an available variable in the template editor
-- When emails are sent, `{{business_name}}` resolves to the company/business name from the booking's contact form
-- The existing `{{company}}` variable continues to work as before
+Apply the same fix to the GoCardless "Set Up Payment Plan" button on line 976:
+
+```tsx
+// Before:
+disabled={!selectedPaymentOption || !legalDocumentsAccepted || createMandate.isPending}
+
+// After:
+disabled={!selectedPaymentOption || (!legalDocumentsAccepted && !booking?.terms_accepted_at) || createMandate.isPending}
+```
+
+### Why This Works
+- If `terms_accepted_at` is set on the booking (from quote acceptance), the button is enabled regardless of `legalDocumentsAccepted` state
+- If `terms_accepted_at` is null, the checkbox must still be checked (existing behaviour)
+- This is a belt-and-suspenders approach alongside the existing `useEffect`
+
+### Files Changed
+- `src/components/dashboard/BookingDetailsDialog.tsx` — two line changes to button `disabled` conditions
 
