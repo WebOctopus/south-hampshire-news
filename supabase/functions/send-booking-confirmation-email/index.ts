@@ -330,6 +330,7 @@ Deno.serve(async (req) => {
             email: payload.email,
             phone: payload.phone || "Not provided",
             company: payload.company || "Not provided",
+            business_name: payload.company || "Not provided",
             details_table: "",
             admin_url: "https://peacockpixelmedia.co.uk/admin",
           };
