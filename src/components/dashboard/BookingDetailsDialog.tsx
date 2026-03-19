@@ -810,7 +810,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                     )}
 
-                    <Button onClick={() => handleStripeCheckout(payAmount)} disabled={!legalDocumentsAccepted || stripeLoading} className="w-full" size="lg">
+                    <Button onClick={() => handleStripeCheckout(payAmount)} disabled={(!legalDocumentsAccepted && !booking?.terms_accepted_at) || stripeLoading} className="w-full" size="lg">
                       {stripeLoading ? <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Redirecting to payment...
