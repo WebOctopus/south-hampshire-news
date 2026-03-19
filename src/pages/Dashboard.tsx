@@ -70,6 +70,7 @@ const Dashboard = () => {
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
+  const hasAppliedSmartDefault = useRef(false);
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
   const location = useLocation();
