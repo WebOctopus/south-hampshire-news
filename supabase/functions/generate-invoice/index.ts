@@ -253,7 +253,7 @@ function generateInvoiceHtml(invoice: any, booking: any): string {
             <tr>
               <td>Advertising Campaign</td>
               <td>
-                ${booking.pricing_model === 'fixed' ? 'Fixed Term Campaign' : booking.pricing_model === 'subscription' ? 'Subscription Campaign' : 'BOGOF Campaign'}<br>
+                ${booking.pricing_model === 'fixed' ? 'Pay As You Go Campaign' : booking.pricing_model === 'subscription' ? 'Subscription Campaign' : 'BOGOF Campaign'}<br>
                 ${booking.ad_sizes?.name || 'Standard Ad Size'}<br>
                 ${booking.selected_area_ids?.length || 0} distribution areas
               </td>
