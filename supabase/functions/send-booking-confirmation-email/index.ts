@@ -193,7 +193,7 @@ function buildExistingUserLoginHtml(): string {
 <p style="color:#1e3a5f;font-size:14px;margin:0 0 15px;">A quote has been created for you. Log in to your existing account to view and manage it:</p>
 <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:12px;">
 <tr><td align="center">
-<a href="https://peacockpixelmedia.co.uk/auth" style="display:inline-block;background-color:#1e40af;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:14px;">Log In to Your Dashboard</a>
+<a href="https://peacockpixelmedia.co.uk/auth?redirect=/dashboard?tab=quotes" style="display:inline-block;background-color:#1e40af;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:14px;">Log In to Your Dashboard</a>
 </td></tr></table>
 <p style="color:#6b7280;font-size:12px;margin:0;text-align:center;">Forgot your password? Use the "Forgot Password" link on the login page to reset it.</p>
 </div>`;
