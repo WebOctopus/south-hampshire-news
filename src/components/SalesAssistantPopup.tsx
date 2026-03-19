@@ -25,7 +25,7 @@ const stepContentByModel: Record<string, Record<number, StepContent>> = {
       description: "We offer three powerful advertising options to grow your business.",
       tips: [
         "3+ Repeat Package: Get 50% savings + FREE bonus areas for 6 months. Best value for ongoing campaigns",
-        "Fixed Term: Perfect for one-time promotions, events, or testing new markets",
+        "Pay As You Go: Perfect for one-time promotions, events, or testing new markets",
         "Leafleting: Direct door-to-door delivery reaching every household in your chosen areas"
       ],
       action: {
