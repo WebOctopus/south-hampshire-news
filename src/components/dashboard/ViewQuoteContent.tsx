@@ -79,7 +79,8 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
 
   const AreaCard = ({ area, isFree = false }: { area: any; isFree?: boolean }) => {
     const areaMonths = hasMonthsData ? (monthsByArea[area.id] || []) : fallbackMonths;
-    const formattedDates = areaMonths.map(m => formatMonthLabel(m, area));
+    const displayMonths = isBogof ? areaMonths.slice(0, 3) : areaMonths;
+    const formattedDates = displayMonths.map(m => formatMonthLabel(m, area));
 
     return (
       <div className={`p-3 rounded-lg border ${isFree ? 'border-emerald-200 bg-emerald-50/50' : 'border-border bg-muted/30'}`}>
