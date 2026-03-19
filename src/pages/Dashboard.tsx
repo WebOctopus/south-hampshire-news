@@ -1508,7 +1508,7 @@ const Dashboard = () => {
       </div>
 
       <Dialog open={!!viewingQuote} onOpenChange={() => setViewingQuote(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" onCloseAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Quote Details</DialogTitle>
             <DialogDescription>
