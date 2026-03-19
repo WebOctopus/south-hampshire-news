@@ -1250,7 +1250,7 @@ const Dashboard = () => {
                       </td>
                       <td className="p-4">
                         <div className="flex flex-col">
-                          <span className="font-semibold">£{quote.monthly_price?.toFixed(2) || '0.00'}</span>
+                          <span className="font-semibold">£{(quote.pricing_model === 'bogof' ? quote.monthly_price : quote.final_total)?.toFixed(2) || '0.00'}</span>
                           <span className="text-xs text-muted-foreground">
                             {quote.pricing_model === 'bogof' ? 'per month' : 'campaign total'}
                           </span>
