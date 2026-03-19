@@ -73,7 +73,7 @@ const PaymentSetup = () => {
           const { data: paymentOption, error: paymentOptionError } = await supabase
             .from('payment_options')
             .select('*')
-            .eq('id', paymentOptionId)
+            .eq('option_type', paymentOptionId)
             .single();
 
           if (paymentOptionError || !paymentOption) {
