@@ -1,27 +1,27 @@
 
 
-## Remove Payment Alert Text from Booking Card
+## Auto-Expand All Accordion Sections in Terms & Conditions Panel
 
-### Change
-**File: `src/components/dashboard/BookingCard.tsx`** (lines 233-245)
+### Problem
+The Terms & Conditions panel uses `defaultValue` to set initial open state, but accordion sections may still require clicking to expand in some scenarios (e.g., re-renders, state resets).
 
-Remove the entire "Payment Required Alert" block inside `CardContent` that shows the amber alert with "Set up your payment plan..." / "Complete your payment..." text.
+### Fix
+**File: `src/components/dashboard/BookingTerms.tsx`** (line 57)
+
+Change the `Accordion` from uncontrolled (`defaultValue`) to controlled (`value` + `onValueChange`) so all sections are always forced open and cannot be collapsed:
 
 ```tsx
-// Remove this entire block (lines 233-245):
-{isPaymentRequired && (
-  <Alert className="border-amber-400 bg-amber-50/80 backdrop-blur-sm">
-    <CreditCard className="h-4 w-4 text-amber-600" />
-    <AlertDescription className="text-amber-900 font-medium">
-      {booking.pricing_model === 'bogof'
-        ? 'Set up your payment plan to start your advertising campaign'
-        : 'Complete your payment to start your advertising campaign'}
-    </AlertDescription>
-  </Alert>
-)}
+// Before:
+<Accordion type="multiple" defaultValue={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
+
+// After:
+<Accordion type="multiple" value={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
 ```
 
-The orange card styling and "Payment Required" badge remain — only the text alert inside the card is removed.
+Using `value` (controlled) instead of `defaultValue` (uncontrolled) means the sections are permanently open and the down-arrow click does nothing — the content is always visible.
 
-**Files to change:** `src/components/dashboard/BookingCard.tsx`
+Optionally, hide the chevron arrows on the `AccordionTrigger` elements since they're no longer functional, by adding a CSS class to hide the trigger's indicator icon.
+
+### Files to change
+- `src/components/dashboard/BookingTerms.tsx` — one-line change on line 57
 
