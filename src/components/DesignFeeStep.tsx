@@ -199,7 +199,7 @@ export const DesignFeeStep: React.FC<DesignFeeStepProps> = ({
                     <div className="pt-2">
                       <p className="text-xs text-muted-foreground">
                         ℹ️ <EditableText
-                          value={df?.noNote || "Artwork must be supplied in high-resolution print-ready format (PDF, AI, or EPS)"}
+                          value={df?.noNote || "Artwork must be supplied in high-resolution (300dpi) print-ready format (PDF, JPG)"}
                           onSave={(value) => onContentSave?.('designFee.noNote', value)}
                           as="span"
                         />
