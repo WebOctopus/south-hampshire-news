@@ -1,23 +1,32 @@
 
 
-## Add Booked Issues Per Area in BookingDetailsDialog
+## Fix: Quote Email Missing Business Name & Password
 
 ### Problem
-The Distribution Areas section in the Fixed Term payment dialog only shows area names and count, but not which specific issues (months) are booked for each area.
+The saved quote confirmation email sent to customers has two issues:
+1. **Business/company name not showing** — the edge function builds template variables but doesn't include `company` in the customer email variable map
+2. **Password not appearing** — the credentials block may not inject properly into DB-managed templates
 
-### Solution
-Update the Distribution Areas section in `BookingDetailsDialog.tsx` to list each area individually with its booked issues, similar to how `ViewQuoteContent.tsx` already does it.
+### Root Cause
 
-### Changes
+**File: `supabase/functions/send-booking-confirmation-email/index.ts`**
 
-**File: `src/components/dashboard/BookingDetailsDialog.tsx`** (lines ~451-476)
+- Line 403: The `vars` object for customer templates includes many variables but is missing `company`. The admin email (line 332) correctly includes `company`, but the customer template does not.
+- Lines 428-434: The `login_credentials` and `login_password` vars are set, but if the DB template doesn't contain `{{login_credentials}}`, the fallback injection (lines 469-476) tries to insert it "early" using regex matching. This approach can fail depending on the template HTML structure.
 
-1. Extract `monthsByArea` from `booking.selections?.months` or `booking.selections?.selectedMonths` (matching the data structure used during booking creation)
-2. Replace the current single block that lists all area names as a comma-separated string with individual area cards
-3. For each area, show:
-   - Area name (e.g. "Area 1 - SOUTHAMPTON")
-   - Booked issues formatted as month names (e.g. "June 2026, Aug 2026")
-4. Use the same `formatMonthLabel` pattern from `ViewQuoteContent` to convert YYYY-MM strings to readable month/year labels
-5. Keep the existing count summary below (e.g. "1 area selected")
-6. Only apply this enhancement for non-leafleting models (Fixed Term and BOGOF already have months data)
+### Fix
+
+**File: `supabase/functions/send-booking-confirmation-email/index.ts`**
+
+1. Add `company: payload.company || ""` to the customer template vars (around line 403)
+2. Ensure the fallback credentials injection is more robust — if insertion before "Summary" or footer fails, insert after the greeting paragraph more reliably
+3. Also add `company` to the `EmailPayload` interface docs for clarity (already present but worth confirming the flow)
+
+**File: `src/pages/Advertising.tsx`** (secondary fix)
+
+The public-facing quote save flow does NOT call `send-booking-confirmation-email` at all — only the CRM webhook is sent. Add a `send-booking-confirmation-email` invocation for both the existing-user and new-user paths, passing `company`, and for new users, the password. This mirrors what `AdvertisingStepForm.tsx` and `CreateBookingForm.tsx` already do.
+
+### Files Changed
+- `supabase/functions/send-booking-confirmation-email/index.ts` — add `company` to customer vars
+- `src/pages/Advertising.tsx` — add confirmation email call for both quote save paths (existing user + new user), including password for new users
 
