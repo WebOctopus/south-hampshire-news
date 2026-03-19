@@ -109,12 +109,15 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       if (allAreaIds.length === 0) return [];
       
       const tableName = booking.pricing_model === 'leafleting' ? 'leaflet_areas' : 'pricing_areas';
-      const {
-        data,
-        error
-      } = await supabase.from(tableName).select('id, name').in('id', allAreaIds);
-      if (error) throw error;
-      return data || [];
+      if (tableName === 'leaflet_areas') {
+        const { data, error } = await supabase.from('leaflet_areas').select('id, name, postcodes, bimonthly_circulation').in('id', allAreaIds);
+        if (error) throw error;
+        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: a.postcodes, circulation: a.bimonthly_circulation }));
+      } else {
+        const { data, error } = await supabase.from('pricing_areas').select('id, name, circulation, postcodes').in('id', allAreaIds);
+        if (error) throw error;
+        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: Array.isArray(a.postcodes) ? a.postcodes.join(', ') : '', circulation: a.circulation }));
+      }
     },
     enabled: !!booking && open
   });
@@ -449,31 +452,81 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                 </div>
 
                 {/* Paid Locations */}
-                <div className="bg-muted p-4 rounded-lg">
-                  <div className="flex items-start space-x-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold mb-2">
+                {(() => {
+                  const paidAreaIds = booking.pricing_model === 'bogof' ? booking.bogof_paid_area_ids || [] : booking.selected_area_ids || [];
+                  const selections = booking.selections as any;
+                  const monthsByArea: Record<string, string[]> = selections?.months || {};
+                  
+                  const formatMonth = (monthStr: string) => {
+                    const [y, m] = monthStr.split('-');
+                    if (y && m) {
+                      const d = new Date(Number(y), Number(m) - 1);
+                      return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+                    }
+                    return monthStr;
+                  };
+
+                  // Derive fallback months from distribution_start_date + duration_multiplier
+                  const deriveFallbackMonths = (): string[] => {
+                    if (!booking.distribution_start_date) return [];
+                    const issueCount = booking.duration_multiplier || 1;
+                    const startDate = new Date(booking.distribution_start_date);
+                    const months: string[] = [];
+                    for (let i = 0; i < issueCount; i++) {
+                      const d = new Date(startDate.getFullYear(), startDate.getMonth() + (i * 2));
+                      months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+                    }
+                    return months;
+                  };
+
+                  const hasMonthsData = Object.keys(monthsByArea).length > 0;
+                  const fallbackMonths = !hasMonthsData ? deriveFallbackMonths() : [];
+
+                  if (!pricingAreas || paidAreaIds.length === 0) {
+                    return (
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground">No areas selected</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">
                         {booking.pricing_model === 'bogof' ? 'Paid Areas' : 'Your Selected Areas'}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {(() => {
-                        const paidAreaIds = booking.pricing_model === 'bogof' ? booking.bogof_paid_area_ids || [] : booking.selected_area_ids || [];
-                        if (!pricingAreas || paidAreaIds.length === 0) {
-                          return 'No areas selected';
-                        }
-                        const names = paidAreaIds.map((id: string) => pricingAreas.find((a: any) => a.id === id)?.name).filter(Boolean);
-                        return names.join(', ') || 'Loading...';
-                      })()}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {booking.pricing_model === 'bogof' ? `${(booking.bogof_paid_area_ids || []).length} paid area${(booking.bogof_paid_area_ids || []).length !== 1 ? 's' : ''}` : `${(booking.selected_area_ids || []).length} area${(booking.selected_area_ids || []).length !== 1 ? 's' : ''} selected`}
+                      {paidAreaIds.map((id: string) => {
+                        const area = pricingAreas.find((a: any) => a.id === id);
+                        if (!area) return null;
+                        const areaMonths = hasMonthsData ? (monthsByArea[id] || []) : fallbackMonths;
+                        const formattedMonths = areaMonths.map(formatMonth);
+                        return (
+                          <div key={id} className="bg-muted p-3 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-medium">{area.name}</span>
+                            </div>
+                            <div className="ml-6 mt-1 text-xs text-muted-foreground">
+                              {(area.circulation || 0).toLocaleString()} circulation
+                              {area.postcodes && <span className="ml-2">· {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : area.postcodes}</span>}
+                            </div>
+                            {formattedMonths.length > 0 && (
+                              <div className="ml-6 mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                                <CalendarDays className="h-3.5 w-3.5" />
+                                <span>Issues: {formattedMonths.join(', ')}</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <p className="text-xs text-muted-foreground">
+                        {booking.pricing_model === 'bogof'
+                          ? `${paidAreaIds.length} paid area${paidAreaIds.length !== 1 ? 's' : ''}`
+                          : `${paidAreaIds.length} area${paidAreaIds.length !== 1 ? 's' : ''} selected`}
                       </p>
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* Free Locations (only for BOGOF) */}
                 {booking.pricing_model === 'bogof' && (booking.bogof_free_area_ids || []).length > 0 && <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
