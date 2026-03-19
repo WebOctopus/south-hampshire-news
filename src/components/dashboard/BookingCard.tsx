@@ -232,17 +232,6 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
       </CardHeader>
       
       <CardContent className="space-y-4 relative">
-        {/* Payment Required Alert */}
-        {isPaymentRequired && (
-          <Alert className="border-amber-400 bg-amber-50/80 backdrop-blur-sm">
-            <CreditCard className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-900 font-medium">
-              {booking.pricing_model === 'bogof'
-                ? 'Set up your payment plan to start your advertising campaign'
-                : 'Complete your payment to start your advertising campaign'}
-            </AlertDescription>
-          </Alert>
-        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2 text-sm">
