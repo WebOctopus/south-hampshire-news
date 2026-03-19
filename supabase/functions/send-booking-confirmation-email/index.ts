@@ -470,11 +470,11 @@ Deno.serve(async (req) => {
           return html + block;
         };
 
-        if (payload.is_admin_created && payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
+        // Inject credentials block if template doesn't have the placeholder and we have credentials to show
+        if (payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           const credentialsBlock = buildLoginCredentialsHtml(payload.email, payload.generated_password);
           templatedHtml = insertBlockEarly(templatedHtml, credentialsBlock);
-        }
-        if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
+        } else if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           const loginBlock = buildExistingUserLoginHtml();
           templatedHtml = insertBlockEarly(templatedHtml, loginBlock);
         }
