@@ -330,6 +330,7 @@ Deno.serve(async (req) => {
             email: payload.email,
             phone: payload.phone || "Not provided",
             company: payload.company || "Not provided",
+            business_name: payload.company || "Not provided",
             details_table: "",
             admin_url: "https://peacockpixelmedia.co.uk/admin",
           };
@@ -410,6 +411,7 @@ Deno.serve(async (req) => {
         const vars: Record<string, string> = {
           customer_name: (payload.contact_name || payload.email.split("@")[0]).split(" ")[0],
           company: payload.company || "",
+          business_name: payload.company || "",
           package_type: modelLabel,
           // Fixed Term vars
           ad_size: payload.ad_size || "N/A",
