@@ -1,24 +1,25 @@
 
 
-## Fix: Payment Alert Message Based on Pricing Model
+## Fix: Payment Button Disabled Despite Terms Already Accepted
 
 ### Problem
-The booking card shows "Set up your payment plan to start your advertising campaign" for all unpaid bookings, but this wording is only appropriate for BOGOF (subscription) bookings. For Pay As You Go and Leafleting bookings, "payment plan" is misleading since they pay in full (or deposit) by card.
+The "Pay Full Amount by Card" button is disabled because `legalDocumentsAccepted` state is initialized via `useState(!!booking?.terms_accepted_at)`. Since `useState` only runs its initializer once (on mount), if the `booking` prop arrives or changes after the component mounts, the state stays `false` — even though `terms_accepted_at` is set on the booking.
 
 ### Fix
-**File: `src/components/dashboard/BookingCard.tsx`** (~line 240)
+**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
 
-Change the alert message to be conditional on `booking.pricing_model`:
-- **BOGOF**: "Set up your payment plan to start your advertising campaign"
-- **Pay As You Go / Leafleting**: "Complete your payment to start your advertising campaign"
+Add a `useEffect` after line 33 to sync the state when the booking changes:
 
 ```tsx
-<AlertDescription className="text-amber-900 font-medium">
-  {booking.pricing_model === 'bogof'
-    ? 'Set up your payment plan to start your advertising campaign'
-    : 'Complete your payment to start your advertising campaign'}
-</AlertDescription>
+useEffect(() => {
+  if (booking?.terms_accepted_at) {
+    setLegalDocumentsAccepted(true);
+  }
+}, [booking?.terms_accepted_at]);
 ```
 
-One file changed.
+This ensures that when the dialog opens with a booking that already has `terms_accepted_at` set (from the quote acceptance flow), the button is correctly enabled.
+
+### Files Changed
+- `src/components/dashboard/BookingDetailsDialog.tsx` — add useEffect to sync `legalDocumentsAccepted` with `booking.terms_accepted_at`
 
