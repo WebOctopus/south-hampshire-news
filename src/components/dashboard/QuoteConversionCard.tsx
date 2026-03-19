@@ -147,7 +147,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
                   quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term'
                     ? (quote.final_total || 0)
                     : (quote.monthly_price > 0 ? quote.monthly_price : quote.final_total)
-                )} + vat
+                )}
               </div>
               <div className="text-xs text-muted-foreground">
                 {quote.pricing_model === 'bogof' ? 'per month' : (quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' ? 'campaign total' : '')}
