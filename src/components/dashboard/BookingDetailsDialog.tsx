@@ -841,6 +841,15 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       .filter(option => 
                         !booking.selections?.payment_option_id || option.option_type === booking.selections.payment_option_id
                       )
+                      .sort((a, b) => {
+                        const getOrder = (option: any) => {
+                          if (option.option_type === 'monthly' || option.option_type === 'direct_debit') return 1;
+                          if (option.display_name?.includes('6 Months')) return 2;
+                          if (option.display_name?.includes('12 Months')) return 3;
+                          return 4;
+                        };
+                        return getOrder(a) - getOrder(b);
+                      })
                       .map(option => {
                   const baseTotal = booking.final_total || booking.monthly_price;
                   const pricingModel = booking.pricing_model || 'fixed';
