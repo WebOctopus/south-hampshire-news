@@ -548,6 +548,42 @@ const CalculatorTest = () => {
           console.error('Page quote webhook error:', webhookError);
         }
 
+        // Send confirmation email to existing user
+        try {
+          const selectedAdSizeData = adSizes?.find(a => a.id === selectedAdSize);
+          const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
+                                        subscriptionDurations?.find(d => d.id === selectedDuration);
+          await supabase.functions.invoke('send-booking-confirmation-email', {
+            body: {
+              record_type: 'quote',
+              pricing_model: pricingModel,
+              contact_name: formData.name,
+              email: formData.email,
+              phone: formData.phone || '',
+              company: formData.company || '',
+              ad_size: selectedAdSizeData?.name,
+              duration: selectedDurationData?.name,
+              selected_areas: effectiveSelectedAreas.map(id => {
+                const area = areas?.find(a => a.id === id) || (leafletAreas || []).find((a: any) => a.id === id);
+                return area?.name || id;
+              }),
+              bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas.map(id => areas?.find(a => a.id === id)?.name || id) : [],
+              bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas.map(id => areas?.find(a => a.id === id)?.name || id) : [],
+              total_circulation: pricingBreakdown.totalCirculation,
+              subtotal: pricingBreakdown.subtotal,
+              final_total: pricingBreakdown.finalTotal,
+              monthly_price: basePayload.monthly_price,
+              volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
+              duration_discount_percent: durationDiscountPercent,
+              is_existing_user: true,
+              selections: basePayload.selections
+            }
+          });
+          console.log('Quote confirmation email sent (existing user)');
+        } catch (emailError) {
+          console.error('Quote confirmation email error:', emailError);
+        }
+
         toast({
           title: "Saved",
           description: "Quote saved to your dashboard."
@@ -618,6 +654,42 @@ const CalculatorTest = () => {
             console.log('Page quote webhook sent successfully (new user)');
           } catch (webhookError) {
             console.error('Page quote webhook error:', webhookError);
+          }
+
+          // Send confirmation email to new user with password
+          try {
+            const selectedAdSizeData = adSizes?.find(a => a.id === selectedAdSize);
+            const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
+                                          subscriptionDurations?.find(d => d.id === selectedDuration);
+            await supabase.functions.invoke('send-booking-confirmation-email', {
+              body: {
+                record_type: 'quote',
+                pricing_model: pricingModel,
+                contact_name: formData.name,
+                email: formData.email,
+                phone: formData.phone || '',
+                company: formData.company || '',
+                ad_size: selectedAdSizeData?.name,
+                duration: selectedDurationData?.name,
+                selected_areas: effectiveSelectedAreas.map(id => {
+                  const area = areas?.find(a => a.id === id) || (leafletAreas || []).find((a: any) => a.id === id);
+                  return area?.name || id;
+                }),
+                bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas.map(id => areas?.find(a => a.id === id)?.name || id) : [],
+                bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas.map(id => areas?.find(a => a.id === id)?.name || id) : [],
+                total_circulation: pricingBreakdown.totalCirculation,
+                subtotal: pricingBreakdown.subtotal,
+                final_total: pricingBreakdown.finalTotal,
+                monthly_price: basePayload.monthly_price,
+                volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
+                duration_discount_percent: durationDiscountPercent,
+                generated_password: formData.password,
+                selections: basePayload.selections
+              }
+            });
+            console.log('Quote confirmation email sent (new user with password)');
+          } catch (emailError) {
+            console.error('Quote confirmation email error:', emailError);
           }
 
           // Mark this as a new user from the calculator for password setup

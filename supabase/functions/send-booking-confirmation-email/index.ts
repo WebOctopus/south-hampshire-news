@@ -400,8 +400,16 @@ Deno.serve(async (req) => {
         const paidAreas = payload.bogof_paid_areas?.length ? payload.bogof_paid_areas.join(", ") : "N/A";
         const freeAreas = payload.bogof_free_areas?.length ? payload.bogof_free_areas.join(", ") : "N/A";
         const areasSelected = payload.selected_areas?.length ? payload.selected_areas.join(", ") : "N/A";
+        // Build login credentials HTML for both admin-created and self-registered users
+        const loginCredentialsHtml = payload.generated_password
+          ? buildLoginCredentialsHtml(payload.email, payload.generated_password)
+          : (payload.is_admin_created && payload.is_existing_user
+            ? buildExistingUserLoginHtml()
+            : "");
+
         const vars: Record<string, string> = {
           customer_name: (payload.contact_name || payload.email.split("@")[0]).split(" ")[0],
+          company: payload.company || "",
           package_type: modelLabel,
           // Fixed Term vars
           ad_size: payload.ad_size || "N/A",
@@ -424,14 +432,10 @@ Deno.serve(async (req) => {
           // Shared
           total_cost: formatCurrency(payload.final_total),
           dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
-          // Admin-created credentials or login link
-          login_credentials: payload.is_admin_created && payload.generated_password
-            ? buildLoginCredentialsHtml(payload.email, payload.generated_password)
-            : (payload.is_admin_created && payload.is_existing_user
-              ? buildExistingUserLoginHtml()
-              : ""),
+          // Credentials block (works for admin-created AND self-registered new users)
+          login_credentials: loginCredentialsHtml,
           login_email: payload.email,
-          login_password: payload.is_admin_created && payload.generated_password ? payload.generated_password : "",
+          login_password: payload.generated_password || "",
           login_url: "https://peacockpixelmedia.co.uk/auth",
         };
         customerSubject = applyTemplate(customerTemplate.subject, vars);
@@ -466,11 +470,11 @@ Deno.serve(async (req) => {
           return html + block;
         };
 
-        if (payload.is_admin_created && payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
+        // Inject credentials block if template doesn't have the placeholder and we have credentials to show
+        if (payload.generated_password && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           const credentialsBlock = buildLoginCredentialsHtml(payload.email, payload.generated_password);
           templatedHtml = insertBlockEarly(templatedHtml, credentialsBlock);
-        }
-        if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
+        } else if (payload.is_admin_created && payload.is_existing_user && !customerTemplate.html_body.includes('{{login_credentials}}')) {
           const loginBlock = buildExistingUserLoginHtml();
           templatedHtml = insertBlockEarly(templatedHtml, loginBlock);
         }
