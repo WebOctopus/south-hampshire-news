@@ -84,23 +84,30 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
   };
 
   const getLeafletDeliveryDates = (area: any): string[] => {
-    if (!isLeafleting || !quote.distribution_start_date) return [];
+    if (!isLeafleting) return [];
     const schedule = area.schedule as any[] | undefined;
     if (!schedule || schedule.length === 0) return [];
     const issueCount = quote.duration_multiplier || 1;
-    const startDate = new Date(quote.distribution_start_date);
     
-    // Filter schedule entries that fall within the booked period
-    const matchingEntries = schedule
-      .filter((s: any) => {
-        const entryMonth = s.month;
-        if (!entryMonth) return false;
-        const [y, m] = entryMonth.split('-');
-        const entryDate = new Date(Number(y), Number(m) - 1);
-        return entryDate >= new Date(startDate.getFullYear(), startDate.getMonth());
-      })
-      .sort((a: any, b: any) => (a.month || '').localeCompare(b.month || ''))
-      .slice(0, issueCount);
+    let matchingEntries;
+    if (quote.distribution_start_date) {
+      const startDate = new Date(quote.distribution_start_date);
+      matchingEntries = schedule
+        .filter((s: any) => {
+          const entryMonth = s.month;
+          if (!entryMonth) return false;
+          const [y, m] = entryMonth.split('-');
+          const entryDate = new Date(Number(y), Number(m) - 1);
+          return entryDate >= new Date(startDate.getFullYear(), startDate.getMonth());
+        })
+        .sort((a: any, b: any) => (a.month || '').localeCompare(b.month || ''))
+        .slice(0, issueCount);
+    } else {
+      // Fallback: show first N schedule entries sorted chronologically
+      matchingEntries = [...schedule]
+        .sort((a: any, b: any) => (a.month || '').localeCompare(b.month || ''))
+        .slice(0, issueCount);
+    }
 
     return matchingEntries.map((s: any) => {
       const dd = s.deliveryDate || s.delivery_date;
