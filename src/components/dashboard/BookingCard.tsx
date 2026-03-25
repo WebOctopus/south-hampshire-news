@@ -141,14 +141,11 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
   };
 
   const getPaymentStatusLabel = (status?: string) => {
-    // Simplified labels: only "Payment Required" or "Paid"
-    if (!status || status === 'pending') return 'Payment Required';
-    // All paid/active statuses show as "Paid"
+    if (!status || status === 'pending') return 'Payment Setup Required';
     if (status === 'paid' || status === 'subscription_active' || status === 'mandate_active') {
       return 'Paid';
     }
-    // All other statuses default to "Payment Required"
-    return 'Payment Required';
+    return 'Payment Setup Required';
   };
 
   const getPricingModelDisplay = (model: string) => {
