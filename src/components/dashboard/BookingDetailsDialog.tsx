@@ -302,7 +302,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       case 'fixed':
         return 'Fixed Placement';
       case 'bogof':
-        return '3+ Repeat Package Booking';
+        return '3+ Subscription';
       case 'leafleting':
         return 'Leaflet Distribution';
       default:
@@ -424,7 +424,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         </span>
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Campaign Cost:</span>{' '}
+                        <span className="font-medium">{booking.pricing_model === 'bogof' ? 'Monthly Cost' : 'Campaign Cost'}:</span>{' '}
                         <span className="text-muted-foreground font-semibold">
                           {(() => {
                           const selectedPaymentOptionId = booking.selections?.payment_option_id;
@@ -499,7 +499,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                   return (
                     <div className="space-y-2">
                       <p className="text-sm font-semibold">
-                        {booking.pricing_model === 'bogof' ? 'Paid Areas' : 'Your Selected Areas'}
+                        {booking.pricing_model === 'bogof' ? 'Subscribed Areas' : 'Your Selected Areas'}
                       </p>
                       {paidAreaIds.map((id: string) => {
                         const area = pricingAreas.find((a: any) => a.id === id);
@@ -527,7 +527,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       })}
                       <p className="text-xs text-muted-foreground">
                         {booking.pricing_model === 'bogof'
-                          ? `${paidAreaIds.length} paid area${paidAreaIds.length !== 1 ? 's' : ''}`
+                          ? `${paidAreaIds.length} subscribed area${paidAreaIds.length !== 1 ? 's' : ''}`
                           : `${paidAreaIds.length} area${paidAreaIds.length !== 1 ? 's' : ''} selected`}
                       </p>
                     </div>
@@ -542,18 +542,23 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold mb-2 text-green-900">
-                          Bonus Free Areas 🎉
+                          Bonus Free Areas for SIX months 🎉
                         </p>
-                        <p className="text-sm text-green-800">
+                        <div className="text-sm text-green-800 space-y-1">
                           {(() => {
                         const freeAreaIds = booking.bogof_free_area_ids || [];
                         if (!pricingAreas || freeAreaIds.length === 0) {
-                          return 'No areas selected';
+                          return <span>No areas selected</span>;
                         }
-                        const names = freeAreaIds.map((id: string) => pricingAreas.find((a: any) => a.id === id)?.name).filter(Boolean);
-                        return names.join(', ') || 'Loading...';
+                        const freeAreas = freeAreaIds
+                          .map((id: string) => pricingAreas.find((a: any) => a.id === id))
+                          .filter(Boolean);
+                        if (freeAreas.length === 0) return <span>Loading...</span>;
+                        return freeAreas.map((area: any) => (
+                          <div key={area.id}>{area.name}</div>
+                        ));
                       })()}
-                        </p>
+                        </div>
                         <p className="text-xs text-green-700 mt-2">
                           {(booking.bogof_free_area_ids || []).length} additional area{(booking.bogof_free_area_ids || []).length !== 1 ? 's' : ''} at no extra cost
                         </p>
