@@ -300,7 +300,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   const getPricingModelDisplay = (model: string) => {
     switch (model) {
       case 'fixed':
-        return 'Fixed Placement';
+        return 'Pay As You Go';
       case 'bogof':
         return '3+ Subscription';
       case 'leafleting':
