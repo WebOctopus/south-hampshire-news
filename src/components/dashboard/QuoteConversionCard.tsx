@@ -150,7 +150,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
                 )}
               </div>
               <div className="text-xs text-muted-foreground">
-                {quote.pricing_model === 'bogof' ? 'per month' : (quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' || quote.pricing_model === 'leafleting' ? 'campaign total' : '')}
+                {quote.pricing_model === 'bogof' ? 'per month + VAT' : (quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' || quote.pricing_model === 'leafleting' ? 'campaign total + VAT' : '')}
               </div>
             </div>
           </div>
