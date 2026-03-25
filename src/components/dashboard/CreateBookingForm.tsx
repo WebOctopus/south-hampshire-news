@@ -218,11 +218,11 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   }, [pricingBreakdownRaw, designFeeAmount, includeDesign]);
 
   const isFormValid = () => {
-    // Payment option is required for all booking types
+    // Payment option is required for BOGOF and fixed-term only; leafleting uses fixed 25%/75% terms
     const hasPaymentOption = selectedPaymentOption && selectedPaymentOption.length > 0;
     
     if (pricingModel === 'leafleting') {
-      return selectedAreas.length > 0 && selectedLeafletDuration && selectedLeafletSize && hasPaymentOption;
+      return selectedAreas.length > 0 && selectedLeafletDuration && selectedLeafletSize !== '';
     } else if (pricingModel === 'bogof') {
       return bogofPaidAreas.length >= 3 && bogofFreeAreas.length >= 3 && selectedAdSize && selectedDuration && hasPaymentOption;
     } else {
