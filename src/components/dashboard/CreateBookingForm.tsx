@@ -316,9 +316,13 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
 
       // Send confirmation emails (non-blocking)
       try {
-        const adSizeForEmail = adSizes?.find(a => a.id === selectedAdSize);
-        const durationForEmail = durations?.find(d => d.id === selectedDuration) || 
-                                  subscriptionDurations?.find(d => d.id === selectedDuration);
+        const adSizeForEmail = pricingModel === 'leafleting'
+          ? leafletSizes?.find(a => a.id === selectedLeafletSize)
+          : adSizes?.find(a => a.id === selectedAdSize);
+        const durationForEmail = pricingModel === 'leafleting'
+          ? leafletDurations?.find(d => d.id === selectedLeafletDuration)
+          : (durations?.find(d => d.id === selectedDuration) || 
+             subscriptionDurations?.find(d => d.id === selectedDuration));
         await supabase.functions.invoke('send-booking-confirmation-email', {
           body: {
             record_type: 'quote',
@@ -327,7 +331,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             contact_name: profile?.display_name || user.email?.split('@')[0] || '',
             email: user.email || '',
             phone: profile?.phone || '',
-            ad_size: adSizeForEmail?.name,
+            ad_size: pricingModel === 'leafleting' ? (adSizeForEmail as any)?.label : (adSizeForEmail as any)?.name,
             duration: durationForEmail?.name,
             selected_areas: (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).map(id => [...(areas || []), ...(leafletAreas || [])].find(a => a.id === id)?.name || id),
             bogof_paid_areas: (pricingModel === 'bogof' ? bogofPaidAreas : []).map(id => areas?.find(a => a.id === id)?.name || id),
@@ -337,6 +341,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             final_total: pricingBreakdown.finalTotal,
             monthly_price: quotePayload.monthly_price,
             pricing_breakdown: pricingBreakdown,
+            selections: quotePayload.selections,
           }
         });
         console.log('Dashboard quote confirmation email sent');
