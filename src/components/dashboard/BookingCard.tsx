@@ -2,12 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Clock, Package, Trash2, CreditCard, AlertCircle, Gift, CheckCircle2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, Package, CreditCard, AlertCircle, Gift, CheckCircle2, XCircle } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { calculatePaymentAmount } from '@/lib/paymentCalculations';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface BookingCardProps {
   booking: {
