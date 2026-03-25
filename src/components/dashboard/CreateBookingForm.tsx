@@ -346,6 +346,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             monthly_price: quotePayload.monthly_price,
             pricing_breakdown: pricingBreakdown,
             selections: quotePayload.selections,
+            distribution_start_date: quotePayload.distribution_start_date,
           }
         });
         console.log('Dashboard quote confirmation email sent');
@@ -487,6 +488,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             monthly_price: bookingPayload.monthly_price,
             pricing_breakdown: pricingBreakdown,
             selections: bookingPayload.selections,
+            distribution_start_date: selectedMonths && Object.values(selectedMonths)[0]?.[0] ? `${Object.values(selectedMonths)[0][0]}-01` : null,
           }
         });
         console.log('Dashboard booking confirmation email sent');

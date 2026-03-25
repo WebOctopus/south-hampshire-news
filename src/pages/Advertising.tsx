@@ -576,7 +576,8 @@ const CalculatorTest = () => {
               volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
               duration_discount_percent: durationDiscountPercent,
               is_existing_user: true,
-              selections: basePayload.selections
+                selections: basePayload.selections,
+                distribution_start_date: basePayload.selections?.selectedStartingIssue ? `${basePayload.selections.selectedStartingIssue}-01` : null,
             }
           });
           console.log('Quote confirmation email sent (existing user)');
@@ -684,7 +685,8 @@ const CalculatorTest = () => {
                 volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
                 duration_discount_percent: durationDiscountPercent,
                 generated_password: formData.password,
-                selections: basePayload.selections
+                selections: basePayload.selections,
+                distribution_start_date: basePayload.selections?.selectedStartingIssue ? `${basePayload.selections.selectedStartingIssue}-01` : null,
               }
             });
             console.log('Quote confirmation email sent (new user with password)');
