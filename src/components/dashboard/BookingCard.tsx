@@ -38,7 +38,7 @@ interface BookingCardProps {
   onNavigateToVouchers?: () => void;
 }
 
-export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails, onNavigateToVouchers }) => {
+export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onNavigateToVouchers }) => {
   
   // Preview mode disabled - bookings are now live
   const PREVIEW_AS_PAID = false;
