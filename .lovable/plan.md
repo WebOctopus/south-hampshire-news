@@ -1,34 +1,41 @@
 
 
-## Fix BOGOF Monthly Cost Showing Campaign Total Instead of Monthly Price
+## Replace Booking Card Title with Date & Ad Size
 
 ### Problem
-On line 406-416 of `BookingDetailsDialog.tsx`, the label correctly says "Monthly Cost" for BOGOF, but the value calculation uses `booking.final_total || booking.monthly_price`. Since `final_total` exists (£576), it displays that instead of the monthly price (£90).
+Booking cards show the title inherited from the quote (e.g. "3+ Repeat Package Quote" or "Dashboard Quote"), which is no longer appropriate once it's a confirmed booking.
 
-### Fix
+### Changes
 
-**File: `src/components/dashboard/BookingDetailsDialog.tsx` (lines 406-416)**
+**File: `src/components/dashboard/BookingCard.tsx` (line 198)**
 
-For BOGOF pricing model, use `booking.monthly_price` directly instead of `booking.final_total || booking.monthly_price`:
+Replace `{booking.title}` with a formatted booking date and ad size description:
 
 ```tsx
-<span className="font-medium">{booking.pricing_model === 'bogof' ? 'Monthly Cost' : 'Campaign Cost'}:</span>{' '}
-<span className="text-muted-foreground font-semibold">
-  {(() => {
-    if (booking.pricing_model === 'bogof') {
-      return formatPrice(booking.monthly_price || 0) + ' + VAT';
-    }
-    const selectedPaymentOptionId = booking.selections?.payment_option_id;
-    const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
-    const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
-    const designFee = booking.pricing_breakdown?.designFee || 0;
-    if (selectedOption && paymentOptions.length > 0) {
-      return formatPrice(calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee)) + ' + VAT';
-    }
-    return formatPrice(booking.final_total || booking.monthly_price) + ' + VAT';
-  })()}
-</span>
+<CardTitle className="text-lg leading-tight">
+  {`Booked ${formatDate(booking.created_at).split(',')[0]}`}
+  {booking.selections?.ad_size_name && (
+    <span className="text-muted-foreground font-normal text-sm ml-2">
+      — {booking.selections.ad_size_name}
+    </span>
+  )}
+</CardTitle>
 ```
 
-Single file change, single location.
+This will display something like: **Booked 25 Mar 2026 — Half Page**
+
+The ad size name should be available in `booking.selections` (stored during quote creation). Will fall back gracefully if not present.
+
+**File: `src/components/dashboard/QuoteConversionCard.tsx` (line 89)**
+
+Also update the quote card fallback title to remove "Quote" suffix:
+
+```tsx
+{quote.title || getPricingModelDisplay(quote.pricing_model)}
+```
+
+### Technical Details
+- `booking.selections` is a JSON column that stores the user's choices including ad size info
+- `formatDate` already exists in the component
+- No database changes needed
 
