@@ -1,39 +1,40 @@
 
 
-## Add Area Selection to Leafleting Quote Overview Popups
+## Fix Leafleting Quote Email: Total Cost & Add Price Breakdown
 
-### Problem
-The "Quote Details" popup for Leaflet Distribution quotes doesn't show the area cards (with location, circulation, postcodes) because the component only queries `pricing_areas`. Leafleting quotes store area IDs from the `leaflet_areas` table, so the lookup fails silently.
+### Problems
+1. **Unresolved variable**: The email template uses `{{number_of_leaflets}}` but the Edge Function maps to `quantity_of_leaflets` — so the template shows the raw placeholder text
+2. **Incorrect total**: `total_cost` displays £253.75 (the 25% deposit) instead of the full campaign cost
+3. **No breakdown**: The email should show Campaign Cost, 25% Deposit, and 75% Remaining balance
 
-The PAYG quotes work fine because their area IDs come from `pricing_areas`.
+### Changes
 
-### Fix
+**File: `supabase/functions/send-booking-confirmation-email/index.ts`**
 
-**File: `src/components/dashboard/ViewQuoteContent.tsx`**
-
-1. **Import `useLeafletAreas`** from `@/hooks/useLeafletData`
-
-2. **Fetch leaflet areas** alongside pricing areas:
-   ```tsx
-   const { data: leafletAreas = [] } = useLeafletAreas();
+1. **Add `number_of_leaflets` variable** (line ~434): Add a duplicate mapping so the template variable `{{number_of_leaflets}}` resolves correctly alongside the existing `quantity_of_leaflets`:
+   ```
+   number_of_leaflets: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
    ```
 
-3. **Resolve leafleting areas separately**: When `quote.pricing_model === 'leafleting'`, filter `leafletAreas` by `quote.selected_area_ids` instead of `areas`. Map the leaflet area fields (`bimonthly_circulation` → display as circulation, `postcodes` as string) to match the AreaCard expectations.
-
-4. **Update `selectedAreas`** to use the correct source:
-   ```tsx
-   const selectedAreas = quote.pricing_model === 'leafleting'
-     ? leafletAreas.filter(a => quote.selected_area_ids?.includes(a.id))
-         .map(a => ({ ...a, circulation: a.bimonthly_circulation }))
-     : areas.filter(a => quote.selected_area_ids?.includes(a.id));
+2. **Add leafleting payment breakdown variables** (lines ~435-437): For leafleting quotes/bookings, compute and expose deposit and remaining amounts:
+   ```
+   deposit_amount: formatCurrency(payload.final_total ? payload.final_total * 0.25 : 0),
+   remaining_amount: formatCurrency(payload.final_total ? payload.final_total * 0.75 : 0),
+   payment_terms: payload.pricing_model === 'leafleting'
+     ? '25% deposit to secure your slot, 75% balance due 10 days before distribution'
+     : '',
    ```
 
-This ensures leafleting quote popups show the same area card format (name, circulation, postcodes) as PAYG quotes.
+3. **Ensure `total_cost` shows the full campaign cost**: Verify the `final_total` passed from the client is the full price (not the deposit). From the calculator code, `pricingBreakdown.finalTotal` IS the full campaign cost. If the stored value has been overwritten elsewhere (e.g. during booking conversion to the deposit amount), add a fallback using `pricing_breakdown.finalTotal` from the payload.
+
+After deploying, the admin can update the email template in the Email Templates management to include the new variables like `{{deposit_amount}}` and `{{remaining_amount}}`.
 
 ### Expected Result
-Leaflet Distribution quote popups will show:
-- Area 2 - CHANDLER'S FORD (11,300 circulation · SO53)
-- Area 4 - HEDGE END & BOTLEY (9,400 circulation · SO30)
+The leafleting quote email will show:
+- **Number of Leaflets Required**: resolved value (e.g. "11,300") instead of `{{number_of_leaflets}}`
+- **Total Cost + VAT**: full campaign cost (e.g. £508.00)
+- New template variables available: `{{deposit_amount}}`, `{{remaining_amount}}`, `{{payment_terms}}`
 
-Matching the PAYG format visible in the second screenshot.
+### Deployment
+Edge Function must be redeployed after changes.
 
