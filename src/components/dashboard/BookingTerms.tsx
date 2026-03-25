@@ -1,4 +1,4 @@
-import { Shield, CreditCard, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Shield, CreditCard, MapPin, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
