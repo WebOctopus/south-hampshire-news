@@ -125,7 +125,23 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
           <p>{adSize.name} <span className="text-sm text-muted-foreground">({adSize.dimensions})</span></p>
         </div>
       )}
-      {quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' ? (
+      {isBogof ? (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Monthly Price (per area)</Label>
+            <p className="font-semibold text-lg">{formatPrice(quote.monthly_price || 0)} + VAT</p>
+          </div>
+          <div>
+            <Label>Monthly Payment</Label>
+            <p className="font-semibold text-lg">
+              {formatPrice((quote.monthly_price || 0) * (paidAreas.length || 1))} + VAT
+            </p>
+            <p className="text-sm text-muted-foreground">
+              ({paidAreas.length} area{paidAreas.length !== 1 ? 's' : ''} × {formatPrice(quote.monthly_price || 0)})
+            </p>
+          </div>
+        </div>
+      ) : quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' ? (
         <div>
           <Label>Price</Label>
           <p className="font-semibold text-lg">{formatPrice(quote.final_total || 0)} + VAT</p>
