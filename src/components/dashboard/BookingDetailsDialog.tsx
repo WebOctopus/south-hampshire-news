@@ -527,7 +527,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       })}
                       <p className="text-xs text-muted-foreground">
                         {booking.pricing_model === 'bogof'
-                          ? `${paidAreaIds.length} paid area${paidAreaIds.length !== 1 ? 's' : ''}`
+                          ? `${paidAreaIds.length} subscribed area${paidAreaIds.length !== 1 ? 's' : ''}`
                           : `${paidAreaIds.length} area${paidAreaIds.length !== 1 ? 's' : ''} selected`}
                       </p>
                     </div>
