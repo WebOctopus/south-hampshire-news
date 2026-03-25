@@ -1,34 +1,39 @@
 
 
-## Fix: "Payment option not found" on GoCardless Return
+## Fix: Quote Save Redirects to Wrong Tab (Race Condition)
 
 ### Root Cause
-`PaymentSetup.tsx` stores the payment option's `option_type` (e.g. `"monthly"`) in `booking.selections.payment_option_id`, but then queries the `payment_options` table using `.eq('id', ...)` — treating the option_type string as a UUID. This always fails.
+
+Two `useEffect` hooks conflict:
+
+1. **Effect at line 236** — Detects `justSavedQuote` in localStorage, sets `activeTab('quotes')`, then **immediately removes** the flag from localStorage.
+2. **Smart default effect at line 331** — Runs after data loads, checks localStorage for `justSavedQuote` — but it's already been removed by effect #1. Since `quotes` array is still empty (data hasn't loaded yet), it falls through to `setActiveTab('create-booking')`, overriding the correct tab.
 
 ### Fix
 
-**File: `src/pages/PaymentSetup.tsx`** (lines 73-77)
+**File: `src/pages/Dashboard.tsx`**
 
-Change the query from:
+In the first effect (line 259), after setting `activeTab('quotes')`, also mark the smart default as already applied so it won't override:
+
 ```tsx
-const { data: paymentOption } = await supabase
-  .from('payment_options')
-  .select('*')
-  .eq('id', paymentOptionId)
-  .single();
+if (isNewUserFromCalculator === 'true' || justSavedQuote === 'true') {
+  setActiveTab('quotes');
+  hasAppliedSmartDefault.current = true;  // ← ADD THIS LINE
+  localStorage.removeItem('newUserFromCalculator');
+  localStorage.removeItem('justSavedQuote');
 ```
 
-To:
+Do the same for `justCreatedBooking` (line 275):
+
 ```tsx
-const { data: paymentOption } = await supabase
-  .from('payment_options')
-  .select('*')
-  .eq('option_type', paymentOptionId)
-  .single();
+if (justCreatedBooking === 'true') {
+  setActiveTab('bookings');
+  hasAppliedSmartDefault.current = true;  // ← ADD THIS LINE
+  localStorage.removeItem('justCreatedBooking');
 ```
 
-This matches how `BookingDetailsDialog.tsx` stores the value (`option_type` string) and how it reads it back everywhere else.
+This prevents the smart default effect from overriding the tab that was already explicitly set by the localStorage flags.
 
 ### Files to change
-- `src/pages/PaymentSetup.tsx` — fix `.eq('id', ...)` → `.eq('option_type', ...)`
+- `src/pages/Dashboard.tsx` — add `hasAppliedSmartDefault.current = true` in both localStorage-driven tab selections
 
