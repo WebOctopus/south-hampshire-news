@@ -432,9 +432,22 @@ Deno.serve(async (req) => {
           number_of_areas: payload.selected_areas?.length?.toString() || "N/A",
           number_of_deliveries_per_area: payload.duration || "N/A",
           quantity_of_leaflets: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
+          number_of_leaflets: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
           distribution_start: payload.selections?.distributionStartDate || payload.selections?.selectedStartingIssue || "N/A",
-          // Shared
-          total_cost: formatCurrency(payload.final_total),
+          // Shared – use pricing_breakdown.finalTotal as the authoritative full campaign cost
+          total_cost: formatCurrency(
+            payload.pricing_breakdown?.finalTotal ?? payload.final_total
+          ),
+          // Leafleting payment breakdown
+          deposit_amount: formatCurrency(
+            ((payload.pricing_breakdown?.finalTotal ?? payload.final_total) || 0) * 0.25
+          ),
+          remaining_amount: formatCurrency(
+            ((payload.pricing_breakdown?.finalTotal ?? payload.final_total) || 0) * 0.75
+          ),
+          payment_terms: payload.pricing_model === "leafleting"
+            ? "25% deposit to secure your slot, 75% balance due 10 days before distribution"
+            : "",
           dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
           // Credentials block (works for admin-created AND self-registered new users)
           login_credentials: loginCredentialsHtml,
