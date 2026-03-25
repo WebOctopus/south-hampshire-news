@@ -166,25 +166,29 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
                     <p className="text-muted-foreground">Discover Magazines Ltd, 30 Leigh Road, Eastleigh SO50 9DT</p>
                   </div>
                 </div>
-                <Separator />
-                <div className="flex items-start gap-3">
-                  <CreditCard className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                  <div className="text-sm">
-                    <p className="font-medium text-foreground">GoCardless Bank Reference</p>
-                    <p className="text-muted-foreground">
-                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">DISCOVERMAG</code>{" "}
-                      — Direct Debit Guarantee
-                    </p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex items-start gap-3">
-                  <Clock className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                  <div className="text-sm">
-                    <p className="font-medium text-foreground">Payment Schedule</p>
-                    <p className="text-muted-foreground">Payments are collected on the 10th of each month via GoCardless Direct Debit</p>
-                  </div>
-                </div>
+                {!isLeafleting && (
+                  <>
+                    <Separator />
+                    <div className="flex items-start gap-3">
+                      <CreditCard className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                      <div className="text-sm">
+                        <p className="font-medium text-foreground">GoCardless Bank Reference</p>
+                        <p className="text-muted-foreground">
+                          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">DISCOVERMAG</code>{" "}
+                          — Direct Debit Guarantee
+                        </p>
+                      </div>
+                    </div>
+                    <Separator />
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                      <div className="text-sm">
+                        <p className="font-medium text-foreground">Payment Schedule</p>
+                        <p className="text-muted-foreground">Payments are collected on the 10th of each month via GoCardless Direct Debit</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </AccordionContent>
