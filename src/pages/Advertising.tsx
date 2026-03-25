@@ -577,7 +577,7 @@ const CalculatorTest = () => {
               duration_discount_percent: durationDiscountPercent,
               is_existing_user: true,
                 selections: basePayload.selections,
-                distribution_start_date: basePayload.distribution_start_date,
+                distribution_start_date: basePayload.selections?.selectedStartingIssue ? `${basePayload.selections.selectedStartingIssue}-01` : null,
             }
           });
           console.log('Quote confirmation email sent (existing user)');
