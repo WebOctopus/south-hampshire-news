@@ -1,4 +1,4 @@
-import { Shield, CreditCard, Phone, Mail, MapPin, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Shield, CreditCard, MapPin, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -62,7 +62,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
       </div>
 
       {/* Accordion sections */}
-      <Accordion type="multiple" value={["terms", "fixed-terms", "leaflet-terms", "payment", "support"]} className="space-y-3">
+      <Accordion type="multiple" value={["terms", "fixed-terms", "leaflet-terms", "payment"]} className="space-y-3">
         {/* Subscription or Fixed Term Terms */}
         {(showBoth || (!isFixed && !isLeafleting)) && (
         <AccordionItem value="terms" className="border rounded-lg bg-card px-4 shadow-sm">
@@ -194,36 +194,6 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
           </AccordionContent>
         </AccordionItem>
 
-        {/* 3 — Accounts & Support */}
-        <AccordionItem value="support" className="border rounded-lg bg-card px-4 shadow-sm">
-          <AccordionTrigger className="hover:no-underline gap-3">
-            <div className="flex items-center gap-3 text-left">
-              <Phone className="h-5 w-5 text-primary shrink-0" />
-              <span className="font-semibold text-foreground">Accounts &amp; Support</span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="rounded-lg border bg-muted/40 p-4 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                For account queries, billing questions or changes to your subscription, please contact. Office hours are Mon-Fri 9am-4pm.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-primary" />
-                  <a href="mailto:accounts@discovermagazines.co.uk" className="text-primary hover:underline font-medium">
-                    accounts@discovermagazines.co.uk
-                  </a>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <a href="tel:02380010123" className="text-primary hover:underline font-medium">
-                    023 8001 0123
-                  </a>
-                </div>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
       </Accordion>
 
       {/* Footer note */}
