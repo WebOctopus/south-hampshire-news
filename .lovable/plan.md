@@ -1,8 +1,12 @@
 
 
-## Remove "(per area)" from Monthly Price Label
+## Add "+ VAT" to Quote Card Price Labels
 
-**File: `src/components/dashboard/ViewQuoteContent.tsx`** (line 137)
+**File: `src/components/dashboard/QuoteConversionCard.tsx`** (line 153)
 
-Change `Monthly Price (per area)` to `Monthly Price`.
+Change the sub-label text:
+- `'per month'` → `'per month + VAT'` (for BOGOF/3+ Repeat Package)
+- `'campaign total'` → `'campaign total + VAT'` (for fixed/leafleting)
+
+Single line change.
 
