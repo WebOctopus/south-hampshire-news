@@ -132,12 +132,12 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
             <p className="font-semibold text-lg">{formatPrice(quote.monthly_price || 0)} + VAT</p>
           </div>
           <div>
-            <Label>Monthly Payment</Label>
+            <Label>6 payments (minimum)</Label>
             <p className="font-semibold text-lg">
-              {formatPrice((quote.monthly_price || 0) * (paidAreas.length || 1))} + VAT
+              {formatPrice(6 * (quote.monthly_price || 0) * (paidAreas.length || 1))} + VAT
             </p>
             <p className="text-sm text-muted-foreground">
-              ({paidAreas.length} area{paidAreas.length !== 1 ? 's' : ''} × {formatPrice(quote.monthly_price || 0)})
+              (6 × {formatPrice((quote.monthly_price || 0) * (paidAreas.length || 1))} per month)
             </p>
           </div>
         </div>
