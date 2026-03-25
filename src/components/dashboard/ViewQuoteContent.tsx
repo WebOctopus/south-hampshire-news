@@ -2,6 +2,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { useAreas, useAdSizes } from '@/hooks/usePricingData';
+import { useLeafletAreas } from '@/hooks/useLeafletData';
 import { MapPin, Gift, Calendar } from 'lucide-react';
 
 interface ViewQuoteContentProps {
@@ -29,13 +30,18 @@ const getStatusLabel = (status: string) => {
 export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
   const { data: areas = [] } = useAreas();
   const { data: adSizes = [] } = useAdSizes();
+  const { data: leafletAreas = [] } = useLeafletAreas();
 
   const isBogof = quote.pricing_model === 'bogof';
+  const isLeafleting = quote.pricing_model === 'leafleting';
   const adSize = adSizes.find((s: any) => s.id === quote.ad_size_id);
   
   const paidAreas = areas.filter((a: any) => quote.bogof_paid_area_ids?.includes(a.id));
   const freeAreas = areas.filter((a: any) => quote.bogof_free_area_ids?.includes(a.id));
-  const selectedAreas = areas.filter((a: any) => quote.selected_area_ids?.includes(a.id));
+  const selectedAreas = isLeafleting
+    ? leafletAreas.filter(a => quote.selected_area_ids?.includes(a.id))
+        .map(a => ({ ...a, circulation: a.bimonthly_circulation, postcodes: a.postcodes }))
+    : areas.filter((a: any) => quote.selected_area_ids?.includes(a.id));
 
   const selections = quote.selections as any;
   const monthsByArea: Record<string, string[]> = selections?.months || {};
