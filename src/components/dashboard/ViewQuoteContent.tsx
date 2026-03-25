@@ -83,10 +83,48 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
     return monthStr;
   };
 
+  const getLeafletDeliveryDates = (area: any): string[] => {
+    if (!isLeafleting || !quote.distribution_start_date) return [];
+    const schedule = area.schedule as any[] | undefined;
+    if (!schedule || schedule.length === 0) return [];
+    const issueCount = quote.duration_multiplier || 1;
+    const startDate = new Date(quote.distribution_start_date);
+    
+    // Filter schedule entries that fall within the booked period
+    const matchingEntries = schedule
+      .filter((s: any) => {
+        const entryMonth = s.month;
+        if (!entryMonth) return false;
+        const [y, m] = entryMonth.split('-');
+        const entryDate = new Date(Number(y), Number(m) - 1);
+        return entryDate >= new Date(startDate.getFullYear(), startDate.getMonth());
+      })
+      .sort((a: any, b: any) => (a.month || '').localeCompare(b.month || ''))
+      .slice(0, issueCount);
+
+    return matchingEntries.map((s: any) => {
+      const dd = s.deliveryDate || s.delivery_date;
+      if (dd) {
+        const d = new Date(dd);
+        if (!isNaN(d.getTime())) {
+          return `w/c ${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+        }
+      }
+      // Fallback to month label
+      const [y, m] = (s.month || '').split('-');
+      if (y && m) {
+        const d = new Date(Number(y), Number(m) - 1);
+        return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+      }
+      return s.month || '';
+    });
+  };
+
   const AreaCard = ({ area, isFree = false }: { area: any; isFree?: boolean }) => {
+    const leafletDates = getLeafletDeliveryDates(area);
     const areaMonths = hasMonthsData ? (monthsByArea[area.id] || []) : fallbackMonths;
     const displayMonths = isBogof ? areaMonths.slice(0, 3) : areaMonths;
-    const formattedDates = displayMonths.map(m => formatMonthLabel(m, area));
+    const formattedDates = isLeafleting ? leafletDates : displayMonths.map(m => formatMonthLabel(m, area));
 
     return (
       <div className={`p-3 rounded-lg border ${isFree ? 'border-emerald-200 bg-emerald-50/50' : 'border-border bg-muted/30'}`}>
