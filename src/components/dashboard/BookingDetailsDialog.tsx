@@ -536,12 +536,17 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                               {(area.circulation || 0).toLocaleString()} circulation
                               {area.postcodes && <span className="ml-2">· {Array.isArray(area.postcodes) ? area.postcodes.join(', ') : area.postcodes}</span>}
                             </div>
-                            {formattedMonths.length > 0 && (
+                            {formattedMonths.length > 0 ? (
                               <div className="ml-6 mt-1 text-xs text-muted-foreground flex items-center gap-1">
                                 <CalendarDays className="h-3.5 w-3.5" />
                                 <span>Issues: {formattedMonths.join(', ')}</span>
                               </div>
-                            )}
+                            ) : booking.distribution_start_date ? (
+                              <div className="ml-6 mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                                <CalendarDays className="h-3.5 w-3.5" />
+                                <span>Start: {new Date(booking.distribution_start_date).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span>
+                              </div>
+                            ) : null}
                           </div>
                         );
                       })}
