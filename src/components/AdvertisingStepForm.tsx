@@ -474,6 +474,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
             selections: quotePayload.selections,
+            distribution_start_date: quotePayload.distribution_start_date,
             // Admin-created quote: include credentials or login link in the email
             ...(isAdminCreating ? {
               is_admin_created: true,
