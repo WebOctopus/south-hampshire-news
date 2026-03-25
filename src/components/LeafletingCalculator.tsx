@@ -332,7 +332,7 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
                             {area.bimonthly_circulation.toLocaleString()} homes per campaign
                           </div>
                           <div className="text-sm font-medium text-primary">
-                            £{area.price_with_vat.toFixed(2)}
+                            £{(area.price_with_vat / 1.2).toFixed(2)} + VAT
                           </div>
                           <div className="text-xs text-muted-foreground">
                             Postcodes: {area.postcodes}
