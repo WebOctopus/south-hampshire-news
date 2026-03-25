@@ -430,7 +430,9 @@ Deno.serve(async (req) => {
           // Leafleting vars
           leaflet_size: payload.ad_size || "N/A",
           number_of_areas: payload.selected_areas?.length?.toString() || "N/A",
-          distribution_start: payload.selections?.distributionStartDate || "N/A",
+          number_of_deliveries_per_area: payload.duration || "N/A",
+          quantity_of_leaflets: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
+          distribution_start: payload.selections?.distributionStartDate || payload.selections?.selectedStartingIssue || "N/A",
           // Shared
           total_cost: formatCurrency(payload.final_total),
           dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
