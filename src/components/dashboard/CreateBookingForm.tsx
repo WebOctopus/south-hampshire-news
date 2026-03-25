@@ -218,11 +218,11 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   }, [pricingBreakdownRaw, designFeeAmount, includeDesign]);
 
   const isFormValid = () => {
-    // Payment option is required for all booking types
+    // Payment option is required for BOGOF and fixed-term only; leafleting uses fixed 25%/75% terms
     const hasPaymentOption = selectedPaymentOption && selectedPaymentOption.length > 0;
     
     if (pricingModel === 'leafleting') {
-      return selectedAreas.length > 0 && selectedLeafletDuration && selectedLeafletSize && hasPaymentOption;
+      return selectedAreas.length > 0 && selectedLeafletDuration && selectedLeafletSize !== '';
     } else if (pricingModel === 'bogof') {
       return bogofPaidAreas.length >= 3 && bogofFreeAreas.length >= 3 && selectedAdSize && selectedDuration && hasPaymentOption;
     } else {
@@ -825,10 +825,10 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
               <PoundSterling className="h-5 w-5" />
-              {paymentOptions.length} Payment Option{paymentOptions.length !== 1 ? 's' : ''}
-              <span className="text-destructive">*</span>
+              {pricingModel === 'leafleting' ? 'Payment Method' : `${paymentOptions.length} Payment Option${paymentOptions.length !== 1 ? 's' : ''}`}
+              {pricingModel !== 'leafleting' && <span className="text-destructive">*</span>}
             </CardTitle>
-            {!selectedPaymentOption && (
+            {pricingModel !== 'leafleting' && !selectedPaymentOption && (
               <p className="text-sm text-amber-600 mt-1">Please select a payment option to continue</p>
             )}
           </CardHeader>
@@ -840,62 +840,90 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
               
               if (!baseTotal) return null;
 
-              // Sort payment options
-              const sortedOptions = [...paymentOptions].sort((a, b) => {
-                const order: Record<string, number> = { 'monthly': 1, '6_months': 2, '12_months': 3 };
-                return (order[a.option_type] || 99) - (order[b.option_type] || 99);
-              });
-
               return (
                 <>
-                  <RadioGroup value={selectedPaymentOption} onValueChange={setSelectedPaymentOption} className="space-y-3">
-                    {sortedOptions.map((option) => {
-                      const amount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
-                      const isMonthly = option.option_type === 'monthly';
-                      const hasDiscount = option.discount_percentage > 0;
+                  {pricingModel === 'leafleting' ? (
+                    <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                        <span className="font-semibold text-foreground">Stripe Secure Payment</span>
+                      </div>
+                      <ul className="space-y-2 text-sm text-foreground">
+                        <li className="flex items-start gap-2">
+                          <span className="font-medium text-primary">25%</span>
+                          <span>Deposit due at the time of booking</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="font-medium text-primary">75%</span>
+                          <span>Balance due before distribution</span>
+                        </li>
+                      </ul>
+                      <p className="text-xs text-muted-foreground">
+                        If distribution is within 10 days, 100% payment is required at booking.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Sort payment options */}
+                      {(() => {
+                        const sortedOptions = [...paymentOptions].sort((a, b) => {
+                          const order: Record<string, number> = { 'monthly': 1, '6_months': 2, '12_months': 3 };
+                          return (order[a.option_type] || 99) - (order[b.option_type] || 99);
+                        });
 
-                      return (
-                        <div
-                          key={option.id}
-                          className={`flex items-center space-x-3 p-4 rounded-lg border transition-all cursor-pointer ${
-                            selectedPaymentOption === option.option_type
-                              ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                          onClick={() => setSelectedPaymentOption(option.option_type)}
-                        >
-                          <RadioGroupItem value={option.option_type} id={option.option_type} />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Label htmlFor={option.option_type} className="font-semibold cursor-pointer">
-                                {option.display_name}
-                              </Label>
-                              {hasDiscount && (
-                                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
-                                  Save {option.discount_percentage}%
-                                </Badge>
-                              )}
-                            </div>
-                            {option.description && (
-                              <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
-                            )}
-                            {isMonthly && option.minimum_payments && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {option.minimum_payments} monthly payments
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-lg">
-                              {formatPaymentPrice(amount)}
-                            </div>
-                            {isMonthly && <span className="text-xs text-muted-foreground">/month</span>}
-                            {!isMonthly && <span className="text-xs text-muted-foreground">+ VAT</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
+                        return (
+                          <RadioGroup value={selectedPaymentOption} onValueChange={setSelectedPaymentOption} className="space-y-3">
+                            {sortedOptions.map((option) => {
+                              const amount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
+                              const isMonthly = option.option_type === 'monthly';
+                              const hasDiscount = option.discount_percentage > 0;
+
+                              return (
+                                <div
+                                  key={option.id}
+                                  className={`flex items-center space-x-3 p-4 rounded-lg border transition-all cursor-pointer ${
+                                    selectedPaymentOption === option.option_type
+                                      ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                      : 'border-border hover:border-primary/50'
+                                  }`}
+                                  onClick={() => setSelectedPaymentOption(option.option_type)}
+                                >
+                                  <RadioGroupItem value={option.option_type} id={option.option_type} />
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <Label htmlFor={option.option_type} className="font-semibold cursor-pointer">
+                                        {option.display_name}
+                                      </Label>
+                                      {hasDiscount && (
+                                        <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                                          Save {option.discount_percentage}%
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    {option.description && (
+                                      <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
+                                    )}
+                                    {isMonthly && option.minimum_payments && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {option.minimum_payments} monthly payments
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-lg">
+                                      {formatPaymentPrice(amount)}
+                                    </div>
+                                    {isMonthly && <span className="text-xs text-muted-foreground">/month</span>}
+                                    {!isMonthly && <span className="text-xs text-muted-foreground">+ VAT</span>}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </RadioGroup>
+                        );
+                      })()}
+                    </>
+                  )}
 
                   {/* Amazing Value Section */}
                   {circulation > 0 && (
