@@ -1,30 +1,43 @@
 
 
-## Update Leafleting Email Templates with Price Breakdown Variables
+## Fix Distribution Start Date in Leafleting Quote Emails
 
-### What changes
-Update both leafleting email templates (quote and booking confirmation) stored in the `email_templates` database table to use the actual calculated `{{deposit_amount}}` and `{{remaining_amount}}` variables instead of static "25% of total cost" / "75% of total cost" text.
+### Problem
+The `{{distribution_start}}` variable shows "N/A" in leafleting emails because:
+- The Edge Function resolves it from `selections.distributionStartDate` (doesn't exist) or `selections.selectedStartingIssue` (not set for leafleting)
+- The actual date is stored in the `distribution_start_date` top-level DB column but is never passed to the email function
 
-### Changes
+### Fix
 
-**Database migration** — Update the `quote_leafleting_customer` template:
+**File: `supabase/functions/send-booking-confirmation-email/index.ts`** (line ~436)
 
-In the Payment Terms section, replace the static text with actual values:
-- "25% of total cost" → `{{deposit_amount}} + VAT`
-- "75% of total cost" → `{{remaining_amount}} + VAT`
+Update the `distribution_start` resolution to also check `payload.distribution_start_date` (the top-level column value) and format it as a readable month/year:
 
-This keeps the entire existing template structure intact (header, quote summary, leaflet supply notice, what happens next, dashboard button, footer) — only the two payment amount cells change.
+```typescript
+distribution_start: (() => {
+  const raw = payload.selections?.distributionStartDate 
+    || payload.selections?.selectedStartingIssue 
+    || payload.distribution_start_date;
+  if (!raw || raw === "N/A") return "N/A";
+  try {
+    const d = new Date(raw);
+    return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  } catch { return raw; }
+})(),
+```
 
-**Also update `booking_leafleting_customer`** template to add a Payment Terms section (it currently lacks one) between the Booking Summary and "What Happens Next" sections, matching the same style as the quote template, showing:
-- Campaign Cost: `{{total_cost}}` + VAT
-- 25% Deposit: `{{deposit_amount}}` + VAT  
-- Remaining Balance: `{{remaining_amount}}` + VAT
+**File: `src/components/AdvertisingStepForm.tsx`** (email invoke calls ~line 454 and ~878)
 
-### Technical Details
+Add `distribution_start_date` to the email payload body so the Edge Function receives it:
 
-Single SQL migration using two `UPDATE` statements on `public.email_templates`:
-1. For `quote_leafleting_customer`: targeted string replacement within `html_body` to swap the two static payment amount cells with the template variables
-2. For `booking_leafleting_customer`: insert a Payment Terms `<div>` block after the closing `</div>` of the Booking Summary section
+```typescript
+distribution_start_date: quotePayload.distribution_start_date,
+```
 
-No Edge Function changes needed — the variables are already being resolved correctly.
+Same change needed in `src/pages/Advertising.tsx` and `src/components/dashboard/CreateBookingForm.tsx` email invoke calls.
+
+**Redeploy** the Edge Function after changes.
+
+### Expected Result
+The email will show "Distribution Month Start: March 2026" instead of "N/A".
 
