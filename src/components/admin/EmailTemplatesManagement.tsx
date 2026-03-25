@@ -48,6 +48,10 @@ const SAMPLE_DATA: Record<string, string> = {
   leaflet_size: "A5",
   number_of_areas: "3",
   distribution_start: "March 2025",
+  number_of_leaflets: "11,300",
+  deposit_amount: "£127.00",
+  remaining_amount: "£381.00",
+  payment_terms: "25% deposit to secure your slot, 75% balance due 10 days before distribution",
 };
 
 function applyPreviewVariables(html: string, variables: string[]): string {
