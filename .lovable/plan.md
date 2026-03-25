@@ -1,23 +1,31 @@
 
 
-## Update Payment Status Message in BookingDetailsDialog
+## Remove Delete Button, Add Conditional Cancel Button on Booking Cards
 
-**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
+### Problem
+The red trash bin delete button on booking cards allows deletion of processed bookings, which causes foreign key constraint errors (as seen in the screenshot with `gocardless_mandates_booking_id_fkey`). Processed bookings cannot be deleted.
 
-### Change
+### Changes
 
-Replace the subtitle text on **lines 645-647** from:
+**File: `src/components/dashboard/BookingCard.tsx`**
 
-```
-Your payment will be created shortly
-```
+1. **Remove the trash/delete button entirely** (lines 213-230). Remove `onDelete`, `isDeleting` props and the `Trash2` icon import.
 
-To:
+2. **Add a Cancel button** that only appears for paid/confirmed bookings. For now, since we don't yet have print deadline data to calculate the 3-issue completion date, show the Cancel button on all paid bookings. Clicking it opens an alert dialog explaining:
 
-```
-No payment is taken without the issue of an Invoice. You will receive an invoice by email by the end of the next working day. Payment for this invoice will be taken by direct debit on the day of the invoice due date.
-```
+   > "To cancel your subscription, please email accounts@discovermagazines.co.uk or call 023 8026 6388. Cancellations can only be processed after the completion of your first 3 paid issues."
 
-### Files to change
-- `src/components/dashboard/BookingDetailsDialog.tsx` (lines 645-647)
+3. **Import `AlertDialog` components** and add local state for the cancellation popup.
+
+**File: `src/pages/Dashboard.tsx`**
+
+4. **Remove `onDelete` and `isDeleting` props** from `<BookingCard>` usage (around line 1411). Remove `handleDeleteBooking` reference if it's only used here (or leave it for other uses).
+
+### Technical Detail
+
+The Cancel button will:
+- Use `lucide-react`'s `XCircle` icon instead of `Trash2`
+- Only render when `isPaid` is true
+- Open a simple `AlertDialog` with the cancellation instructions
+- Be styled as a subtle ghost button (not destructive red)
 
