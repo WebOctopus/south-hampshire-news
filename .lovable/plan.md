@@ -1,39 +1,54 @@
 
 
-## Fix: Quote Save Redirects to Wrong Tab (Race Condition)
+## Fix ViewQuoteContent for BOGOF Quotes
 
-### Root Cause
+Four changes to **`src/components/dashboard/ViewQuoteContent.tsx`**:
 
-Two `useEffect` hooks conflict:
+### 1. Fix Final Total for BOGOF — show monthly payment × paid areas
 
-1. **Effect at line 236** — Detects `justSavedQuote` in localStorage, sets `activeTab('quotes')`, then **immediately removes** the flag from localStorage.
-2. **Smart default effect at line 331** — Runs after data loads, checks localStorage for `justSavedQuote` — but it's already been removed by effect #1. Since `quotes` array is still empty (data hasn't loaded yet), it falls through to `setActiveTab('create-booking')`, overriding the correct tab.
+The stored `monthly_price` is the per-area monthly rate (e.g. £90). The "Final Total" for BOGOF should reflect the total monthly payment across all paid areas:
 
-### Fix
-
-**File: `src/pages/Dashboard.tsx`**
-
-In the first effect (line 259), after setting `activeTab('quotes')`, also mark the smart default as already applied so it won't override:
-
-```tsx
-if (isNewUserFromCalculator === 'true' || justSavedQuote === 'true') {
-  setActiveTab('quotes');
-  hasAppliedSmartDefault.current = true;  // ← ADD THIS LINE
-  localStorage.removeItem('newUserFromCalculator');
-  localStorage.removeItem('justSavedQuote');
+```
+Final Total = monthly_price × number of paid areas
 ```
 
-Do the same for `justCreatedBooking` (line 275):
+So 2 paid areas at £90 = £180 + VAT (not the stored `final_total` of £1,080).
+
+**Change the BOGOF pricing display (lines 133-143)** to:
 
 ```tsx
-if (justCreatedBooking === 'true') {
-  setActiveTab('bookings');
-  hasAppliedSmartDefault.current = true;  // ← ADD THIS LINE
-  localStorage.removeItem('justCreatedBooking');
+{isBogof ? (
+  <div className="grid grid-cols-2 gap-4">
+    <div>
+      <Label>Monthly Price (per area)</Label>
+      <p className="font-semibold text-lg">{formatPrice(quote.monthly_price || 0)} + VAT</p>
+    </div>
+    <div>
+      <Label>Monthly Payment</Label>
+      <p className="font-semibold text-lg">
+        {formatPrice((quote.monthly_price || 0) * (paidAreas.length || 1))} + VAT
+      </p>
+      <p className="text-sm text-muted-foreground">
+        ({paidAreas.length} area{paidAreas.length !== 1 ? 's' : ''} × {formatPrice(quote.monthly_price || 0)})
+      </p>
+    </div>
+  </div>
+) : quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' ? (
+  // existing fixed pricing display
+) : (
+  // existing other pricing display
+)}
 ```
 
-This prevents the smart default effect from overriding the tab that was already explicitly set by the localStorage flags.
+### 2. Remove Distribution Start Date section
+Delete the `distribution_start_date` block (lines 151-159).
+
+### 3. Rename "Paid Areas" → "Subscribed Areas (minimum 3 issues)"
+Line 173.
+
+### 4. Rename "FREE Bonus Areas" → "FREE Bonus Areas for 3 issues only"
+Line 183.
 
 ### Files to change
-- `src/pages/Dashboard.tsx` — add `hasAppliedSmartDefault.current = true` in both localStorage-driven tab selections
+- `src/components/dashboard/ViewQuoteContent.tsx`
 
