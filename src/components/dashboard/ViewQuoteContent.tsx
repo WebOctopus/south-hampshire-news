@@ -2,6 +2,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { useAreas, useAdSizes } from '@/hooks/usePricingData';
+import { useLeafletAreas } from '@/hooks/useLeafletData';
 import { MapPin, Gift, Calendar } from 'lucide-react';
 
 interface ViewQuoteContentProps {
