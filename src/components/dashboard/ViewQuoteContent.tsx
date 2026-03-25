@@ -125,7 +125,23 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
           <p>{adSize.name} <span className="text-sm text-muted-foreground">({adSize.dimensions})</span></p>
         </div>
       )}
-      {quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' ? (
+      {isBogof ? (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Monthly Price (per area)</Label>
+            <p className="font-semibold text-lg">{formatPrice(quote.monthly_price || 0)} + VAT</p>
+          </div>
+          <div>
+            <Label>Monthly Payment</Label>
+            <p className="font-semibold text-lg">
+              {formatPrice((quote.monthly_price || 0) * (paidAreas.length || 1))} + VAT
+            </p>
+            <p className="text-sm text-muted-foreground">
+              ({paidAreas.length} area{paidAreas.length !== 1 ? 's' : ''} × {formatPrice(quote.monthly_price || 0)})
+            </p>
+          </div>
+        </div>
+      ) : quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' ? (
         <div>
           <Label>Price</Label>
           <p className="font-semibold text-lg">{formatPrice(quote.final_total || 0)} + VAT</p>
@@ -148,15 +164,6 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
           <p>{(quote.total_circulation || 0).toLocaleString()}</p>
         </div>
       )}
-      {quote.distribution_start_date && (
-        <div>
-          <Label>Distribution Start Date</Label>
-          <p className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            {new Date(quote.distribution_start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-          </p>
-        </div>
-      )}
 
       {/* Area Selection Section */}
       {hasAreas && (
@@ -170,7 +177,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
             <div className="space-y-4">
               {paidAreas.length > 0 && (
                 <div>
-                  <Label className="text-sm mb-2 block">Paid Areas</Label>
+                  <Label className="text-sm mb-2 block">Subscribed Areas (minimum 3 issues)</Label>
                   <div className="space-y-2">
                     {paidAreas.map((area: any) => (
                       <AreaCard key={area.id} area={area} />
@@ -180,7 +187,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
               )}
               {freeAreas.length > 0 && (
                 <div>
-                  <Label className="text-sm mb-2 block">FREE Bonus Areas</Label>
+                  <Label className="text-sm mb-2 block">FREE Bonus Areas for 3 issues only</Label>
                   <div className="space-y-2">
                     {freeAreas.map((area: any) => (
                       <AreaCard key={area.id} area={area} isFree />
