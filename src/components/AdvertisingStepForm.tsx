@@ -897,7 +897,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             monthly_price: bookingPayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
-            distribution_start_date: bookingPayload.distribution_start_date,
+            distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (() => { const firstMonth = Object.values(campaignData.selectedMonths || {})[0]?.[0]; return firstMonth && /^\d{4}-\d{2}$/.test(firstMonth) ? `${firstMonth}-01` : null; })(),
             // Admin-created booking: include credentials or login link in the email
             ...(isAdminCreating ? {
               is_admin_created: true,
