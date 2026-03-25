@@ -1,49 +1,39 @@
 
 
-## Fix Leafleting Campaign Overview Pricing Display
+## Add Area Selection to Leafleting Quote Overview Popups
 
 ### Problem
-The leafleting booking stores VAT-inclusive prices as `final_total` (384 + 609 = £993), but the area names in the database show ex-VAT prices ("Southampton - £320 + vat", "Chandler's Ford - £508 + vat"). This creates confusion: the user sees £320 + £508 = £828 in the area names but £993 as the Campaign Cost.
+The "Quote Details" popup for Leaflet Distribution quotes doesn't show the area cards (with location, circulation, postcodes) because the component only queries `pricing_areas`. Leafleting quotes store area IDs from the `leaflet_areas` table, so the lookup fails silently.
 
-The calculator code (`leafletingCalculator.ts`) has already been fixed to divide by 1.2 and store ex-VAT values, but existing bookings were created before that fix and still have VAT-inclusive data stored.
-
-### Root Cause (from database)
-- Southampton: `price_with_vat` = 384, area name shows "£320 + vat" (384/1.2 = 320)
-- Chandler's Ford: `price_with_vat` = 609, area name shows "£508 + vat" (609/1.2 = 507.50)
-- Stored `final_total` = 993 (sum of VAT-inclusive prices)
-- Stored `pricing_breakdown.areaBreakdown[].basePrice` = 384, 609 (also VAT-inclusive)
+The PAYG quotes work fine because their area IDs come from `pricing_areas`.
 
 ### Fix
 
-**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
+**File: `src/components/dashboard/ViewQuoteContent.tsx`**
 
-Three changes in the leafleting display logic:
+1. **Import `useLeafletAreas`** from `@/hooks/useLeafletData`
 
-1. **Campaign Cost display (lines 406-420)**: For leafleting bookings, detect whether stored prices are VAT-inclusive by checking if `areaBreakdown` basePrices match the fetched `price_with_vat` values. If they do, divide `final_total` by 1.2 to show the correct ex-VAT campaign cost. For new bookings (where the calculator already stores ex-VAT), no conversion needed.
+2. **Fetch leaflet areas** alongside pricing areas:
+   ```tsx
+   const { data: leafletAreas = [] } = useLeafletAreas();
+   ```
 
-2. **Per-area prices in area cards (lines 492-507)**: For leafleting bookings, show each area's ex-VAT price next to its name (sourced from `pricing_breakdown.areaBreakdown`, converted if needed). This replaces showing only circulation info, making the breakdown visible.
+3. **Resolve leafleting areas separately**: When `quote.pricing_model === 'leafleting'`, filter `leafletAreas` by `quote.selected_area_ids` instead of `areas`. Map the leaflet area fields (`bimonthly_circulation` → display as circulation, `postcodes` as string) to match the AreaCard expectations.
 
-3. **Deposit and remaining amounts (lines 653-658)**: Derive these from the same corrected ex-VAT campaign cost so the math is consistent: deposit = 25% of ex-VAT total, remaining = 75%.
+4. **Update `selectedAreas`** to use the correct source:
+   ```tsx
+   const selectedAreas = quote.pricing_model === 'leafleting'
+     ? leafletAreas.filter(a => quote.selected_area_ids?.includes(a.id))
+         .map(a => ({ ...a, circulation: a.bimonthly_circulation }))
+     : areas.filter(a => quote.selected_area_ids?.includes(a.id));
+   ```
 
-### Detection Logic
-```text
-For each leafleting booking:
-  - Get areaBreakdown from pricing_breakdown
-  - Fetch current price_with_vat for those areas
-  - If stored basePrice ≈ price_with_vat → old data, divide by 1.2
-  - If stored basePrice ≈ price_with_vat/1.2 → new data, use as-is
-```
+This ensures leafleting quote popups show the same area card format (name, circulation, postcodes) as PAYG quotes.
 
 ### Expected Result
-For the user's booking (Southampton + Chandler's Ford):
-- **Campaign Cost**: £828 + VAT (was showing £993 + VAT)
-- Area breakdown: Southampton £320 + VAT, Chandler's Ford £508 + VAT  
-- **25% Deposit**: £207.00 + VAT
-- **Remaining**: £621.00 + VAT
+Leaflet Distribution quote popups will show:
+- Area 2 - CHANDLER'S FORD (11,300 circulation · SO53)
+- Area 4 - HEDGE END & BOTLEY (9,400 circulation · SO30)
 
-### Technical Details
-- Single file change: `src/components/dashboard/BookingDetailsDialog.tsx`
-- The `pricingAreas` query already fetches leaflet area data (line 118-121) but doesn't include `price_with_vat` - will add it to the select
-- Uses stored `pricing_breakdown.areaBreakdown` for per-area prices with VAT-inclusive detection fallback
-- No database migration needed
+Matching the PAYG format visible in the second screenshot.
 
