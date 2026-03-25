@@ -116,9 +116,9 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       
       const tableName = booking.pricing_model === 'leafleting' ? 'leaflet_areas' : 'pricing_areas';
       if (tableName === 'leaflet_areas') {
-        const { data, error } = await supabase.from('leaflet_areas').select('id, name, postcodes, bimonthly_circulation').in('id', allAreaIds);
+        const { data, error } = await supabase.from('leaflet_areas').select('id, name, postcodes, bimonthly_circulation, price_with_vat').in('id', allAreaIds);
         if (error) throw error;
-        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: a.postcodes, circulation: a.bimonthly_circulation }));
+        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: a.postcodes, circulation: a.bimonthly_circulation, price_with_vat: a.price_with_vat }));
       } else {
         const { data, error } = await supabase.from('pricing_areas').select('id, name, circulation, postcodes').in('id', allAreaIds);
         if (error) throw error;
