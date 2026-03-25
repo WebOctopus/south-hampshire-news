@@ -73,15 +73,15 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
     
   const getPaymentLabel = () => {
     if (!selectedPaymentOptionType) {
-      return booking.pricing_model === 'bogof' ? 'Monthly Payment' : '+ VAT';
+      return booking.pricing_model === 'bogof' ? 'Monthly Payment' : 'Monthly Payment';
     }
     
     if (selectedPaymentOptionType === 'monthly') {
       return 'Monthly Payment';
     } else if (selectedPaymentOptionType === 'lump_sum') {
-      return '+ VAT';
+      return 'Total';
     }
-    return '+ VAT';
+    return 'Monthly Payment';
   };
 
   useEffect(() => {
@@ -141,14 +141,11 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
   };
 
   const getPaymentStatusLabel = (status?: string) => {
-    // Simplified labels: only "Payment Required" or "Paid"
-    if (!status || status === 'pending') return 'Payment Required';
-    // All paid/active statuses show as "Paid"
+    if (!status || status === 'pending') return 'Payment Setup Required';
     if (status === 'paid' || status === 'subscription_active' || status === 'mandate_active') {
       return 'Paid';
     }
-    // All other statuses default to "Payment Required"
-    return 'Payment Required';
+    return 'Payment Setup Required';
   };
 
   const getPricingModelDisplay = (model: string) => {
@@ -271,7 +268,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
               ) : (
                 <>
                   <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
-                    {formatPrice(displayAmount)}
+                    {formatPrice(displayAmount)} + VAT
                   </div>
                   <div className="text-xs text-muted-foreground">{getPaymentLabel()}</div>
                 </>
