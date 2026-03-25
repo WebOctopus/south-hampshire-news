@@ -112,14 +112,21 @@ const PaymentSetup = () => {
           }).eq('id', bookingId);
 
           // Create the payment/subscription
-          const isSubscription = paymentOption.option_type === 'direct_debit';
+          const isSubscription = paymentOption.option_type === 'monthly';
+
+          // For monthly subscriptions, calculate per-month amount
+          let paymentAmount = booking.final_total;
+          if (isSubscription && booking.pricing_model === 'bogof') {
+            const paidAreaCount = (booking.bogof_paid_area_ids || []).length || 1;
+            paymentAmount = (booking.monthly_price || 0) * paidAreaCount;
+          }
           
           const { error: paymentError } = await supabase.functions.invoke('create-gocardless-payment', {
             body: {
               bookingId,
               mandateId,
               paymentType: isSubscription ? 'subscription' : 'one-off',
-              amount: booking.final_total,
+              amount: paymentAmount,
               paymentOptionId: paymentOption.id,
             },
           });
