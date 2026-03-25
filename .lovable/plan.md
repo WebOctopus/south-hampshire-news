@@ -1,12 +1,13 @@
 
 
-## Add "+ VAT" to Quote Card Price Labels
+## Rename Quote Card Buttons for Clarity
 
-**File: `src/components/dashboard/QuoteConversionCard.tsx`** (line 153)
+**File: `src/components/dashboard/QuoteConversionCard.tsx`**
 
-Change the sub-label text:
-- `'per month'` → `'per month + VAT'` (for BOGOF/3+ Repeat Package)
-- `'campaign total'` → `'campaign total + VAT'` (for fixed/leafleting)
+Two label changes:
 
-Single line change.
+1. **Line 180**: `View` → `Booking Details`
+2. **Line 189**: `View & Accept Terms` → `Accept Terms & Book`
+
+No logic changes, just button text updates.
 
