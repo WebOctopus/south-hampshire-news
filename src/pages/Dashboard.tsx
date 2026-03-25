@@ -258,6 +258,7 @@ const Dashboard = () => {
       
       if (isNewUserFromCalculator === 'true' || justSavedQuote === 'true') {
         setActiveTab('quotes');
+        hasAppliedSmartDefault.current = true;
         localStorage.removeItem('newUserFromCalculator');
         localStorage.removeItem('justSavedQuote');
         
