@@ -86,7 +86,7 @@ export default function QuoteConversionCard({ quote, onView, onDelete, isDeletin
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg leading-tight">
-                {quote.title || `${getPricingModelDisplay(quote.pricing_model)} Quote`}
+                {quote.title || getPricingModelDisplay(quote.pricing_model)}
               </CardTitle>
               {isDraft && (
                 <div className="flex items-center gap-1 text-amber-600">
