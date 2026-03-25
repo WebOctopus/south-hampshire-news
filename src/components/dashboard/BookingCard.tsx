@@ -34,8 +34,6 @@ interface BookingCardProps {
     selections?: any;
     pricing_breakdown?: any;
   };
-  onDelete?: (booking: any) => void;
-  isDeleting?: boolean;
   onViewDetails?: (booking: any) => void;
   onNavigateToVouchers?: () => void;
 }
