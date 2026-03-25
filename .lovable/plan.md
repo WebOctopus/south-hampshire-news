@@ -1,23 +1,22 @@
 
 
-## Fix: Cannot Delete Users with GoCardless Mandates
+## Change "Final Total" to "6 Payments (minimum)" for BOGOF Quotes
 
 ### Problem
-Deleting users fails with error: `update or delete on table "users" violates foreign key constraint "gocardless_mandates_user_id_fkey" on table "gocardless_mandates"`. Users who have GoCardless mandate records cannot be deleted because the FK doesn't cascade.
+The BOGOF (3+ Repeat Package) quote view shows "Monthly Price" and "Final Total". The user wants "Final Total" replaced with "6 payments (minimum)" showing the value as 6 × monthly payment + VAT.
 
-### Solution
+### Changes
 
-**Database Migration**: Alter the `gocardless_mandates` table foreign key to cascade on delete.
+**File: `src/components/dashboard/ViewQuoteContent.tsx`**
 
-```sql
-ALTER TABLE public.gocardless_mandates
-  DROP CONSTRAINT gocardless_mandates_user_id_fkey,
-  ADD CONSTRAINT gocardless_mandates_user_id_fkey
-    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-```
+Update the BOGOF pricing section (lines 128-143) to replace the second column:
+- Change label from "Monthly Payment" to "6 payments (minimum)"
+- Change value to show `6 × (monthly_price × paidAreas)` + VAT
+- Keep the Monthly Price (per area) in the first column
+- Add a sub-label showing the breakdown (e.g. "6 × £90.00 per month")
 
-This single migration ensures that when a user is deleted, their GoCardless mandate records are automatically cleaned up first, preventing the FK violation.
-
-### No code changes needed
-The edge function and UI are working correctly -- the issue is purely a database constraint.
+The result for the screenshot example (£90/area, 2 paid areas):
+- **Monthly Price**: £90.00 + VAT
+- **6 payments (minimum)**: £1,080.00 + VAT
+  *(6 × £180.00 per month)*
 
