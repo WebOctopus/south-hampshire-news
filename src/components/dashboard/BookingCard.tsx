@@ -178,6 +178,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
           ? 'border-2 border-amber-400 shadow-lg hover:shadow-xl bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30' 
           : isPaid
           ? 'border-2 border-emerald-400 shadow-md hover:shadow-lg bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30 cursor-pointer'
+          : paymentSetupComplete
+          ? 'border-2 border-blue-400 shadow-md hover:shadow-lg bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30 cursor-pointer'
           : 'hover:shadow-md cursor-pointer'
       }`}
       onClick={() => onViewDetails?.(booking)}
