@@ -147,7 +147,6 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
           </AccordionContent>
         </AccordionItem>
         )}
-        )}
 
         {/* 2 — Payment & Billing */}
         <AccordionItem value="payment" className="border rounded-lg bg-card px-4 shadow-sm">
