@@ -92,7 +92,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
         </AccordionItem>
         )}
 
-        {(showBoth || isFixed) && (
+        {(showBoth || (isFixed && !isLeafleting)) && (
         <AccordionItem value="fixed-terms" className="border rounded-lg bg-card px-4 shadow-sm">
           <AccordionTrigger className="hover:no-underline gap-3">
             <div className="flex items-center gap-3 text-left">
@@ -118,6 +118,35 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
             </ul>
           </AccordionContent>
         </AccordionItem>
+        )}
+
+        {(showBoth || isLeafleting) && (
+        <AccordionItem value="leaflet-terms" className="border rounded-lg bg-card px-4 shadow-sm">
+          <AccordionTrigger className="hover:no-underline gap-3">
+            <div className="flex items-center gap-3 text-left">
+              <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <span className="font-semibold text-foreground">Payment Terms (Leaflet Distribution)</span>
+                <Badge variant="secondary" className="ml-2 text-[10px] align-middle">
+                  Leaflet Distribution
+                </Badge>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <ul className="space-y-3 pl-1">
+              {leafletingTerms.map((term, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed">
+                  <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+                    {i + 1}
+                  </span>
+                  <span>{term}</span>
+                </li>
+              ))}
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+        )}
         )}
 
         {/* 2 — Payment & Billing */}
