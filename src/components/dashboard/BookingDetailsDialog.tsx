@@ -507,11 +507,30 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         if (!area) return null;
                         const areaMonths = hasMonthsData ? (monthsByArea[id] || []) : fallbackMonths;
                         const formattedMonths = areaMonths.map(formatMonth);
+                        
+                        // For leafleting, show per-area ex-VAT price
+                        const areaBreakdown = booking.pricing_breakdown?.areaBreakdown || [];
+                        const storedArea = areaBreakdown.find((a: any) => a.areaId === id);
+                        let areaExVatPrice: number | null = null;
+                        if (booking.pricing_model === 'leafleting' && storedArea) {
+                          const isVatInclusive = (area as any).price_with_vat && Math.abs(storedArea.basePrice - (area as any).price_with_vat) < 1;
+                          areaExVatPrice = isVatInclusive 
+                            ? Math.round((storedArea.basePrice / 1.2) * 100) / 100
+                            : storedArea.basePrice;
+                        }
+
                         return (
                           <div key={id} className="bg-muted p-3 rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-primary" />
-                              <span className="text-sm font-medium">{area.name}</span>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-primary" />
+                                <span className="text-sm font-medium">{area.name}</span>
+                              </div>
+                              {areaExVatPrice !== null && (
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {formatPrice(areaExVatPrice)} + VAT
+                                </span>
+                              )}
                             </div>
                             <div className="ml-6 mt-1 text-xs text-muted-foreground">
                               {(area.circulation || 0).toLocaleString()} circulation
