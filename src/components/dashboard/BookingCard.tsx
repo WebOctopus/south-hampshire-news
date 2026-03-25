@@ -327,6 +327,20 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
           </Button>
         )}
 
+        {/* View Booking Details button for payment-setup-complete bookings */}
+        {paymentSetupComplete && (
+          <Button 
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+            size="lg"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails?.(booking);
+            }}
+          >
+            View Booking Details
+          </Button>
+        )}
+
         {/* Paid Status & Voucher CTA */}
         {isPaid && (
           <div className="space-y-3">

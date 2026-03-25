@@ -44,7 +44,7 @@ const PaymentSetup = () => {
           });
 
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/dashboard?tab=bookings');
           }, 2000);
           return;
         }
