@@ -439,7 +439,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             phone: profile?.phone || '',
             company: '',
             title: 'Dashboard Booking',
-            ad_size: selectedAdSizeData?.name,
+            ad_size: pricingModel === 'leafleting' ? (selectedAdSizeData as any)?.label : (selectedAdSizeData as any)?.name,
             duration: selectedDurationData?.name,
             selected_areas: pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas,
             bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
