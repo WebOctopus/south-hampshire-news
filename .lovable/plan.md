@@ -1,30 +1,35 @@
 
 
-## Add Leafleting Payment Terms to BookingTerms Component
+## Fix Leafleting Pricing to Show Ex-VAT Amounts
 
 ### Problem
-Leafleting bookings/quotes currently show either subscription or fixed-term terms, but leafleting has its own specific payment terms that differ from both.
+The leaflet areas table stores `price_with_vat` (e.g. £498 for Hamble). The calculator uses this value directly as the subtotal/finalTotal, which then gets stored in quotes and displayed with "+ VAT" — effectively double-counting VAT. The quote summary should show the ex-VAT amount (£415.00 for a £498 inc-VAT price).
 
 ### Changes
 
-**File: `src/components/dashboard/BookingTerms.tsx`**
+**File 1: `src/lib/leafletingCalculator.ts`**
+Convert `price_with_vat` to ex-VAT when calculating subtotals:
+- Change subtotal calculation: `area.price_with_vat / 1.2` instead of `area.price_with_vat`
+- Change area breakdown `basePrice`: `area.price_with_vat / 1.2`
+- This ensures `finalTotal` stored in quotes is ex-VAT, matching magazine ad pricing behavior
 
-1. **Add a new `leafletingTerms` array** with the four specific terms:
-   - "Once booking is confirmed, 25% of the full amount is required at time of booking. Payment by debit/credit card."
-   - "The remaining 75% is due 10 days prior to the delivery date."
-   - "If the booking is made within 10 days of delivery, payment is required in full at the time of booking."
-   - "No monthly payment plan or extra discount for payment in full in advance is available."
+**File 2: `src/components/dashboard/ViewQuoteContent.tsx`**
+Add a dedicated leafleting pricing section (like fixed-term has):
+- Show "Campaign Total" with `formatPrice(quote.final_total) + " + VAT"` — now correct since the stored value will be ex-VAT
+- Show leaflet-specific labels
 
-2. **Add `isLeafleting` check** — detect when `pricingModel === 'leafleting'`.
+**File 3: `src/components/dashboard/QuoteConversionCard.tsx`**
+The card at line 146-154 shows `final_total` for non-BOGOF/non-fixed quotes (which includes leafleting). Since the stored value will now be ex-VAT, this is correct. Add a "campaign total" sub-label for leafleting alongside the existing fixed-term one.
 
-3. **Add a new AccordionItem** for leafleting terms (value `"leaflet-terms"`) with a "Leaflet Distribution" badge, shown when `isLeafleting || showBoth`.
+**File 4: `src/components/dashboard/BookingDetailsDialog.tsx`**
+Lines 649-653 already convert leafleting `final_total` to ex-VAT before Stripe (`exVatAmount = isLeafleting ? fullAmount / 1.2 : fullAmount`). Since the stored value will now already be ex-VAT, remove this double-conversion to prevent undercharging.
 
-4. **Hide subscription and fixed-term sections** when `isLeafleting` is true (they should only show for their respective models or when `showBoth`).
+**File 5: `src/components/LeafletingCalculator.tsx`**
+Update the public-facing calculator display to show ex-VAT prices with "+ VAT" label instead of showing the raw `price_with_vat` value, ensuring consistency with the quote summary.
 
-5. **Update the accordion default open values** to include `"leaflet-terms"`.
-
-6. **Update the footer note** to handle the leafleting case with appropriate messaging.
-
-### Result
-Leafleting bookings and quotes will display the correct 25%/75% deposit terms instead of irrelevant subscription or fixed-term conditions.
+### Impact
+- All leafleting quotes/bookings will store and display ex-VAT amounts
+- "+ VAT" labels will be accurate
+- Stripe payments won't double-convert (the Stripe edge function already adds 20% VAT)
+- Existing quotes with VAT-inclusive values will display slightly higher than intended until re-quoted
 
