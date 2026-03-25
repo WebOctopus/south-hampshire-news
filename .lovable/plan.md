@@ -1,43 +1,27 @@
 
 
-## Fix Distribution Start Date in Leafleting Quote Emails
+## Improve Quote Details View
 
-### Problem
-The `{{distribution_start}}` variable shows "N/A" in leafleting emails because:
-- The Edge Function resolves it from `selections.distributionStartDate` (doesn't exist) or `selections.selectedStartingIssue` (not set for leafleting)
-- The actual date is stored in the `distribution_start_date` top-level DB column but is never passed to the email function
+### Problems (from screenshot)
+1. Label says "Campaign Total" — user wants just "Cost"
+2. No distribution schedule/months shown for leafleting quotes
+3. Area cards lack delivery dates from the leaflet area schedule data
 
-### Fix
+### Changes
 
-**File: `supabase/functions/send-booking-confirmation-email/index.ts`** (line ~436)
+**File: `src/components/dashboard/ViewQuoteContent.tsx`**
 
-Update the `distribution_start` resolution to also check `payload.distribution_start_date` (the top-level column value) and format it as a readable month/year:
+1. **Rename label**: Change `'Campaign Total'` (line 152) to `'Cost'` for leafleting quotes
 
-```typescript
-distribution_start: (() => {
-  const raw = payload.selections?.distributionStartDate 
-    || payload.selections?.selectedStartingIssue 
-    || payload.distribution_start_date;
-  if (!raw || raw === "N/A") return "N/A";
-  try {
-    const d = new Date(raw);
-    return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-  } catch { return raw; }
-})(),
-```
+2. **Show distribution start date**: Add a row displaying `quote.distribution_start_date` formatted as a readable date (e.g., "March 2026") when available
 
-**File: `src/components/AdvertisingStepForm.tsx`** (email invoke calls ~line 454 and ~878)
+3. **Show leaflets required by date**: Display `quote.leaflets_required_by` if present
 
-Add `distribution_start_date` to the email payload body so the Edge Function receives it:
+4. **Show scheduled months on leafleting area cards**: The leaflet areas have a `schedule` JSON field with delivery dates. The `AreaCard` component already supports showing months via `formatMonthLabel`, but for leafleting the `monthsByArea` from `selections.months` may be empty. Update the fallback logic to also derive months from `distribution_start_date` + `duration_multiplier` for leafleting quotes (this already exists in `deriveFallbackMonths`). Ensure the fallback months are applied to leafleting area cards so delivery dates appear.
 
-```typescript
-distribution_start_date: quotePayload.distribution_start_date,
-```
+5. **Show duration/number of issues**: Display `quote.duration_multiplier` as "X issues" when available for leafleting
 
-Same change needed in `src/pages/Advertising.tsx` and `src/components/dashboard/CreateBookingForm.tsx` email invoke calls.
+6. **Show leaflet size**: Pull leaflet size from `selections.leafletSize` or similar if stored, and display it
 
-**Redeploy** the Edge Function after changes.
-
-### Expected Result
-The email will show "Distribution Month Start: March 2026" instead of "N/A".
+All other existing content (campaign type, status, area selection cards with circulation/postcodes, contact info, created date) remains unchanged.
 
