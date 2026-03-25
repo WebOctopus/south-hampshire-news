@@ -116,9 +116,9 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       
       const tableName = booking.pricing_model === 'leafleting' ? 'leaflet_areas' : 'pricing_areas';
       if (tableName === 'leaflet_areas') {
-        const { data, error } = await supabase.from('leaflet_areas').select('id, name, postcodes, bimonthly_circulation').in('id', allAreaIds);
+        const { data, error } = await supabase.from('leaflet_areas').select('id, name, postcodes, bimonthly_circulation, price_with_vat').in('id', allAreaIds);
         if (error) throw error;
-        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: a.postcodes, circulation: a.bimonthly_circulation }));
+        return (data || []).map((a) => ({ id: a.id, name: a.name, postcodes: a.postcodes, circulation: a.bimonthly_circulation, price_with_vat: a.price_with_vat }));
       } else {
         const { data, error } = await supabase.from('pricing_areas').select('id, name, circulation, postcodes').in('id', allAreaIds);
         if (error) throw error;
@@ -409,6 +409,25 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                           if (booking.pricing_model === 'bogof') {
                             return formatPrice(booking.monthly_price || 0) + ' + VAT';
                           }
+                          
+                          // For leafleting: detect if stored final_total is VAT-inclusive (old bookings)
+                          if (booking.pricing_model === 'leafleting' && pricingAreas && pricingAreas.length > 0) {
+                            const areaBreakdown = booking.pricing_breakdown?.areaBreakdown || [];
+                            let isVatInclusive = false;
+                            if (areaBreakdown.length > 0) {
+                              // Check if stored basePrice matches price_with_vat (VAT-inclusive)
+                              const firstStored = areaBreakdown[0]?.basePrice;
+                              const matchingArea = pricingAreas.find((a: any) => a.id === areaBreakdown[0]?.areaId);
+                              if ((matchingArea as any)?.price_with_vat && firstStored) {
+                                isVatInclusive = Math.abs(firstStored - (matchingArea as any).price_with_vat) < 1;
+                              }
+                            }
+                            const correctedTotal = isVatInclusive 
+                              ? Math.round((booking.final_total / 1.2) * 100) / 100
+                              : booking.final_total;
+                            return formatPrice(correctedTotal || 0) + ' + VAT';
+                          }
+
                           const selectedPaymentOptionId = booking.selections?.payment_option_id;
                           const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
                           const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
@@ -488,11 +507,30 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         if (!area) return null;
                         const areaMonths = hasMonthsData ? (monthsByArea[id] || []) : fallbackMonths;
                         const formattedMonths = areaMonths.map(formatMonth);
+                        
+                        // For leafleting, show per-area ex-VAT price
+                        const areaBreakdown = booking.pricing_breakdown?.areaBreakdown || [];
+                        const storedArea = areaBreakdown.find((a: any) => a.areaId === id);
+                        let areaExVatPrice: number | null = null;
+                        if (booking.pricing_model === 'leafleting' && storedArea) {
+                          const isVatInclusive = (area as any).price_with_vat && Math.abs(storedArea.basePrice - (area as any).price_with_vat) < 1;
+                          areaExVatPrice = isVatInclusive 
+                            ? Math.round((storedArea.basePrice / 1.2) * 100) / 100
+                            : storedArea.basePrice;
+                        }
+
                         return (
                           <div key={id} className="bg-muted p-3 rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-primary" />
-                              <span className="text-sm font-medium">{area.name}</span>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-primary" />
+                                <span className="text-sm font-medium">{area.name}</span>
+                              </div>
+                              {areaExVatPrice !== null && (
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {formatPrice(areaExVatPrice)} + VAT
+                                </span>
+                              )}
                             </div>
                             <div className="ml-6 mt-1 text-xs text-muted-foreground">
                               {(area.circulation || 0).toLocaleString()} circulation
@@ -651,9 +689,18 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     : 999;
                   const isWithin10Days = isLeafleting && daysUntilDistribution <= 10;
                    const fullAmount = booking.final_total || booking.monthly_price;
-                   // final_total is already stored as ex-VAT for all models
-                   // Stripe edge function adds 20% VAT automatically
-                   const exVatAmount = fullAmount;
+                   // For leafleting: detect if stored final_total is VAT-inclusive (old bookings)
+                   let exVatAmount = fullAmount;
+                   if (isLeafleting && pricingAreas && pricingAreas.length > 0) {
+                     const areaBreakdown = booking.pricing_breakdown?.areaBreakdown || [];
+                     if (areaBreakdown.length > 0) {
+                       const firstStored = areaBreakdown[0]?.basePrice;
+                       const matchingArea = pricingAreas.find((a: any) => a.id === areaBreakdown[0]?.areaId);
+                       if ((matchingArea as any)?.price_with_vat && firstStored && Math.abs(firstStored - (matchingArea as any).price_with_vat) < 1) {
+                         exVatAmount = Math.round((fullAmount / 1.2) * 100) / 100;
+                       }
+                     }
+                   }
                    const depositAmount = Math.ceil(exVatAmount * 0.25 * 100) / 100; // 25% rounded to 2dp
                    const payAmount = (isLeafleting && !isWithin10Days) ? depositAmount : exVatAmount;
                   const isDeposit = isLeafleting && !isWithin10Days;
