@@ -1,27 +1,40 @@
 
 
-## Fix Leafleting Payment Section in Create Booking Form
+## Fix Leafleting Email Data for Bookings and Quotes
 
 ### Problem
-The Create Booking form for Leafleting incorrectly displays the generic payment options (Monthly Direct Debit, 12 Months Full Payment) from the database. Leafleting uses a fixed payment structure: 25% deposit at booking, 75% balance due before distribution. The prices shown are also wrong because they're calculated using the BOGOF/fixed-term payment logic.
+The leaflet booking/quote confirmation email has multiple unresolved template variables (visible in the screenshot as raw `{{number_of_deliveries_per_area}}` and `{{quantity_of_leaflets}}`). The root causes are in both the client-side email payloads and the Edge Function variable mapping.
+
+### Issues Found
+
+1. **Edge function missing template variables**: `number_of_deliveries_per_area` and `quantity_of_leaflets` are never mapped in the vars object (line 430-433 of `send-booking-confirmation-email/index.ts`)
+2. **Wrong lookups in CreateBookingForm**: For leafleting, `ad_size` resolves from `adSizes` (ad_sizes table) instead of `leafletSizes`, and `duration` from `durations` instead of `leafletDurations` -- both return undefined for leaflet IDs
+3. **Missing selections data**: The email payloads from CreateBookingForm don't include leaflet-specific fields needed by the edge function (e.g., `distributionStartDate`, `leafletSize` label)
 
 ### Changes
 
-**File: `src/components/dashboard/CreateBookingForm.tsx`**
+**File 1: `supabase/functions/send-booking-confirmation-email/index.ts`** (lines 430-433)
 
-1. **Replace the Payment Options card for leafleting** with a static payment terms display:
-   - Remove the radio group payment option selector when `pricingModel === 'leafleting'`
-   - Instead show a simple info card stating:
-     - "25% deposit due at the time of booking"
-     - "75% balance due before distribution"
-   - Auto-set `selectedPaymentOption` to a default value (e.g. `'deposit_25_75'`) when leafleting is selected so form validation passes without requiring user selection
+Add missing template variable mappings:
+- `number_of_deliveries_per_area`: derive from `payload.duration` or `payload.selections?.leafletDuration` (the duration name like "6 Issues")
+- `quantity_of_leaflets`: derive from `payload.total_circulation` (total leaflets across all areas)
+- Fix `distribution_start` to check multiple possible key names from selections
 
-2. **Keep the Amazing Value section** showing "Only £X.XX per 1,000 homes reached" — this stays unchanged.
+**File 2: `src/components/dashboard/CreateBookingForm.tsx`**
 
-3. **Keep the Total Campaign Cost and Total Circulation summary** lines.
+Fix the **quote email payload** (around line 319-341):
+- When `pricingModel === 'leafleting'`, look up size from `leafletSizes` (using `.label`) instead of `adSizes`
+- Look up duration from `leafletDurations` (using `.name`) instead of `durations`
+- Pass `selections` with leaflet-specific data including `distributionStartDate`
 
-4. **Update `isFormValid()`** for leafleting to not require `hasPaymentOption` from the radio group, since the payment method is fixed (or auto-set it).
+Fix the **booking email payload** (around line 451-472):
+- Same leaflet-specific lookups for `ad_size` and `duration`
+- Include `selections` object with leaflet data
+
+**File 3: `src/components/AdvertisingStepForm.tsx`** (lines 453-485, 878+)
+
+Verify the quote and booking email payloads also correctly pass leaflet data -- the quote path (line 463) already handles this with conditional logic, but verify the booking path does too.
 
 ### Result
-Leafleting bookings will show clear 25%/75% payment terms instead of irrelevant monthly/annual payment options, matching the existing Leaflet Service calculator behavior.
+All leaflet email template variables (`{{leaflet_size}}`, `{{number_of_deliveries_per_area}}`, `{{quantity_of_leaflets}}`, `{{distribution_start}}`) will resolve to actual values in both booking and quote confirmation emails.
 
