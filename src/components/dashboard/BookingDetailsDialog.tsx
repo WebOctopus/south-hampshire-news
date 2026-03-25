@@ -409,6 +409,25 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                           if (booking.pricing_model === 'bogof') {
                             return formatPrice(booking.monthly_price || 0) + ' + VAT';
                           }
+                          
+                          // For leafleting: detect if stored final_total is VAT-inclusive (old bookings)
+                          if (booking.pricing_model === 'leafleting' && pricingAreas && pricingAreas.length > 0) {
+                            const areaBreakdown = booking.pricing_breakdown?.areaBreakdown || [];
+                            let isVatInclusive = false;
+                            if (areaBreakdown.length > 0) {
+                              // Check if stored basePrice matches price_with_vat (VAT-inclusive)
+                              const firstStored = areaBreakdown[0]?.basePrice;
+                              const matchingArea = pricingAreas.find((a: any) => a.id === areaBreakdown[0]?.areaId);
+                              if (matchingArea?.price_with_vat && firstStored) {
+                                isVatInclusive = Math.abs(firstStored - matchingArea.price_with_vat) < 1;
+                              }
+                            }
+                            const correctedTotal = isVatInclusive 
+                              ? Math.round((booking.final_total / 1.2) * 100) / 100
+                              : booking.final_total;
+                            return formatPrice(correctedTotal || 0) + ' + VAT';
+                          }
+
                           const selectedPaymentOptionId = booking.selections?.payment_option_id;
                           const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
                           const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
