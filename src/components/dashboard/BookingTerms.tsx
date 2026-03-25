@@ -205,7 +205,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
           <AccordionContent>
             <div className="rounded-lg border bg-muted/40 p-4 space-y-3">
               <p className="text-sm text-muted-foreground">
-                For account queries, billing questions or changes to your subscription, please contact:
+                For account queries, billing questions or changes to your subscription, please contact. Office hours are Mon-Fri 9am-4pm.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
