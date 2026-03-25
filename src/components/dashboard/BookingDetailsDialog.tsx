@@ -324,28 +324,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onCloseAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {booking.title || 'Booking Details'}
-          </DialogTitle>
-        </DialogHeader>
-
         <div className="space-y-6">
-          {/* Verification Message */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-blue-900 mb-1">
-                  Please Review Your Campaign Details
-                </p>
-                <p className="text-sm text-blue-800">
-                  Take a moment to verify all the information below is correct before proceeding with payment. 
-                  This ensures your advertising campaign reaches exactly where you want it to go.
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Campaign Overview */}
           <Card>
