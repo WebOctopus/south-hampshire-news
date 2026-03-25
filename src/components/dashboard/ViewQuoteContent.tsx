@@ -149,7 +149,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
         </div>
       ) : quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' || quote.pricing_model === 'leafleting' ? (
         <div>
-          <Label>{quote.pricing_model === 'leafleting' ? 'Campaign Total' : 'Price'}</Label>
+          <Label>{isLeafleting ? 'Cost' : 'Price'}</Label>
           <p className="font-semibold text-lg">{formatPrice(quote.final_total || 0)} + VAT</p>
         </div>
       ) : (
@@ -168,6 +168,36 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
         <div>
           <Label>Total Circulation</Label>
           <p>{(quote.total_circulation || 0).toLocaleString()}</p>
+        </div>
+      )}
+
+      {/* Distribution Details for Leafleting */}
+      {isLeafleting && (
+        <div className="grid grid-cols-2 gap-4">
+          {quote.distribution_start_date && (
+            <div>
+              <Label>Distribution Start</Label>
+              <p>{new Date(quote.distribution_start_date).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</p>
+            </div>
+          )}
+          {quote.duration_multiplier && (
+            <div>
+              <Label>Duration</Label>
+              <p>{quote.duration_multiplier} {quote.duration_multiplier === 1 ? 'issue' : 'issues'}</p>
+            </div>
+          )}
+          {quote.leaflets_required_by && (
+            <div>
+              <Label>Leaflets Required By</Label>
+              <p>{new Date(quote.leaflets_required_by).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            </div>
+          )}
+          {selections?.leafletSize && (
+            <div>
+              <Label>Leaflet Size</Label>
+              <p>{selections.leafletSize}</p>
+            </div>
+          )}
         </div>
       )}
 
