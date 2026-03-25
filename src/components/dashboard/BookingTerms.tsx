@@ -29,13 +29,21 @@ const fixedTermTerms = [
   'Prices are exclusive of VAT',
 ];
 
+const leafletingTerms = [
+  'Once booking is confirmed, 25% of the full amount is required at time of booking. Payment by debit/credit card.',
+  'The remaining 75% is due 10 days prior to the delivery date.',
+  'If the booking is made within 10 days of delivery, payment is required in full at the time of booking.',
+  'No monthly payment plan or extra discount for payment in full in advance is available.',
+];
+
 interface BookingTermsProps {
   pricingModel?: string;
 }
 
 export default function BookingTerms({ pricingModel }: BookingTermsProps) {
   const isFixed = pricingModel === 'fixed' || pricingModel === 'fixed_term';
-  const showBoth = !pricingModel; // no model = show all (e.g. standalone Terms page)
+  const isLeafleting = pricingModel === 'leafleting';
+  const showBoth = !pricingModel;
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
