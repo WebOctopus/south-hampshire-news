@@ -1,39 +1,23 @@
 
 
-## Update BookingDetailsDialog for BOGOF Campaign Overview
+## Update Payment Status Message in BookingDetailsDialog
 
 **File: `src/components/dashboard/BookingDetailsDialog.tsx`**
 
-### Changes
+### Change
 
-1. **Line 305**: Change `'3+ Repeat Package Booking'` → `'3+ Subscription'`
+Replace the subtitle text on **lines 645-647** from:
 
-2. **Line 427**: Change `Campaign Cost` label to `Monthly Cost` for BOGOF bookings. Wrap in a conditional: if `booking.pricing_model === 'bogof'`, show "Monthly Cost", otherwise keep "Campaign Cost".
+```
+Your payment will be created shortly
+```
 
-3. **Line 502**: Change `'Paid Areas'` → `'Subscribed Areas'`
+To:
 
-4. **Lines 528-531**: Update the count text from `paid area` to `subscribed area`
-
-5. **Line 545**: Change `Bonus Free Areas 🎉` → `Bonus Free Areas for SIX months 🎉`
-
-6. **Lines 548-554**: Display free areas on separate lines instead of comma-separated. Replace the `names.join(', ')` with individual area entries, each on its own line (using `<div>` elements per area name instead of joining).
-
-### Technical detail
-
-For change #6, replace the free areas rendering block:
-```tsx
-// Current: names.join(', ')
-// New: map each free area to its own <div> line
-const freeAreaIds = booking.bogof_free_area_ids || [];
-if (!pricingAreas || freeAreaIds.length === 0) return 'No areas selected';
-const freeAreas = freeAreaIds
-  .map((id: string) => pricingAreas.find((a: any) => a.id === id))
-  .filter(Boolean);
-return freeAreas.map((area: any) => (
-  <div key={area.id} className="text-sm text-green-800">{area.name}</div>
-));
+```
+No payment is taken without the issue of an Invoice. You will receive an invoice by email by the end of the next working day. Payment for this invoice will be taken by direct debit on the day of the invoice due date.
 ```
 
 ### Files to change
-- `src/components/dashboard/BookingDetailsDialog.tsx`
+- `src/components/dashboard/BookingDetailsDialog.tsx` (lines 645-647)
 
