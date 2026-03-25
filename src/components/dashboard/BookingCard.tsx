@@ -2,12 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Clock, Package, Trash2, CreditCard, AlertCircle, Gift, CheckCircle2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, Package, CreditCard, AlertCircle, Gift, CheckCircle2, XCircle } from 'lucide-react';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { calculatePaymentAmount } from '@/lib/paymentCalculations';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface BookingCardProps {
   booking: {
@@ -24,13 +34,11 @@ interface BookingCardProps {
     selections?: any;
     pricing_breakdown?: any;
   };
-  onDelete?: (booking: any) => void;
-  isDeleting?: boolean;
   onViewDetails?: (booking: any) => void;
   onNavigateToVouchers?: () => void;
 }
 
-export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isDeleting, onViewDetails, onNavigateToVouchers }) => {
+export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails, onNavigateToVouchers }) => {
   
   // Preview mode disabled - bookings are now live
   const PREVIEW_AS_PAID = false;
@@ -210,23 +218,31 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onDelete, isD
               </Badge>
             </div>
           </div>
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(booking);
-              }}
-              disabled={isDeleting}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-2"
-            >
-              {isDeleting ? (
-                <div className="w-4 h-4 animate-spin rounded-full border-2 border-destructive border-t-transparent" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
-            </Button>
+          {isPaid && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-muted-foreground hover:text-foreground ml-2"
+                >
+                  <XCircle className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Subscription Cancellation</AlertDialogTitle>
+                  <AlertDialogDescription className="space-y-2">
+                    <p>To cancel your subscription, please email <strong>accounts@discovermagazines.co.uk</strong> or call <strong>023 8026 6388</strong>.</p>
+                    <p>Cancellations can only be processed after the completion of your first 3 paid issues.</p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction>Close</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </CardHeader>
