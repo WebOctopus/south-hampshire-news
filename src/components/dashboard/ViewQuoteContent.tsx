@@ -177,7 +177,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
             <div className="space-y-4">
               {paidAreas.length > 0 && (
                 <div>
-                  <Label className="text-sm mb-2 block">Paid Areas</Label>
+                  <Label className="text-sm mb-2 block">Subscribed Areas (minimum 3 issues)</Label>
                   <div className="space-y-2">
                     {paidAreas.map((area: any) => (
                       <AreaCard key={area.id} area={area} />
