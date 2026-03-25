@@ -149,7 +149,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
         </div>
       ) : quote.pricing_model === 'fixed' || quote.pricing_model === 'fixed_term' || quote.pricing_model === 'leafleting' ? (
         <div>
-          <Label>{quote.pricing_model === 'leafleting' ? 'Campaign Total' : 'Price'}</Label>
+          <Label>{isLeafleting ? 'Cost' : 'Price'}</Label>
           <p className="font-semibold text-lg">{formatPrice(quote.final_total || 0)} + VAT</p>
         </div>
       ) : (
