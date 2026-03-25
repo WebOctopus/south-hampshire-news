@@ -227,11 +227,13 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
         <CardContent className="flex items-start gap-3 p-4">
           <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            {isFixed
-              ? 'These terms apply specifically to Fixed Term bookings. Subscription (3+ Repeat) bookings may have different conditions.'
-              : showBoth
-                ? 'These terms apply to your advertising bookings with Discover Magazines. Different booking types may have specific conditions.'
-                : 'These terms apply specifically to 3+ Subscription (Repeat Package) bookings. Fixed-term bookings may have different conditions.'}
+            {isLeafleting
+              ? 'These terms apply specifically to Leaflet Distribution bookings. Magazine advertising bookings may have different conditions.'
+              : isFixed
+                ? 'These terms apply specifically to Fixed Term bookings. Subscription (3+ Repeat) bookings may have different conditions.'
+                : showBoth
+                  ? 'These terms apply to your advertising bookings with Discover Magazines. Different booking types may have specific conditions.'
+                  : 'These terms apply specifically to 3+ Subscription (Repeat Package) bookings. Fixed-term bookings may have different conditions.'}
             {' '}If you have any questions about your booking terms, please contact us using the details above.
           </p>
         </CardContent>
