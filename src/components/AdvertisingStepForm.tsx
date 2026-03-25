@@ -897,6 +897,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             monthly_price: bookingPayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
+            distribution_start_date: bookingPayload.distribution_start_date,
             // Admin-created booking: include credentials or login link in the email
             ...(isAdminCreating ? {
               is_admin_created: true,

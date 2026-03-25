@@ -433,7 +433,17 @@ Deno.serve(async (req) => {
           number_of_deliveries_per_area: payload.duration || "N/A",
           quantity_of_leaflets: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
           number_of_leaflets: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
-          distribution_start: payload.selections?.distributionStartDate || payload.selections?.selectedStartingIssue || "N/A",
+          distribution_start: (() => {
+            const raw = payload.selections?.distributionStartDate 
+              || payload.selections?.selectedStartingIssue 
+              || payload.distribution_start_date;
+            if (!raw || raw === "N/A") return "N/A";
+            try {
+              const d = new Date(raw);
+              if (isNaN(d.getTime())) return raw;
+              return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+            } catch { return raw; }
+          })(),
           // Shared – use pricing_breakdown.finalTotal as the authoritative full campaign cost
           total_cost: formatCurrency(
             payload.pricing_breakdown?.finalTotal ?? payload.final_total

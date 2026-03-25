@@ -488,6 +488,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             monthly_price: bookingPayload.monthly_price,
             pricing_breakdown: pricingBreakdown,
             selections: bookingPayload.selections,
+            distribution_start_date: bookingPayload.distribution_start_date,
           }
         });
         console.log('Dashboard booking confirmation email sent');
