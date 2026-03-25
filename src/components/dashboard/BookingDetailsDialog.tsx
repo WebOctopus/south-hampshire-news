@@ -406,6 +406,9 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         <span className="font-medium">{booking.pricing_model === 'bogof' ? 'Monthly Cost' : 'Campaign Cost'}:</span>{' '}
                         <span className="text-muted-foreground font-semibold">
                           {(() => {
+                          if (booking.pricing_model === 'bogof') {
+                            return formatPrice(booking.monthly_price || 0) + ' + VAT';
+                          }
                           const selectedPaymentOptionId = booking.selections?.payment_option_id;
                           const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
                           const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
