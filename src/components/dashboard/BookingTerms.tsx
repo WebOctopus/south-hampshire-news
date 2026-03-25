@@ -166,7 +166,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
                     <p className="text-muted-foreground">Discover Magazines Ltd, 30 Leigh Road, Eastleigh SO50 9DT</p>
                   </div>
                 </div>
-                {!isLeafleting && (
+                {!isLeafleting && !isFixed && (
                   <>
                     <Separator />
                     <div className="flex items-start gap-3">
