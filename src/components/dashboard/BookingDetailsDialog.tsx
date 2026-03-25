@@ -418,8 +418,8 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                               // Check if stored basePrice matches price_with_vat (VAT-inclusive)
                               const firstStored = areaBreakdown[0]?.basePrice;
                               const matchingArea = pricingAreas.find((a: any) => a.id === areaBreakdown[0]?.areaId);
-                              if (matchingArea?.price_with_vat && firstStored) {
-                                isVatInclusive = Math.abs(firstStored - matchingArea.price_with_vat) < 1;
+                              if ((matchingArea as any)?.price_with_vat && firstStored) {
+                                isVatInclusive = Math.abs(firstStored - (matchingArea as any).price_with_vat) < 1;
                               }
                             }
                             const correctedTotal = isVatInclusive 
