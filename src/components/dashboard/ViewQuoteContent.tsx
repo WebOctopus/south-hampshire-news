@@ -187,7 +187,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
               )}
               {freeAreas.length > 0 && (
                 <div>
-                  <Label className="text-sm mb-2 block">FREE Bonus Areas</Label>
+                  <Label className="text-sm mb-2 block">FREE Bonus Areas for 3 issues only</Label>
                   <div className="space-y-2">
                     {freeAreas.map((area: any) => (
                       <AreaCard key={area.id} area={area} isFree />
