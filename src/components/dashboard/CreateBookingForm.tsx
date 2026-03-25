@@ -453,9 +453,13 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
 
       // Send confirmation emails (non-blocking)
       try {
-        const adSizeForBookEmail = adSizes?.find(a => a.id === selectedAdSize);
-        const durationForBookEmail = durations?.find(d => d.id === selectedDuration) || 
-                                      subscriptionDurations?.find(d => d.id === selectedDuration);
+        const adSizeForBookEmail = pricingModel === 'leafleting'
+          ? leafletSizes?.find(a => a.id === selectedLeafletSize)
+          : adSizes?.find(a => a.id === selectedAdSize);
+        const durationForBookEmail = pricingModel === 'leafleting'
+          ? leafletDurations?.find(d => d.id === selectedLeafletDuration)
+          : (durations?.find(d => d.id === selectedDuration) || 
+             subscriptionDurations?.find(d => d.id === selectedDuration));
         await supabase.functions.invoke('send-booking-confirmation-email', {
           body: {
             record_type: 'booking',
@@ -464,7 +468,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             contact_name: profile?.display_name || user.email?.split('@')[0] || '',
             email: user.email || '',
             phone: profile?.phone || '',
-            ad_size: adSizeForBookEmail?.name,
+            ad_size: pricingModel === 'leafleting' ? (adSizeForBookEmail as any)?.label : (adSizeForBookEmail as any)?.name,
             duration: durationForBookEmail?.name,
             selected_areas: (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).map(id => [...(areas || []), ...(leafletAreas || [])].find(a => a.id === id)?.name || id),
             bogof_paid_areas: (pricingModel === 'bogof' ? bogofPaidAreas : []).map(id => areas?.find(a => a.id === id)?.name || id),
@@ -474,6 +478,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             final_total: pricingBreakdown.finalTotal,
             monthly_price: bookingPayload.monthly_price,
             pricing_breakdown: pricingBreakdown,
+            selections: bookingPayload.selections,
           }
         });
         console.log('Dashboard booking confirmation email sent');
