@@ -29,13 +29,21 @@ const fixedTermTerms = [
   'Prices are exclusive of VAT',
 ];
 
+const leafletingTerms = [
+  'Once booking is confirmed, 25% of the full amount is required at time of booking. Payment by debit/credit card.',
+  'The remaining 75% is due 10 days prior to the delivery date.',
+  'If the booking is made within 10 days of delivery, payment is required in full at the time of booking.',
+  'No monthly payment plan or extra discount for payment in full in advance is available.',
+];
+
 interface BookingTermsProps {
   pricingModel?: string;
 }
 
 export default function BookingTerms({ pricingModel }: BookingTermsProps) {
   const isFixed = pricingModel === 'fixed' || pricingModel === 'fixed_term';
-  const showBoth = !pricingModel; // no model = show all (e.g. standalone Terms page)
+  const isLeafleting = pricingModel === 'leafleting';
+  const showBoth = !pricingModel;
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
@@ -54,9 +62,9 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
       </div>
 
       {/* Accordion sections */}
-      <Accordion type="multiple" value={["terms", "fixed-terms", "payment", "support"]} className="space-y-3">
+      <Accordion type="multiple" value={["terms", "fixed-terms", "leaflet-terms", "payment", "support"]} className="space-y-3">
         {/* Subscription or Fixed Term Terms */}
-        {(showBoth || !isFixed) && (
+        {(showBoth || (!isFixed && !isLeafleting)) && (
         <AccordionItem value="terms" className="border rounded-lg bg-card px-4 shadow-sm">
           <AccordionTrigger className="hover:no-underline gap-3">
             <div className="flex items-center gap-3 text-left">
@@ -84,7 +92,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
         </AccordionItem>
         )}
 
-        {(showBoth || isFixed) && (
+        {(showBoth || (isFixed && !isLeafleting)) && (
         <AccordionItem value="fixed-terms" className="border rounded-lg bg-card px-4 shadow-sm">
           <AccordionTrigger className="hover:no-underline gap-3">
             <div className="flex items-center gap-3 text-left">
@@ -100,6 +108,34 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
           <AccordionContent>
             <ul className="space-y-3 pl-1">
               {fixedTermTerms.map((term, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed">
+                  <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+                    {i + 1}
+                  </span>
+                  <span>{term}</span>
+                </li>
+              ))}
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+        )}
+
+        {(showBoth || isLeafleting) && (
+        <AccordionItem value="leaflet-terms" className="border rounded-lg bg-card px-4 shadow-sm">
+          <AccordionTrigger className="hover:no-underline gap-3">
+            <div className="flex items-center gap-3 text-left">
+              <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <span className="font-semibold text-foreground">Payment Terms (Leaflet Distribution)</span>
+                <Badge variant="secondary" className="ml-2 text-[10px] align-middle">
+                  Leaflet Distribution
+                </Badge>
+              </div>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <ul className="space-y-3 pl-1">
+              {leafletingTerms.map((term, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed">
                   <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
                     {i + 1}
@@ -191,11 +227,13 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
         <CardContent className="flex items-start gap-3 p-4">
           <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            {isFixed
-              ? 'These terms apply specifically to Fixed Term bookings. Subscription (3+ Repeat) bookings may have different conditions.'
-              : showBoth
-                ? 'These terms apply to your advertising bookings with Discover Magazines. Different booking types may have specific conditions.'
-                : 'These terms apply specifically to 3+ Subscription (Repeat Package) bookings. Fixed-term bookings may have different conditions.'}
+            {isLeafleting
+              ? 'These terms apply specifically to Leaflet Distribution bookings. Magazine advertising bookings may have different conditions.'
+              : isFixed
+                ? 'These terms apply specifically to Fixed Term bookings. Subscription (3+ Repeat) bookings may have different conditions.'
+                : showBoth
+                  ? 'These terms apply to your advertising bookings with Discover Magazines. Different booking types may have specific conditions.'
+                  : 'These terms apply specifically to 3+ Subscription (Repeat Package) bookings. Fixed-term bookings may have different conditions.'}
             {' '}If you have any questions about your booking terms, please contact us using the details above.
           </p>
         </CardContent>
