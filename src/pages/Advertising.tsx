@@ -576,7 +576,8 @@ const CalculatorTest = () => {
               volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
               duration_discount_percent: durationDiscountPercent,
               is_existing_user: true,
-              selections: basePayload.selections
+                selections: basePayload.selections,
+                distribution_start_date: basePayload.distribution_start_date,
             }
           });
           console.log('Quote confirmation email sent (existing user)');
