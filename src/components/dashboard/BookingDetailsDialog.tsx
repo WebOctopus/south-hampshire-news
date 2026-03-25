@@ -499,7 +499,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                   return (
                     <div className="space-y-2">
                       <p className="text-sm font-semibold">
-                        {booking.pricing_model === 'bogof' ? 'Paid Areas' : 'Your Selected Areas'}
+                        {booking.pricing_model === 'bogof' ? 'Subscribed Areas' : 'Your Selected Areas'}
                       </p>
                       {paidAreaIds.map((id: string) => {
                         const area = pricingAreas.find((a: any) => a.id === id);
