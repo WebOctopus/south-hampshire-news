@@ -268,7 +268,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
               ) : (
                 <>
                   <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
-                    {formatPrice(displayAmount)}
+                    {formatPrice(displayAmount)} + VAT
                   </div>
                   <div className="text-xs text-muted-foreground">{getPaymentLabel()}</div>
                 </>
