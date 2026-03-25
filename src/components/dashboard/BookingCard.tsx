@@ -43,7 +43,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
   // Preview mode disabled - bookings are now live
   const PREVIEW_AS_PAID = false;
   
-  const isPaymentRequired = PREVIEW_AS_PAID ? false : (!booking.payment_status || booking.payment_status === 'pending');
+  const paymentSetupComplete = ['payment_pending', 'subscription_pending', 'mandate_created'].includes(booking.payment_status || '');
+  const isPaymentRequired = PREVIEW_AS_PAID ? false : (!booking.payment_status || booking.payment_status === 'pending') && !paymentSetupComplete;
   const isPaid = PREVIEW_AS_PAID ? true : (booking.payment_status === 'paid' || booking.payment_status === 'subscription_active' || booking.payment_status === 'mandate_active');
   const [hasVoucher, setHasVoucher] = useState(false);
   const [voucherCode, setVoucherCode] = useState<string | null>(null);
