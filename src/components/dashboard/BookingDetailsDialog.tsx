@@ -424,7 +424,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         </span>
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Campaign Cost:</span>{' '}
+                        <span className="font-medium">{booking.pricing_model === 'bogof' ? 'Monthly Cost' : 'Campaign Cost'}:</span>{' '}
                         <span className="text-muted-foreground font-semibold">
                           {(() => {
                           const selectedPaymentOptionId = booking.selections?.payment_option_id;
