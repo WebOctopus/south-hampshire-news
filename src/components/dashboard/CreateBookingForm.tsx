@@ -279,9 +279,13 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
 
       // Send quote to external CRM webhook
       try {
-        const selectedAdSizeData = adSizes?.find(a => a.id === selectedAdSize);
-        const selectedDurationData = durations?.find(d => d.id === selectedDuration) || 
-                                      subscriptionDurations?.find(d => d.id === selectedDuration);
+        const selectedAdSizeData = pricingModel === 'leafleting'
+          ? leafletSizes?.find(a => a.id === selectedLeafletSize)
+          : adSizes?.find(a => a.id === selectedAdSize);
+        const selectedDurationData = pricingModel === 'leafleting'
+          ? leafletDurations?.find(d => d.id === selectedLeafletDuration)
+          : (durations?.find(d => d.id === selectedDuration) || 
+             subscriptionDurations?.find(d => d.id === selectedDuration));
         
         const webhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas: leafletAreas || [] };
         await supabase.functions.invoke('send-quote-booking-webhook', {
