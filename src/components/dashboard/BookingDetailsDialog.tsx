@@ -542,7 +542,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold mb-2 text-green-900">
-                          Bonus Free Areas 🎉
+                          Bonus Free Areas for SIX months 🎉
                         </p>
                         <p className="text-sm text-green-800">
                           {(() => {
