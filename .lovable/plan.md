@@ -1,59 +1,39 @@
 
 
-## Fix: GoCardless Payment Failing for 3+ (BOGOF) Bookings
+## Update BookingDetailsDialog for BOGOF Campaign Overview
 
-### Root Cause
+**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
 
-Two bugs in `src/pages/PaymentSetup.tsx`:
+### Changes
 
-1. **Wrong subscription detection (line 115)**: The code checks `paymentOption.option_type === 'direct_debit'` to decide if it's a subscription. But the actual option_type values in the database are `monthly` and `12_months_full` — there is no `direct_debit` type. So the monthly payment plan is always incorrectly sent as a **one-off** payment to GoCardless, which fails because GoCardless tries to collect the full amount immediately instead of setting up recurring payments.
+1. **Line 305**: Change `'3+ Repeat Package Booking'` → `'3+ Subscription'`
 
-2. **Wrong amount sent (line 122)**: The code sends `booking.final_total` as the payment amount. For BOGOF monthly subscriptions, this should be the **per-month** amount (monthly_price x number of paid areas), not the total campaign cost.
+2. **Line 427**: Change `Campaign Cost` label to `Monthly Cost` for BOGOF bookings. Wrap in a conditional: if `booking.pricing_model === 'bogof'`, show "Monthly Cost", otherwise keep "Campaign Cost".
 
-### PAYG Status
-Pay As You Go uses **Stripe** (not GoCardless), so it was never affected by the previous fix. PAYG payments should be working correctly.
+3. **Line 502**: Change `'Paid Areas'` → `'Subscribed Areas'`
 
-### Fix
+4. **Lines 528-531**: Update the count text from `paid area` to `subscribed area`
 
-**File: `src/pages/PaymentSetup.tsx`** (lines 114-125)
+5. **Line 545**: Change `Bonus Free Areas 🎉` → `Bonus Free Areas for SIX months 🎉`
 
-Change:
+6. **Lines 548-554**: Display free areas on separate lines instead of comma-separated. Replace the `names.join(', ')` with individual area entries, each on its own line (using `<div>` elements per area name instead of joining).
+
+### Technical detail
+
+For change #6, replace the free areas rendering block:
 ```tsx
-const isSubscription = paymentOption.option_type === 'direct_debit';
-
-const { error: paymentError } = await supabase.functions.invoke('create-gocardless-payment', {
-  body: {
-    bookingId,
-    mandateId,
-    paymentType: isSubscription ? 'subscription' : 'one-off',
-    amount: booking.final_total,
-    paymentOptionId: paymentOption.id,
-  },
-});
-```
-
-To:
-```tsx
-const isSubscription = paymentOption.option_type === 'monthly';
-
-// For monthly subscriptions, calculate per-month amount
-let paymentAmount = booking.final_total;
-if (isSubscription && booking.pricing_model === 'bogof') {
-  const paidAreaCount = (booking.bogof_paid_area_ids || []).length || 1;
-  paymentAmount = (booking.monthly_price || 0) * paidAreaCount;
-}
-
-const { error: paymentError } = await supabase.functions.invoke('create-gocardless-payment', {
-  body: {
-    bookingId,
-    mandateId,
-    paymentType: isSubscription ? 'subscription' : 'one-off',
-    amount: paymentAmount,
-    paymentOptionId: paymentOption.id,
-  },
-});
+// Current: names.join(', ')
+// New: map each free area to its own <div> line
+const freeAreaIds = booking.bogof_free_area_ids || [];
+if (!pricingAreas || freeAreaIds.length === 0) return 'No areas selected';
+const freeAreas = freeAreaIds
+  .map((id: string) => pricingAreas.find((a: any) => a.id === id))
+  .filter(Boolean);
+return freeAreas.map((area: any) => (
+  <div key={area.id} className="text-sm text-green-800">{area.name}</div>
+));
 ```
 
 ### Files to change
-- `src/pages/PaymentSetup.tsx` — fix subscription detection and amount calculation
+- `src/components/dashboard/BookingDetailsDialog.tsx`
 
