@@ -134,7 +134,7 @@ export default function ViewQuoteContent({ quote }: ViewQuoteContentProps) {
       {isBogof ? (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Monthly Price (per area)</Label>
+            <Label>Monthly Price</Label>
             <p className="font-semibold text-lg">{formatPrice(quote.monthly_price || 0)} + VAT</p>
           </div>
           <div>
