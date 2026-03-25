@@ -575,7 +575,7 @@ const LeafletingCalculator = ({ children }: LeafletingCalculatorProps) => {
 
                          <div className="flex justify-between font-bold text-lg">
                            <span>Total:</span>
-                           <span className="text-primary">{formatLeafletPrice(pricingBreakdown.finalTotal)}</span>
+                           <span className="text-primary">{formatLeafletPrice(pricingBreakdown.finalTotal)} + VAT</span>
                          </div>
                        </div>
 

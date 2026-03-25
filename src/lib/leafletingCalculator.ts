@@ -63,7 +63,7 @@ export function calculateLeafletingPrice(
   const areaBreakdown = selectedAreas.map(area => ({
     areaId: area.id,
     areaName: area.name,
-    basePrice: area.price_with_vat,
+    basePrice: Math.round((area.price_with_vat / 1.2) * 100) / 100,
     circulation: area.bimonthly_circulation
   }));
 
