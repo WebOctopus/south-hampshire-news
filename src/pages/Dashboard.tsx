@@ -275,6 +275,7 @@ const Dashboard = () => {
       
       if (justCreatedBooking === 'true') {
         setActiveTab('bookings');
+        hasAppliedSmartDefault.current = true;
         localStorage.removeItem('justCreatedBooking');
         
         // Reload voucher count after booking creation in case a voucher was generated
