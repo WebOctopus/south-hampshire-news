@@ -41,8 +41,8 @@ export function calculateLeafletingPrice(
     return null;
   }
 
-  // Calculate base subtotal
-  const subtotal = selectedAreas.reduce((total, area) => total + area.price_with_vat, 0);
+  // Calculate base subtotal (ex-VAT: database stores price_with_vat so divide by 1.2)
+  const subtotal = selectedAreas.reduce((total, area) => total + (area.price_with_vat / 1.2), 0);
   
   // No volume discount for leafleting
   const volumeDiscountPercent = 0;
