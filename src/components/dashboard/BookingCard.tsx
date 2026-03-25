@@ -43,7 +43,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
   // Preview mode disabled - bookings are now live
   const PREVIEW_AS_PAID = false;
   
-  const isPaymentRequired = PREVIEW_AS_PAID ? false : (!booking.payment_status || booking.payment_status === 'pending');
+  const paymentSetupComplete = ['payment_pending', 'subscription_pending', 'mandate_created'].includes(booking.payment_status || '');
+  const isPaymentRequired = PREVIEW_AS_PAID ? false : (!booking.payment_status || booking.payment_status === 'pending') && !paymentSetupComplete;
   const isPaid = PREVIEW_AS_PAID ? true : (booking.payment_status === 'paid' || booking.payment_status === 'subscription_active' || booking.payment_status === 'mandate_active');
   const [hasVoucher, setHasVoucher] = useState(false);
   const [voucherCode, setVoucherCode] = useState<string | null>(null);
@@ -145,6 +146,9 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
     if (status === 'paid' || status === 'subscription_active' || status === 'mandate_active') {
       return 'Paid';
     }
+    if (['payment_pending', 'subscription_pending', 'mandate_created'].includes(status || '')) {
+      return 'Payment Setup Complete';
+    }
     return 'Payment Setup Required';
   };
 
@@ -174,6 +178,8 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
           ? 'border-2 border-amber-400 shadow-lg hover:shadow-xl bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30' 
           : isPaid
           ? 'border-2 border-emerald-400 shadow-md hover:shadow-lg bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/30 cursor-pointer'
+          : paymentSetupComplete
+          ? 'border-2 border-blue-400 shadow-md hover:shadow-lg bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30 cursor-pointer'
           : 'hover:shadow-md cursor-pointer'
       }`}
       onClick={() => onViewDetails?.(booking)}
@@ -320,6 +326,20 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
               : booking.pricing_model === 'fixed' 
                 ? 'Pay Full Amount by Card'
                 : 'Set Up Payment Plan'}
+          </Button>
+        )}
+
+        {/* View Booking Details button for payment-setup-complete bookings */}
+        {paymentSetupComplete && (
+          <Button 
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+            size="lg"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails?.(booking);
+            }}
+          >
+            View Booking Details
           </Button>
         )}
 
