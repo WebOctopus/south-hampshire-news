@@ -64,7 +64,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
       {/* Accordion sections */}
       <Accordion type="multiple" value={["terms", "fixed-terms", "leaflet-terms", "payment", "support"]} className="space-y-3">
         {/* Subscription or Fixed Term Terms */}
-        {(showBoth || !isFixed) && (
+        {(showBoth || (!isFixed && !isLeafleting)) && (
         <AccordionItem value="terms" className="border rounded-lg bg-card px-4 shadow-sm">
           <AccordionTrigger className="hover:no-underline gap-3">
             <div className="flex items-center gap-3 text-left">
