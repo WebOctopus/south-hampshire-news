@@ -218,23 +218,31 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
               </Badge>
             </div>
           </div>
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(booking);
-              }}
-              disabled={isDeleting}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-2"
-            >
-              {isDeleting ? (
-                <div className="w-4 h-4 animate-spin rounded-full border-2 border-destructive border-t-transparent" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
-            </Button>
+          {isPaid && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-muted-foreground hover:text-foreground ml-2"
+                >
+                  <XCircle className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Subscription Cancellation</AlertDialogTitle>
+                  <AlertDialogDescription className="space-y-2">
+                    <p>To cancel your subscription, please email <strong>accounts@discovermagazines.co.uk</strong> or call <strong>023 8026 6388</strong>.</p>
+                    <p>Cancellations can only be processed after the completion of your first 3 paid issues.</p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction>Close</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </CardHeader>

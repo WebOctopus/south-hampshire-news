@@ -1408,8 +1408,6 @@ const Dashboard = () => {
                   <BookingCard
                     key={booking.id}
                     booking={booking}
-                    onDelete={() => handleDeleteBooking(booking.id)}
-                    isDeleting={deletingBookingId === booking.id}
                     onViewDetails={(booking) => {
                       setSelectedBooking(booking);
                       setBookingDetailsOpen(true);
