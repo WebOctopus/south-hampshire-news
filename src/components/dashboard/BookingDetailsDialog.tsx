@@ -302,7 +302,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       case 'fixed':
         return 'Fixed Placement';
       case 'bogof':
-        return '3+ Repeat Package Booking';
+        return '3+ Subscription';
       case 'leafleting':
         return 'Leaflet Distribution';
       default:
