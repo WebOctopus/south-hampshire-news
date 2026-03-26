@@ -147,7 +147,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
       return 'Paid';
     }
     if (['payment_pending', 'subscription_pending', 'mandate_created'].includes(status || '')) {
-      return 'Payment Setup Complete';
+      return 'Setup Complete';
     }
     return 'Booking Terms Accepted';
   };

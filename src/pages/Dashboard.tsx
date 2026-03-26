@@ -248,6 +248,7 @@ const Dashboard = () => {
       const tabParam = urlParams.get('tab');
       if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event'].includes(tabParam)) {
         setActiveTab(tabParam);
+        hasAppliedSmartDefault.current = true;
       }
       
       // Check if user came from calculator and set appropriate tab
