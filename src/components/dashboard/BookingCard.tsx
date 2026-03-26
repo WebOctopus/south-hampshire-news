@@ -154,7 +154,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
 
   const getPricingModelDisplay = (model: string) => {
     switch (model) {
-      case 'fixed': return 'Fixed Term';
+      case 'fixed': return 'Pay As You Go';
       case 'bogof': return '3+ Repeat Package';
       case 'leafleting': return 'Leafleting Service';
       default: return model;
@@ -199,7 +199,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg leading-tight">
-                {`Booked ${formatDate(booking.created_at).split(',')[0]}`}
+                {`${getPricingModelDisplay(booking.pricing_model)} — Booked ${formatDate(booking.created_at).split(',')[0]}`}
                 {booking.selections?.ad_size_name && (
                   <span className="text-muted-foreground font-normal text-sm ml-2">
                     — {booking.selections.ad_size_name}
@@ -267,16 +267,13 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
                   <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
                     {formatPrice(displayAmount)} + vat
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    ({formatPrice(displayAmount * 1.2)} per month for 6 months minimum)
-                  </div>
                 </>
               ) : (
                 <>
                   <div className={`font-semibold text-xl ${isPaymentRequired ? 'text-amber-900' : 'text-primary'}`}>
                     {formatPrice(displayAmount)} + VAT
                   </div>
-                  <div className="text-xs text-muted-foreground">{getPaymentLabel()}</div>
+                  
                 </>
               )}
             </div>
