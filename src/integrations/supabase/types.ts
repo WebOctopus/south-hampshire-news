@@ -1555,6 +1555,7 @@ export type Database = {
         Row: {
           agency_discount_percent: number | null
           agency_name: string | null
+          company: string | null
           created_at: string
           discount_type: string | null
           display_name: string | null
@@ -1568,6 +1569,7 @@ export type Database = {
         Insert: {
           agency_discount_percent?: number | null
           agency_name?: string | null
+          company?: string | null
           created_at?: string
           discount_type?: string | null
           display_name?: string | null
@@ -1581,6 +1583,7 @@ export type Database = {
         Update: {
           agency_discount_percent?: number | null
           agency_name?: string | null
+          company?: string | null
           created_at?: string
           discount_type?: string | null
           display_name?: string | null
