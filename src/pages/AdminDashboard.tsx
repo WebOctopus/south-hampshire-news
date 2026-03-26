@@ -717,6 +717,14 @@ const AdminDashboard = () => {
                 </Button>
               </CardHeader>
               <CardContent>
+                <div className="mb-4">
+                  <Input
+                    placeholder="Search by display name or company..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                  />
+                </div>
                 {users.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <p>No users found.</p>
@@ -727,6 +735,7 @@ const AdminDashboard = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Display Name</TableHead>
+                          <TableHead>Company</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Role</TableHead>
                           <TableHead>Agency Status</TableHead>
@@ -736,7 +745,12 @@ const AdminDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {users.map((u) => {
+                        {users.filter((u) => {
+                          if (!userSearchTerm.trim()) return true;
+                          const term = userSearchTerm.toLowerCase();
+                          return (u.display_name || '').toLowerCase().includes(term) ||
+                                 (u.company || '').toLowerCase().includes(term);
+                        }).map((u) => {
                           const currentRole = u.user_roles && u.user_roles.length > 0 ? u.user_roles[0].role : 'user';
                           return (
                             <TableRow key={u.user_id}>
