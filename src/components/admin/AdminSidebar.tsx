@@ -17,7 +17,8 @@ import {
   ClipboardCheck,
   Star,
   Mail,
-  FolderOpen
+  FolderOpen,
+  Palette
 } from "lucide-react"
 
 import {
@@ -103,6 +104,11 @@ const menuItems = [
     title: "Email Templates",
     icon: Mail,
     section: "email-templates"
+  },
+  {
+    title: "Artwork",
+    icon: Palette,
+    section: "artwork"
   },
   {
     title: "Media Library",

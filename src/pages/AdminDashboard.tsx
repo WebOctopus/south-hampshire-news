@@ -33,6 +33,7 @@ import { ClaimRequestsManagement } from '@/components/admin/ClaimRequestsManagem
 import FeaturedAdvertisersManagement from '@/components/admin/FeaturedAdvertisersManagement';
 import EmailTemplatesManagement from '@/components/admin/EmailTemplatesManagement';
 import MediaLibraryManagement from '@/components/admin/MediaLibraryManagement';
+import ArtworkManagement from '@/components/admin/ArtworkManagement';
 import { User } from '@supabase/supabase-js';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Shield, Users, Building2, Calendar, FileText, Upload, Plus, BarChart3, Search, Edit, ChevronLeft, ChevronRight, X, Loader2, Trash2, KeyRound, UserPlus } from 'lucide-react';
@@ -1001,6 +1002,9 @@ const AdminDashboard = () => {
 
       case 'email-templates':
         return <EmailTemplatesManagement />;
+
+      case 'artwork':
+        return <ArtworkManagement />;
 
       case 'media-library':
         return <MediaLibraryManagement />;

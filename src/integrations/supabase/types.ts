@@ -148,6 +148,51 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_artwork: {
+        Row: {
+          admin_notes: string | null
+          booking_id: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          booking_id: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          booking_id?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           ad_size_id: string | null
