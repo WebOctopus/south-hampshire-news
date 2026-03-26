@@ -248,7 +248,7 @@ const Dashboard = () => {
       // Check URL query parameter for tab selection (e.g. from email links)
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
-      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event', 'artwork'].includes(tabParam)) {
+      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event', 'artwork', 'schedule'].includes(tabParam)) {
         setActiveTab(tabParam);
         hasAppliedSmartDefault.current = true;
       }
