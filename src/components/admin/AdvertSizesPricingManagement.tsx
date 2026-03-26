@@ -481,19 +481,35 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="design_fee">Artwork Design Fee (£)</Label>
-                  <Input
-                    id="design_fee"
-                    type="number"
-                    step="0.01"
-                    value={formData.design_fee || 0}
-                    onChange={(e) => setFormData(prev => ({ ...prev, design_fee: parseFloat(e.target.value) || 0 }))}
-                    placeholder="e.g., 50.00"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    One-time fee charged if customer needs design services
-                  </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="design_fee">Fixed Design Fee (£ + VAT)</Label>
+                    <Input
+                      id="design_fee"
+                      type="number"
+                      step="0.01"
+                      value={formData.design_fee || 0}
+                      onChange={(e) => setFormData(prev => ({ ...prev, design_fee: parseFloat(e.target.value) || 0 }))}
+                      placeholder="e.g., 95.00"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Design fee for Fixed Term bookings
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="design_fee_subscription">3+ Subscription Design Fee (£ + VAT)</Label>
+                    <Input
+                      id="design_fee_subscription"
+                      type="number"
+                      step="0.01"
+                      value={formData.design_fee_subscription || 0}
+                      onChange={(e) => setFormData(prev => ({ ...prev, design_fee_subscription: parseFloat(e.target.value) || 0 }))}
+                      placeholder="e.g., 45.00"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Design fee for 3+ Subscription bookings
+                    </p>
+                  </div>
                 </div>
 
                 <div>
