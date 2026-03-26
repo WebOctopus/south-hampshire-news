@@ -1,44 +1,22 @@
 
 
-## Add Company Name Column & Search to Admin User Management
+## Show First 3 Magazine Editions in Hero Carousel
 
-### 1. Database Migration
+The magazine editions are already fetched from the database in `sort_order` (ascending), so admin ordering is respected. However, the carousel currently uses `align: "center"` which centers the first item — meaning with looping enabled, the last edition can appear to the left of item 1.
 
-Add a `company` column to the `profiles` table and backfill from the most recent booking per user:
+### Fix
 
-```sql
-ALTER TABLE profiles ADD COLUMN company text;
+**File: `src/pages/Index.tsx`** (line 68)
 
-UPDATE profiles p
-SET company = b.company
-FROM (
-  SELECT DISTINCT ON (user_id) user_id, company
-  FROM bookings
-  WHERE company IS NOT NULL AND company != ''
-  ORDER BY user_id, created_at DESC
-) b
-WHERE p.user_id = b.user_id;
+Change the carousel alignment from `"center"` to `"start"` so editions 1, 2, and 3 (as ordered in admin) are the first three visible covers when the page loads.
+
+```tsx
+// Before
+opts={{ align: "center", loop: true }}
+
+// After
+opts={{ align: "start", loop: true }}
 ```
 
-### 2. Update Types
-
-Add `company?: string` to the `profiles` Row/Insert/Update types in `src/integrations/supabase/types.ts`.
-
-### 3. Update Admin User Table (`src/pages/AdminDashboard.tsx`)
-
-**Add search state** (~line 62): Add `userSearchTerm` state variable.
-
-**Add search input** (before the Table, ~line 724): Add an `<Input>` with placeholder "Search by display name..." that filters the user list.
-
-**Filter users**: Apply the search filter on `users` before `.map()` — filter by `display_name` matching the search term (case-insensitive).
-
-**Add "Company" column**:
-- Add `<TableHead>Company</TableHead>` after the Display Name column header (line 728).
-- Add `<TableCell>{u.company || '-'}</TableCell>` after the display name cell (line 743).
-
-**Update edit dialog & save logic**: Add a "Company Name" input field to the user edit form and include `company` in the `updateUserAgencyInfo` save payload.
-
-### What stays the same
-- `loadUsers` already does `select('*')` on profiles, so the new `company` column will be fetched automatically.
-- No RLS changes needed — existing profile policies cover this.
+This single change ensures the carousel starts showing items in exact admin sort order — editions at positions 1, 2, 3 in the admin table will be the first three visible covers on the homepage.
 
