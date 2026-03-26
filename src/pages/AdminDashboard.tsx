@@ -1003,6 +1003,9 @@ const AdminDashboard = () => {
       case 'email-templates':
         return <EmailTemplatesManagement />;
 
+      case 'artwork':
+        return <ArtworkManagement />;
+
       case 'media-library':
         return <MediaLibraryManagement />;
 

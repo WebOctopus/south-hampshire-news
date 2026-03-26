@@ -106,6 +106,11 @@ const menuItems = [
     section: "email-templates"
   },
   {
+    title: "Artwork",
+    icon: Palette,
+    section: "artwork"
+  },
+  {
     title: "Media Library",
     icon: FolderOpen,
     section: "media-library"
