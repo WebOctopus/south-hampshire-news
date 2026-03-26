@@ -64,6 +64,7 @@ const AdminDashboard = () => {
   const [newPassword, setNewPassword] = useState('');
   const [sendPasswordEmail, setSendPasswordEmail] = useState(false);
   const [userActionLoading, setUserActionLoading] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
   
   // Create user states
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
