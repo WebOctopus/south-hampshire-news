@@ -199,7 +199,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg leading-tight">
-                {`Booked ${formatDate(booking.created_at).split(',')[0]}`}
+                {`${getPricingModelDisplay(booking.pricing_model)} — Booked ${formatDate(booking.created_at).split(',')[0]}`}
                 {booking.selections?.ad_size_name && (
                   <span className="text-muted-foreground font-normal text-sm ml-2">
                     — {booking.selections.ad_size_name}
