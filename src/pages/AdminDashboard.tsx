@@ -757,6 +757,9 @@ const AdminDashboard = () => {
                               <TableCell className="font-medium">
                                 {u.display_name || 'No name'}
                               </TableCell>
+                              <TableCell>
+                                {u.company || '-'}
+                              </TableCell>
                               <TableCell className="text-sm">
                                 {userEmails[u.user_id] || <span className="text-muted-foreground italic">Loading...</span>}
                               </TableCell>
