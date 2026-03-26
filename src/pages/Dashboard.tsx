@@ -42,6 +42,7 @@ import CreateBookingForm from '@/components/dashboard/CreateBookingForm';
 import BookingTerms from '@/components/dashboard/BookingTerms';
 import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog';
 import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
+import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
