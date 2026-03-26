@@ -235,12 +235,10 @@ const ArtworkManagement = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            asChild
+                            onClick={() => handleDownload(artwork.file_url, artwork.file_name)}
                           >
-                            <a href={artwork.file_url} download={artwork.file_name} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-3 w-3 mr-1" />
-                              Download
-                            </a>
+                            <Download className="h-3 w-3 mr-1" />
+                            Download
                           </Button>
                           <Button
                             size="sm"
