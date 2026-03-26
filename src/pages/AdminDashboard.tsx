@@ -1051,6 +1051,7 @@ const AdminDashboard = () => {
       is_agency_member: discountType === 'agency',
       agency_discount_percent: parseFloat(formData.get('agency_discount_percent') as string) || 0,
       agency_name: formData.get('agency_name') as string || '',
+      company: formData.get('company') as string || '',
     };
 
     updateUserAgencyInfo(editingUser.user_id, agencyData);
