@@ -468,7 +468,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                     const [y, m] = monthStr.split('-');
                     if (y && m) {
                       const d = new Date(Number(y), Number(m) - 1);
-                      return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+                      return d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
                     }
                     return monthStr;
                   };
