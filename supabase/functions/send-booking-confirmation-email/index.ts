@@ -67,7 +67,7 @@ async function fetchTemplate(name: string): Promise<{ subject: string; html_body
 function getPricingModelLabel(model: string): string {
   switch (model) {
     case "fixed": return "Fixed Term";
-    case "bogof": return "3+ Repeat Package";
+    case "bogof": return "3+ Subscription Package";
     case "leafleting": return "Leafleting Service";
     default: return "Advertising";
   }

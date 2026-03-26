@@ -304,7 +304,7 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="bogof" id="bogof" />
-              <Label htmlFor="bogof">3+ Repeat Package (BOGOF)</Label>
+              <Label htmlFor="bogof">3+ Subscription Package (BOGOF)</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="leafleting" id="leafleting" />

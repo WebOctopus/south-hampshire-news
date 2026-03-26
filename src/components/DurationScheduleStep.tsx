@@ -169,7 +169,7 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
         <h3 className="text-lg font-semibold mb-4">SUMMARY & COST TO BOOK</h3>
         <div className="space-y-3">
           <div className="text-sm">
-            <div className="mb-2"><span className="font-medium">Booking Type:</span> {pricingModel === 'bogof' ? '3+ Repeat Package' : 'Pay As You Go'}</div>
+            <div className="mb-2"><span className="font-medium">Booking Type:</span> {pricingModel === 'bogof' ? '3+ Subscription Package' : 'Pay As You Go'}</div>
             
             <div className="mb-2"><span className="font-medium">Advert Size:</span> {adSizes?.find(size => size.id === selectedAdSize)?.name || 'Selected size'}</div>
             
@@ -239,7 +239,7 @@ export const DurationScheduleStep: React.FC<DurationScheduleStepProps> = ({
     const durationData = relevantDurations?.find(d => d.id === selectedDuration);
     
     if (pricingModel === 'bogof') {
-      // For 3+ Repeat Package, show single start date selection
+      // For 3+ Subscription Package, show single start date selection
       const maxSelectableMonths = Math.floor(((durationData as any)?.duration_value || (durationData as any)?.months || 6) / 2);
       const allAreas = [
         ...bogofPaidAreas.map(id => areas?.find(a => a.id === id)).filter(Boolean),

@@ -74,7 +74,7 @@ function resolvePaymentOptionName(id: string | undefined | null, lookups: CrmLoo
 function getJourneyTag(pricingModel: string): string {
   switch (pricingModel) {
     case 'fixed': return 'Pay As You Go';
-    case 'bogof': return '3+ Repeat Package';
+    case 'bogof': return '3+ Subscription Package';
     case 'leafleting': return 'Leafleting Service';
     default: return 'General Inquiry';
   }

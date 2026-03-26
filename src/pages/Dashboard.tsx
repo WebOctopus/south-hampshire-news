@@ -137,7 +137,7 @@ const Dashboard = () => {
     if (isReturningBogof === 'true') {
       toast({
         title: "Welcome back!",
-        description: "We've saved your interest in the 3+ Repeat Package. Since you've used this offer before, our team will contact you within 24 hours with exclusive returning customer rates.",
+        description: "We've saved your interest in the 3+ Subscription Package. Since you've used this offer before, our team will contact you within 24 hours with exclusive returning customer rates.",
         duration: 8000,
       });
       localStorage.removeItem('returningBogofCustomer');
@@ -1266,7 +1266,7 @@ const Dashboard = () => {
                       <td className="p-4">
                         <div className="flex items-center gap-2">
                           <span>
-                            {quote.pricing_model === 'bogof' ? '3+ Repeat Package for New Advertisers' : 
+                            {quote.pricing_model === 'bogof' ? '3+ Subscription Package for New Advertisers' : 
                              quote.pricing_model === 'fixed' ? 'Pay As You Go' :
                              quote.pricing_model === 'fixed_term' ? 'Pay As You Go' : 
                              quote.pricing_model === 'leafleting' ? 'Leaflet Distribution' : 

@@ -71,7 +71,7 @@ export const MobilePricingSummary: React.FC<MobilePricingSummaryProps> = ({
               <div className="text-xs font-medium text-foreground">
                 <span className="text-muted-foreground">Booking Type:</span>{" "}
                 {campaignData.selectedModel === 'fixed' ? 'Pay As You Go' : 
-                 campaignData.selectedModel === 'bogof' ? '3+ Repeat Package' : 
+                 campaignData.selectedModel === 'bogof' ? '3+ Subscription Package' : 
                  'Leafleting Campaign'}
               </div>
             </div>

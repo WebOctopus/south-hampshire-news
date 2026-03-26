@@ -78,7 +78,7 @@ export const defaultAdvertisingContent = {
     badge: "New Advertisers Only",
     headline: "SEEING DOUBLE",
     offerDescription: "For Every Area Booked We Give You One Area FREE for 6 months",
-    packageHeading: "3+ Repeat Package for New Advertisers",
+    packageHeading: "3+ Subscription Package for New Advertisers",
     benefits: [
       "Minimum commitment is 3 consecutive issues = 6 months advertising",
       "Great opportunity to test and trial areas",
@@ -93,8 +93,8 @@ export const defaultAdvertisingContent = {
     pageDescription: "Select the package that best fits your business needs. Each option is designed for different advertising goals and budgets.",
   },
   areaSelection: {
-    bogofHeading: "Select Areas for 3+ Repeat Package",
-    bogofAlertTitle: "3+ Repeat Package:",
+    bogofHeading: "Select Areas for 3+ Subscription Package",
+    bogofAlertTitle: "3+ Subscription Package:",
     bogofAlertDescription: 'For every "paid for" area, choose a "free for 3 issues" area. Select your paid areas first, then choose your free areas.',
     pageHeading: "Select Areas & Publication Schedule",
     pageDescription: "Choose your areas and set up your campaign timeline",
@@ -107,7 +107,7 @@ export const defaultAdvertisingContent = {
   },
   bookingSummary: {
     bogof: {
-      bookingTypeText: "3+ Repeat Package for New Advertisers including Buy One Area Get One Area Free",
+      bookingTypeText: "3+ Subscription Package for New Advertisers including Buy One Area Get One Area Free",
       minimumDurationText: "3 issues per area = 6 months",
       designServiceText: "By booking online you get discounted advert design. Our professional design team creates response focused ads at very low cost - just provide your content, images, logo and branding kit if you have one.",
       whatYoureBookingText: "A complete advertising package including professional ad design, guaranteed distribution to your selected areas, and placement in our trusted local publication",
