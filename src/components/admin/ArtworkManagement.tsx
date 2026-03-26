@@ -171,6 +171,14 @@ const ArtworkManagement = () => {
                         {adSize ? `${adSize.name} (${adSize.dimensions})` : '-'}
                       </TableCell>
                       <TableCell>
+                        <span className="font-mono text-xs">REF-{artwork.booking_id?.substring(0, 8).toUpperCase()}</span>
+                        {booking?.payment_status && (
+                          <Badge className={`ml-2 text-xs ${booking.payment_status === 'paid' || booking.payment_status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            {booking.payment_status}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <a
                           href={artwork.file_url}
                           target="_blank"
