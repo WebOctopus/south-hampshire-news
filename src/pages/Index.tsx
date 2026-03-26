@@ -65,7 +65,7 @@ const Index = () => {
 
             <div className="relative">
               <Carousel opts={{
-                align: "center",
+                align: "start",
                 loop: true
               }} className="w-full max-w-5xl mx-auto">
                 <CarouselContent className="-ml-3 md:-ml-6">
