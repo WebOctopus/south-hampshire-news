@@ -154,7 +154,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
 
   const getPricingModelDisplay = (model: string) => {
     switch (model) {
-      case 'fixed': return 'Fixed Term';
+      case 'fixed': return 'Pay As You Go';
       case 'bogof': return '3+ Repeat Package';
       case 'leafleting': return 'Leafleting Service';
       default: return model;
