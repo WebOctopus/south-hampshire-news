@@ -47,7 +47,7 @@ const ArtworkManagement = () => {
       if (bookingIds.length === 0) return [];
       const { data, error } = await supabase
         .from('bookings')
-        .select('id, contact_name, company, email, ad_size_id')
+        .select('id, contact_name, company, email, ad_size_id, payment_status')
         .in('id', bookingIds);
       if (error) throw error;
       return data;
