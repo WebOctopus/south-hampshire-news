@@ -98,6 +98,12 @@ export function DashboardSidebar({
       disabled: false
     },
     {
+      title: "My Schedule",
+      value: "schedule",
+      icon: CalendarDays,
+      disabled: false
+    },
+    {
       title: `Your Vouchers (${voucherCount})`,
       value: "vouchers",
       icon: Gift,

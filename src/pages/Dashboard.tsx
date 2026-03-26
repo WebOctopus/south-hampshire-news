@@ -1491,6 +1491,7 @@ const Dashboard = () => {
               {activeTab === 'bookings' && renderBookings()}
               {activeTab === 'vouchers' && user && <VouchersSection user={user} />}
               {activeTab === 'artwork' && <ArtworkUploadTab />}
+              {activeTab === 'schedule' && <CampaignScheduleTab />}
               {activeTab === 'terms' && <BookingTerms />}
               {activeTab === 'profile' && renderProfileSettings()}
             </div>
