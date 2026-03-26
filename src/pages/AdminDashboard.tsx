@@ -64,6 +64,7 @@ const AdminDashboard = () => {
   const [newPassword, setNewPassword] = useState('');
   const [sendPasswordEmail, setSendPasswordEmail] = useState(false);
   const [userActionLoading, setUserActionLoading] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
   
   // Create user states
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
@@ -716,6 +717,14 @@ const AdminDashboard = () => {
                 </Button>
               </CardHeader>
               <CardContent>
+                <div className="mb-4">
+                  <Input
+                    placeholder="Search by display name or company..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                  />
+                </div>
                 {users.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <p>No users found.</p>
@@ -726,6 +735,7 @@ const AdminDashboard = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Display Name</TableHead>
+                          <TableHead>Company</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Role</TableHead>
                           <TableHead>Agency Status</TableHead>
@@ -735,12 +745,20 @@ const AdminDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {users.map((u) => {
+                        {users.filter((u) => {
+                          if (!userSearchTerm.trim()) return true;
+                          const term = userSearchTerm.toLowerCase();
+                          return (u.display_name || '').toLowerCase().includes(term) ||
+                                 (u.company || '').toLowerCase().includes(term);
+                        }).map((u) => {
                           const currentRole = u.user_roles && u.user_roles.length > 0 ? u.user_roles[0].role : 'user';
                           return (
                             <TableRow key={u.user_id}>
                               <TableCell className="font-medium">
                                 {u.display_name || 'No name'}
+                              </TableCell>
+                              <TableCell>
+                                {u.company || '-'}
                               </TableCell>
                               <TableCell className="text-sm">
                                 {userEmails[u.user_id] || <span className="text-muted-foreground italic">Loading...</span>}
@@ -1033,6 +1051,7 @@ const AdminDashboard = () => {
       is_agency_member: discountType === 'agency',
       agency_discount_percent: parseFloat(formData.get('agency_discount_percent') as string) || 0,
       agency_name: formData.get('agency_name') as string || '',
+      company: formData.get('company') as string || '',
     };
 
     updateUserAgencyInfo(editingUser.user_id, agencyData);
@@ -1096,6 +1115,15 @@ const AdminDashboard = () => {
                     <SelectItem value="discretionary">Discretionary</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company">Company Name</Label>
+                <Input
+                  name="company"
+                  defaultValue={editingUser?.company || ''}
+                  placeholder="Enter company name"
+                />
               </div>
 
               <div className="space-y-2">
