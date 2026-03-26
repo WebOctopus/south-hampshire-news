@@ -1,4 +1,4 @@
-import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift, Shield } from "lucide-react"
+import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift, Shield, Palette } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
