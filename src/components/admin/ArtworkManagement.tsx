@@ -102,6 +102,23 @@ const ArtworkManagement = () => {
     }
   };
 
+  const handleDownload = async (fileUrl: string, fileName: string) => {
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      window.open(fileUrl, '_blank');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved': return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
@@ -218,12 +235,10 @@ const ArtworkManagement = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            asChild
+                            onClick={() => handleDownload(artwork.file_url, artwork.file_name)}
                           >
-                            <a href={artwork.file_url} download={artwork.file_name} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-3 w-3 mr-1" />
-                              Download
-                            </a>
+                            <Download className="h-3 w-3 mr-1" />
+                            Download
                           </Button>
                           <Button
                             size="sm"
