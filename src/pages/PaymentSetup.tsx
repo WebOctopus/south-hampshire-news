@@ -179,7 +179,7 @@ const PaymentSetup = () => {
           });
 
           setTimeout(() => {
-            navigate('/dashboard?tab=bookings');
+            navigate('/dashboard?tab=artwork');
           }, 2000);
         } else {
           // No redirect_flow_id and no stripe_success

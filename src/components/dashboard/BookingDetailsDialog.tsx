@@ -1040,8 +1040,6 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
             </CardContent>
           </Card>
 
-          {/* Artwork Upload Section */}
-          <ArtworkUploadSection booking={booking} adSize={adSize} />
 
           {/* Contact Information */}
           <Card>

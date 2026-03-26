@@ -92,6 +92,12 @@ export function DashboardSidebar({
       disabled: false
     },
     {
+      title: "Artwork Upload",
+      value: "artwork",
+      icon: Palette,
+      disabled: false
+    },
+    {
       title: `Your Vouchers (${voucherCount})`,
       value: "vouchers",
       icon: Gift,
