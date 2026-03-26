@@ -135,14 +135,16 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     }
   }, [campaignData]);
 
-  // Update design fee when ad size changes
+  // Update design fee when ad size or pricing model changes
   React.useEffect(() => {
     if (campaignData.selectedAdSize) {
       const selectedSize = adSizes?.find(size => size.id === campaignData.selectedAdSize);
-      const designFee = (selectedSize as any)?.design_fee || 0;
+      const designFee = selectedPricingModel === 'bogof'
+        ? (selectedSize as any)?.design_fee_subscription || 45
+        : (selectedSize as any)?.design_fee || 95;
       setCampaignData(prev => ({ ...prev, designFee }));
     }
-  }, [campaignData.selectedAdSize, adSizes]);
+  }, [campaignData.selectedAdSize, selectedPricingModel, adSizes]);
 
   // Update pricing breakdown to include design fee when needed
   React.useEffect(() => {

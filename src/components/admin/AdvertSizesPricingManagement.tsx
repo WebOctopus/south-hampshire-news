@@ -45,7 +45,8 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
     dimensions: '',
     base_price_per_area: 0,
     base_price_per_month: 0,
-    design_fee: 0,
+    design_fee: 95,
+    design_fee_subscription: 45,
     fixed_pricing_per_issue: {} as Record<string, number>,
     subscription_pricing_per_issue: {} as Record<string, number>,
     available_for: ['fixed', 'subscription'] as string[],
@@ -155,7 +156,8 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
       dimensions: '',
       base_price_per_area: 0,
       base_price_per_month: 0,
-      design_fee: 0,
+      design_fee: 95,
+      design_fee_subscription: 45,
       fixed_pricing_per_issue: {},
       subscription_pricing_per_issue: {},
       available_for: ['fixed', 'subscription'],
@@ -173,7 +175,8 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
         dimensions: adSize.dimensions,
         base_price_per_area: adSize.base_price_per_area,
         base_price_per_month: adSize.base_price_per_month,
-        design_fee: (adSize as any).design_fee || 0,
+        design_fee: (adSize as any).design_fee || 95,
+        design_fee_subscription: (adSize as any).design_fee_subscription || 45,
         fixed_pricing_per_issue: adSize.fixed_pricing_per_issue || {},
         subscription_pricing_per_issue: adSize.subscription_pricing_per_issue || {},
         available_for: adSize.available_for || ['fixed', 'subscription'],
@@ -478,19 +481,35 @@ const AdvertSizesPricingManagement = ({ onStatsUpdate }: AdvertSizesPricingManag
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="design_fee">Artwork Design Fee (£)</Label>
-                  <Input
-                    id="design_fee"
-                    type="number"
-                    step="0.01"
-                    value={formData.design_fee || 0}
-                    onChange={(e) => setFormData(prev => ({ ...prev, design_fee: parseFloat(e.target.value) || 0 }))}
-                    placeholder="e.g., 50.00"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    One-time fee charged if customer needs design services
-                  </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="design_fee">Fixed Design Fee (£ + VAT)</Label>
+                    <Input
+                      id="design_fee"
+                      type="number"
+                      step="0.01"
+                      value={formData.design_fee || 0}
+                      onChange={(e) => setFormData(prev => ({ ...prev, design_fee: parseFloat(e.target.value) || 0 }))}
+                      placeholder="e.g., 95.00"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Design fee for Fixed Term bookings
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="design_fee_subscription">3+ Subscription Design Fee (£ + VAT)</Label>
+                    <Input
+                      id="design_fee_subscription"
+                      type="number"
+                      step="0.01"
+                      value={formData.design_fee_subscription || 0}
+                      onChange={(e) => setFormData(prev => ({ ...prev, design_fee_subscription: parseFloat(e.target.value) || 0 }))}
+                      placeholder="e.g., 45.00"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Design fee for 3+ Subscription bookings
+                    </p>
+                  </div>
                 </div>
 
                 <div>

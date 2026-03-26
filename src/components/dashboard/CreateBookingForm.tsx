@@ -156,8 +156,10 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
   const designFeeAmount = useMemo(() => {
     if (!includeDesign || !selectedAdSize) return 0;
     const size = adSizes?.find(s => s.id === selectedAdSize);
-    return (size as any)?.design_fee || 0;
-  }, [includeDesign, selectedAdSize, adSizes]);
+    return pricingModel === 'bogof'
+      ? (size as any)?.design_fee_subscription || 45
+      : (size as any)?.design_fee || 95;
+  }, [includeDesign, selectedAdSize, adSizes, pricingModel]);
 
   // Calculate pricing based on selections
   const pricingBreakdownRaw = useMemo(() => {

@@ -62,6 +62,7 @@ export type Database = {
           base_price_per_month: number
           created_at: string
           design_fee: number
+          design_fee_subscription: number
           dimensions: string
           fixed_pricing_per_issue: Json | null
           id: string
@@ -77,6 +78,7 @@ export type Database = {
           base_price_per_month?: number
           created_at?: string
           design_fee?: number
+          design_fee_subscription?: number
           dimensions: string
           fixed_pricing_per_issue?: Json | null
           id?: string
@@ -92,6 +94,7 @@ export type Database = {
           base_price_per_month?: number
           created_at?: string
           design_fee?: number
+          design_fee_subscription?: number
           dimensions?: string
           fixed_pricing_per_issue?: Json | null
           id?: string
