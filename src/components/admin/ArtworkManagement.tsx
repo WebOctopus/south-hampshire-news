@@ -166,7 +166,7 @@ const ArtworkManagement = () => {
                   <TableHead>Company</TableHead>
                   <TableHead>Ad Size</TableHead>
                   <TableHead>Payment Ref</TableHead>
-                  <TableHead>File</TableHead>
+                  <TableHead>Message</TableHead>
                   <TableHead>Uploaded</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -195,18 +195,11 @@ const ArtworkManagement = () => {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <a
-                          href={artwork.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline text-sm flex items-center gap-1"
-                        >
-                          <Download className="h-3 w-3" />
-                          {artwork.file_name}
-                        </a>
-                        {artwork.notes && (
-                          <p className="text-xs text-muted-foreground mt-1">{artwork.notes}</p>
+                      <TableCell className="max-w-[200px]">
+                        {artwork.notes ? (
+                          <p className="text-sm text-muted-foreground">{artwork.notes}</p>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">No message</span>
                         )}
                       </TableCell>
                       <TableCell className="text-sm">
