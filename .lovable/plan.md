@@ -1,20 +1,37 @@
 
 
-## Add Download Button & Payment Reference to Admin Artwork Management
+## Fix Download Button in Admin Artwork Management
 
-### Changes
+### Problem
+The download button uses an `<a download>` tag, but the `download` attribute is ignored by browsers for cross-origin URLs (Supabase storage). The file opens in a new tab instead of downloading.
+
+### Fix
 
 **File: `src/components/admin/ArtworkManagement.tsx`**
 
-1. **Add "Payment Ref" column** to the table between "Ad Size" and "File" columns. Use the booking ID (truncated UUID) as the reference, since bookings don't have a dedicated payment reference field. Format: first 8 chars of booking ID uppercased (e.g., `A3F2B1C8`).
+1. Add a `handleDownload` function that fetches the file URL as a blob, creates an object URL, and triggers a programmatic download via a temporary `<a>` element.
 
-2. **Update bookings query** to also select `id` (already selected) and `payment_status` so admins can see payment state alongside the reference.
+2. Replace the `asChild` `<a>` download button with a regular `<Button>` that calls `handleDownload(artwork.file_url, artwork.file_name)`.
 
-3. **Add a prominent Download button** in the Actions column — a clear `Download` button with the `Download` icon that triggers a direct file download (using `window.open` on the file URL). Currently there's only a small eye icon; this adds an explicit download action visible for all statuses, not just pending.
+```tsx
+const handleDownload = async (fileUrl: string, fileName: string) => {
+  try {
+    const response = await fetch(fileUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch {
+    // Fallback: open in new tab
+    window.open(fileUrl, '_blank');
+  }
+};
+```
 
-4. **Show payment status badge** next to the payment reference so admins can quickly verify if the booking was paid.
-
-### Technical detail
-- Payment reference column shows: `REF-{first 8 chars of booking.id}` — this matches what users see on their dashboard and can be cross-referenced with Stripe/GoCardless records.
-- Download button added for all artwork rows (not just pending), using `<a download>` attribute for direct download behavior.
+Single file change, no database or schema changes needed.
 
