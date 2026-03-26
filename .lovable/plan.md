@@ -1,80 +1,38 @@
 
 
-## Artwork Upload for Paid Bookings
+## Move Artwork Upload to Dedicated Sidebar Tab & Auto-Redirect After Payment
 
 ### Overview
-After payment is verified (Stripe/GoCardless), users can upload their artwork file from the booking details dialog. The upload shows the required dimensions based on their ad size. Admins get notified and can view/download artwork from a new admin section, labeled by user and booking.
+Remove the artwork upload from the BookingDetailsDialog and create a standalone "Artwork Upload" sidebar tab. After payment confirmation (Stripe/GoCardless), redirect users to this new tab instead of "Bookings".
 
-### 1. Database
+### Changes
 
-**New table: `booking_artwork`**
+#### 1. Dashboard Sidebar (`src/components/dashboard/DashboardSidebar.tsx`)
+- Add `Palette` icon import
+- Add "Artwork Upload" item to the Advertising section (after Bookings, before Vouchers)
+- Tab value: `"artwork"`
 
-```sql
-CREATE TABLE public.booking_artwork (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id uuid NOT NULL,
-  user_id uuid NOT NULL,
-  file_url text NOT NULL,
-  file_name text NOT NULL,
-  file_size bigint,
-  notes text,
-  uploaded_at timestamptz NOT NULL DEFAULT now(),
-  status text NOT NULL DEFAULT 'pending', -- pending, approved, rejected
-  admin_notes text,
-  reviewed_by uuid,
-  reviewed_at timestamptz
-);
+#### 2. New Component: `src/components/dashboard/ArtworkUploadTab.tsx`
+- Standalone page listing all paid bookings for the current user that need artwork
+- For each paid booking, show a card with: booking reference, ad size, dimensions, and the upload interface (reusing logic from existing `ArtworkUploadSection.tsx`)
+- Show status badges (Pending/Approved/Rejected) for already-uploaded artwork
+- If no paid bookings exist, show an empty state message
 
-ALTER TABLE public.booking_artwork ENABLE ROW LEVEL SECURITY;
+#### 3. Dashboard Page (`src/pages/Dashboard.tsx`)
+- Add `"artwork"` to the valid tab list (line ~249)
+- Add `{activeTab === 'artwork' && <ArtworkUploadTab />}` to the render section (~line 1490)
+- Import the new component
 
--- Users can view/insert their own artwork
-CREATE POLICY "Users can view own artwork" ON public.booking_artwork
-  FOR SELECT TO authenticated USING (auth.uid() = user_id);
+#### 4. Payment Redirect (`src/pages/PaymentSetup.tsx`)
+- Change both redirect calls from `navigate('/dashboard?tab=bookings')` to `navigate('/dashboard?tab=artwork')` so users land on the artwork upload tab after payment
 
-CREATE POLICY "Users can upload artwork" ON public.booking_artwork
-  FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-
--- Admins full access
-CREATE POLICY "Admin full access artwork" ON public.booking_artwork
-  FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
-```
-
-**New storage bucket: `booking-artwork`** (public, with RLS on `storage.objects`).
-
-### 2. User-Facing: Artwork Upload Section
-
-**File: `src/components/dashboard/BookingDetailsDialog.tsx`**
-
-After the "Payment confirmed!" alert (for paid bookings only), add an **Artwork Upload** card:
-
-- Show the ad size name and dimensions from the booking's `adSize` query (already fetched)
-- Display spec text: "Please supply artwork at **{dimensions}**, 300dpi, as PDF or JPG"
-- Upload area using drag-and-drop (reuse `ImageDropzone` pattern or a simple file input)
-- Optional notes textarea for the user
-- Submit button that uploads to `booking-artwork` bucket and inserts a row into `booking_artwork` table
-- If artwork already uploaded, show the file name, upload date, and status badge (Pending/Approved/Rejected)
-- Allow re-upload if status is "rejected"
-
-### 3. Admin Dashboard: Artwork Management
-
-**New component: `src/components/admin/ArtworkManagement.tsx`**
-
-- Table listing all `booking_artwork` rows joined with booking contact info
-- Columns: User Name, Company, Ad Size, File, Upload Date, Status, Actions
-- Download button for the file
-- Approve/Reject buttons with optional admin notes
-- Filter by status (pending/approved/rejected)
-
-**File: `src/components/admin/AdminSidebar.tsx`** — Add "Artwork" menu item with `Palette` icon.
-
-**File: `src/pages/AdminDashboard.tsx`** — Add `artwork` section rendering `ArtworkManagement`.
-
-### 4. Types Update
-
-**File: `src/integrations/supabase/types.ts`** — Add `booking_artwork` table types.
+#### 5. BookingDetailsDialog (`src/components/dashboard/BookingDetailsDialog.tsx`)
+- Remove the `ArtworkUploadSection` component from the dialog
+- Remove its import
+- Optionally add a "Upload Artwork" link/button that navigates to the artwork tab
 
 ### What stays the same
-- Existing booking flow, payment processing, and BookingCard are unchanged
-- The artwork upload only appears after payment is confirmed (`isPaid` check)
+- `ArtworkUploadSection.tsx` — reused inside the new tab component (per-booking upload logic)
+- `booking_artwork` table, storage bucket, admin ArtworkManagement — all unchanged
+- BookingCard and booking list display — unchanged
 
