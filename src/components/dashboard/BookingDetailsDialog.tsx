@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CalendarDays, MapPin, Users, FileText, Download, CreditCard, CheckCircle, AlertCircle, Loader2, Info } from 'lucide-react';
-import { ArtworkUploadSection } from './ArtworkUploadSection';
+
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useGoCardless } from '@/hooks/useGoCardless';
 import { supabase } from '@/integrations/supabase/client';
@@ -1040,8 +1040,6 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
             </CardContent>
           </Card>
 
-          {/* Artwork Upload Section */}
-          <ArtworkUploadSection booking={booking} adSize={adSize} />
 
           {/* Contact Information */}
           <Card>

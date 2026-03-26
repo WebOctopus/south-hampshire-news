@@ -1,4 +1,4 @@
-import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift, Shield } from "lucide-react"
+import { Building2, Calendar, FileText, BookOpen, Plus, List, Gift, Shield, Palette } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -89,6 +89,12 @@ export function DashboardSidebar({
       title: `Bookings (${bookingCount})`,
       value: "bookings", 
       icon: BookOpen,
+      disabled: false
+    },
+    {
+      title: "Artwork Upload",
+      value: "artwork",
+      icon: Palette,
       disabled: false
     },
     {

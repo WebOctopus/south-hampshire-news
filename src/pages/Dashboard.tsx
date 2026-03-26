@@ -41,6 +41,7 @@ import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import CreateBookingForm from '@/components/dashboard/CreateBookingForm';
 import BookingTerms from '@/components/dashboard/BookingTerms';
 import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog';
+import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -246,7 +247,7 @@ const Dashboard = () => {
       // Check URL query parameter for tab selection (e.g. from email links)
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
-      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event'].includes(tabParam)) {
+      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event', 'artwork'].includes(tabParam)) {
         setActiveTab(tabParam);
         hasAppliedSmartDefault.current = true;
       }
@@ -1488,6 +1489,7 @@ const Dashboard = () => {
               {activeTab === 'quotes' && renderQuotes()}
               {activeTab === 'bookings' && renderBookings()}
               {activeTab === 'vouchers' && user && <VouchersSection user={user} />}
+              {activeTab === 'artwork' && <ArtworkUploadTab />}
               {activeTab === 'terms' && <BookingTerms />}
               {activeTab === 'profile' && renderProfileSettings()}
             </div>
