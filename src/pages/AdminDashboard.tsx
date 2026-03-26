@@ -1118,6 +1118,15 @@ const AdminDashboard = () => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="company">Company Name</Label>
+                <Input
+                  name="company"
+                  defaultValue={editingUser?.company || ''}
+                  placeholder="Enter company name"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="agency_name">Agency Name</Label>
                 <Input
                   name="agency_name"
