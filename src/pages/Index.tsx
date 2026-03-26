@@ -128,17 +128,17 @@ const Index = () => {
         {/* Five cards section */}
         <IconCardsSection />
         
-        {/* Our Readers Say - Hidden on mobile */}
-        <div className="hidden md:block">
-          <TestimonialsCarousel />
+        {/* Latest Stories */}
+        <div id="news">
+          <LatestStoriesGrid />
         </div>
         
         {/* Featured Advertisers */}
         <FeaturedAdvertisersSection />
         
-        {/* Latest Stories */}
-        <div id="news">
-          <LatestStoriesGrid />
+        {/* Our Readers Say - Hidden on mobile */}
+        <div className="hidden md:block">
+          <TestimonialsCarousel />
         </div>
         
         {/* Discover Extra */}
