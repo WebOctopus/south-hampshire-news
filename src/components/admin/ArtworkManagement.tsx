@@ -148,6 +148,7 @@ const ArtworkManagement = () => {
                   <TableHead>User</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Ad Size</TableHead>
+                  <TableHead>Payment Ref</TableHead>
                   <TableHead>File</TableHead>
                   <TableHead>Uploaded</TableHead>
                   <TableHead>Status</TableHead>
