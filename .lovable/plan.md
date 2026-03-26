@@ -1,22 +1,38 @@
 
 
-## Show First 3 Magazine Editions in Hero Carousel
+## Reorder Homepage Sections
 
-The magazine editions are already fetched from the database in `sort_order` (ascending), so admin ordering is respected. However, the carousel currently uses `align: "center"` which centers the first item — meaning with looping enabled, the last edition can appear to the left of item 1.
+Rearrange the three sections in `src/pages/Index.tsx` (after IconCardsSection) to this order:
 
-### Fix
+1. **Latest Stories** (`LatestStoriesGrid`)
+2. **Featured Advertisers** (`FeaturedAdvertisersSection`)
+3. **What Our Readers Say** (`TestimonialsCarousel`)
 
-**File: `src/pages/Index.tsx`** (line 68)
+Currently the order is: Testimonials → Featured Advertisers → Latest Stories. Just swap the JSX blocks around. Remove the `hidden md:block` wrapper from TestimonialsCarousel so it's visible on all devices (or keep it if you prefer mobile-hidden — your call).
 
-Change the carousel alignment from `"center"` to `"start"` so editions 1, 2, and 3 (as ordered in admin) are the first three visible covers when the page loads.
+### File: `src/pages/Index.tsx` (~lines 117-131)
+
+Reorder to:
 
 ```tsx
-// Before
-opts={{ align: "center", loop: true }}
+<IconCardsSection />
 
-// After
-opts={{ align: "start", loop: true }}
+{/* Latest Stories */}
+<div id="news">
+  <LatestStoriesGrid />
+</div>
+
+{/* Featured Advertisers */}
+<FeaturedAdvertisersSection />
+
+{/* Our Readers Say */}
+<div className="hidden md:block">
+  <TestimonialsCarousel />
+</div>
+
+{/* Discover Extra */}
+<NewsletterSignup />
 ```
 
-This single change ensures the carousel starts showing items in exact admin sort order — editions at positions 1, 2, 3 in the admin table will be the first three visible covers on the homepage.
+Single file change, no logic changes.
 
