@@ -1,38 +1,44 @@
 
 
-## Update Design Fees: Fixed = £95, 3+ Subscription = £45
+## Add Company Name Column & Search to Admin User Management
 
-Currently the database has a single `design_fee` column per ad size. To support different fees per pricing model, we need to add a new column and update the logic everywhere it's consumed.
+### 1. Database Migration
 
-### Database Change
-
-**New migration**: Add `design_fee_subscription` column to `ad_sizes` table, defaulting to 45.
+Add a `company` column to the `profiles` table and backfill from the most recent booking per user:
 
 ```sql
-ALTER TABLE ad_sizes ADD COLUMN design_fee_subscription numeric DEFAULT 45 NOT NULL;
--- Update existing design_fee to 95 for fixed
-UPDATE ad_sizes SET design_fee = 95, design_fee_subscription = 45;
+ALTER TABLE profiles ADD COLUMN company text;
+
+UPDATE profiles p
+SET company = b.company
+FROM (
+  SELECT DISTINCT ON (user_id) user_id, company
+  FROM bookings
+  WHERE company IS NOT NULL AND company != ''
+  ORDER BY user_id, created_at DESC
+) b
+WHERE p.user_id = b.user_id;
 ```
 
-### Files to Update
+### 2. Update Types
 
-1. **`src/integrations/supabase/types.ts`** — Add `design_fee_subscription: number` to Row/Insert/Update types for `ad_sizes`.
+Add `company?: string` to the `profiles` Row/Insert/Update types in `src/integrations/supabase/types.ts`.
 
-2. **`src/components/AdvertisingStepForm.tsx`** (line 142) — Pick the correct fee based on pricing model:
-   ```tsx
-   const designFee = selectedPricingModel === 'bogof' 
-     ? (selectedSize as any)?.design_fee_subscription || 45
-     : (selectedSize as any)?.design_fee || 95;
-   ```
-   Also add `selectedPricingModel` to the effect dependency array so the fee updates when switching models.
+### 3. Update Admin User Table (`src/pages/AdminDashboard.tsx`)
 
-3. **`src/components/dashboard/CreateBookingForm.tsx`** (line 156-160) — Same logic: choose fee based on current pricing model selection.
+**Add search state** (~line 62): Add `userSearchTerm` state variable.
 
-4. **`src/components/admin/AdvertSizesPricingManagement.tsx`** — Add a second input field for "Subscription Design Fee" alongside the existing "Artwork Design Fee" field. Update form state and save logic to include `design_fee_subscription`.
+**Add search input** (before the Table, ~line 724): Add an `<Input>` with placeholder "Search by display name..." that filters the user list.
 
-5. **`src/components/DesignFeeStep.tsx`** — No changes needed; it already receives `designFee` as a prop and displays it dynamically.
+**Filter users**: Apply the search filter on `users` before `.map()` — filter by `display_name` matching the search term (case-insensitive).
+
+**Add "Company" column**:
+- Add `<TableHead>Company</TableHead>` after the Display Name column header (line 728).
+- Add `<TableCell>{u.company || '-'}</TableCell>` after the display name cell (line 743).
+
+**Update edit dialog & save logic**: Add a "Company Name" input field to the user edit form and include `company` in the `updateUserAgencyInfo` save payload.
 
 ### What stays the same
-- All payment calculation logic (`paymentCalculations.ts`) — unchanged, it already works with whatever design fee value is passed in.
-- Booking summary, booking card, and quote displays — unchanged, they consume the already-calculated totals.
+- `loadUsers` already does `select('*')` on profiles, so the new `company` column will be fetched automatically.
+- No RLS changes needed — existing profile policies cover this.
 
