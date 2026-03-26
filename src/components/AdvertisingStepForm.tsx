@@ -139,12 +139,12 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   React.useEffect(() => {
     if (campaignData.selectedAdSize) {
       const selectedSize = adSizes?.find(size => size.id === campaignData.selectedAdSize);
-      const designFee = campaignData.selectedPricingModel === 'bogof'
+      const designFee = selectedPricingModel === 'bogof'
         ? (selectedSize as any)?.design_fee_subscription || 45
         : (selectedSize as any)?.design_fee || 95;
       setCampaignData(prev => ({ ...prev, designFee }));
     }
-  }, [campaignData.selectedAdSize, campaignData.selectedPricingModel, adSizes]);
+  }, [campaignData.selectedAdSize, selectedPricingModel, adSizes]);
 
   // Update pricing breakdown to include design fee when needed
   React.useEffect(() => {
