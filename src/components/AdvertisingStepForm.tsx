@@ -230,11 +230,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     setShowFixedTermConfirmation(false);
     setPendingNextStep(null);
     
-    // Navigate directly to step 2 (Area selection for 3+ Repeat Package)
+    // Navigate directly to step 2 (Area selection for 3+ Subscription Package)
     (window as any).salesAssistantGoToStep?.(2);
     
     toast({
-      title: "Switched to 3+ Repeat Package!",
+      title: "Switched to 3+ Subscription Package!",
       description: "Your selected areas have been saved. Now select your FREE bonus areas to continue.",
     });
   };
@@ -352,7 +352,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         email: contactData.email,
         phone: contactData.phone || '',
         company: contactData.companyName || '',
-        title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Quote`,
+        title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Subscription Package' : 'Leafleting'} Quote`,
         pricing_model: selectedPricingModel,
         ad_size_id: campaignData.selectedAdSize || null,
         duration_id: campaignData.selectedDuration || null,
@@ -663,7 +663,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           email: contactData.email,
           phone: contactData.phone || '',
           company: contactData.companyName || '',
-          title: '3+ Repeat Package - Returning Customer Interest',
+          title: '3+ Subscription Package - Returning Customer Interest',
           pricing_model: selectedPricingModel,
           ad_size_id: campaignData.selectedAdSize || null,
           duration_id: campaignData.selectedDuration || null,
@@ -698,7 +698,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             postcode: contactData.postcode || '',
             ...campaignData
           } as any,
-          notes: 'Returning customer - previously used 3+ Repeat Package. Interested in booking again - please contact with new terms.',
+          notes: 'Returning customer - previously used 3+ Subscription Package. Interested in booking again - please contact with new terms.',
           status: 'bogof_return_interest'
         };
 
@@ -739,7 +739,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         email: contactData.email,
         phone: contactData.phone || '',
         company: contactData.companyName || '',
-        title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Repeat Package' : 'Leafleting'} Booking`,
+        title: `${selectedPricingModel === 'fixed' ? 'Fixed Term' : selectedPricingModel === 'bogof' ? '3+ Subscription Package' : 'Leafleting'} Booking`,
         pricing_model: selectedPricingModel,
         ad_size_id: campaignData.selectedAdSize || null,
         duration_id: campaignData.selectedDuration || null,
@@ -1344,11 +1344,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             </DialogTitle>
             <DialogDescription className="text-center space-y-4 sm:space-y-5">
               <p className="text-sm sm:text-lg font-semibold leading-relaxed text-foreground">
-                3+ Repeat Package is available to New Advertisers – Save £££, Buy One Get One Free
+                3+ Subscription Package is available to New Advertisers – Save £££, Buy One Get One Free
               </p>
               <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 space-y-2">
                 <p className="text-sm sm:text-base text-foreground/80">
-                  If you booked this campaign on our 3+ Repeat Package you would pay
+                  If you booked this campaign on our 3+ Subscription Package you would pay
                 </p>
                 <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-500">
                   {(() => {

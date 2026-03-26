@@ -1314,7 +1314,7 @@ const CalculatorTest = () => {
               Are you sure you want to book Pay As You Go?
             </DialogTitle>
             <DialogDescription className="text-center">
-              If you booked this selection on our 3+ Repeat Package you would pay{" "}
+              If you booked this selection on our 3+ Subscription Package you would pay{" "}
               <span className="font-bold text-community-green">
                 £{pricingBreakdown?.finalTotal ? Math.round(pricingBreakdown.finalTotal * 0.85) : 144} + vat (£{pricingBreakdown?.finalTotal ? Math.round(pricingBreakdown.finalTotal * 0.85 * 1.2) : 172.80})
               </span>{" "}

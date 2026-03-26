@@ -72,7 +72,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
               <div>
                 <span className="font-semibold text-foreground">3+ Subscription Terms</span>
                 <Badge variant="secondary" className="ml-2 text-[10px] align-middle">
-                  3+ Repeat Package
+                  3+ Subscription Package
                 </Badge>
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function BookingTerms({ pricingModel }: BookingTermsProps) {
             {isLeafleting
               ? 'These terms apply specifically to Leaflet Distribution bookings. Magazine advertising bookings may have different conditions.'
               : isFixed
-                ? 'These terms apply specifically to Fixed Term bookings. Subscription (3+ Repeat) bookings may have different conditions.'
+                ? 'These terms apply specifically to Fixed Term bookings. Subscription (3+ Subscription) bookings may have different conditions.'
                 : showBoth
                   ? 'These terms apply to your advertising bookings with Discover Magazines. Different booking types may have specific conditions.'
                   : 'These terms apply specifically to 3+ Subscription (Repeat Package) bookings. Fixed-term bookings may have different conditions.'}

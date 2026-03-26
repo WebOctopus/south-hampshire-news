@@ -178,7 +178,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
       case 'leafleting':
         return 'Select Leafleting Areas';
       case 'bogof':
-        return 'Select Areas for 3+ Repeat Package';
+        return 'Select Areas for 3+ Subscription Package';
       default:
         return 'Select Areas for Fixed Term';
     }
@@ -236,7 +236,7 @@ export const AreaSelectionStep: React.FC<AreaSelectionStepProps> = ({
         <Alert>
           <Users className="h-4 w-4" />
           <AlertDescription>
-            <strong>3+ Repeat Package:</strong> For every "paid for" area, choose a "free for 3 issues" area. 
+            <strong>3+ Subscription Package:</strong> For every "paid for" area, choose a "free for 3 issues" area. 
             Select your paid areas first, then choose your free areas.
           </AlertDescription>
         </Alert>

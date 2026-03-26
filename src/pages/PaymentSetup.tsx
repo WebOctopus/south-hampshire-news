@@ -156,7 +156,7 @@ const PaymentSetup = () => {
                   voucher_type: 'percentage',
                   discount_value: 10,
                   service_type: 'leafleting',
-                  description: '10% discount on leafleting services - Earned from 3+ Repeat Package booking',
+                  description: '10% discount on leafleting services - Earned from 3+ Subscription Package booking',
                   expires_at: expiryDate.toISOString(),
                   created_from_booking_id: bookingId,
                 });

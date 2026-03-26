@@ -102,7 +102,7 @@ const VouchersSection = ({ user }: VouchersSectionProps) => {
             <Gift className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No vouchers yet</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Book a 3+ Repeat Package to earn a 10% leafleting voucher!
+              Book a 3+ Subscription Package to earn a 10% leafleting voucher!
             </p>
           </div>
         </CardContent>

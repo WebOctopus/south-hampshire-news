@@ -238,7 +238,7 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Booking Type</Label>
                     <EditableText
-                      value={advertisingContent?.bookingSummary?.bogof?.bookingTypeText || "3+ Repeat Package for New Advertisers including Buy One Area Get One Area Free"}
+                      value={advertisingContent?.bookingSummary?.bogof?.bookingTypeText || "3+ Subscription Package for New Advertisers including Buy One Area Get One Area Free"}
                       onSave={(val) => onContentSave?.('bookingSummary.bogof.bookingTypeText', val)}
                       as="p"
                       className="font-medium"

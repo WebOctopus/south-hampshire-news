@@ -584,7 +584,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                     <RadioGroupItem value="bogof" id="bogof" className="sr-only" />
                     <Label htmlFor="bogof" className="cursor-pointer">
                       <div className="space-y-2">
-                        <div className="font-semibold">3+ Repeat Package</div>
+                        <div className="font-semibold">3+ Subscription Package</div>
                         <div className="text-sm text-muted-foreground">Best value for ongoing campaigns</div>
                       </div>
                     </Label>
@@ -610,7 +610,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <Phone className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-sm">
-                <strong>Returning Customer Notice:</strong> As you've previously booked the 3+ Repeat Package, 
+                <strong>Returning Customer Notice:</strong> As you've previously booked the 3+ Subscription Package, 
                 please call our team to discuss your next booking and explore special retention offers available to you.
               </AlertDescription>
             </Alert>

@@ -43,7 +43,7 @@ serve(async (req) => {
       campaign: {
         pricingModel: step1Data.pricingModel,
         pricingModelDisplay: step1Data.pricingModel === 'fixed' ? 'Pay As You Go' : 
-                            step1Data.pricingModel === 'bogof' ? '3+ Repeat Package' : 
+                            step1Data.pricingModel === 'bogof' ? '3+ Subscription Package' : 
                             'Leafleting Service'
       },
       

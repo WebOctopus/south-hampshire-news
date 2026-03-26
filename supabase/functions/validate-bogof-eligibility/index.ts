@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
           JSON.stringify({
             isEligible: false,
             reason: 'account_already_used',
-            message: "You have already booked the one time 3+ Repeat Package for New Advertisers. We'll direct you to your account where you can place further bookings",
+            message: "You have already booked the one time 3+ Subscription Package for New Advertisers. We'll direct you to your account where you can place further bookings",
             existingBooking: userBooking
           }),
           {
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
           JSON.stringify({
             isEligible: false,
             reason: 'email_already_used',
-            message: "You have already booked the one time 3+ Repeat Package for New Advertisers. We'll direct you to your account where you can place further bookings",
+            message: "You have already booked the one time 3+ Subscription Package for New Advertisers. We'll direct you to your account where you can place further bookings",
             existingBooking: emailBooking
           }),
           {
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
           JSON.stringify({
             isEligible: false,
             reason: 'phone_already_used',
-            message: "You have already booked the one time 3+ Repeat Package for New Advertisers. We'll direct you to your account where you can place further bookings",
+            message: "You have already booked the one time 3+ Subscription Package for New Advertisers. We'll direct you to your account where you can place further bookings",
             existingBooking: phoneBooking
           }),
           {

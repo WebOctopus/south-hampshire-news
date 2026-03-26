@@ -546,7 +546,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
           <MapPin className="h-5 w-5" />
           {pricingModel === 'bogof' ? (
             <EditableText
-              value={advertisingContent?.areaSelection?.bogofHeading || 'Select Areas for 3+ Repeat Package'}
+              value={advertisingContent?.areaSelection?.bogofHeading || 'Select Areas for 3+ Subscription Package'}
               onSave={(val) => onContentSave?.('areaSelection.bogofHeading', val)}
               as="span"
             />
@@ -559,7 +559,7 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             <Users className="h-4 w-4" />
             <AlertDescription>
               <EditableText
-                value={advertisingContent?.areaSelection?.bogofAlertTitle || '3+ Repeat Package:'}
+                value={advertisingContent?.areaSelection?.bogofAlertTitle || '3+ Subscription Package:'}
                 onSave={(val) => onContentSave?.('areaSelection.bogofAlertTitle', val)}
                 as="span"
                 className="font-bold"
