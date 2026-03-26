@@ -17,7 +17,8 @@ import {
   ClipboardCheck,
   Star,
   Mail,
-  FolderOpen
+  FolderOpen,
+  Palette
 } from "lucide-react"
 
 import {
