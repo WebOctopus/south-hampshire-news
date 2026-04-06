@@ -254,11 +254,16 @@ Deno.serve(async (req) => {
           );
         }
 
+        const userMetadata: Record<string, string> = {};
+        if (createDisplayName) userMetadata.display_name = createDisplayName;
+        if (body.company) userMetadata.company = body.company;
+        if (body.phone) userMetadata.phone = body.phone;
+
         const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
           email: createEmail,
           password: createPassword,
           email_confirm: true,
-          user_metadata: createDisplayName ? { display_name: createDisplayName } : undefined,
+          user_metadata: Object.keys(userMetadata).length > 0 ? userMetadata : undefined,
         });
 
         if (createError) {
