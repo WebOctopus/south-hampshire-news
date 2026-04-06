@@ -1,32 +1,67 @@
 
 
-## Fix "Book Now" Flow — Require Terms Acceptance Before Booking Creation
+## Fix: Company Name Not Saved to Profile During Quote/Booking User Creation
 
 ### Problem
-When a user clicks "Book Now" directly from the CreateBookingForm (instead of "Save as Quote"), the booking is created immediately without terms acceptance. The BookingCard then shows "Booking Terms Accepted" (because it maps `payment_status: 'pending'` to that label), which is misleading. When the user then clicks through to BookingDetailsDialog, the terms checkbox is unticked — exposing the inconsistency.
+When a user is created via quote (admin "on behalf" or self-service), the company name from the contact form is never written to the `profiles` table. Two gaps:
 
-### Root Cause
-Two issues:
-1. **CreateBookingForm** `handleBookNow` inserts directly into `bookings` table without showing the TermsAcceptanceDialog first, and without setting `terms_accepted_at`.
-2. **BookingCard** `getPaymentStatusLabel` returns "Booking Terms Accepted" for any `pending` payment status, regardless of whether `terms_accepted_at` is actually set.
+1. **`handle_new_user` DB trigger** only copies `display_name` from `raw_user_meta_data` — ignores `company`.
+2. **Admin "on behalf" flow** doesn't pass `company` to `create_user` at all, and neither flow updates the profile with company after creation.
 
-### Fix
+### Fix (3 changes)
 
-#### 1. CreateBookingForm (`src/components/dashboard/CreateBookingForm.tsx`)
-- Change the "Book Now" button flow: instead of creating a booking directly, first save as a quote (silently), then trigger the terms acceptance flow.
-- Add new props: `onBookNowWithTerms?: (quote: any) => void` — this callback passes the newly created quote to the parent Dashboard, which opens the TermsAcceptanceDialog.
-- The `handleBookNow` function becomes: save as quote → call `onBookNowWithTerms(quote)`.
+#### 1. DB Migration: Update `handle_new_user` trigger function
+Add company extraction from user metadata so it's automatically populated for new users (covers normal signup):
 
-#### 2. Dashboard (`src/pages/Dashboard.tsx`)
-- Pass `onBookNowWithTerms` callback to CreateBookingForm that receives the quote and opens the TermsAcceptanceDialog (reusing the existing `handleBookNow` which sets `termsQuote` and opens the dialog).
-- After terms are confirmed, the existing `handleTermsConfirm` converts quote to booking with `terms_accepted_at` set — this flow already works correctly.
+```sql
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''
+AS $$
+BEGIN
+  INSERT INTO public.profiles (user_id, display_name, company, phone)
+  VALUES (
+    NEW.id, 
+    COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.email),
+    NEW.raw_user_meta_data->>'company',
+    NEW.raw_user_meta_data->>'phone'
+  );
+  RETURN NEW;
+END;
+$$;
+```
 
-#### 3. BookingCard (`src/components/dashboard/BookingCard.tsx`)
-- Fix `getPaymentStatusLabel`: when `payment_status` is `pending`, check if the booking has `terms_accepted_at` set. If not, show "Terms Not Accepted" or "Awaiting Terms" instead of "Booking Terms Accepted".
-- Add `terms_accepted_at` to the booking interface type.
+#### 2. `src/components/AdvertisingStepForm.tsx` — Admin "on behalf" flow
+After user creation via edge function, upsert the profile with company, phone, and display_name. Add this after getting `userId` (around line 296):
 
-### What stays the same
-- The quote-based "Accept Terms & Book" flow from QuoteConversionCard — already works correctly.
-- TermsAcceptanceDialog component — unchanged.
-- BookingDetailsDialog terms display logic — unchanged.
+```ts
+await supabase.from('profiles').upsert({
+  user_id: userId,
+  display_name: fullName,
+  company: contactData.companyName || null,
+  phone: contactData.phone || null,
+}, { onConflict: 'user_id' });
+```
+
+This covers both new users (where the trigger may not have company) and existing users (where profile already exists but may lack company).
+
+#### 3. `supabase/functions/admin-manage-user/index.ts` — Pass company in user_metadata
+Update `create_user` action to include company in `user_metadata`:
+
+```ts
+user_metadata: {
+  display_name: createDisplayName || undefined,
+  company: body.company || undefined,
+  phone: body.phone || undefined,
+}
+```
+
+And update the caller in `AdvertisingStepForm.tsx` to pass `company` and `phone` in the edge function call body.
+
+### Summary
+- DB trigger updated to capture company/phone from metadata on signup
+- Admin flow explicitly upserts profile with company after user creation
+- Edge function forwards company to user metadata
 
