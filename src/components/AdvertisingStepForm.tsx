@@ -282,6 +282,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             email: contactData.email,
             password: actualPasswordUsed,
             display_name: fullName,
+            company: contactData.companyName || undefined,
+            phone: contactData.phone || undefined,
             send_email: false,
             allow_existing_user: true,
           }
