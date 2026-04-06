@@ -26,6 +26,7 @@ interface BookingCardProps {
     pricing_model: string;
     status: string;
     payment_status?: string;
+    terms_accepted_at?: string;
     final_total: number;
     monthly_price: number;
     total_circulation: number;
