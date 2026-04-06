@@ -143,14 +143,16 @@ export const BookingCard: React.FC<BookingCardProps> = ({ booking, onViewDetails
   };
 
   const getPaymentStatusLabel = (status?: string) => {
-    if (!status || status === 'pending') return 'Booking Terms Accepted';
+    if (!status || status === 'pending') {
+      return booking.terms_accepted_at ? 'Booking Terms Accepted' : 'Awaiting Terms Acceptance';
+    }
     if (status === 'paid' || status === 'subscription_active' || status === 'mandate_active') {
       return 'Paid';
     }
     if (['payment_pending', 'subscription_pending', 'mandate_created'].includes(status || '')) {
       return 'Setup Complete';
     }
-    return 'Booking Terms Accepted';
+    return booking.terms_accepted_at ? 'Booking Terms Accepted' : 'Awaiting Terms Acceptance';
   };
 
   const getPricingModelDisplay = (model: string) => {
