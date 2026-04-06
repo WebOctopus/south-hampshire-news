@@ -46,10 +46,11 @@ interface CreateBookingFormProps {
   user: User;
   onBookingCreated?: () => void;
   onQuoteSaved?: () => void;
+  onBookNowWithTerms?: (quote: any) => void;
   isAdmin?: boolean;
 }
 
-export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved, isAdmin = false }: CreateBookingFormProps) {
+export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved, onBookNowWithTerms, isAdmin = false }: CreateBookingFormProps) {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   
@@ -378,7 +379,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     
     setSubmitting(true);
     try {
-      const bookingPayload = {
+      // Save as quote first, then trigger terms acceptance flow
+      const quotePayload = {
         user_id: user.id,
         contact_name: profile?.display_name || user.email?.split('@')[0] || '',
         email: user.email || '',
@@ -401,6 +403,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0) as number,
         duration_discount_percent: ('durationDiscount' in pricingBreakdown ? (pricingBreakdown.durationDiscount || 0) : 0) as number,
         agency_discount_percent: profile?.agency_discount_percent || 0,
+        distribution_start_date: selectedMonths && Object.values(selectedMonths)[0]?.[0] ? `${Object.values(selectedMonths)[0][0]}-01` : null,
         pricing_breakdown: pricingBreakdown as any,
         selections: {
           areas: pricingModel === 'leafleting' ? selectedAreas : (pricingModel === 'bogof' ? { paid: bogofPaidAreas, free: bogofFreeAreas } : selectedAreas),
@@ -412,98 +415,24 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
           leafletDuration: selectedLeafletDuration,
           payment_option_id: selectedPaymentOption
         },
-        status: 'pending',
-        payment_status: 'pending',
-        webhook_payload: {}
+        status: 'draft'
       };
 
-      const { data: bookingData, error } = await supabase.from('bookings').insert([bookingPayload]).select().single();
+      const { data: quoteData, error } = await supabase.from('quotes').insert([quotePayload]).select().single();
       
       if (error) throw error;
 
-      // Send booking to external CRM webhook
-      try {
-        const selectedAdSizeData = pricingModel === 'leafleting'
-          ? leafletSizes?.find(a => a.id === selectedLeafletSize)
-          : adSizes?.find(a => a.id === selectedAdSize);
-        const selectedDurationData = pricingModel === 'leafleting'
-          ? leafletDurations?.find(d => d.id === selectedLeafletDuration)
-          : (durations?.find(d => d.id === selectedDuration) || 
-             subscriptionDurations?.find(d => d.id === selectedDuration));
-        
-        const bookingWebhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas: leafletAreas || [] };
-        await supabase.functions.invoke('send-quote-booking-webhook', {
-          body: resolveWebhookPayload({
-            record_type: 'booking',
-            record_id: bookingData.id,
-            pricing_model: pricingModel,
-            contact_name: profile?.display_name || user.email?.split('@')[0] || '',
-            email: user.email || '',
-            phone: profile?.phone || '',
-            company: '',
-            title: 'Dashboard Booking',
-            ad_size: pricingModel === 'leafleting' ? (selectedAdSizeData as any)?.label : (selectedAdSizeData as any)?.name,
-            duration: selectedDurationData?.name,
-            selected_areas: pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas,
-            bogof_paid_areas: pricingModel === 'bogof' ? bogofPaidAreas : [],
-            bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
-            total_circulation: pricingBreakdown.totalCirculation,
-            subtotal: pricingBreakdown.subtotal,
-            final_total: pricingBreakdown.finalTotal,
-            monthly_price: bookingPayload.monthly_price,
-            volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0),
-            status: 'pending',
-            pricing_breakdown: pricingBreakdown,
-            selections: bookingPayload.selections
-          }, bookingWebhookLookups)
+      // Trigger terms acceptance dialog via parent
+      if (onBookNowWithTerms) {
+        onBookNowWithTerms(quoteData);
+      } else {
+        // Fallback: just notify quote saved
+        toast({
+          title: 'Quote Saved',
+          description: 'Your quote has been saved. Please accept terms to complete booking.'
         });
-        console.log('Dashboard booking webhook sent successfully');
-      } catch (webhookError) {
-        console.error('Dashboard booking webhook error:', webhookError);
+        onQuoteSaved?.();
       }
-
-      // Send confirmation emails (non-blocking)
-      try {
-        const adSizeForBookEmail = pricingModel === 'leafleting'
-          ? leafletSizes?.find(a => a.id === selectedLeafletSize)
-          : adSizes?.find(a => a.id === selectedAdSize);
-        const durationForBookEmail = pricingModel === 'leafleting'
-          ? leafletDurations?.find(d => d.id === selectedLeafletDuration)
-          : (durations?.find(d => d.id === selectedDuration) || 
-             subscriptionDurations?.find(d => d.id === selectedDuration));
-        await supabase.functions.invoke('send-booking-confirmation-email', {
-          body: {
-            record_type: 'booking',
-            record_id: bookingData.id,
-            pricing_model: pricingModel,
-            contact_name: profile?.display_name || user.email?.split('@')[0] || '',
-            email: user.email || '',
-            phone: profile?.phone || '',
-            ad_size: pricingModel === 'leafleting' ? (adSizeForBookEmail as any)?.label : (adSizeForBookEmail as any)?.name,
-            duration: durationForBookEmail?.name,
-            selected_areas: (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas).map(id => [...(areas || []), ...(leafletAreas || [])].find(a => a.id === id)?.name || id),
-            bogof_paid_areas: (pricingModel === 'bogof' ? bogofPaidAreas : []).map(id => areas?.find(a => a.id === id)?.name || id),
-            bogof_free_areas: (pricingModel === 'bogof' ? bogofFreeAreas : []).map(id => areas?.find(a => a.id === id)?.name || id),
-            total_circulation: pricingBreakdown.totalCirculation,
-            subtotal: pricingBreakdown.subtotal,
-            final_total: pricingBreakdown.finalTotal,
-            monthly_price: bookingPayload.monthly_price,
-            pricing_breakdown: pricingBreakdown,
-            selections: bookingPayload.selections,
-            distribution_start_date: selectedMonths && Object.values(selectedMonths)[0]?.[0] ? `${Object.values(selectedMonths)[0][0]}-01` : null,
-          }
-        });
-        console.log('Dashboard booking confirmation email sent');
-      } catch (emailError) {
-        console.error('Dashboard booking email error:', emailError);
-      }
-
-      toast({
-        title: 'Booking Created',
-        description: 'Your booking has been created. Please complete payment to confirm.'
-      });
-
-      onBookingCreated?.();
     } catch (error: any) {
       toast({
         title: 'Error',

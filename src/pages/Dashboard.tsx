@@ -1481,6 +1481,10 @@ const Dashboard = () => {
                     loadQuotes();
                     setActiveTab('quotes');
                   }}
+                  onBookNowWithTerms={(quote) => {
+                    loadQuotes();
+                    handleBookNow(quote);
+                  }}
                 />
               )}
               {activeTab === 'create' && renderCreateBusinessForm()}
