@@ -46,6 +46,7 @@ interface CreateBookingFormProps {
   user: User;
   onBookingCreated?: () => void;
   onQuoteSaved?: () => void;
+  onBookNowWithTerms?: (quote: any) => void;
   isAdmin?: boolean;
 }
 
