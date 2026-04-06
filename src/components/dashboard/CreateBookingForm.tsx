@@ -50,7 +50,7 @@ interface CreateBookingFormProps {
   isAdmin?: boolean;
 }
 
-export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved, isAdmin = false }: CreateBookingFormProps) {
+export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved, onBookNowWithTerms, isAdmin = false }: CreateBookingFormProps) {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   
