@@ -304,6 +304,14 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           toast({ title: "Error", description: "Failed to create customer account.", variant: "destructive" });
           return;
         }
+
+        // Upsert profile with company and phone (covers both new and existing users)
+        await supabase.from('profiles').upsert({
+          user_id: userId,
+          display_name: fullName,
+          company: contactData.companyName || null,
+          phone: contactData.phone || null,
+        }, { onConflict: 'user_id' });
       } else {
         // Normal flow — sign up the user
         const { data: authData, error: authError } = await supabase.auth.signUp({
