@@ -7,12 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
-import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 
 const AddEvent = () => {
   const { items: eventCategories } = useEventCategories();
