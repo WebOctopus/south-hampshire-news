@@ -279,11 +279,12 @@ export function EventsManagement() {
 
   const downloadCsvTemplate = () => {
     const headers = 'title,date,date_end,time,end_time,location,area,postcode,category,type,excerpt,description,organizer,ticket_url,contact_email,contact_phone';
-    const example = '"Summer Festival","2025-07-15","2025-07-17","10:00","18:00","Central Park","Downtown","AB12 3CD","Community","Festival","Join us for 3 days of fun!","Full description here...","Local Council","https://tickets.example.com","events@example.com","01234567890"';
+    const example = '"Summer Festival","2025-07-15","2025-07-17","10:00","18:00","Central Park","Downtown","AB12 3CD","Community","Festival","Join us for 3 days of fun!","Full description here...","Local Council","https://tickets.example.com","events@example.com","=""01234567890"""';
     const singleDayExample = '"One Day Concert","2025-08-20","","19:00","23:00","Music Hall","City Center","CD45 6EF","Music","Concert","An evening of live music","Full description...","Music Promotions","","info@concert.com",""';
-    const csvContent = `${headers}\n${example}\n${singleDayExample}`;
+    const noteRow = '"NOTE: Phone numbers must keep leading zeros. Format the contact_phone column as Text in your spreadsheet before entering numbers. The template uses =""01234..."" formula to preserve zeros.","","","","","","","","","","","","","","",""';
+    const csvContent = `\uFEFF${headers}\n${noteRow}\n${example}\n${singleDayExample}`;
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -330,7 +331,7 @@ export function EventsManagement() {
             organizer: event.organizer || undefined,
             ticket_url: event.ticket_url || undefined,
             contact_email: event.contact_email || undefined,
-            contact_phone: event.contact_phone || undefined,
+            contact_phone: event.contact_phone?.replace(/^="?|"$/g, '').trim() || undefined,
             is_published: false,
             featured: false,
             links: []
