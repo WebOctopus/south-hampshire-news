@@ -916,17 +916,18 @@ export function EventsManagement() {
       </Dialog>
 
       {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'submissions')}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'submissions' | 'taxonomies')}>
         <TabsList className="mb-4">
           <TabsTrigger value="all">All Events</TabsTrigger>
           <TabsTrigger value="submissions" className="relative">
             Pending Submissions
             {stats.pending > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-amber-500 rounded-full">
+              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-primary-foreground bg-primary rounded-full">
                 {stats.pending}
               </span>
             )}
           </TabsTrigger>
+          <TabsTrigger value="taxonomies">Categories & Types</TabsTrigger>
         </TabsList>
 
         {/* All Events Tab */}
