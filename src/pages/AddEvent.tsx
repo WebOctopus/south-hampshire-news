@@ -327,7 +327,37 @@ const AddEvent = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Info */}
+                {/* Admin On-Behalf Toggle */}
+                {isAdmin && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 text-amber-600" />
+                        <div>
+                          <p className="font-medium text-amber-900">Filling in on behalf of an organiser</p>
+                          <p className="text-sm text-amber-700">
+                            The organiser will receive an email with login details to manage their event
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={isOnBehalf}
+                        onCheckedChange={setIsOnBehalf}
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    {isOnBehalf && (
+                      <div className="mt-3 pt-3 border-t border-amber-200">
+                        <p className="text-sm text-amber-700">
+                          <strong>Note:</strong> The organiser's contact email (below) will be used as their login email. 
+                          They'll receive credentials and a link to the dashboard where they can upload an image and verify details.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-primary" />
