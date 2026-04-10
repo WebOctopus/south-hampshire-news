@@ -377,7 +377,7 @@ const AddEvent = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="organizer">Organizer *</Label>
+                      <Label htmlFor="organizer">Organiser *</Label>
                       <Input
                         id="organizer"
                         value={formData.organizer}

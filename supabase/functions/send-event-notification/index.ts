@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
           </tr>
           ${organizer ? `<tr>
             <td style="padding:8px 0;border-bottom:1px solid #eee;">
-              <strong style="color:#333;font-size:13px;">👤 Organizer:</strong>
+              <strong style="color:#333;font-size:13px;">👤 Organiser:</strong>
               <span style="color:#555;font-size:13px;margin-left:8px;">${organizer}</span>
             </td>
           </tr>` : ''}
