@@ -14,6 +14,8 @@ import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle } from 'lucide-react';
 
 const AddEvent = () => {
+  const { items: eventCategories } = useEventCategories();
+  const { items: eventTypes } = useEventTypes();
   const [formData, setFormData] = useState({
     title: '',
     organizer: '',

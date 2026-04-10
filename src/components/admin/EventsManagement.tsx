@@ -533,8 +533,8 @@ export function EventsManagement() {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              {EVENT_CATEGORIES.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              {categories.filter(c => c.is_active).map(cat => (
+                                <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -550,8 +550,8 @@ export function EventsManagement() {
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
-                              {EVENT_TYPES.map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                              {types.filter(t => t.is_active).map(type => (
+                                <SelectItem key={type.id} value={type.name}>{type.name}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
