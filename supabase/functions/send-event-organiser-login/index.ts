@@ -31,9 +31,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const dashboardUrl = "https://south-hampshire-news.lovable.app/dashboard";
+    const dashboardUrl = "https://www.peacockpixelmedia.co.uk/dashboard";
     const eventUrl = event_id
-      ? `https://south-hampshire-news.lovable.app/events/${event_id}`
+      ? `https://www.peacockpixelmedia.co.uk/events/${event_id}`
       : null;
 
     const greeting = organiser_name ? `Hello ${organiser_name}` : "Hello";
