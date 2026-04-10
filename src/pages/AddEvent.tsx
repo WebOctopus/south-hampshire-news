@@ -7,16 +7,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
-import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 
 const AddEvent = () => {
+  const { isAdmin } = useAuth();
   const { items: eventCategories } = useEventCategories();
   const { items: eventTypes } = useEventTypes();
+  const [isOnBehalf, setIsOnBehalf] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     organizer: '',
@@ -104,6 +108,16 @@ const AddEvent = () => {
       return;
     }
 
+    // On-behalf requires contact email
+    if (isOnBehalf && !formData.contact_email) {
+      toast({
+        title: "Organiser email required",
+        description: "Please enter the organiser's email address so we can send them login details.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -121,6 +135,42 @@ const AddEvent = () => {
             description: "Your event will be submitted without an image",
             variant: "destructive"
           });
+        }
+      }
+
+      // Handle on-behalf flow: create/find organiser account
+      let organiserUserId: string | null = null;
+      let organiserPassword: string | null = null;
+      let isExistingUser = false;
+
+      if (isOnBehalf && formData.contact_email) {
+        const tempPassword = crypto.randomUUID().slice(0, 12);
+        
+        const { data: manageResult, error: manageError } = await supabase.functions.invoke('admin-manage-user', {
+          body: {
+            action: 'create_user',
+            email: formData.contact_email,
+            password: tempPassword,
+            display_name: formData.organizer || formData.contact_email.split('@')[0],
+            phone: formData.contact_phone || undefined,
+            allow_existing_user: true,
+            send_email: false, // We'll send our own email
+          }
+        });
+
+        if (manageError) {
+          console.error('Error creating organiser account:', manageError);
+          toast({
+            title: "Account creation failed",
+            description: "Could not create organiser account. The event will be submitted without linking.",
+            variant: "destructive"
+          });
+        } else if (manageResult) {
+          organiserUserId = manageResult.user_id;
+          isExistingUser = manageResult.is_existing_user === true;
+          if (!isExistingUser) {
+            organiserPassword = tempPassword;
+          }
         }
       }
 
@@ -147,7 +197,7 @@ const AddEvent = () => {
         is_published: false, // Pending admin approval
         featured: false,
         links: [],
-        user_id: user?.id || null
+        user_id: isOnBehalf && organiserUserId ? organiserUserId : (user?.id || null)
       };
 
       const { data: insertedEvent, error } = await supabase
@@ -176,11 +226,27 @@ const AddEvent = () => {
         }
       }).catch(err => console.error('Failed to send event notification:', err));
 
+      // Fire-and-forget organiser login email (on-behalf only)
+      if (isOnBehalf && formData.contact_email && organiserUserId) {
+        supabase.functions.invoke('send-event-organiser-login', {
+          body: {
+            email: formData.contact_email,
+            password: organiserPassword,
+            is_existing_user: isExistingUser,
+            event_id: insertedEvent.id,
+            event_title: formData.title,
+            organiser_name: formData.organizer || undefined,
+          }
+        }).catch(err => console.error('Failed to send organiser login email:', err));
+      }
+
       setSubmitSuccess(true);
       
       toast({
         title: "Event Submitted!",
-        description: "Your event has been submitted for review. It will appear once approved by an admin."
+        description: isOnBehalf 
+          ? "Event submitted and organiser has been emailed with their login details."
+          : "Your event has been submitted for review. It will appear once approved by an admin."
       });
 
     } catch (error: any) {
@@ -261,7 +327,37 @@ const AddEvent = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Info */}
+                {/* Admin On-Behalf Toggle */}
+                {isAdmin && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 text-amber-600" />
+                        <div>
+                          <p className="font-medium text-amber-900">Filling in on behalf of an organiser</p>
+                          <p className="text-sm text-amber-700">
+                            The organiser will receive an email with login details to manage their event
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={isOnBehalf}
+                        onCheckedChange={setIsOnBehalf}
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    {isOnBehalf && (
+                      <div className="mt-3 pt-3 border-t border-amber-200">
+                        <p className="text-sm text-amber-700">
+                          <strong>Note:</strong> The organiser's contact email (below) will be used as their login email. 
+                          They'll receive credentials and a link to the dashboard where they can upload an image and verify details.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-primary" />
@@ -522,7 +618,9 @@ const AddEvent = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="contact_email">Contact Email</Label>
+                      <Label htmlFor="contact_email">
+                        Contact Email {isOnBehalf && <span className="text-destructive">* (organiser login)</span>}
+                      </Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -533,6 +631,7 @@ const AddEvent = () => {
                           placeholder="events@example.com"
                           className="pl-10"
                           disabled={isSubmitting}
+                          required={isOnBehalf}
                         />
                       </div>
                     </div>
