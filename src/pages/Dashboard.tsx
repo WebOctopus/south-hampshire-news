@@ -1139,13 +1139,13 @@ const Dashboard = () => {
 
             <div>
               <label htmlFor="event-organizer" className="block text-sm font-medium mb-1">
-                Organizer
+                Organiser
               </label>
               <Input
                 id="event-organizer"
                 value={eventFormData.organizer}
                 onChange={(e) => handleEventInputChange('organizer', e.target.value)}
-                placeholder="Event organizer"
+                placeholder="Event organiser"
               />
             </div>
           </div>

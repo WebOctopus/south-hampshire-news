@@ -343,7 +343,7 @@ const EventDetail = () => {
                 </CardContent>
               </Card>
 
-              {/* Organizer & Contact */}
+              {/* Organiser & Contact */}
               {(event.organizer || event.contact_email || event.contact_phone) && (
                 <Card>
                   <CardContent className="p-4 space-y-3">
