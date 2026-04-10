@@ -527,9 +527,7 @@ const Dashboard = () => {
             category: eventFormData.category,
             type: eventFormData.type,
             organizer: eventFormData.organizer || undefined,
-            contact_email: eventFormData.contact_email || undefined,
-            contact_phone: eventFormData.contact_phone || undefined,
-            excerpt: eventFormData.excerpt || undefined,
+            excerpt: eventFormData.description || undefined,
           }
         }).catch(err => console.error('Failed to send event notification:', err));
 
