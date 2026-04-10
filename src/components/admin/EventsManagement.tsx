@@ -46,6 +46,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export function EventsManagement() {
   const { events, loading, fetchEvents, createEvent, updateEvent, deleteEvent, togglePublished, toggleFeatured, bulkCreateEvents } = useEvents();
+  const { items: categories, loading: catsLoading, create: createCategory, update: updateCategory, remove: removeCategory, moveUp: moveCatUp, moveDown: moveCatDown, fetch: fetchCategories } = useEventCategories(false);
+  const { items: types, loading: typesLoading, create: createType, update: updateType, remove: removeType, moveUp: moveTypeUp, moveDown: moveTypeDown, fetch: fetchTypes } = useEventTypes(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
