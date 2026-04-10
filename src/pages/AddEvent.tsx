@@ -282,8 +282,8 @@ const AddEvent = () => {
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent>
-                            {EVENT_CATEGORIES.map(cat => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            {eventCategories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -299,8 +299,8 @@ const AddEvent = () => {
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent>
-                            {EVENT_TYPES.map(type => (
-                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                            {eventTypes.map(type => (
+                              <SelectItem key={type.id} value={type.name}>{type.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
