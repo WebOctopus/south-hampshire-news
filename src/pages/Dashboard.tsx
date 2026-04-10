@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { editionAreas } from '@/data/editionAreas';
+import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,7 +20,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle, MapPin, Gift } from 'lucide-react';
+import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle, MapPin, Gift, Upload, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { format } from 'date-fns';
@@ -44,8 +46,31 @@ import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog'
 import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
 
+const defaultEventFormData = {
+  title: '',
+  description: '',
+  date: '',
+  date_end: '',
+  time: '',
+  end_time: '',
+  location: '',
+  area: '',
+  postcode: '',
+  organizer: '',
+  category: '',
+  type: '',
+  excerpt: '',
+  full_description: '',
+  ticket_url: '',
+  contact_email: '',
+  contact_phone: '',
+  image: ''
+};
+
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
+  const { items: eventCategories } = useEventCategories();
+  const { items: eventTypes } = useEventTypes();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -96,14 +121,25 @@ const Dashboard = () => {
     title: '',
     description: '',
     date: '',
+    date_end: '',
     time: '',
+    end_time: '',
     location: '',
     area: '',
     postcode: '',
     organizer: '',
     category: '',
-    type: ''
+    type: '',
+    excerpt: '',
+    full_description: '',
+    ticket_url: '',
+    contact_email: '',
+    contact_phone: '',
+    image: ''
   });
+  const [eventImageFile, setEventImageFile] = useState<File | null>(null);
+  const [eventImagePreview, setEventImagePreview] = useState<string | null>(null);
+  const eventFileInputRef = useRef<HTMLInputElement>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -481,6 +517,49 @@ const Dashboard = () => {
     });
   };
 
+  const uploadEventImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
+  const handleEventImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: "File too large", description: "Please select an image under 5MB", variant: "destructive" });
+        return;
+      }
+      setEventImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setEventImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const resetEventForm = () => {
+    setEventFormData({ ...defaultEventFormData });
+    setEventImageFile(null);
+    setEventImagePreview(null);
+  };
+
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -488,34 +567,39 @@ const Dashboard = () => {
     setSubmitting(true);
 
     try {
+      // Upload image if a new file is selected
+      let imageUrl = eventFormData.image;
+      if (eventImageFile) {
+        const uploaded = await uploadEventImage(eventImageFile);
+        if (uploaded) {
+          imageUrl = uploaded;
+        } else {
+          toast({ title: "Image upload failed", description: "Event will be saved without a new image", variant: "destructive" });
+        }
+      }
+
+      const payload = { ...eventFormData, image: imageUrl };
+
       if (editingEvent) {
         const { error } = await supabase
           .from('events')
-          .update(eventFormData)
+          .update(payload)
           .eq('id', editingEvent.id);
 
         if (error) throw error;
 
-        toast({
-          title: "Success!",
-          description: "Your event has been updated successfully."
-        });
-
+        toast({ title: "Success!", description: "Your event has been updated successfully." });
         setEditingEvent(null);
         setActiveTab('events');
       } else {
         const { data: insertedEvent, error } = await supabase
           .from('events')
-          .insert([{
-            ...eventFormData,
-            user_id: user.id
-          }])
+          .insert([{ ...payload, user_id: user.id }])
           .select()
           .single();
 
         if (error) throw error;
 
-        // Fire-and-forget admin notification email
         supabase.functions.invoke('send-event-notification', {
           body: {
             event_id: insertedEvent.id,
@@ -527,37 +611,18 @@ const Dashboard = () => {
             category: eventFormData.category,
             type: eventFormData.type,
             organizer: eventFormData.organizer || undefined,
-            excerpt: eventFormData.description || undefined,
+            excerpt: eventFormData.excerpt || eventFormData.description || undefined,
           }
         }).catch(err => console.error('Failed to send event notification:', err));
 
-        toast({
-          title: "Success!",
-          description: "Your event has been created successfully."
-        });
+        toast({ title: "Success!", description: "Your event has been created successfully." });
       }
 
-      setEventFormData({
-        title: '',
-        description: '',
-        date: '',
-        time: '',
-        location: '',
-        area: '',
-        postcode: '',
-        organizer: '',
-        category: '',
-        type: ''
-      });
-
+      resetEventForm();
       loadEvents();
 
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -569,14 +634,24 @@ const Dashboard = () => {
       title: event.title || '',
       description: event.description || '',
       date: event.date || '',
+      date_end: event.date_end || '',
       time: event.time || '',
+      end_time: event.end_time || '',
       location: event.location || '',
       area: event.area || '',
       postcode: event.postcode || '',
       organizer: event.organizer || '',
       category: event.category || '',
-      type: event.type || ''
+      type: event.type || '',
+      excerpt: event.excerpt || '',
+      full_description: event.full_description || '',
+      ticket_url: event.ticket_url || '',
+      contact_email: event.contact_email || '',
+      contact_phone: event.contact_phone || '',
+      image: event.image || ''
     });
+    setEventImageFile(null);
+    setEventImagePreview(null);
     setActiveTab('create-event');
   };
 
@@ -991,18 +1066,7 @@ const Dashboard = () => {
               variant="outline"
               onClick={() => {
                 setEditingEvent(null);
-                setEventFormData({
-                  title: '',
-                  description: '',
-                  date: '',
-                  time: '',
-                  location: '',
-                  area: '',
-                  postcode: '',
-                  organizer: '',
-                  category: '',
-                  type: ''
-                });
+                resetEventForm();
               }}
               size="sm"
             >
@@ -1013,6 +1077,52 @@ const Dashboard = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleEventSubmit} className="space-y-6">
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Event Image</label>
+            <div className="flex items-start gap-4">
+              {(eventImagePreview || eventFormData.image) && (
+                <div className="relative w-32 h-32 rounded-md overflow-hidden border">
+                  <img
+                    src={eventImagePreview || eventFormData.image}
+                    alt="Event preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEventImageFile(null);
+                      setEventImagePreview(null);
+                      handleEventInputChange('image', '');
+                    }}
+                    className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              <div>
+                <input
+                  ref={eventFileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleEventImageChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => eventFileInputRef.current?.click()}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  {eventImagePreview || eventFormData.image ? 'Replace Image' : 'Upload Image'}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">Max 5MB (JPG, PNG, GIF, WebP)</p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="event-title" className="block text-sm font-medium mb-1">
@@ -1041,6 +1151,19 @@ const Dashboard = () => {
           </div>
 
           <div>
+            <label htmlFor="event-excerpt" className="block text-sm font-medium mb-1">
+              Short Summary
+            </label>
+            <Textarea
+              id="event-excerpt"
+              value={eventFormData.excerpt}
+              onChange={(e) => handleEventInputChange('excerpt', e.target.value)}
+              placeholder="A brief summary of your event (shown in listings)"
+              rows={2}
+            />
+          </div>
+
+          <div>
             <label htmlFor="event-description" className="block text-sm font-medium mb-1">
               Description
             </label>
@@ -1049,14 +1172,27 @@ const Dashboard = () => {
               value={eventFormData.description}
               onChange={(e) => handleEventInputChange('description', e.target.value)}
               placeholder="Describe your event..."
-              rows={4}
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="event-full-description" className="block text-sm font-medium mb-1">
+              Full Description
+            </label>
+            <Textarea
+              id="event-full-description"
+              value={eventFormData.full_description}
+              onChange={(e) => handleEventInputChange('full_description', e.target.value)}
+              placeholder="Detailed description with all the information attendees need..."
+              rows={6}
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="event-date" className="block text-sm font-medium mb-1">
-                Date *
+                Start Date *
               </label>
               <Input
                 id="event-date"
@@ -1066,10 +1202,23 @@ const Dashboard = () => {
                 required
               />
             </div>
+            <div>
+              <label htmlFor="event-date-end" className="block text-sm font-medium mb-1">
+                End Date
+              </label>
+              <Input
+                id="event-date-end"
+                type="date"
+                value={eventFormData.date_end}
+                onChange={(e) => handleEventInputChange('date_end', e.target.value)}
+              />
+            </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="event-time" className="block text-sm font-medium mb-1">
-                Time *
+                Start Time *
               </label>
               <Input
                 id="event-time"
@@ -1077,6 +1226,17 @@ const Dashboard = () => {
                 value={eventFormData.time}
                 onChange={(e) => handleEventInputChange('time', e.target.value)}
                 required
+              />
+            </div>
+            <div>
+              <label htmlFor="event-end-time" className="block text-sm font-medium mb-1">
+                End Time
+              </label>
+              <Input
+                id="event-end-time"
+                type="time"
+                value={eventFormData.end_time}
+                onChange={(e) => handleEventInputChange('end_time', e.target.value)}
               />
             </div>
           </div>
@@ -1099,13 +1259,21 @@ const Dashboard = () => {
               <label htmlFor="event-area" className="block text-sm font-medium mb-1">
                 Area *
               </label>
-              <Input
-                id="event-area"
+              <Select
                 value={eventFormData.area}
-                onChange={(e) => handleEventInputChange('area', e.target.value)}
-                required
-                placeholder="Area/Region"
-              />
+                onValueChange={(value) => handleEventInputChange('area', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select area" />
+                </SelectTrigger>
+                <SelectContent>
+                  {editionAreas.map((area) => (
+                    <SelectItem key={area.name} value={area.name}>
+                      {area.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -1124,19 +1292,28 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="event-category" className="block text-sm font-medium mb-1">
-                Category
+                Category *
               </label>
-              <Input
-                id="event-category"
+              <Select
                 value={eventFormData.category}
-                onChange={(e) => handleEventInputChange('category', e.target.value)}
-                placeholder="e.g., Concert, Workshop, Festival"
-              />
+                onValueChange={(value) => handleEventInputChange('category', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {eventCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <label htmlFor="event-type" className="block text-sm font-medium mb-1">
-                Event Type
+                Event Type *
               </label>
               <Select 
                 value={eventFormData.type} 
@@ -1146,12 +1323,53 @@ const Dashboard = () => {
                   <SelectValue placeholder="Select event type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="public">Public Event</SelectItem>
-                  <SelectItem value="private">Private Event</SelectItem>
-                  <SelectItem value="ticketed">Ticketed Event</SelectItem>
-                  <SelectItem value="free">Free Event</SelectItem>
+                  {eventTypes.map((t) => (
+                    <SelectItem key={t.id} value={t.name}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="event-ticket-url" className="block text-sm font-medium mb-1">
+              Ticket URL
+            </label>
+            <Input
+              id="event-ticket-url"
+              type="url"
+              value={eventFormData.ticket_url}
+              onChange={(e) => handleEventInputChange('ticket_url', e.target.value)}
+              placeholder="https://tickets.example.com"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="event-contact-email" className="block text-sm font-medium mb-1">
+                Contact Email
+              </label>
+              <Input
+                id="event-contact-email"
+                type="email"
+                value={eventFormData.contact_email}
+                onChange={(e) => handleEventInputChange('contact_email', e.target.value)}
+                placeholder="organiser@example.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="event-contact-phone" className="block text-sm font-medium mb-1">
+                Contact Phone
+              </label>
+              <Input
+                id="event-contact-phone"
+                type="tel"
+                value={eventFormData.contact_phone}
+                onChange={(e) => handleEventInputChange('contact_phone', e.target.value)}
+                placeholder="01onal 123456"
+              />
             </div>
           </div>
 
