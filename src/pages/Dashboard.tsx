@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { editionAreas } from '@/data/editionAreas';
+import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,7 +20,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
-import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle, MapPin, Gift } from 'lucide-react';
+import { Edit, Calendar, Trash2, Phone, ChevronDown, ChevronUp, Eye, AlertCircle, MapPin, Gift, Upload, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatPrice } from '@/lib/pricingCalculator';
 import { format } from 'date-fns';
@@ -96,14 +98,25 @@ const Dashboard = () => {
     title: '',
     description: '',
     date: '',
+    date_end: '',
     time: '',
+    end_time: '',
     location: '',
     area: '',
     postcode: '',
     organizer: '',
     category: '',
-    type: ''
+    type: '',
+    excerpt: '',
+    full_description: '',
+    ticket_url: '',
+    contact_email: '',
+    contact_phone: '',
+    image: ''
   });
+  const [eventImageFile, setEventImageFile] = useState<File | null>(null);
+  const [eventImagePreview, setEventImagePreview] = useState<string | null>(null);
+  const eventFileInputRef = useRef<HTMLInputElement>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
