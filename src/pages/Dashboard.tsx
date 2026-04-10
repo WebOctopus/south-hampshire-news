@@ -504,14 +504,34 @@ const Dashboard = () => {
         setEditingEvent(null);
         setActiveTab('events');
       } else {
-        const { error } = await supabase
+        const { data: insertedEvent, error } = await supabase
           .from('events')
           .insert([{
             ...eventFormData,
             user_id: user.id
-          }]);
+          }])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Fire-and-forget admin notification email
+        supabase.functions.invoke('send-event-notification', {
+          body: {
+            event_id: insertedEvent.id,
+            title: eventFormData.title,
+            date: eventFormData.date,
+            time: eventFormData.time,
+            location: eventFormData.location,
+            area: eventFormData.area,
+            category: eventFormData.category,
+            type: eventFormData.type,
+            organizer: eventFormData.organizer || undefined,
+            contact_email: eventFormData.contact_email || undefined,
+            contact_phone: eventFormData.contact_phone || undefined,
+            excerpt: eventFormData.excerpt || undefined,
+          }
+        }).catch(err => console.error('Failed to send event notification:', err));
 
         toast({
           title: "Success!",

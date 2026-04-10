@@ -150,11 +150,31 @@ const AddEvent = () => {
         user_id: user?.id || null
       };
 
-      const { error } = await supabase
+      const { data: insertedEvent, error } = await supabase
         .from('events')
-        .insert([eventData] as any);
+        .insert([eventData] as any)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Fire-and-forget admin notification email
+      supabase.functions.invoke('send-event-notification', {
+        body: {
+          event_id: insertedEvent.id,
+          title: formData.title,
+          date: formData.date,
+          time: formData.time,
+          location: formData.location,
+          area: formData.area,
+          category: formData.category,
+          type: formData.type,
+          organizer: formData.organizer || undefined,
+          contact_email: formData.contact_email || undefined,
+          contact_phone: formData.contact_phone || undefined,
+          excerpt: formData.excerpt || undefined,
+        }
+      }).catch(err => console.error('Failed to send event notification:', err));
 
       setSubmitSuccess(true);
       
