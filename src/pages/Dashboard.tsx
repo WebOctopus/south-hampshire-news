@@ -46,8 +46,31 @@ import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog'
 import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
 
+const defaultEventFormData = {
+  title: '',
+  description: '',
+  date: '',
+  date_end: '',
+  time: '',
+  end_time: '',
+  location: '',
+  area: '',
+  postcode: '',
+  organizer: '',
+  category: '',
+  type: '',
+  excerpt: '',
+  full_description: '',
+  ticket_url: '',
+  contact_email: '',
+  contact_phone: '',
+  image: ''
+};
+
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
+  const { items: eventCategories } = useEventCategories();
+  const { items: eventTypes } = useEventTypes();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -494,6 +517,49 @@ const Dashboard = () => {
     });
   };
 
+  const uploadEventImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
+  const handleEventImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: "File too large", description: "Please select an image under 5MB", variant: "destructive" });
+        return;
+      }
+      setEventImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setEventImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const resetEventForm = () => {
+    setEventFormData({ ...defaultEventFormData });
+    setEventImageFile(null);
+    setEventImagePreview(null);
+  };
+
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -501,34 +567,39 @@ const Dashboard = () => {
     setSubmitting(true);
 
     try {
+      // Upload image if a new file is selected
+      let imageUrl = eventFormData.image;
+      if (eventImageFile) {
+        const uploaded = await uploadEventImage(eventImageFile);
+        if (uploaded) {
+          imageUrl = uploaded;
+        } else {
+          toast({ title: "Image upload failed", description: "Event will be saved without a new image", variant: "destructive" });
+        }
+      }
+
+      const payload = { ...eventFormData, image: imageUrl };
+
       if (editingEvent) {
         const { error } = await supabase
           .from('events')
-          .update(eventFormData)
+          .update(payload)
           .eq('id', editingEvent.id);
 
         if (error) throw error;
 
-        toast({
-          title: "Success!",
-          description: "Your event has been updated successfully."
-        });
-
+        toast({ title: "Success!", description: "Your event has been updated successfully." });
         setEditingEvent(null);
         setActiveTab('events');
       } else {
         const { data: insertedEvent, error } = await supabase
           .from('events')
-          .insert([{
-            ...eventFormData,
-            user_id: user.id
-          }])
+          .insert([{ ...payload, user_id: user.id }])
           .select()
           .single();
 
         if (error) throw error;
 
-        // Fire-and-forget admin notification email
         supabase.functions.invoke('send-event-notification', {
           body: {
             event_id: insertedEvent.id,
@@ -540,37 +611,18 @@ const Dashboard = () => {
             category: eventFormData.category,
             type: eventFormData.type,
             organizer: eventFormData.organizer || undefined,
-            excerpt: eventFormData.description || undefined,
+            excerpt: eventFormData.excerpt || eventFormData.description || undefined,
           }
         }).catch(err => console.error('Failed to send event notification:', err));
 
-        toast({
-          title: "Success!",
-          description: "Your event has been created successfully."
-        });
+        toast({ title: "Success!", description: "Your event has been created successfully." });
       }
 
-      setEventFormData({
-        title: '',
-        description: '',
-        date: '',
-        time: '',
-        location: '',
-        area: '',
-        postcode: '',
-        organizer: '',
-        category: '',
-        type: ''
-      });
-
+      resetEventForm();
       loadEvents();
 
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -582,14 +634,24 @@ const Dashboard = () => {
       title: event.title || '',
       description: event.description || '',
       date: event.date || '',
+      date_end: event.date_end || '',
       time: event.time || '',
+      end_time: event.end_time || '',
       location: event.location || '',
       area: event.area || '',
       postcode: event.postcode || '',
       organizer: event.organizer || '',
       category: event.category || '',
-      type: event.type || ''
+      type: event.type || '',
+      excerpt: event.excerpt || '',
+      full_description: event.full_description || '',
+      ticket_url: event.ticket_url || '',
+      contact_email: event.contact_email || '',
+      contact_phone: event.contact_phone || '',
+      image: event.image || ''
     });
+    setEventImageFile(null);
+    setEventImagePreview(null);
     setActiveTab('create-event');
   };
 
