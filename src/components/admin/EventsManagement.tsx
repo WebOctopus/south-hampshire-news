@@ -56,7 +56,7 @@ export function EventsManagement() {
   const [activeTab, setActiveTab] = useState<'all' | 'submissions' | 'taxonomies'>('all');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newTypeName, setNewTypeName] = useState('');
-  const [editingTaxonomy, setEditingTaxonomy] = useState<{ id: string; name: string } | null>(null);
+  const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
     excerpt: '',
