@@ -1,20 +1,40 @@
 
 
-## Turn Area Field into a Dropdown of Distribution Areas
+## Add Admin Notification Email for New Event Submissions
 
 ### Problem
-The "Area / Town" field on the public event submission form is a free-text input, allowing submissions for areas outside the distribution coverage.
+When a community member submits an event for review, no notification is sent to admins. Admins must manually check the dashboard for pending submissions.
 
 ### Solution
-Replace the text input with a `Select` dropdown populated from the `editionAreas` data (the same areas used across the site for editions/distribution). This restricts submissions to only areas you cover.
+Create a new Edge Function (`send-event-notification`) that sends an email to the admin via Resend when a new event is submitted. The email includes a direct link to the event detail page and key event details.
+
+After inserting the event, call this Edge Function from the submission form with the event data.
 
 ### Changes
 
-**File: `src/pages/AddEvent.tsx`**
-- Import `editionAreas` from `@/data/editionAreas`
-- Import `Select`, `SelectContent`, `SelectItem`, `SelectTrigger`, `SelectValue` from the UI library
-- Replace the `<Input>` for "Area / Town" (lines 387-395) with a `<Select>` dropdown listing all edition area names
-- Keep the field required
+#### 1. New Edge Function: `supabase/functions/send-event-notification/index.ts`
+- Uses Resend (matching existing pattern from `send-booking-confirmation-email`)
+- Sends to admin email (`discover@discovermagazines.co.uk`)
+- CC same address (matching existing CC pattern)
+- Email contains:
+  - Event title, date, time, location, area, category, organizer
+  - Contact email/phone if provided
+  - Direct link to the event: `https://south-hampshire-news.lovable.app/events/{event_id}`
+  - Direct link to admin pending submissions tab
+- From: `Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>`
 
-The 15 distribution areas (Southampton City Suburbs, Chandler's Ford, Fair Oak, Hedge End, Locks Heath, Fareham, Wickham, Winchester, Romsey, Totton, New Forest, Sholing, Hamble, Stockbridge, etc.) will appear as selectable options.
+#### 2. Update `src/pages/AddEvent.tsx`
+- Change the insert to use `.select().single()` so we get the created event's `id` back
+- After successful insert, call `supabase.functions.invoke('send-event-notification', { body: { ... } })` with the event details and the returned `id`
+- Fire-and-forget (don't block the success UI on email delivery)
+
+#### 3. Also update `src/pages/Dashboard.tsx`
+- Same change for the event submission form in the user dashboard (line ~484)
+- Call the same Edge Function after successful insert
+
+### Technical Details
+- Follows existing Resend pattern used across the project
+- Uses `RESEND_API_KEY` already configured in Edge Function secrets
+- Event URL format: `https://south-hampshire-news.lovable.app/events/{id}`
+- Admin URL: `https://south-hampshire-news.lovable.app/admin` (Events Management tab)
 
