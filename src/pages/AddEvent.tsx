@@ -108,6 +108,16 @@ const AddEvent = () => {
       return;
     }
 
+    // On-behalf requires contact email
+    if (isOnBehalf && !formData.contact_email) {
+      toast({
+        title: "Organiser email required",
+        description: "Please enter the organiser's email address so we can send them login details.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -125,6 +135,42 @@ const AddEvent = () => {
             description: "Your event will be submitted without an image",
             variant: "destructive"
           });
+        }
+      }
+
+      // Handle on-behalf flow: create/find organiser account
+      let organiserUserId: string | null = null;
+      let organiserPassword: string | null = null;
+      let isExistingUser = false;
+
+      if (isOnBehalf && formData.contact_email) {
+        const tempPassword = crypto.randomUUID().slice(0, 12);
+        
+        const { data: manageResult, error: manageError } = await supabase.functions.invoke('admin-manage-user', {
+          body: {
+            action: 'create_user',
+            email: formData.contact_email,
+            password: tempPassword,
+            display_name: formData.organizer || formData.contact_email.split('@')[0],
+            phone: formData.contact_phone || undefined,
+            allow_existing_user: true,
+            send_email: false, // We'll send our own email
+          }
+        });
+
+        if (manageError) {
+          console.error('Error creating organiser account:', manageError);
+          toast({
+            title: "Account creation failed",
+            description: "Could not create organiser account. The event will be submitted without linking.",
+            variant: "destructive"
+          });
+        } else if (manageResult) {
+          organiserUserId = manageResult.user_id;
+          isExistingUser = manageResult.is_existing_user === true;
+          if (!isExistingUser) {
+            organiserPassword = tempPassword;
+          }
         }
       }
 
@@ -151,7 +197,7 @@ const AddEvent = () => {
         is_published: false, // Pending admin approval
         featured: false,
         links: [],
-        user_id: user?.id || null
+        user_id: isOnBehalf && organiserUserId ? organiserUserId : (user?.id || null)
       };
 
       const { data: insertedEvent, error } = await supabase
@@ -180,11 +226,27 @@ const AddEvent = () => {
         }
       }).catch(err => console.error('Failed to send event notification:', err));
 
+      // Fire-and-forget organiser login email (on-behalf only)
+      if (isOnBehalf && formData.contact_email && organiserUserId) {
+        supabase.functions.invoke('send-event-organiser-login', {
+          body: {
+            email: formData.contact_email,
+            password: organiserPassword,
+            is_existing_user: isExistingUser,
+            event_id: insertedEvent.id,
+            event_title: formData.title,
+            organiser_name: formData.organizer || undefined,
+          }
+        }).catch(err => console.error('Failed to send organiser login email:', err));
+      }
+
       setSubmitSuccess(true);
       
       toast({
         title: "Event Submitted!",
-        description: "Your event has been submitted for review. It will appear once approved by an admin."
+        description: isOnBehalf 
+          ? "Event submitted and organiser has been emailed with their login details."
+          : "Your event has been submitted for review. It will appear once approved by an admin."
       });
 
     } catch (error: any) {
