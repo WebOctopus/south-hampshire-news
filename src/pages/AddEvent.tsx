@@ -386,14 +386,22 @@ const AddEvent = () => {
                     </div>
                     <div>
                       <Label htmlFor="area">Area / Town *</Label>
-                      <Input
-                        id="area"
+                      <Select
                         value={formData.area}
-                        onChange={(e) => handleInputChange('area', e.target.value)}
-                        placeholder="e.g. Wokingham"
+                        onValueChange={(value) => handleInputChange('area', value)}
                         disabled={isSubmitting}
-                        required
-                      />
+                      >
+                        <SelectTrigger id="area">
+                          <SelectValue placeholder="Select your area" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {editionAreas.map((area) => (
+                            <SelectItem key={area.id} value={area.name}>
+                              {area.name} ({area.postcodes})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label htmlFor="postcode">Postcode</Label>
