@@ -17,8 +17,10 @@ import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 
 const AddEvent = () => {
+  const { isAdmin } = useAuth();
   const { items: eventCategories } = useEventCategories();
   const { items: eventTypes } = useEventTypes();
+  const [isOnBehalf, setIsOnBehalf] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     organizer: '',
