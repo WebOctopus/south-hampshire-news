@@ -618,7 +618,9 @@ const AddEvent = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="contact_email">Contact Email</Label>
+                      <Label htmlFor="contact_email">
+                        Contact Email {isOnBehalf && <span className="text-destructive">* (organiser login)</span>}
+                      </Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -629,6 +631,7 @@ const AddEvent = () => {
                           placeholder="events@example.com"
                           className="pl-10"
                           disabled={isSubmitting}
+                          required={isOnBehalf}
                         />
                       </div>
                     </div>
