@@ -1,43 +1,31 @@
 
 
-## Add Admin-Editable Event Categories & Types
+## Fix Phone Number Leading Zero in Events CSV Template
 
 ### Problem
-Event categories and types are hardcoded arrays in `src/hooks/useEvents.ts`. Admins cannot add, edit, or remove them.
+When the CSV template is downloaded and opened in Excel/Sheets, phone numbers like `01234567890` lose their leading `0` because the application treats them as numeric values. This is a common CSV/spreadsheet issue.
 
 ### Solution
-Store categories and types in two new database tables. Add a management section within the Events Management admin page. Update all consumers to fetch from the database instead of using hardcoded arrays.
 
-### Changes
+**File: `src/components/admin/EventsManagement.tsx`**
 
-#### 1. Database Migration
-Create two tables:
-- **`event_categories`**: `id`, `name`, `sort_order`, `is_active`, `created_at`
-- **`event_types`**: `id`, `name`, `sort_order`, `is_active`, `created_at`
+1. **Template download**: Prefix the phone number example values with an equals-sign-quote pattern (`="01234567890"`) which forces Excel to treat them as text. Alternatively, add a comment row or note in the template header.
 
-Seed both with the current hardcoded values. Add RLS policies for public read, admin write.
+2. **Better approach**: Add a BOM (byte order mark) to the CSV and wrap phone numbers with `=""` formula syntax so Excel keeps them as text:
+   - Change example phone from `"01234567890"` to `="01234567890"` 
+   - Actually, the cleanest fix: wrap the phone value in the CSV as `="'01234567890"` or use the tab-separated trick
 
-#### 2. New Hook: `src/hooks/useEventTaxonomies.ts`
-- `useEventCategories()` — fetches active categories ordered by `sort_order`
-- `useEventTypes()` — fetches active types ordered by `sort_order`
-- CRUD functions for admin use (create, update, delete, reorder)
+3. **Simplest reliable fix**: In the `downloadCsvTemplate` function, use the Excel formula trick `="01234567890"` for the phone column example. Also, in the CSV import parser (`handleCsvUpload`), ensure that if the `contact_phone` value is purely numeric and doesn't start with `0`, we don't try to "fix" it (the data is already lost at that point), but we can add a note in the template.
 
-#### 3. Events Management (`src/components/admin/EventsManagement.tsx`)
-- Add a third tab: "Categories & Types" alongside "All Events" and "Pending Submissions"
-- Two side-by-side lists (Categories and Types) with:
-  - Add new item (text input + button)
-  - Edit name inline
-  - Delete (with confirmation)
-  - Toggle active/inactive
-  - Drag or arrow-button reordering
+4. **Add instruction row or note**: Add a comment in the downloaded template indicating phone numbers should be formatted as text in the spreadsheet, and prefix the example with the Excel text-force pattern.
 
-#### 4. Update Consumers
-- **`src/hooks/useEvents.ts`**: Remove hardcoded `EVENT_CATEGORIES` and `EVENT_TYPES` arrays. Keep them as empty arrays for backward compatibility, but mark deprecated.
-- **`src/components/admin/EventsManagement.tsx`**: Use `useEventCategories()` and `useEventTypes()` for the category/type dropdowns in the event form.
-- **`src/pages/AddEvent.tsx`** (front-end form): Use the same hooks so the public submission form shows admin-configured options.
+### Specific change
+In `downloadCsvTemplate()` (~line 282):
+- Wrap phone examples with `="01234567890"` format so Excel preserves leading zeros
+- Add a UTF-8 BOM to help Excel handle the file correctly
 
-### Technical Details
-- Tables use `sort_order` integer for ordering and `is_active` boolean to hide without deleting
-- RLS: `SELECT` for everyone (public form needs it), `INSERT/UPDATE/DELETE` restricted via `has_role(auth.uid(), 'admin')`
-- Seed migration inserts current hardcoded values so nothing changes on deploy
+In the import parser (~line 309):
+- Strip any `=` or extra quotes from the Excel formula wrapper when parsing phone values back
+
+This is a small, targeted fix to two spots in one file.
 
