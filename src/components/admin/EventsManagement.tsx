@@ -39,7 +39,8 @@ import {
   Youtube
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { useEvents, Event, EventFormData, EventLink, EVENT_CATEGORIES, EVENT_TYPES } from '@/hooks/useEvents';
+import { useEvents, Event, EventFormData, EventLink } from '@/hooks/useEvents';
+import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
