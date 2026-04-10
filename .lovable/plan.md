@@ -1,67 +1,43 @@
 
 
-## Fix: Company Name Not Saved to Profile During Quote/Booking User Creation
+## Add Admin-Editable Event Categories & Types
 
 ### Problem
-When a user is created via quote (admin "on behalf" or self-service), the company name from the contact form is never written to the `profiles` table. Two gaps:
+Event categories and types are hardcoded arrays in `src/hooks/useEvents.ts`. Admins cannot add, edit, or remove them.
 
-1. **`handle_new_user` DB trigger** only copies `display_name` from `raw_user_meta_data` — ignores `company`.
-2. **Admin "on behalf" flow** doesn't pass `company` to `create_user` at all, and neither flow updates the profile with company after creation.
+### Solution
+Store categories and types in two new database tables. Add a management section within the Events Management admin page. Update all consumers to fetch from the database instead of using hardcoded arrays.
 
-### Fix (3 changes)
+### Changes
 
-#### 1. DB Migration: Update `handle_new_user` trigger function
-Add company extraction from user metadata so it's automatically populated for new users (covers normal signup):
+#### 1. Database Migration
+Create two tables:
+- **`event_categories`**: `id`, `name`, `sort_order`, `is_active`, `created_at`
+- **`event_types`**: `id`, `name`, `sort_order`, `is_active`, `created_at`
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO ''
-AS $$
-BEGIN
-  INSERT INTO public.profiles (user_id, display_name, company, phone)
-  VALUES (
-    NEW.id, 
-    COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.email),
-    NEW.raw_user_meta_data->>'company',
-    NEW.raw_user_meta_data->>'phone'
-  );
-  RETURN NEW;
-END;
-$$;
-```
+Seed both with the current hardcoded values. Add RLS policies for public read, admin write.
 
-#### 2. `src/components/AdvertisingStepForm.tsx` — Admin "on behalf" flow
-After user creation via edge function, upsert the profile with company, phone, and display_name. Add this after getting `userId` (around line 296):
+#### 2. New Hook: `src/hooks/useEventTaxonomies.ts`
+- `useEventCategories()` — fetches active categories ordered by `sort_order`
+- `useEventTypes()` — fetches active types ordered by `sort_order`
+- CRUD functions for admin use (create, update, delete, reorder)
 
-```ts
-await supabase.from('profiles').upsert({
-  user_id: userId,
-  display_name: fullName,
-  company: contactData.companyName || null,
-  phone: contactData.phone || null,
-}, { onConflict: 'user_id' });
-```
+#### 3. Events Management (`src/components/admin/EventsManagement.tsx`)
+- Add a third tab: "Categories & Types" alongside "All Events" and "Pending Submissions"
+- Two side-by-side lists (Categories and Types) with:
+  - Add new item (text input + button)
+  - Edit name inline
+  - Delete (with confirmation)
+  - Toggle active/inactive
+  - Drag or arrow-button reordering
 
-This covers both new users (where the trigger may not have company) and existing users (where profile already exists but may lack company).
+#### 4. Update Consumers
+- **`src/hooks/useEvents.ts`**: Remove hardcoded `EVENT_CATEGORIES` and `EVENT_TYPES` arrays. Keep them as empty arrays for backward compatibility, but mark deprecated.
+- **`src/components/admin/EventsManagement.tsx`**: Use `useEventCategories()` and `useEventTypes()` for the category/type dropdowns in the event form.
+- **`src/pages/AddEvent.tsx`** (front-end form): Use the same hooks so the public submission form shows admin-configured options.
 
-#### 3. `supabase/functions/admin-manage-user/index.ts` — Pass company in user_metadata
-Update `create_user` action to include company in `user_metadata`:
-
-```ts
-user_metadata: {
-  display_name: createDisplayName || undefined,
-  company: body.company || undefined,
-  phone: body.phone || undefined,
-}
-```
-
-And update the caller in `AdvertisingStepForm.tsx` to pass `company` and `phone` in the edge function call body.
-
-### Summary
-- DB trigger updated to capture company/phone from metadata on signup
-- Admin flow explicitly upserts profile with company after user creation
-- Edge function forwards company to user metadata
+### Technical Details
+- Tables use `sort_order` integer for ordering and `is_active` boolean to hide without deleting
+- RLS: `SELECT` for everyone (public form needs it), `INSERT/UPDATE/DELETE` restricted via `has_role(auth.uid(), 'admin')`
+- Seed migration inserts current hardcoded values so nothing changes on deploy
 
