@@ -53,8 +53,10 @@ export function EventsManagement() {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 'submissions'>('all');
-  const [formData, setFormData] = useState<EventFormData>({
+  const [activeTab, setActiveTab] = useState<'all' | 'submissions' | 'taxonomies'>('all');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newTypeName, setNewTypeName] = useState('');
+  const [editingTaxonomy, setEditingTaxonomy] = useState<{ id: string; name: string } | null>(null);
     title: '',
     description: '',
     excerpt: '',
