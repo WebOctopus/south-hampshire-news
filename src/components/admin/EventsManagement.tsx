@@ -1205,6 +1205,201 @@ export function EventsManagement() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Categories & Types Tab */}
+        <TabsContent value="taxonomies">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Categories */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Event Categories</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="New category name"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newCategoryName.trim()) {
+                        e.preventDefault();
+                        createCategory(newCategoryName.trim());
+                        setNewCategoryName('');
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={async () => {
+                      if (newCategoryName.trim()) {
+                        await createCategory(newCategoryName.trim());
+                        setNewCategoryName('');
+                      }
+                    }}
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {catsLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {categories.map((cat, index) => (
+                      <div key={cat.id} className="flex items-center gap-2 p-2 border rounded-md">
+                        {editingTaxonomy?.id === cat.id ? (
+                          <Input
+                            value={editingTaxonomy.name}
+                            onChange={(e) => setEditingTaxonomy({ ...editingTaxonomy, name: e.target.value })}
+                            onKeyDown={async (e) => {
+                              if (e.key === 'Enter') {
+                                await updateCategory(cat.id, { name: editingTaxonomy.name });
+                                setEditingTaxonomy(null);
+                              }
+                              if (e.key === 'Escape') setEditingTaxonomy(null);
+                            }}
+                            onBlur={async () => {
+                              await updateCategory(cat.id, { name: editingTaxonomy.name });
+                              setEditingTaxonomy(null);
+                            }}
+                            autoFocus
+                            className="h-8"
+                          />
+                        ) : (
+                          <span
+                            className={`flex-1 text-sm cursor-pointer ${!cat.is_active ? 'line-through text-muted-foreground' : ''}`}
+                            onDoubleClick={() => setEditingTaxonomy({ id: cat.id, name: cat.name })}
+                          >
+                            {cat.name}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <Switch
+                            checked={cat.is_active}
+                            onCheckedChange={(checked) => updateCategory(cat.id, { is_active: checked })}
+                          />
+                          <Button variant="ghost" size="sm" onClick={() => moveCatUp(index)} disabled={index === 0}>
+                            ↑
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => moveCatDown(index)} disabled={index === categories.length - 1}>
+                            ↓
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setEditingTaxonomy({ id: cat.id, name: cat.name })}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm(`Delete "${cat.name}"?`)) removeCategory(cat.id);
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Types */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Event Types</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="New type name"
+                    value={newTypeName}
+                    onChange={(e) => setNewTypeName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newTypeName.trim()) {
+                        e.preventDefault();
+                        createType(newTypeName.trim());
+                        setNewTypeName('');
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={async () => {
+                      if (newTypeName.trim()) {
+                        await createType(newTypeName.trim());
+                        setNewTypeName('');
+                      }
+                    }}
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {typesLoading ? (
+                  <p className="text-sm text-muted-foreground">Loading...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {types.map((type, index) => (
+                      <div key={type.id} className="flex items-center gap-2 p-2 border rounded-md">
+                        {editingTaxonomy?.id === type.id ? (
+                          <Input
+                            value={editingTaxonomy.name}
+                            onChange={(e) => setEditingTaxonomy({ ...editingTaxonomy, name: e.target.value })}
+                            onKeyDown={async (e) => {
+                              if (e.key === 'Enter') {
+                                await updateType(type.id, { name: editingTaxonomy.name });
+                                setEditingTaxonomy(null);
+                              }
+                              if (e.key === 'Escape') setEditingTaxonomy(null);
+                            }}
+                            onBlur={async () => {
+                              await updateType(type.id, { name: editingTaxonomy.name });
+                              setEditingTaxonomy(null);
+                            }}
+                            autoFocus
+                            className="h-8"
+                          />
+                        ) : (
+                          <span
+                            className={`flex-1 text-sm cursor-pointer ${!type.is_active ? 'line-through text-muted-foreground' : ''}`}
+                            onDoubleClick={() => setEditingTaxonomy({ id: type.id, name: type.name })}
+                          >
+                            {type.name}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <Switch
+                            checked={type.is_active}
+                            onCheckedChange={(checked) => updateType(type.id, { is_active: checked })}
+                          />
+                          <Button variant="ghost" size="sm" onClick={() => moveTypeUp(index)} disabled={index === 0}>
+                            ↑
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => moveTypeDown(index)} disabled={index === types.length - 1}>
+                            ↓
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setEditingTaxonomy({ id: type.id, name: type.name })}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm(`Delete "${type.name}"?`)) removeType(type.id);
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
