@@ -10,10 +10,12 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { EVENT_CATEGORIES, EVENT_TYPES } from '@/hooks/useEvents';
+import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle } from 'lucide-react';
 
 const AddEvent = () => {
+  const { items: eventCategories } = useEventCategories();
+  const { items: eventTypes } = useEventTypes();
   const [formData, setFormData] = useState({
     title: '',
     organizer: '',
@@ -280,8 +282,8 @@ const AddEvent = () => {
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent>
-                            {EVENT_CATEGORIES.map(cat => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            {eventCategories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -297,8 +299,8 @@ const AddEvent = () => {
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent>
-                            {EVENT_TYPES.map(type => (
-                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                            {eventTypes.map(type => (
+                              <SelectItem key={type.id} value={type.name}>{type.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
