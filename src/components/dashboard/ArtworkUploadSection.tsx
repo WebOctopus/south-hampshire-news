@@ -70,16 +70,12 @@ export const ArtworkUploadSection = ({ booking, adSize }: ArtworkUploadSectionPr
         .upload(filePath, selectedFile);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('booking-artwork')
-        .getPublicUrl(filePath);
-
       const { error: insertError } = await supabase
         .from('booking_artwork' as any)
         .insert({
           booking_id: booking.id,
           user_id: user.id,
-          file_url: publicUrl,
+          file_url: filePath,
           file_name: selectedFile.name,
           file_size: selectedFile.size,
           notes: notes || null,
