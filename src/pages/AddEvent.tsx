@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { editionAreas } from '@/data/editionAreas';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,42 @@ const AddEvent = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Spam protection state
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState('');
+  const formLoadedAtRef = useRef<number>(Date.now());
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+
+  // Fetch Turnstile site key on mount (only needed for non-admin public submissions)
+  useEffect(() => {
+    if (isAdmin) return;
+    formLoadedAtRef.current = Date.now();
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('submit-event', {
+          method: 'GET' as never,
+        });
+        if (error) throw error;
+        if (data?.siteKey) setTurnstileSiteKey(data.siteKey);
+      } catch (err) {
+        // Fallback: try a direct GET in case invoke doesn't surface GETs
+        try {
+          const url = `https://qajegkbvbpekdggtrupv.supabase.co/functions/v1/submit-event`;
+          const res = await fetch(url, {
+            headers: {
+              apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhamVna2J2YnBla2RnZ3RydXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxMjM1NjEsImV4cCI6MjA2NDY5OTU2MX0.pYwQldpBjowrqBL_rwyBipOU5SkEAytfJLBzmLPGuBQ',
+            },
+          });
+          const json = await res.json();
+          if (json?.siteKey) setTurnstileSiteKey(json.siteKey);
+        } catch (e) {
+          console.error('Failed to load Turnstile config:', e);
+        }
+      }
+    })();
+  }, [isAdmin]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
