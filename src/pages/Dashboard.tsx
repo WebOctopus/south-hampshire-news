@@ -44,6 +44,8 @@ import BookingTerms from '@/components/dashboard/BookingTerms';
 import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog';
 import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
+import MagazinesTab from '@/components/dashboard/MagazinesTab';
+import AdvertiserStatusBanner from '@/components/dashboard/AdvertiserStatusBanner';
 
 const defaultEventFormData: EventFormFieldsData & { image: string } = {
   ...defaultEventFormFieldsData,
