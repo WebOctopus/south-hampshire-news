@@ -23,8 +23,11 @@ import {
 } from 'lucide-react';
 import { Event, EventLink } from '@/hooks/useEvents';
 
+const SUPABASE_FUNCTIONS_URL = 'https://qajegkbvbpekdggtrupv.supabase.co/functions/v1';
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const EventDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [event, setEvent] = useState<Event | null>(null);
@@ -33,17 +36,28 @@ const EventDetail = () => {
 
   useEffect(() => {
     const fetchEvent = async () => {
-      if (!id) return;
+      if (!slug) return;
 
       try {
-        const { data, error } = await supabase
+        // Try slug lookup first; fall back to UUID for legacy links
+        const isUuid = UUID_REGEX.test(slug);
+        let query = supabase
           .from('events')
           .select('*')
-          .eq('id', id)
-          .eq('is_published', true)
-          .single();
+          .eq('is_published', true);
+
+        const { data, error } = isUuid
+          ? await query.eq('id', slug).maybeSingle()
+          : await query.eq('slug', slug).maybeSingle();
 
         if (error) throw error;
+        if (!data) throw new Error('Event not found');
+
+        // Redirect legacy UUID URL to the canonical slug URL
+        if (isUuid && data.slug && data.slug !== slug) {
+          navigate(`/events/${data.slug}`, { replace: true });
+          return;
+        }
 
         const mappedEvent: Event = {
           ...data,
@@ -58,7 +72,7 @@ const EventDetail = () => {
           .select('*')
           .eq('is_published', true)
           .eq('category', data.category)
-          .neq('id', id)
+          .neq('id', data.id)
           .gte('date', new Date().toISOString().split('T')[0])
           .order('date', { ascending: true })
           .limit(3);
@@ -83,7 +97,7 @@ const EventDetail = () => {
     };
 
     fetchEvent();
-  }, [id, navigate, toast]);
+  }, [slug, navigate, toast]);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-GB', {
@@ -118,21 +132,26 @@ const EventDetail = () => {
   };
 
   const handleShare = async () => {
+    // Use the OG-preview function URL so social platforms render rich previews
+    const shareUrl = event?.slug
+      ? `${SUPABASE_FUNCTIONS_URL}/event-og?slug=${encodeURIComponent(event.slug)}`
+      : window.location.href;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: event?.title,
           text: event?.excerpt || event?.description || '',
-          url: window.location.href
+          url: shareUrl
         });
       } catch (error) {
         console.log('Share cancelled');
       }
     } else {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareUrl);
       toast({
         title: 'Link copied',
-        description: 'Event link copied to clipboard'
+        description: 'Shareable event link copied to clipboard'
       });
     }
   };
@@ -283,7 +302,7 @@ const EventDetail = () => {
                     {relatedEvents.map((relEvent) => (
                       <Link 
                         key={relEvent.id} 
-                        to={`/events/${relEvent.id}`}
+                        to={`/events/${relEvent.slug || relEvent.id}`}
                         className="group"
                       >
                         <Card className="overflow-hidden h-full transition-shadow hover:shadow-md">
