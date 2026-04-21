@@ -39,7 +39,7 @@ export function EventCard({ event }: EventCardProps) {
   const endDateInfo = hasDateRange ? formatShortDate(event.date_end!) : null;
 
   return (
-    <Link to={`/events/${event.id}`} className="group block">
+    <Link to={`/events/${event.slug || event.id}`} className="group block">
       <Card className="overflow-hidden h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-border/50">
         <div className="relative">
           {/* Image */}

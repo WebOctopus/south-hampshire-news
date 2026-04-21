@@ -40,7 +40,7 @@ const App = () => (
           
           <Route path="/whats-on" element={<WhatsOn />} />
           <Route path="/whats-on/archive" element={<EventsArchive />} />
-          <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/events/:slug" element={<EventDetail />} />
           <Route path="/competitions" element={<Competitions />} />
           <Route path="/advertising" element={<Advertising />} />
           <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
