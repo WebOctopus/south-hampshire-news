@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { editionAreas } from '@/data/editionAreas';
-import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EventFormFields, defaultEventFormFieldsData, type EventFormFieldsData } from '@/components/events/EventFormFields';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
@@ -46,31 +45,13 @@ import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog'
 import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
 
-const defaultEventFormData = {
-  title: '',
-  description: '',
-  date: '',
-  date_end: '',
-  time: '',
-  end_time: '',
-  location: '',
-  area: '',
-  postcode: '',
-  organizer: '',
-  category: '',
-  type: '',
-  excerpt: '',
-  full_description: '',
-  ticket_url: '',
-  contact_email: '',
-  contact_phone: '',
+const defaultEventFormData: EventFormFieldsData & { image: string } = {
+  ...defaultEventFormFieldsData,
   image: ''
 };
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
-  const { items: eventCategories } = useEventCategories();
-  const { items: eventTypes } = useEventTypes();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -117,29 +98,11 @@ const Dashboard = () => {
     postcode: ''
   });
 
-  const [eventFormData, setEventFormData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    date_end: '',
-    time: '',
-    end_time: '',
-    location: '',
-    area: '',
-    postcode: '',
-    organizer: '',
-    category: '',
-    type: '',
-    excerpt: '',
-    full_description: '',
-    ticket_url: '',
-    contact_email: '',
-    contact_phone: '',
-    image: ''
+  const [eventFormData, setEventFormData] = useState<EventFormFieldsData & { image: string }>({
+    ...defaultEventFormData,
   });
   const [eventImageFile, setEventImageFile] = useState<File | null>(null);
   const [eventImagePreview, setEventImagePreview] = useState<string | null>(null);
-  const eventFileInputRef = useRef<HTMLInputElement>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -540,18 +503,21 @@ const Dashboard = () => {
     }
   };
 
-  const handleEventImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({ title: "File too large", description: "Please select an image under 5MB", variant: "destructive" });
-        return;
-      }
-      setEventImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setEventImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+  const handleEventImageChange = (file: File | null) => {
+    if (!file) {
+      setEventImageFile(null);
+      setEventImagePreview(null);
+      handleEventInputChange('image', '');
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Please select an image under 5MB", variant: "destructive" });
+      return;
+    }
+    setEventImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setEventImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const resetEventForm = () => {
@@ -612,7 +578,7 @@ const Dashboard = () => {
             category: eventFormData.category,
             type: eventFormData.type,
             organizer: eventFormData.organizer || undefined,
-            excerpt: eventFormData.excerpt || eventFormData.description || undefined,
+            excerpt: eventFormData.excerpt || undefined,
           }
         }).catch(err => console.error('Failed to send event notification:', err));
 
@@ -633,7 +599,6 @@ const Dashboard = () => {
     setEditingEvent(event);
     setEventFormData({
       title: event.title || '',
-      description: event.description || '',
       date: event.date || '',
       date_end: event.date_end || '',
       time: event.time || '',
@@ -649,6 +614,7 @@ const Dashboard = () => {
       ticket_url: event.ticket_url || '',
       contact_email: event.contact_email || '',
       contact_phone: event.contact_phone || '',
+      website_url: event.website_url || '',
       image: event.image || ''
     });
     setEventImageFile(null);
@@ -1078,309 +1044,22 @@ const Dashboard = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleEventSubmit} className="space-y-6">
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Event Image</label>
-            <div className="flex items-start gap-4">
-              {(eventImagePreview || eventFormData.image) && (
-                <div className="relative w-32 h-32 rounded-md overflow-hidden border">
-                  <img
-                    src={eventImagePreview || eventFormData.image}
-                    alt="Event preview"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEventImageFile(null);
-                      setEventImagePreview(null);
-                      handleEventInputChange('image', '');
-                    }}
-                    className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
-              <div>
-                <input
-                  ref={eventFileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  onChange={handleEventImageChange}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => eventFileInputRef.current?.click()}
-                  className="flex items-center gap-2"
-                >
-                  <Upload className="h-4 w-4" />
-                  {eventImagePreview || eventFormData.image ? 'Replace Image' : 'Upload Image'}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-1">Max 5MB (JPG, PNG, GIF, WebP)</p>
-              </div>
-            </div>
-          </div>
+          <EventFormFields
+            formData={eventFormData}
+            onChange={handleEventInputChange}
+            imagePreview={eventImagePreview}
+            existingImageUrl={eventFormData.image || null}
+            onImageChange={handleEventImageChange}
+            disabled={submitting}
+          />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="event-title" className="block text-sm font-medium mb-1">
-                Event Title *
-              </label>
-              <Input
-                id="event-title"
-                value={eventFormData.title}
-                onChange={(e) => handleEventInputChange('title', e.target.value)}
-                required
-                placeholder="Enter event title"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="event-organizer" className="block text-sm font-medium mb-1">
-                Organiser
-              </label>
-              <Input
-                id="event-organizer"
-                value={eventFormData.organizer}
-                onChange={(e) => handleEventInputChange('organizer', e.target.value)}
-                placeholder="Event organiser"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="event-excerpt" className="block text-sm font-medium mb-1">
-              Short Summary
-            </label>
-            <Textarea
-              id="event-excerpt"
-              value={eventFormData.excerpt}
-              onChange={(e) => handleEventInputChange('excerpt', e.target.value)}
-              placeholder="A brief summary of your event (shown in listings)"
-              rows={2}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="event-description" className="block text-sm font-medium mb-1">
-              Description
-            </label>
-            <Textarea
-              id="event-description"
-              value={eventFormData.description}
-              onChange={(e) => handleEventInputChange('description', e.target.value)}
-              placeholder="Describe your event..."
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="event-full-description" className="block text-sm font-medium mb-1">
-              Full Description
-            </label>
-            <Textarea
-              id="event-full-description"
-              value={eventFormData.full_description}
-              onChange={(e) => handleEventInputChange('full_description', e.target.value)}
-              placeholder="Detailed description with all the information attendees need..."
-              rows={6}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="event-date" className="block text-sm font-medium mb-1">
-                Start Date *
-              </label>
-              <Input
-                id="event-date"
-                type="date"
-                value={eventFormData.date}
-                onChange={(e) => handleEventInputChange('date', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="event-date-end" className="block text-sm font-medium mb-1">
-                End Date
-              </label>
-              <Input
-                id="event-date-end"
-                type="date"
-                value={eventFormData.date_end}
-                onChange={(e) => handleEventInputChange('date_end', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="event-time" className="block text-sm font-medium mb-1">
-                Start Time *
-              </label>
-              <Input
-                id="event-time"
-                type="time"
-                value={eventFormData.time}
-                onChange={(e) => handleEventInputChange('time', e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="event-end-time" className="block text-sm font-medium mb-1">
-                End Time
-              </label>
-              <Input
-                id="event-end-time"
-                type="time"
-                value={eventFormData.end_time}
-                onChange={(e) => handleEventInputChange('end_time', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="event-location" className="block text-sm font-medium mb-1">
-                Location *
-              </label>
-              <Input
-                id="event-location"
-                value={eventFormData.location}
-                onChange={(e) => handleEventInputChange('location', e.target.value)}
-                required
-                placeholder="Event venue"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="event-area" className="block text-sm font-medium mb-1">
-                Area *
-              </label>
-              <Select
-                value={eventFormData.area}
-                onValueChange={(value) => handleEventInputChange('area', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select area" />
-                </SelectTrigger>
-                <SelectContent>
-                  {editionAreas.map((area) => (
-                    <SelectItem key={area.name} value={area.name}>
-                      {area.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label htmlFor="event-postcode" className="block text-sm font-medium mb-1">
-                Postcode
-              </label>
-              <Input
-                id="event-postcode"
-                value={eventFormData.postcode}
-                onChange={(e) => handleEventInputChange('postcode', e.target.value)}
-                placeholder="SW1A 1AA"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="event-category" className="block text-sm font-medium mb-1">
-                Category *
-              </label>
-              <Select
-                value={eventFormData.category}
-                onValueChange={(value) => handleEventInputChange('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.name}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label htmlFor="event-type" className="block text-sm font-medium mb-1">
-                Event Type *
-              </label>
-              <Select 
-                value={eventFormData.type} 
-                onValueChange={(value) => handleEventInputChange('type', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select event type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventTypes.map((t) => (
-                    <SelectItem key={t.id} value={t.name}>
-                      {t.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="event-ticket-url" className="block text-sm font-medium mb-1">
-              Ticket URL
-            </label>
-            <Input
-              id="event-ticket-url"
-              type="url"
-              value={eventFormData.ticket_url}
-              onChange={(e) => handleEventInputChange('ticket_url', e.target.value)}
-              placeholder="https://tickets.example.com"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="event-contact-email" className="block text-sm font-medium mb-1">
-                Contact Email
-              </label>
-              <Input
-                id="event-contact-email"
-                type="email"
-                value={eventFormData.contact_email}
-                onChange={(e) => handleEventInputChange('contact_email', e.target.value)}
-                placeholder="organiser@example.com"
-              />
-            </div>
-            <div>
-              <label htmlFor="event-contact-phone" className="block text-sm font-medium mb-1">
-                Contact Phone
-              </label>
-              <Input
-                id="event-contact-phone"
-                type="tel"
-                value={eventFormData.contact_phone}
-                onChange={(e) => handleEventInputChange('contact_phone', e.target.value)}
-                placeholder="01onal 123456"
-              />
-            </div>
-          </div>
-
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full"
-            disabled={submitting || !eventFormData.title || !eventFormData.date || !eventFormData.time || !eventFormData.location || !eventFormData.area}
+            disabled={submitting || !eventFormData.title || !eventFormData.organizer || !eventFormData.date || !eventFormData.time || !eventFormData.location || !eventFormData.area || !eventFormData.category || !eventFormData.type}
           >
-            {submitting 
-              ? (editingEvent ? 'Updating Event...' : 'Creating Event...') 
+            {submitting
+              ? (editingEvent ? 'Updating Event...' : 'Creating Event...')
               : (editingEvent ? 'Update Event' : 'Create Event')
             }
           </Button>
