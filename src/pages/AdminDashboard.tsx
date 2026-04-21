@@ -46,6 +46,7 @@ const AdminDashboard = () => {
   const [businessCount, setBusinessCount] = useState(0);
   const [users, setUsers] = useState<any[]>([]);
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
+  const [effectiveAdvertiserStatuses, setEffectiveAdvertiserStatuses] = useState<Record<string, string>>({});
   const [stories, setStories] = useState<any[]>([]);
   const [activeSection, setActiveSection] = useState('overview');
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
