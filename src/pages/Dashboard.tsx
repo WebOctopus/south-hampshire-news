@@ -246,11 +246,12 @@ const Dashboard = () => {
       loadBookings();
       loadVoucherCount();
       checkAndUpdateFirstLogin();
+      loadAdvertiserStatus();
       
       // Check URL query parameter for tab selection (e.g. from email links)
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
-      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event', 'artwork', 'schedule'].includes(tabParam)) {
+      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event', 'artwork', 'schedule', 'magazines'].includes(tabParam)) {
         setActiveTab(tabParam);
         hasAppliedSmartDefault.current = true;
       }
