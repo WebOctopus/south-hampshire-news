@@ -52,8 +52,6 @@ const defaultEventFormData: EventFormFieldsData & { image: string } = {
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
-  const { items: eventCategories } = useEventCategories();
-  const { items: eventTypes } = useEventTypes();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -100,29 +98,11 @@ const Dashboard = () => {
     postcode: ''
   });
 
-  const [eventFormData, setEventFormData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    date_end: '',
-    time: '',
-    end_time: '',
-    location: '',
-    area: '',
-    postcode: '',
-    organizer: '',
-    category: '',
-    type: '',
-    excerpt: '',
-    full_description: '',
-    ticket_url: '',
-    contact_email: '',
-    contact_phone: '',
-    image: ''
+  const [eventFormData, setEventFormData] = useState<EventFormFieldsData & { image: string }>({
+    ...defaultEventFormData,
   });
   const [eventImageFile, setEventImageFile] = useState<File | null>(null);
   const [eventImagePreview, setEventImagePreview] = useState<string | null>(null);
-  const eventFileInputRef = useRef<HTMLInputElement>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
