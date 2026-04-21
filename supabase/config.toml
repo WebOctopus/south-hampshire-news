@@ -97,3 +97,6 @@ verify_jwt = false
 
 [functions.event-og]
 verify_jwt = false
+
+[functions.submit-event]
+verify_jwt = false
