@@ -267,11 +267,9 @@ const ArtworkManagement = () => {
                           <Button
                             size="sm"
                             variant="ghost"
-                            asChild
+                            onClick={() => handlePreview(artwork.file_url)}
                           >
-                            <a href={artwork.file_url} target="_blank" rel="noopener noreferrer">
-                              <Eye className="h-3 w-3" />
-                            </a>
+                            <Eye className="h-3 w-3" />
                           </Button>
                         </div>
                       </TableCell>
