@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { editionAreas } from '@/data/editionAreas';
-import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EventFormFields, defaultEventFormFieldsData, type EventFormFieldsData } from '@/components/events/EventFormFields';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
@@ -46,24 +45,8 @@ import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog'
 import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
 
-const defaultEventFormData = {
-  title: '',
-  description: '',
-  date: '',
-  date_end: '',
-  time: '',
-  end_time: '',
-  location: '',
-  area: '',
-  postcode: '',
-  organizer: '',
-  category: '',
-  type: '',
-  excerpt: '',
-  full_description: '',
-  ticket_url: '',
-  contact_email: '',
-  contact_phone: '',
+const defaultEventFormData: EventFormFieldsData & { image: string } = {
+  ...defaultEventFormFieldsData,
   image: ''
 };
 
