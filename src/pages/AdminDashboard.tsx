@@ -771,6 +771,7 @@ const AdminDashboard = () => {
                           <TableHead>Company</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Role</TableHead>
+                          <TableHead>Advertiser Status</TableHead>
                           <TableHead>Agency Status</TableHead>
                           <TableHead>Agency Name</TableHead>
                           <TableHead>Discount %</TableHead>
