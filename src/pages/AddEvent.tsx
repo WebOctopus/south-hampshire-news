@@ -176,6 +176,73 @@ const AddEvent = () => {
         }
       }
 
+      // ============================================================
+      // PUBLIC (non-admin) PATH — route through validated edge function
+      // ============================================================
+      if (!isAdmin) {
+        if (!turnstileToken) {
+          toast({
+            title: "Please complete the captcha",
+            description: "We use a quick check to keep spam out.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        const { data: result, error: fnError } = await supabase.functions.invoke('submit-event', {
+          body: {
+            title: formData.title,
+            organizer: formData.organizer,
+            date: formData.date,
+            date_end: formData.date_end || null,
+            time: formData.time,
+            end_time: formData.end_time || null,
+            location: formData.location,
+            area: formData.area,
+            postcode: formData.postcode || null,
+            category: formData.category,
+            type: formData.type,
+            excerpt: formData.excerpt || null,
+            full_description: formData.full_description || null,
+            ticket_url: formData.ticket_url || null,
+            contact_email: formData.contact_email || null,
+            contact_phone: formData.contact_phone || null,
+            website_url: formData.website_url || null,
+            image: imageUrl,
+            turnstileToken,
+            honeypot,
+            formLoadedAt: formLoadedAtRef.current,
+          },
+        });
+
+        if (fnError || (result && (result as any).error)) {
+          const message = (result as any)?.error || fnError?.message || "There was an error submitting your event.";
+          toast({
+            title: "Submission failed",
+            description: message,
+            variant: "destructive",
+          });
+          // Reset captcha so user can try again
+          turnstileRef.current?.reset();
+          setTurnstileToken(null);
+          setIsSubmitting(false);
+          return;
+        }
+
+        setSubmitSuccess(true);
+        toast({
+          title: "Event Submitted!",
+          description: "Your event has been submitted for review. It will appear once approved by an admin.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // ============================================================
+      // ADMIN PATH — direct insert (admin RLS allows it; supports on-behalf flow)
+      // ============================================================
+
       // Handle on-behalf flow: create/find organiser account
       let organiserUserId: string | null = null;
       let organiserPassword: string | null = null;
