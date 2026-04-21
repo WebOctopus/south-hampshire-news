@@ -214,6 +214,7 @@ const AddEvent = () => {
       supabase.functions.invoke('send-event-notification', {
         body: {
           event_id: insertedEvent.id,
+          slug: insertedEvent.slug,
           title: formData.title,
           date: formData.date,
           time: formData.time,
@@ -236,6 +237,7 @@ const AddEvent = () => {
             password: organiserPassword,
             is_existing_user: isExistingUser,
             event_id: insertedEvent.id,
+            slug: insertedEvent.slug,
             event_title: formData.title,
             organiser_name: formData.organizer || undefined,
           }

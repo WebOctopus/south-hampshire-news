@@ -588,7 +588,7 @@ const WhatsOn = () => {
             ) : (
               <div className="space-y-4">
                 {filteredEvents.map((event) => (
-                  <Link key={event.id} to={`/events/${event.id}`} className="block">
+                  <Link key={event.id} to={`/events/${event.slug || event.id}`} className="block">
                     <Card className="p-4 hover:shadow-md transition-shadow duration-200">
                       <div className="flex items-start gap-4">
                         <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">

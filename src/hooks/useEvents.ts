@@ -9,6 +9,7 @@ export interface EventLink {
 
 export interface Event {
   id: string;
+  slug: string | null;
   title: string;
   description: string | null;
   excerpt: string | null;
