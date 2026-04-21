@@ -1,29 +1,54 @@
 
 
-## Change "Organizer" to "Organiser" (British Spelling) in UI
+## Secure Booking Artwork Bucket (Private + Signed URLs)
 
 ### Problem
-The UI displays "Organizer" (American spelling) but should use "Organiser" (British spelling) to match the UK audience.
+The `booking-artwork` storage bucket is public, and a `Public can view artwork files` policy on `storage.objects` lets anyone with a URL — including unauthenticated visitors — read every uploaded artwork file. These files may contain proprietary creative for paid bookings and should be private.
 
-### Scope
-Change only **user-facing labels, placeholders, and comments** -- NOT the database column name (`organizer`) or the code variable names that map to it, since renaming the DB column would require a migration and could break queries.
+### Solution
+Make the bucket private, drop the public SELECT policy, and switch the app to short-lived signed URLs for all reads. Existing user-scoped and admin policies on `storage.objects` already allow the right people to access files; signed URLs are issued server-side by Supabase using those policies, so users keep seeing their own artwork and admins keep full access.
 
-### Changes
+### Database migration
 
-**1. `src/pages/AddEvent.tsx`**
-- Label: `"Organizer *"` → `"Organiser *"`
-- Placeholder: `"e.g. Local Community Group"` (no change needed)
-- Validation toast if any mentions "organizer"
+1. Set the bucket to private:
+   ```sql
+   UPDATE storage.buckets SET public = false WHERE id = 'booking-artwork';
+   ```
+2. Drop the public read policy:
+   ```sql
+   DROP POLICY IF EXISTS "Public can view artwork files" ON storage.objects;
+   ```
+3. Keep existing policies untouched:
+   - `Users can upload artwork files` (INSERT, owner folder)
+   - `Users can view own artwork files` (SELECT, owner folder)
+   - `Admin full access artwork files` (ALL, admin role)
 
-**2. `src/pages/Dashboard.tsx`**
-- Label: `"Organizer"` → `"Organiser"`
-- Placeholder: `"Event organizer"` → `"Event organiser"`
+### Code changes
 
-**3. `src/pages/EventDetail.tsx`**
-- Comment: `{/* Organizer & Contact */}` → `{/* Organiser & Contact */}` (cosmetic)
+**`src/components/dashboard/ArtworkUploadSection.tsx`**
+- Replace `getPublicUrl(filePath)` with storing the **storage path** (`filePath`) in `booking_artwork.file_url` instead of a public URL. Existing rows already contain `…/storage/v1/object/public/booking-artwork/<path>` URLs — we'll handle both old and new values when displaying (parse the path out of legacy URLs).
+- The upload itself is unchanged (uses authenticated client + RLS).
 
-**4. `supabase/functions/send-event-notification/index.ts`**
-- Email HTML: `"👤 Organizer:"` → `"👤 Organiser:"`
+**`src/components/admin/ArtworkManagement.tsx`**
+- Add a small helper `getSignedUrl(fileUrlOrPath)` that:
+  - Extracts the object path (strips any `…/booking-artwork/` prefix from legacy public URLs).
+  - Calls `supabase.storage.from('booking-artwork').createSignedUrl(path, 3600)`.
+- Use it on demand for:
+  - The "Eye" preview link (generate signed URL on click, then open).
+  - The "Download" button (fetch the signed URL, then blob-download as today).
+  - The dialog preview link.
 
-All variable names (`formData.organizer`, `event.organizer`) stay unchanged as they map to the database column.
+**`src/components/dashboard/ArtworkUploadSection.tsx` (display side)**
+- Currently the uploader UI doesn't render a preview link for the user — only filename + status. No display change needed beyond storing the path. If a future preview is added, it should also use `createSignedUrl`.
+
+### Backwards compatibility
+Legacy rows store full public URLs. The signed-URL helper handles both shapes by always extracting the path after `/booking-artwork/` (or using the value as-is if it doesn't contain `http`). Once the bucket is private, the legacy public URLs stop resolving directly, but admins/users will reach files through the signed-URL helper instead.
+
+### Files changed
+- New SQL migration (bucket privacy + drop policy)
+- `src/components/dashboard/ArtworkUploadSection.tsx`
+- `src/components/admin/ArtworkManagement.tsx`
+
+### Out of scope
+Other security findings in the panel (business_categories permissions, competition_entries, react-router-dom CVE, Postgres patch level) — happy to address in follow-up plans on request.
 
