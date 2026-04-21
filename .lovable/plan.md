@@ -1,82 +1,85 @@
 
 
-## Unify Public + Dashboard Event Forms
+## Advertiser Status (Active / Lapsed) — Account Area
 
-Today the "Submit an Event" form (`/add-event`) and the dashboard "Create Event" form (`/dashboard?tab=create-event`) are two completely separate JSX blocks with different fields, ordering, validation, and styling. They drift every time we touch either one.
+Today the only roles are `admin` and `user`. We'll layer an **advertiser status** on top of that role system so signed-in users see a tailored "My Account" experience based on whether they're a current or past advertiser.
 
-I'll extract **one shared form component** that both pages render, so any future field addition or copy change appears in both places automatically.
+### Concept
 
-### Field reconciliation (single source of truth)
+Rather than turning Active/Lapsed into full roles in the `app_role` enum (which would tangle with admin/user permission logic), we'll treat them as an **advertiser status** stored on the profile:
 
-The dashboard version is missing several fields the public form has. We'll standardise on the **public form's** field set as the canonical version (it's the more complete, polished one):
+- `advertiser_status` ∈ `auto | active | lapsed | none`
+- Default: `auto` — derived live from their bookings
+- Admin can override to force `active`, `lapsed`, or `none`
 
-| Field | Public form | Dashboard form | After |
+A single derived value, `effective_advertiser_status`, is what the app reads at runtime:
+
+| Stored | Live booking? | Past booking? | Effective |
 |---|---|---|---|
-| title * | yes | yes | yes |
-| organizer * | yes (required) | yes (optional) | **required everywhere** |
-| category / type * | yes | yes | yes |
-| date / date_end | yes (with min) | yes | yes (with min) |
-| time / end_time * | yes | yes | yes |
-| location / area / postcode * | yes | yes | yes |
-| excerpt (200-char counter) | yes | yes (no counter) | **counter everywhere** |
-| full_description | yes | yes | yes |
-| description (legacy 3-row field) | no | yes | **removed** (excerpt covers this) |
-| image upload (drag-drop) | yes | yes (plain button) | **drag-drop everywhere** |
-| contact_email / contact_phone | yes | yes | yes |
-| website_url | yes | **missing** | **added to dashboard** |
-| ticket_url | yes | yes | yes |
-| Info banner ("Review Process") | yes | no | shown to public only |
+| auto | yes | — | active |
+| auto | no | yes | lapsed |
+| auto | no | no | none |
+| active / lapsed / none | — | — | (override wins) |
 
-### Architecture
+"Live booking" = any booking with `status` in (`confirmed`, `active`) **and** distribution end date >= today (or no end date with paid status). "Past booking" = any historical booking that doesn't qualify as live.
 
-**New file**: `src/components/events/EventFormFields.tsx`
+### Database changes
 
-A presentational component that renders the entire form body (all the sectioned fieldsets — Basic Info / Date & Time / Location / Description / Image / Contact & Links). It receives:
+1. Add `advertiser_status` text column to `profiles` (default `'auto'`, check constraint `auto | active | lapsed | none`).
+2. New SECURITY DEFINER RPC `get_effective_advertiser_status(_user_id uuid)` returning `'active' | 'lapsed' | 'none'`. Computes the table above by checking the `bookings` table.
+3. New SECURITY DEFINER RPC `is_advertiser_active(_user_id uuid)` returning boolean (thin wrapper for RLS use).
 
-```ts
-interface EventFormFieldsProps {
-  formData: EventFormData;
-  onChange: (field: string, value: string) => void;
-  imagePreview: string | null;
-  existingImageUrl?: string | null;   // for edit mode in dashboard
-  onImageChange: (file: File | null) => void;
-  disabled?: boolean;
-  showInfoBanner?: boolean;           // true on public page only
-  isOnBehalf?: boolean;               // for admin contact-email required hint
-}
-```
+No changes to `app_role`. No changes to existing RLS on bookings/quotes/vouchers — those already key off `user_id`.
 
-It owns **only the fields and layout** — no submission logic, no captcha, no auth handling. That stays in the parent page.
+### Admin: User Roles & Agency Management
 
-**`src/pages/AddEvent.tsx`** keeps:
-- Honeypot + Turnstile + edge function submission
-- Admin "on behalf of" toggle and organiser-account creation
-- Success screen
-- Wraps `<EventFormFields showInfoBanner />`
+In `src/pages/AdminDashboard.tsx` (the table at line ~735):
 
-**`src/pages/Dashboard.tsx`** keeps:
-- `editingEvent` state + edit/create branching
-- Direct Supabase insert/update (RLS-allowed for authed users)
-- Cancel-edit button
-- Wraps `<EventFormFields />` (no banner, no captcha)
+- **New column "Advertiser Status"** between "Role" and "Agency Status".
+- Cell shows two things stacked: a small **badge** with the *effective* status (Active green / Lapsed amber / None grey) and a **`Select`** below it for the stored override (`Auto`, `Active`, `Lapsed`, `None`).
+- Changing the select calls a new `handleUpdateAdvertiserStatus(user, value)` that updates `profiles.advertiser_status`.
+- "Auto" is the default and shows what the system derived in the badge above.
+- Search + edit/password/delete actions unchanged.
 
-### Other changes
-- Drop the legacy `description` column usage from the dashboard form. We continue writing `description = excerpt` on insert so existing public listings that read `description` keep working (matches the public form's behaviour today).
-- Update the dashboard's `defaultEventFormData` and `eventFormData` shape to match the canonical field set (adds `website_url`, removes standalone `description` from the form state).
-- Update `handleEditEvent` in Dashboard so it maps the loaded event onto the new shape (including `website_url`).
-- Validation rules in both submit handlers updated to match: title, organizer, date, time, location, area, category, type all required.
-- Image upload in the dashboard switches to the same dropzone styling as the public form.
+### User: Dashboard / "My Account" experience
+
+`src/pages/Dashboard.tsx` already gates content via `activeTab` and `DashboardSidebar`. We'll fetch the effective status once on load via the new RPC and pass it into the sidebar + page logic.
+
+**`src/components/dashboard/DashboardSidebar.tsx`** — accept new prop `advertiserStatus: 'active' | 'lapsed' | 'none'` and conditionally render groups:
+
+| Section | Active | Lapsed | None |
+|---|---|---|---|
+| **Advertising** group | full (Create Booking, Quotes, Bookings, Artwork, Schedule, Vouchers, Terms) | reduced: Past Bookings, Past Quotes, Vouchers, Terms only | full (current behaviour — they're prospective) |
+| **Magazines Online** (new group) | shows current + all past editions | shows past editions only (no current month) | hidden |
+| **Business Directory** | unchanged | unchanged | unchanged |
+| **Events** | unchanged | unchanged | unchanged |
+
+A new dashboard tab `magazines` renders a grid of `MagazineEdition` cards (link out to the issue). For Lapsed users the query excludes the most recent `is_active` edition (highest `sort_order` or latest `issue_month`).
+
+A small **status banner** appears at the top of the dashboard:
+- Active: green "You're an active advertiser — full access to upcoming editions and tools."
+- Lapsed: amber "Welcome back. Your account is currently inactive — past bookings and vouchers are still here. [Book again →]" linking to `/advertising`.
+- None: no banner (nothing changes for prospects).
+
+### New magazines tab content
+
+`src/components/dashboard/MagazinesTab.tsx` (new) — uses existing `useMagazineEditions` hook with a `lapsed` flag to drop the current edition. Each card shows cover, issue month, title, and a "View Online" button (`link_url`). Empty state: "No magazines available yet."
 
 ### Files changed
 
-- **New**: `src/components/events/EventFormFields.tsx` — shared form body
-- **Edit**: `src/pages/AddEvent.tsx` — replace inline JSX with `<EventFormFields showInfoBanner />`
-- **Edit**: `src/pages/Dashboard.tsx` — replace `renderCreateEventForm()` JSX with `<EventFormFields />`, add `website_url` to state, remove standalone `description` field, align validation, swap image picker
+- **Migration**: add `advertiser_status` column + 2 RPCs
+- **Edit** `src/pages/AdminDashboard.tsx` — add Advertiser Status column, select handler, fetch effective status per user
+- **Edit** `src/pages/Dashboard.tsx` — fetch effective status, pass to sidebar, render banner, mount new `magazines` tab, gate quote/booking creation tabs for Lapsed
+- **Edit** `src/components/dashboard/DashboardSidebar.tsx` — accept `advertiserStatus`, conditionally render items + new "Magazines" group
+- **New** `src/components/dashboard/MagazinesTab.tsx` — grid of editions, hides current for Lapsed
+- **New** `src/components/dashboard/AdvertiserStatusBanner.tsx` — top-of-dashboard banner
+- **Edit** `src/hooks/useMagazineEditions.ts` — optional `excludeCurrent` flag, or filter in the new component
 
 ### Result
 
-- One form, two entry points. Add a field once, it shows up in both.
-- Dashboard users get the polished sectioned layout, drag-drop image upload, character counter, and the missing `website_url` field.
-- Public form behaviour (Turnstile, honeypot, edge function, success screen) is unchanged.
-- Admin moderation queue, slug generation, and email notifications are untouched.
+- Admin can mark anyone Active or Lapsed (or leave on Auto) from the existing User Management table.
+- Active advertisers get the full dashboard: bookings, artwork upload, vouchers, schedule, current + past magazines.
+- Lapsed advertisers see a stripped-back "history & vouchers" view with all past editions but the current one hidden, plus a clear "Book again" CTA.
+- Prospects (None) keep the current behaviour.
+- No changes to admin or auth logic; the `app_role` enum stays `user | admin`.
 
