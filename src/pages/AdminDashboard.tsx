@@ -278,6 +278,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleUpdateAdvertiserStatus = async (targetUser: any, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ advertiser_status: newStatus })
+        .eq('user_id', targetUser.user_id);
+      if (error) throw error;
+      toast({ title: "Success", description: `Advertiser status set to ${newStatus}.` });
+      loadUsers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   const handleCreateUser = async () => {
     if (!createUserForm.email || !createUserForm.password) return;
     setUserActionLoading(true);
