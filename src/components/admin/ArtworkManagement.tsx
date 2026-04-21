@@ -74,6 +74,29 @@ const ArtworkManagement = () => {
   const getBooking = (bookingId: string) => bookings.find((b: any) => b.id === bookingId);
   const getAdSize = (adSizeId: string) => adSizes.find((a: any) => a.id === adSizeId);
 
+  // Extract storage path from either a legacy public URL or a stored path.
+  const extractPath = (fileUrlOrPath: string): string => {
+    if (!fileUrlOrPath) return '';
+    if (!fileUrlOrPath.includes('http')) return fileUrlOrPath;
+    const marker = '/booking-artwork/';
+    const idx = fileUrlOrPath.indexOf(marker);
+    if (idx === -1) return fileUrlOrPath;
+    return fileUrlOrPath.substring(idx + marker.length);
+  };
+
+  const getSignedUrl = async (fileUrlOrPath: string): Promise<string | null> => {
+    const path = extractPath(fileUrlOrPath);
+    if (!path) return null;
+    const { data, error } = await supabase.storage
+      .from('booking-artwork')
+      .createSignedUrl(path, 3600);
+    if (error) {
+      toast({ title: 'Error', description: 'Could not generate file link.', variant: 'destructive' });
+      return null;
+    }
+    return data?.signedUrl ?? null;
+  };
+
   const handleReview = async (status: 'approved' | 'rejected') => {
     if (!selectedArtwork) return;
     setUpdating(true);
@@ -102,9 +125,11 @@ const ArtworkManagement = () => {
     }
   };
 
-  const handleDownload = async (fileUrl: string, fileName: string) => {
+  const handleDownload = async (fileUrlOrPath: string, fileName: string) => {
     try {
-      const response = await fetch(fileUrl);
+      const signedUrl = await getSignedUrl(fileUrlOrPath);
+      if (!signedUrl) return;
+      const response = await fetch(signedUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -115,8 +140,14 @@ const ArtworkManagement = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch {
-      window.open(fileUrl, '_blank');
+      const fallback = await getSignedUrl(fileUrlOrPath);
+      if (fallback) window.open(fallback, '_blank');
     }
+  };
+
+  const handlePreview = async (fileUrlOrPath: string) => {
+    const signedUrl = await getSignedUrl(fileUrlOrPath);
+    if (signedUrl) window.open(signedUrl, '_blank', 'noopener,noreferrer');
   };
 
   const getStatusBadge = (status: string) => {
@@ -236,11 +267,9 @@ const ArtworkManagement = () => {
                           <Button
                             size="sm"
                             variant="ghost"
-                            asChild
+                            onClick={() => handlePreview(artwork.file_url)}
                           >
-                            <a href={artwork.file_url} target="_blank" rel="noopener noreferrer">
-                              <Eye className="h-3 w-3" />
-                            </a>
+                            <Eye className="h-3 w-3" />
                           </Button>
                         </div>
                       </TableCell>
@@ -263,14 +292,13 @@ const ArtworkManagement = () => {
             <div className="space-y-4">
               <div className="bg-muted p-3 rounded-lg">
                 <p className="text-sm font-medium">{selectedArtwork.file_name}</p>
-                <a
-                  href={selectedArtwork.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => handlePreview(selectedArtwork.file_url)}
                   className="text-sm text-primary hover:underline"
                 >
                   View / Download File
-                </a>
+                </button>
               </div>
               {selectedArtwork.notes && (
                 <div>
