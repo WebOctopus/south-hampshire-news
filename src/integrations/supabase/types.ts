@@ -837,6 +837,7 @@ export type Database = {
           location: string
           organizer: string | null
           postcode: string | null
+          slug: string | null
           ticket_url: string | null
           tiktok_url: string | null
           time: string
@@ -871,6 +872,7 @@ export type Database = {
           location: string
           organizer?: string | null
           postcode?: string | null
+          slug?: string | null
           ticket_url?: string | null
           tiktok_url?: string | null
           time: string
@@ -905,6 +907,7 @@ export type Database = {
           location?: string
           organizer?: string | null
           postcode?: string | null
+          slug?: string | null
           ticket_url?: string | null
           tiktok_url?: string | null
           time?: string
@@ -2258,6 +2261,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      slugify_text: { Args: { input_text: string }; Returns: string }
       validate_booking_access: {
         Args: { booking_user_id: string }
         Returns: boolean
