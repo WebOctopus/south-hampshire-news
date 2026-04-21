@@ -448,7 +448,6 @@ const AddEvent = () => {
                   showInfoBanner
                   isOnBehalf={isOnBehalf}
                 />
-                </div>
 
                 {/* Honeypot — hidden from real users, bots will fill this */}
                 <div
