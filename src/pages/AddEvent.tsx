@@ -803,6 +803,44 @@ const AddEvent = () => {
                   </div>
                 </div>
 
+                {/* Honeypot — hidden from real users, bots will fill this */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    left: '-10000px',
+                    top: 'auto',
+                    width: '1px',
+                    height: '1px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <label htmlFor="website_homepage">Website (leave blank)</label>
+                  <input
+                    id="website_homepage"
+                    name="website_homepage"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
+                </div>
+
+                {/* Turnstile captcha — public submissions only */}
+                {!isAdmin && turnstileSiteKey && (
+                  <div className="flex justify-center">
+                    <Turnstile
+                      ref={turnstileRef}
+                      siteKey={turnstileSiteKey}
+                      onSuccess={(token) => setTurnstileToken(token)}
+                      onExpire={() => setTurnstileToken(null)}
+                      onError={() => setTurnstileToken(null)}
+                      options={{ theme: 'light' }}
+                    />
+                  </div>
+                )}
+
                 {/* Submit Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button
@@ -817,7 +855,7 @@ const AddEvent = () => {
                   <Button
                     type="submit"
                     className="sm:flex-1"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (!isAdmin && !turnstileToken)}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Event for Review'}
                   </Button>
