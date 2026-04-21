@@ -125,9 +125,11 @@ const ArtworkManagement = () => {
     }
   };
 
-  const handleDownload = async (fileUrl: string, fileName: string) => {
+  const handleDownload = async (fileUrlOrPath: string, fileName: string) => {
     try {
-      const response = await fetch(fileUrl);
+      const signedUrl = await getSignedUrl(fileUrlOrPath);
+      if (!signedUrl) return;
+      const response = await fetch(signedUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -138,8 +140,14 @@ const ArtworkManagement = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch {
-      window.open(fileUrl, '_blank');
+      const fallback = await getSignedUrl(fileUrlOrPath);
+      if (fallback) window.open(fallback, '_blank');
     }
+  };
+
+  const handlePreview = async (fileUrlOrPath: string) => {
+    const signedUrl = await getSignedUrl(fileUrlOrPath);
+    if (signedUrl) window.open(signedUrl, '_blank', 'noopener,noreferrer');
   };
 
   const getStatusBadge = (status: string) => {
