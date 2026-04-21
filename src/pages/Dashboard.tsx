@@ -213,6 +213,22 @@ const Dashboard = () => {
     setVoucherCount(count || 0);
   };
 
+  const loadAdvertiserStatus = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase.rpc('get_effective_advertiser_status', {
+        _user_id: user.id,
+      });
+      if (error) throw error;
+      const status = (data as string) || 'none';
+      if (status === 'active' || status === 'lapsed' || status === 'none') {
+        setAdvertiserStatus(status);
+      }
+    } catch (err) {
+      console.error('Failed to load advertiser status', err);
+    }
+  };
+
   const checkAndUpdateFirstLogin = async () => {
     if (!user) return;
     
