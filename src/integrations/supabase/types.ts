@@ -789,6 +789,30 @@ export type Database = {
         }
         Relationships: []
       }
+      event_submission_log: {
+        Row: {
+          blocked_reason: string | null
+          created_at: string
+          id: string
+          ip_hash: string
+          user_agent: string | null
+        }
+        Insert: {
+          blocked_reason?: string | null
+          created_at?: string
+          id?: string
+          ip_hash: string
+          user_agent?: string | null
+        }
+        Update: {
+          blocked_reason?: string | null
+          created_at?: string
+          id?: string
+          ip_hash?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       event_types: {
         Row: {
           created_at: string
