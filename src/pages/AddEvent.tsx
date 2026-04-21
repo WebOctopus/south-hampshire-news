@@ -646,7 +646,7 @@ const AddEvent = () => {
                           type="tel"
                           value={formData.contact_phone}
                           onChange={(e) => handleInputChange('contact_phone', e.target.value)}
-                          placeholder="01onal 123456"
+                          placeholder="01234 567890"
                           className="pl-10"
                           disabled={isSubmitting}
                         />
