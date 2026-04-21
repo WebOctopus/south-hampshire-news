@@ -575,7 +575,7 @@ const Dashboard = () => {
             category: eventFormData.category,
             type: eventFormData.type,
             organizer: eventFormData.organizer || undefined,
-            excerpt: eventFormData.excerpt || eventFormData.description || undefined,
+            excerpt: eventFormData.excerpt || undefined,
           }
         }).catch(err => console.error('Failed to send event notification:', err));
 
@@ -596,7 +596,6 @@ const Dashboard = () => {
     setEditingEvent(event);
     setEventFormData({
       title: event.title || '',
-      description: event.description || '',
       date: event.date || '',
       date_end: event.date_end || '',
       time: event.time || '',
@@ -612,6 +611,7 @@ const Dashboard = () => {
       ticket_url: event.ticket_url || '',
       contact_email: event.contact_email || '',
       contact_phone: event.contact_phone || '',
+      website_url: event.website_url || '',
       image: event.image || ''
     });
     setEventImageFile(null);
