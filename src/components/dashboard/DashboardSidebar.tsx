@@ -1,4 +1,4 @@
-import { Building2, Calendar, CalendarDays, FileText, BookOpen, Plus, List, Gift, Shield, Palette } from "lucide-react"
+import { Building2, Calendar, CalendarDays, FileText, BookOpen, Plus, List, Gift, Shield, Palette, Newspaper } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,7 @@ interface DashboardSidebarProps {
   voucherCount?: number
   editingBusiness: any
   editingEvent: any
+  advertiserStatus?: 'active' | 'lapsed' | 'none'
 }
 
 export function DashboardSidebar({
@@ -33,7 +34,8 @@ export function DashboardSidebar({
   bookingCount,
   voucherCount = 0,
   editingBusiness,
-  editingEvent
+  editingEvent,
+  advertiserStatus = 'none'
 }: DashboardSidebarProps) {
   const { state } = useSidebar()
 
@@ -72,7 +74,7 @@ export function DashboardSidebar({
     }
   ]
 
-  const advertisingItems = [
+  const fullAdvertisingItems = [
     {
       title: "Create Booking",
       value: "create-booking",
@@ -117,6 +119,39 @@ export function DashboardSidebar({
     }
   ]
 
+  const lapsedAdvertisingItems = [
+    {
+      title: `Past Bookings (${bookingCount})`,
+      value: "bookings",
+      icon: BookOpen,
+      disabled: false
+    },
+    {
+      title: `Past Quotes (${quoteCount})`,
+      value: "quotes",
+      icon: FileText,
+      disabled: false
+    },
+    {
+      title: `Your Vouchers (${voucherCount})`,
+      value: "vouchers",
+      icon: Gift,
+      disabled: false
+    },
+    {
+      title: "Terms & Conditions",
+      value: "terms",
+      icon: Shield,
+      disabled: false
+    }
+  ]
+
+  const advertisingItems = advertiserStatus === 'lapsed'
+    ? lapsedAdvertisingItems
+    : fullAdvertisingItems
+
+  const showMagazinesGroup = advertiserStatus === 'active' || advertiserStatus === 'lapsed'
+
   return (
     <Sidebar className="border-r">
       <SidebarContent>
@@ -141,6 +176,29 @@ export function DashboardSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {showMagazinesGroup && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sm font-semibold text-muted-foreground">
+              Magazines Online
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => setActiveTab('magazines')}
+                    className={getNavCls('magazines')}
+                  >
+                    <Newspaper className="h-4 w-4" />
+                    {state !== "collapsed" && (
+                      <span>{advertiserStatus === 'lapsed' ? 'Past Editions' : 'View Editions'}</span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-sm font-semibold text-muted-foreground">
