@@ -812,6 +812,38 @@ const AdminDashboard = () => {
                                 </Select>
                               </TableCell>
                               <TableCell>
+                                <div className="flex flex-col gap-1">
+                                  {(() => {
+                                    const eff = effectiveAdvertiserStatuses[u.user_id] || 'none';
+                                    const colorClass =
+                                      eff === 'active'
+                                        ? 'bg-green-100 text-green-800'
+                                        : eff === 'lapsed'
+                                        ? 'bg-amber-100 text-amber-800'
+                                        : 'bg-muted text-muted-foreground';
+                                    return (
+                                      <span className={`px-2 py-0.5 rounded-full text-xs w-fit capitalize ${colorClass}`}>
+                                        {eff}
+                                      </span>
+                                    );
+                                  })()}
+                                  <Select
+                                    value={u.advertiser_status || 'auto'}
+                                    onValueChange={(val) => handleUpdateAdvertiserStatus(u, val)}
+                                  >
+                                    <SelectTrigger className="w-[110px] h-7 text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="auto">Auto</SelectItem>
+                                      <SelectItem value="active">Active</SelectItem>
+                                      <SelectItem value="lapsed">Lapsed</SelectItem>
+                                      <SelectItem value="none">None</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </TableCell>
+                              <TableCell>
                                 <span className={`px-2 py-1 rounded-full text-xs ${
                                   u.is_agency_member 
                                     ? 'bg-green-100 text-green-800' 
