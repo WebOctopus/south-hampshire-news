@@ -1388,6 +1388,7 @@ const Dashboard = () => {
           voucherCount={voucherCount}
           editingBusiness={editingBusiness}
           editingEvent={editingEvent}
+          advertiserStatus={advertiserStatus}
         />
         
         <SidebarInset className="flex-1 min-w-0">
