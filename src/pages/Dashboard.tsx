@@ -1406,7 +1406,9 @@ const Dashboard = () => {
                 isFirstLogin={isFirstLogin}
                 onBookNowClick={() => setActiveTab('bookings')}
               />
-              
+
+              <AdvertiserStatusBanner status={advertiserStatus} />
+
               {activeTab === 'create-booking' && user && (
                 <CreateBookingForm
                   user={user}
