@@ -1673,6 +1673,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          advertiser_status: string
           agency_discount_percent: number | null
           agency_name: string | null
           company: string | null
@@ -1687,6 +1688,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          advertiser_status?: string
           agency_discount_percent?: number | null
           agency_name?: string | null
           company?: string | null
@@ -1701,6 +1703,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          advertiser_status?: string
           agency_discount_percent?: number | null
           agency_name?: string | null
           company?: string | null
@@ -2241,6 +2244,10 @@ export type Database = {
           edition_area: string
         }[]
       }
+      get_effective_advertiser_status: {
+        Args: { _user_id: string }
+        Returns: string
+      }
       get_public_businesses: {
         Args: {
           category_filter?: string
@@ -2285,6 +2292,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_advertiser_active: { Args: { _user_id: string }; Returns: boolean }
       slugify_text: { Args: { input_text: string }; Returns: string }
       validate_booking_access: {
         Args: { booking_user_id: string }

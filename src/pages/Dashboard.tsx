@@ -44,6 +44,8 @@ import BookingTerms from '@/components/dashboard/BookingTerms';
 import TermsAcceptanceDialog from '@/components/dashboard/TermsAcceptanceDialog';
 import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
+import MagazinesTab from '@/components/dashboard/MagazinesTab';
+import AdvertiserStatusBanner from '@/components/dashboard/AdvertiserStatusBanner';
 
 const defaultEventFormData: EventFormFieldsData & { image: string } = {
   ...defaultEventFormFieldsData,
@@ -73,6 +75,7 @@ const Dashboard = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [voucherCount, setVoucherCount] = useState(0);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [advertiserStatus, setAdvertiserStatus] = useState<'active' | 'lapsed' | 'none'>('none');
   const [quotesExpanded, setQuotesExpanded] = useState(true);
   const [termsQuote, setTermsQuote] = useState<any>(null);
   const [termsDialogOpen, setTermsDialogOpen] = useState(false);
@@ -210,6 +213,22 @@ const Dashboard = () => {
     setVoucherCount(count || 0);
   };
 
+  const loadAdvertiserStatus = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase.rpc('get_effective_advertiser_status', {
+        _user_id: user.id,
+      });
+      if (error) throw error;
+      const status = (data as string) || 'none';
+      if (status === 'active' || status === 'lapsed' || status === 'none') {
+        setAdvertiserStatus(status);
+      }
+    } catch (err) {
+      console.error('Failed to load advertiser status', err);
+    }
+  };
+
   const checkAndUpdateFirstLogin = async () => {
     if (!user) return;
     
@@ -243,11 +262,12 @@ const Dashboard = () => {
       loadBookings();
       loadVoucherCount();
       checkAndUpdateFirstLogin();
+      loadAdvertiserStatus();
       
       // Check URL query parameter for tab selection (e.g. from email links)
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
-      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event', 'artwork', 'schedule'].includes(tabParam)) {
+      if (tabParam && ['quotes', 'bookings', 'vouchers', 'create-booking', 'terms', 'listings', 'create', 'events', 'create-event', 'artwork', 'schedule', 'magazines'].includes(tabParam)) {
         setActiveTab(tabParam);
         hasAppliedSmartDefault.current = true;
       }
@@ -1368,6 +1388,7 @@ const Dashboard = () => {
           voucherCount={voucherCount}
           editingBusiness={editingBusiness}
           editingEvent={editingEvent}
+          advertiserStatus={advertiserStatus}
         />
         
         <SidebarInset className="flex-1 min-w-0">
@@ -1385,7 +1406,9 @@ const Dashboard = () => {
                 isFirstLogin={isFirstLogin}
                 onBookNowClick={() => setActiveTab('bookings')}
               />
-              
+
+              <AdvertiserStatusBanner status={advertiserStatus} />
+
               {activeTab === 'create-booking' && user && (
                 <CreateBookingForm
                   user={user}
@@ -1412,6 +1435,7 @@ const Dashboard = () => {
               {activeTab === 'vouchers' && user && <VouchersSection user={user} />}
               {activeTab === 'artwork' && <ArtworkUploadTab />}
               {activeTab === 'schedule' && <CampaignScheduleTab />}
+              {activeTab === 'magazines' && <MagazinesTab lapsed={advertiserStatus === 'lapsed'} />}
               {activeTab === 'terms' && <BookingTerms />}
               {activeTab === 'profile' && renderProfileSettings()}
             </div>
