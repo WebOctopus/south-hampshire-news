@@ -201,6 +201,23 @@ const AdminDashboard = () => {
 
       setUsers(combinedUsers);
 
+      // Fetch effective advertiser status for each user (parallel)
+      try {
+        const statusPromises = (profilesData || []).map(async (profile: any) => {
+          const { data, error } = await supabase.rpc('get_effective_advertiser_status', {
+            _user_id: profile.user_id,
+          });
+          if (error) return [profile.user_id, 'none'] as const;
+          return [profile.user_id, (data as string) || 'none'] as const;
+        });
+        const results = await Promise.all(statusPromises);
+        const statusMap: Record<string, string> = {};
+        results.forEach(([id, status]) => { statusMap[id] = status; });
+        setEffectiveAdvertiserStatuses(statusMap);
+      } catch (e) {
+        console.error('Failed to fetch advertiser statuses:', e);
+      }
+
       // Fetch emails via edge function
       try {
         const { data: { session } } = await supabase.auth.getSession();
