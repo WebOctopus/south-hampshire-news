@@ -14,7 +14,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
-import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck, Globe } from 'lucide-react';
 
 const AddEvent = () => {
   const { isAdmin } = useAuth();
@@ -37,7 +37,8 @@ const AddEvent = () => {
     full_description: '',
     ticket_url: '',
     contact_email: '',
-    contact_phone: ''
+    contact_phone: '',
+    website_url: ''
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
