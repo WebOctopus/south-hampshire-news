@@ -14,7 +14,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
-import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck, Globe } from 'lucide-react';
 
 const AddEvent = () => {
   const { isAdmin } = useAuth();
@@ -37,7 +37,8 @@ const AddEvent = () => {
     full_description: '',
     ticket_url: '',
     contact_email: '',
-    contact_phone: ''
+    contact_phone: '',
+    website_url: ''
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -193,6 +194,7 @@ const AddEvent = () => {
         contact_email: formData.contact_email || null,
         contact_phone: formData.contact_phone || null,
         ticket_url: formData.ticket_url || null,
+        website_url: formData.website_url || null,
         image: imageUrl,
         is_published: false, // Pending admin approval
         featured: false,
@@ -286,7 +288,7 @@ const AddEvent = () => {
                     setFormData({
                       title: '', organizer: '', date: '', date_end: '', time: '', end_time: '',
                       location: '', area: '', postcode: '', category: '', type: '',
-                      excerpt: '', full_description: '', ticket_url: '', contact_email: '', contact_phone: ''
+                      excerpt: '', full_description: '', ticket_url: '', contact_email: '', contact_phone: '', website_url: ''
                     });
                     setImageFile(null);
                     setImagePreview(null);
@@ -645,6 +647,21 @@ const AddEvent = () => {
                           value={formData.contact_phone}
                           onChange={(e) => handleInputChange('contact_phone', e.target.value)}
                           placeholder="01onal 123456"
+                          className="pl-10"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="website_url">Website Address</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="website_url"
+                          type="url"
+                          value={formData.website_url}
+                          onChange={(e) => handleInputChange('website_url', e.target.value)}
+                          placeholder="https://www.example.com"
                           className="pl-10"
                           disabled={isSubmitting}
                         />
