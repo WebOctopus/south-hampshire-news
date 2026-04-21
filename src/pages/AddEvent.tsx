@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 import { editionAreas } from '@/data/editionAreas';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,42 @@ const AddEvent = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Spam protection state
+  const [turnstileSiteKey, setTurnstileSiteKey] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState('');
+  const formLoadedAtRef = useRef<number>(Date.now());
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+
+  // Fetch Turnstile site key on mount (only needed for non-admin public submissions)
+  useEffect(() => {
+    if (isAdmin) return;
+    formLoadedAtRef.current = Date.now();
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('submit-event', {
+          method: 'GET' as never,
+        });
+        if (error) throw error;
+        if (data?.siteKey) setTurnstileSiteKey(data.siteKey);
+      } catch (err) {
+        // Fallback: try a direct GET in case invoke doesn't surface GETs
+        try {
+          const url = `https://qajegkbvbpekdggtrupv.supabase.co/functions/v1/submit-event`;
+          const res = await fetch(url, {
+            headers: {
+              apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhamVna2J2YnBla2RnZ3RydXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxMjM1NjEsImV4cCI6MjA2NDY5OTU2MX0.pYwQldpBjowrqBL_rwyBipOU5SkEAytfJLBzmLPGuBQ',
+            },
+          });
+          const json = await res.json();
+          if (json?.siteKey) setTurnstileSiteKey(json.siteKey);
+        } catch (e) {
+          console.error('Failed to load Turnstile config:', e);
+        }
+      }
+    })();
+  }, [isAdmin]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -138,6 +175,73 @@ const AddEvent = () => {
           });
         }
       }
+
+      // ============================================================
+      // PUBLIC (non-admin) PATH — route through validated edge function
+      // ============================================================
+      if (!isAdmin) {
+        if (!turnstileToken) {
+          toast({
+            title: "Please complete the captcha",
+            description: "We use a quick check to keep spam out.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        const { data: result, error: fnError } = await supabase.functions.invoke('submit-event', {
+          body: {
+            title: formData.title,
+            organizer: formData.organizer,
+            date: formData.date,
+            date_end: formData.date_end || null,
+            time: formData.time,
+            end_time: formData.end_time || null,
+            location: formData.location,
+            area: formData.area,
+            postcode: formData.postcode || null,
+            category: formData.category,
+            type: formData.type,
+            excerpt: formData.excerpt || null,
+            full_description: formData.full_description || null,
+            ticket_url: formData.ticket_url || null,
+            contact_email: formData.contact_email || null,
+            contact_phone: formData.contact_phone || null,
+            website_url: formData.website_url || null,
+            image: imageUrl,
+            turnstileToken,
+            honeypot,
+            formLoadedAt: formLoadedAtRef.current,
+          },
+        });
+
+        if (fnError || (result && (result as any).error)) {
+          const message = (result as any)?.error || fnError?.message || "There was an error submitting your event.";
+          toast({
+            title: "Submission failed",
+            description: message,
+            variant: "destructive",
+          });
+          // Reset captcha so user can try again
+          turnstileRef.current?.reset();
+          setTurnstileToken(null);
+          setIsSubmitting(false);
+          return;
+        }
+
+        setSubmitSuccess(true);
+        toast({
+          title: "Event Submitted!",
+          description: "Your event has been submitted for review. It will appear once approved by an admin.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // ============================================================
+      // ADMIN PATH — direct insert (admin RLS allows it; supports on-behalf flow)
+      // ============================================================
 
       // Handle on-behalf flow: create/find organiser account
       let organiserUserId: string | null = null;
@@ -699,6 +803,44 @@ const AddEvent = () => {
                   </div>
                 </div>
 
+                {/* Honeypot — hidden from real users, bots will fill this */}
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    left: '-10000px',
+                    top: 'auto',
+                    width: '1px',
+                    height: '1px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <label htmlFor="website_homepage">Website (leave blank)</label>
+                  <input
+                    id="website_homepage"
+                    name="website_homepage"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
+                </div>
+
+                {/* Turnstile captcha — public submissions only */}
+                {!isAdmin && turnstileSiteKey && (
+                  <div className="flex justify-center">
+                    <Turnstile
+                      ref={turnstileRef}
+                      siteKey={turnstileSiteKey}
+                      onSuccess={(token) => setTurnstileToken(token)}
+                      onExpire={() => setTurnstileToken(null)}
+                      onError={() => setTurnstileToken(null)}
+                      options={{ theme: 'light' }}
+                    />
+                  </div>
+                )}
+
                 {/* Submit Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button
@@ -713,7 +855,7 @@ const AddEvent = () => {
                   <Button
                     type="submit"
                     className="sm:flex-1"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (!isAdmin && !turnstileToken)}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Event for Review'}
                   </Button>
