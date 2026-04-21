@@ -653,6 +653,21 @@ const AddEvent = () => {
                       </div>
                     </div>
                     <div className="md:col-span-2">
+                      <Label htmlFor="website_url">Website Address</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="website_url"
+                          type="url"
+                          value={formData.website_url}
+                          onChange={(e) => handleInputChange('website_url', e.target.value)}
+                          placeholder="https://www.example.com"
+                          className="pl-10"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                    <div className="md:col-span-2">
                       <Label htmlFor="ticket_url">Ticket / Booking URL</Label>
                       <div className="relative">
                         <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
