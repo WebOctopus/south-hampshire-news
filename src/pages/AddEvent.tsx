@@ -194,6 +194,7 @@ const AddEvent = () => {
         contact_email: formData.contact_email || null,
         contact_phone: formData.contact_phone || null,
         ticket_url: formData.ticket_url || null,
+        website_url: formData.website_url || null,
         image: imageUrl,
         is_published: false, // Pending admin approval
         featured: false,
