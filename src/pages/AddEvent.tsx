@@ -1,51 +1,25 @@
 import { useState, useRef, useEffect } from 'react';
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
-import { editionAreas } from '@/data/editionAreas';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEventCategories, useEventTypes } from '@/hooks/useEventTaxonomies';
-import { Calendar, Clock, MapPin, User, Mail, Phone, Link as LinkIcon, Upload, Image, CheckCircle, AlertCircle, ShieldCheck, Globe } from 'lucide-react';
+import { CheckCircle, ShieldCheck } from 'lucide-react';
+import { EventFormFields, defaultEventFormFieldsData, type EventFormFieldsData } from '@/components/events/EventFormFields';
 
 const AddEvent = () => {
   const { isAdmin } = useAuth();
-  const { items: eventCategories } = useEventCategories();
-  const { items: eventTypes } = useEventTypes();
   const [isOnBehalf, setIsOnBehalf] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    organizer: '',
-    date: '',
-    date_end: '',
-    time: '',
-    end_time: '',
-    location: '',
-    area: '',
-    postcode: '',
-    category: '',
-    type: '',
-    excerpt: '',
-    full_description: '',
-    ticket_url: '',
-    contact_email: '',
-    contact_phone: '',
-    website_url: ''
-  });
+  const [formData, setFormData] = useState<EventFormFieldsData>(defaultEventFormFieldsData);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -85,28 +59,28 @@ const AddEvent = () => {
     })();
   }, [isAdmin]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof EventFormFieldsData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select an image under 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleImageChange = (file: File | null) => {
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(null);
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image under 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
