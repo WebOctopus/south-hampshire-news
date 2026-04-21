@@ -287,7 +287,7 @@ const AddEvent = () => {
                     setFormData({
                       title: '', organizer: '', date: '', date_end: '', time: '', end_time: '',
                       location: '', area: '', postcode: '', category: '', type: '',
-                      excerpt: '', full_description: '', ticket_url: '', contact_email: '', contact_phone: ''
+                      excerpt: '', full_description: '', ticket_url: '', contact_email: '', contact_phone: '', website_url: ''
                     });
                     setImageFile(null);
                     setImagePreview(null);
