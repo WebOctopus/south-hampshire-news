@@ -74,6 +74,29 @@ const ArtworkManagement = () => {
   const getBooking = (bookingId: string) => bookings.find((b: any) => b.id === bookingId);
   const getAdSize = (adSizeId: string) => adSizes.find((a: any) => a.id === adSizeId);
 
+  // Extract storage path from either a legacy public URL or a stored path.
+  const extractPath = (fileUrlOrPath: string): string => {
+    if (!fileUrlOrPath) return '';
+    if (!fileUrlOrPath.includes('http')) return fileUrlOrPath;
+    const marker = '/booking-artwork/';
+    const idx = fileUrlOrPath.indexOf(marker);
+    if (idx === -1) return fileUrlOrPath;
+    return fileUrlOrPath.substring(idx + marker.length);
+  };
+
+  const getSignedUrl = async (fileUrlOrPath: string): Promise<string | null> => {
+    const path = extractPath(fileUrlOrPath);
+    if (!path) return null;
+    const { data, error } = await supabase.storage
+      .from('booking-artwork')
+      .createSignedUrl(path, 3600);
+    if (error) {
+      toast({ title: 'Error', description: 'Could not generate file link.', variant: 'destructive' });
+      return null;
+    }
+    return data?.signedUrl ?? null;
+  };
+
   const handleReview = async (status: 'approved' | 'rejected') => {
     if (!selectedArtwork) return;
     setUpdating(true);
