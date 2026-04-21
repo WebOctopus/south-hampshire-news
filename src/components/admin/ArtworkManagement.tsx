@@ -292,14 +292,13 @@ const ArtworkManagement = () => {
             <div className="space-y-4">
               <div className="bg-muted p-3 rounded-lg">
                 <p className="text-sm font-medium">{selectedArtwork.file_name}</p>
-                <a
-                  href={selectedArtwork.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => handlePreview(selectedArtwork.file_url)}
                   className="text-sm text-primary hover:underline"
                 >
                   View / Download File
-                </a>
+                </button>
               </div>
               {selectedArtwork.notes && (
                 <div>
