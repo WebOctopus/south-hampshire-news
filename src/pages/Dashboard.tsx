@@ -603,6 +603,7 @@ const Dashboard = () => {
         supabase.functions.invoke('send-event-notification', {
           body: {
             event_id: insertedEvent.id,
+            slug: insertedEvent.slug,
             title: eventFormData.title,
             date: eventFormData.date,
             time: eventFormData.time,
