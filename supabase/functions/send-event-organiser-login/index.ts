@@ -20,6 +20,7 @@ Deno.serve(async (req) => {
       password,
       is_existing_user,
       event_id,
+      slug,
       event_title,
       organiser_name,
     } = await req.json();
@@ -32,8 +33,9 @@ Deno.serve(async (req) => {
     }
 
     const dashboardUrl = "https://www.peacockpixelmedia.co.uk/dashboard";
-    const eventUrl = event_id
-      ? `https://www.peacockpixelmedia.co.uk/events/${event_id}`
+    const eventPath = slug || event_id;
+    const eventUrl = eventPath
+      ? `https://www.peacockpixelmedia.co.uk/events/${eventPath}`
       : null;
 
     const greeting = organiser_name ? `Hello ${organiser_name}` : "Hello";

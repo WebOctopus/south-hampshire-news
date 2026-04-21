@@ -10,6 +10,7 @@ const corsHeaders = {
 
 interface EventNotificationPayload {
   event_id: string;
+  slug?: string;
   title: string;
   date: string;
   time: string;
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
 
   try {
     const payload: EventNotificationPayload = await req.json();
-    const { event_id, title, date, time, location, area, category, type, organizer, contact_email, contact_phone, excerpt } = payload;
+    const { event_id, slug, title, date, time, location, area, category, type, organizer, contact_email, contact_phone, excerpt } = payload;
 
     if (!event_id || !title) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -39,8 +40,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const eventUrl = `https://south-hampshire-news.lovable.app/events/${event_id}`;
-    const adminUrl = `https://south-hampshire-news.lovable.app/admin`;
+    const eventPath = slug || event_id;
+    const eventUrl = `https://www.peacockpixelmedia.co.uk/events/${eventPath}`;
+    const adminUrl = `https://www.peacockpixelmedia.co.uk/admin`;
 
     const emailHtml = `
 <!DOCTYPE html>
