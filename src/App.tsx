@@ -25,6 +25,7 @@ import PaymentSetup from "./pages/PaymentSetup";
 import ResetPassword from "./pages/ResetPassword";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminOnlyRoute from "./components/AdminOnlyRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound";
 
@@ -38,16 +39,16 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           
-          <Route path="/whats-on" element={<WhatsOn />} />
-          <Route path="/whats-on/archive" element={<EventsArchive />} />
-          <Route path="/events/:slug" element={<EventDetail />} />
+          <Route path="/whats-on" element={<AdminOnlyRoute><WhatsOn /></AdminOnlyRoute>} />
+          <Route path="/whats-on/archive" element={<AdminOnlyRoute><EventsArchive /></AdminOnlyRoute>} />
+          <Route path="/events/:slug" element={<AdminOnlyRoute><EventDetail /></AdminOnlyRoute>} />
           <Route path="/competitions" element={<Competitions />} />
           <Route path="/advertising" element={<Advertising />} />
           <Route path="/apply-to-distribute" element={<ApplyToDistribute />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/support" element={<Support />} />
-          <Route path="/business-directory" element={<BusinessDirectory />} />
-          <Route path="/business/:id" element={<BusinessDetail />} />
+          <Route path="/business-directory" element={<AdminOnlyRoute><BusinessDirectory /></AdminOnlyRoute>} />
+          <Route path="/business/:id" element={<AdminOnlyRoute><BusinessDetail /></AdminOnlyRoute>} />
           <Route path="/stories" element={<StoriesArchive />} />
           <Route path="/story/:id" element={<Story />} />
           <Route path="/auth" element={<Auth />} />
