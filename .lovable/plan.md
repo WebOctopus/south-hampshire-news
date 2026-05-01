@@ -1,85 +1,55 @@
+## Hide Events & Directory from public (admin-only while in development)
 
+While the Events and Business Directory pages are still being built, we'll hide every public entry point to them but keep them fully accessible for signed-in admin users so you can keep developing and previewing.
 
-## Advertiser Status (Active / Lapsed) — Account Area
+### What "hide" means
 
-Today the only roles are `admin` and `user`. We'll layer an **advertiser status** on top of that role system so signed-in users see a tailored "My Account" experience based on whether they're a current or past advertiser.
+- Public visitors and signed-in non-admin users: no links, no cards, no nav items pointing to `/whats-on`, `/whats-on/archive`, `/events/:slug`, `/business-directory`, or `/business/:id`. Direct URL visits return the existing 404 page.
+- Admin users (anyone with the `admin` role): everything appears exactly as it does today — nav dropdowns, footer links, homepage cards, and direct routes all work.
 
-### Concept
+### Where the entry points live today
 
-Rather than turning Active/Lapsed into full roles in the `app_role` enum (which would tangle with admin/user permission logic), we'll treat them as an **advertiser status** stored on the profile:
+1. **Top navigation** (`src/components/Navigation.tsx`)
+   - Desktop dropdown sections: `Events` and `Directory` in `allDropdownSections`
+   - Mobile menu uses the same `allDropdownSections` array
+2. **Homepage cards** (`src/components/IconCardsSection.tsx`)
+   - Card linking to `/whats-on`
+   - Card linking to `/business-directory`
+3. **Footer** (`src/components/Footer.tsx`)
+   - Desktop list: "Events & What's On" + "Directory" links
+   - Mobile list: same two links
+4. **Routes** (`src/App.tsx`)
+   - `/whats-on`, `/whats-on/archive`, `/events/:slug`, `/business-directory`, `/business/:id`
 
-- `advertiser_status` ∈ `auto | active | lapsed | none`
-- Default: `auto` — derived live from their bookings
-- Admin can override to force `active`, `lapsed`, or `none`
+### Approach
 
-A single derived value, `effective_advertiser_status`, is what the app reads at runtime:
+Use the existing `useAuth()` hook which already exposes `isAdmin`. No new role, no DB changes, no feature flag table — just a single source of truth wrapped in a tiny helper.
 
-| Stored | Live booking? | Past booking? | Effective |
-|---|---|---|---|
-| auto | yes | — | active |
-| auto | no | yes | lapsed |
-| auto | no | no | none |
-| active / lapsed / none | — | — | (override wins) |
+1. **Add a small helper** `src/hooks/useFeatureVisibility.ts`
+   - Exports `useEventsAndDirectoryVisible()` returning `isAdmin` from `useAuth()`.
+   - Single place to flip the toggle when you're ready to launch publicly (just return `true`).
 
-"Live booking" = any booking with `status` in (`confirmed`, `active`) **and** distribution end date >= today (or no end date with paid status). "Past booking" = any historical booking that doesn't qualify as live.
+2. **Navigation.tsx**
+   - Build `allDropdownSections` conditionally: filter out the `Events` and `Directory` entries when the helper returns `false`.
+   - Same filter applied to the mobile accordion (it iterates the same array, so one change covers both).
 
-### Database changes
+3. **IconCardsSection.tsx**
+   - Filter the cards array to drop the Events and Directory cards when the helper returns `false`.
 
-1. Add `advertiser_status` text column to `profiles` (default `'auto'`, check constraint `auto | active | lapsed | none`).
-2. New SECURITY DEFINER RPC `get_effective_advertiser_status(_user_id uuid)` returning `'active' | 'lapsed' | 'none'`. Computes the table above by checking the `bookings` table.
-3. New SECURITY DEFINER RPC `is_advertiser_active(_user_id uuid)` returning boolean (thin wrapper for RLS use).
+4. **Footer.tsx**
+   - Wrap the two `Events & What's On` and `Directory` `<li>` entries (desktop + mobile blocks) in a conditional so they only render for admins.
 
-No changes to `app_role`. No changes to existing RLS on bookings/quotes/vouchers — those already key off `user_id`.
+5. **App.tsx — route gating**
+   - Wrap `/whats-on`, `/whats-on/archive`, `/events/:slug`, `/business-directory`, `/business/:id` in a new `<AdminOnlyRoute>` wrapper (lives next to `ProtectedRoute`).
+   - `AdminOnlyRoute`: if `loading` show nothing; if `isAdmin` render children; otherwise render `<NotFound />` (so the URL behaves like it doesn't exist rather than redirecting and tipping off that the page exists).
 
-### Admin: User Roles & Agency Management
-
-In `src/pages/AdminDashboard.tsx` (the table at line ~735):
-
-- **New column "Advertiser Status"** between "Role" and "Agency Status".
-- Cell shows two things stacked: a small **badge** with the *effective* status (Active green / Lapsed amber / None grey) and a **`Select`** below it for the stored override (`Auto`, `Active`, `Lapsed`, `None`).
-- Changing the select calls a new `handleUpdateAdvertiserStatus(user, value)` that updates `profiles.advertiser_status`.
-- "Auto" is the default and shows what the system derived in the badge above.
-- Search + edit/password/delete actions unchanged.
-
-### User: Dashboard / "My Account" experience
-
-`src/pages/Dashboard.tsx` already gates content via `activeTab` and `DashboardSidebar`. We'll fetch the effective status once on load via the new RPC and pass it into the sidebar + page logic.
-
-**`src/components/dashboard/DashboardSidebar.tsx`** — accept new prop `advertiserStatus: 'active' | 'lapsed' | 'none'` and conditionally render groups:
-
-| Section | Active | Lapsed | None |
-|---|---|---|---|
-| **Advertising** group | full (Create Booking, Quotes, Bookings, Artwork, Schedule, Vouchers, Terms) | reduced: Past Bookings, Past Quotes, Vouchers, Terms only | full (current behaviour — they're prospective) |
-| **Magazines Online** (new group) | shows current + all past editions | shows past editions only (no current month) | hidden |
-| **Business Directory** | unchanged | unchanged | unchanged |
-| **Events** | unchanged | unchanged | unchanged |
-
-A new dashboard tab `magazines` renders a grid of `MagazineEdition` cards (link out to the issue). For Lapsed users the query excludes the most recent `is_active` edition (highest `sort_order` or latest `issue_month`).
-
-A small **status banner** appears at the top of the dashboard:
-- Active: green "You're an active advertiser — full access to upcoming editions and tools."
-- Lapsed: amber "Welcome back. Your account is currently inactive — past bookings and vouchers are still here. [Book again →]" linking to `/advertising`.
-- None: no banner (nothing changes for prospects).
-
-### New magazines tab content
-
-`src/components/dashboard/MagazinesTab.tsx` (new) — uses existing `useMagazineEditions` hook with a `lapsed` flag to drop the current edition. Each card shows cover, issue month, title, and a "View Online" button (`link_url`). Empty state: "No magazines available yet."
-
-### Files changed
-
-- **Migration**: add `advertiser_status` column + 2 RPCs
-- **Edit** `src/pages/AdminDashboard.tsx` — add Advertiser Status column, select handler, fetch effective status per user
-- **Edit** `src/pages/Dashboard.tsx` — fetch effective status, pass to sidebar, render banner, mount new `magazines` tab, gate quote/booking creation tabs for Lapsed
-- **Edit** `src/components/dashboard/DashboardSidebar.tsx` — accept `advertiserStatus`, conditionally render items + new "Magazines" group
-- **New** `src/components/dashboard/MagazinesTab.tsx` — grid of editions, hides current for Lapsed
-- **New** `src/components/dashboard/AdvertiserStatusBanner.tsx` — top-of-dashboard banner
-- **Edit** `src/hooks/useMagazineEditions.ts` — optional `excludeCurrent` flag, or filter in the new component
+6. **Leave untouched**
+   - `/add-event` — already behind `ProtectedRoute`; harmless to leave reachable, but since its only entry points (`/whats-on?tab=add` and the homepage form) are now hidden too, it's effectively invisible. No change needed.
+   - Admin tooling, dashboard, edge functions, DB content, email templates — all unchanged.
+   - SEO/sitemap — no sitemap file detected; nothing to update.
 
 ### Result
 
-- Admin can mark anyone Active or Lapsed (or leave on Auto) from the existing User Management table.
-- Active advertisers get the full dashboard: bookings, artwork upload, vouchers, schedule, current + past magazines.
-- Lapsed advertisers see a stripped-back "history & vouchers" view with all past editions but the current one hidden, plus a clear "Book again" CTA.
-- Prospects (None) keep the current behaviour.
-- No changes to admin or auth logic; the `app_role` enum stays `user | admin`.
-
+- Public site shows no trace of Events or Directory anywhere.
+- You (signed in as admin) see and use both sections exactly as today, so development continues unblocked.
+- Re-enabling for the public is a one-line change in `useFeatureVisibility.ts`.
