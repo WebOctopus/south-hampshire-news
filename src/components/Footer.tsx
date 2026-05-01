@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Phone, Mail, MapPin, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useEventsAndDirectoryVisible } from "@/hooks/useFeatureVisibility";
 
 const Footer = () => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const eventsAndDirectoryVisible = useEventsAndDirectoryVisible();
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -45,9 +47,13 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-heading font-semibold mb-6 text-community-green">Quick Links</h4>
             <ul className="space-y-3 font-body">
-              <li><a href="/whats-on" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Events & What's On</a></li>
+              {eventsAndDirectoryVisible && (
+                <li><a href="/whats-on" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Events & What's On</a></li>
+              )}
               <li><a href="/competitions" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Competitions</a></li>
-              <li><a href="/business-directory" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Directory</a></li>
+              {eventsAndDirectoryVisible && (
+                <li><a href="/business-directory" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Directory</a></li>
+              )}
               <li><a href="/advertising" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Advertising</a></li>
               <li><a href="/apply-to-distribute" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Distribution</a></li>
               <li><a href="/contact" className="text-gray-300 hover:text-community-green transition-colors hover:translate-x-1 transform duration-200 block">Contact</a></li>
@@ -119,9 +125,13 @@ const Footer = () => {
               <ChevronDown className={`h-5 w-5 text-community-green transition-transform ${openSections.links ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="py-3 space-y-3">
-              <a href="/whats-on" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Events & What's On</a>
+              {eventsAndDirectoryVisible && (
+                <a href="/whats-on" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Events & What's On</a>
+              )}
               <a href="/competitions" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Competitions</a>
-              <a href="/business-directory" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Directory</a>
+              {eventsAndDirectoryVisible && (
+                <a href="/business-directory" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Directory</a>
+              )}
               <a href="/advertising" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Advertising</a>
               <a href="/apply-to-distribute" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Distribution</a>
               <a href="/contact" className="block py-2 text-gray-300 hover:text-community-green min-h-[44px] flex items-center">Contact</a>
