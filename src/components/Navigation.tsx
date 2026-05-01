@@ -31,11 +31,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEventsAndDirectoryVisible } from '@/hooks/useFeatureVisibility';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
+  const eventsAndDirectoryVisible = useEventsAndDirectoryVisible();
 
   const handleSignOut = async () => {
     setIsMenuOpen(false);
@@ -95,9 +97,13 @@ const Navigation = () => {
 
   const allDropdownSections = [
     { title: 'Home', items: homeDropdownItems, path: '/' },
-    { title: 'Events', items: whatsOnDropdownItems, path: '/whats-on' },
+    ...(eventsAndDirectoryVisible
+      ? [{ title: 'Events', items: whatsOnDropdownItems, path: '/whats-on' }]
+      : []),
     { title: 'Competitions', items: competitionsDropdownItems, path: '/competitions' },
-    { title: 'Directory', items: businessDirectoryDropdownItems, path: '/business-directory' },
+    ...(eventsAndDirectoryVisible
+      ? [{ title: 'Directory', items: businessDirectoryDropdownItems, path: '/business-directory' }]
+      : []),
     { title: 'Advertising', items: advertisingDropdownItems, path: '/advertising' },
     { title: 'Distribute', items: distributeDropdownItems, path: '/apply-to-distribute' },
   ];

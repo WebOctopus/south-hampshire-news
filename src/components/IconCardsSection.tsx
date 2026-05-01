@@ -2,10 +2,12 @@ import { Calendar, Trophy, Building2, FileText, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { useNextDeadline } from '@/hooks/useNextDeadline';
+import { useEventsAndDirectoryVisible } from '@/hooks/useFeatureVisibility';
 
 const IconCardsSection = () => {
   const navigate = useNavigate();
   const { data: nextDeadline, isLoading } = useNextDeadline();
+  const eventsAndDirectoryVisible = useEventsAndDirectoryVisible();
 
   const deadlineText = nextDeadline?.formatted
     ? `Copy deadline: ${nextDeadline.formatted}`
@@ -13,7 +15,7 @@ const IconCardsSection = () => {
       ? 'Loading...'
       : 'Check schedule for deadlines';
 
-  const cards = [
+  const allCards = [
     {
       icon: Clock,
       title: 'Next Issue Deadline',
@@ -55,6 +57,10 @@ const IconCardsSection = () => {
       link: '/stories'
     }
   ];
+
+  const cards = eventsAndDirectoryVisible
+    ? allCards
+    : allCards.filter(c => c.link !== '/whats-on' && c.link !== '/business-directory');
 
   return (
     <section className="py-8 md:py-16 bg-background">
