@@ -1,13 +1,15 @@
-## Goal
-Hide the "Competitions" card on the homepage icon cards row and centre the remaining cards.
+## Add redirect for legacy Google listing URL
 
-## Changes
-**File:** `src/components/IconCardsSection.tsx`
+**File**: `src/App.tsx`
 
-1. Filter out the Competitions card from the `cards` array (alongside the existing events/directory visibility filter).
-2. Update the desktop grid so cards centre nicely:
-   - Replace `hidden md:grid grid-cols-2 lg:grid-cols-5 gap-6` with a flex layout: `hidden md:flex flex-wrap justify-center gap-6`, and give each card a fixed width (e.g. `md:w-[280px]`) so 3 cards align centrally without stretching to fill 5 columns.
-3. Mobile horizontal scroll layout stays unchanged (already auto-handles a shorter list).
+- Ensure `Navigate` is imported from `react-router-dom`.
+- Add a new route before the catch-all `*` route:
+  ```tsx
+  <Route path="/calendars-with-sidebar-2-2" element={<Navigate to="/advertising" replace />} />
+  ```
 
-## Result
-Homepage shows: Next Issue Deadline, (Events / Trusted Businesses if visible), Local Stories — Competitions hidden, all centred.
+This sends anyone landing on `/calendars-with-sidebar-2-2` straight to `/advertising`, using `replace` so the old URL doesn't pollute browser history.
+
+### Recommended follow-up (outside the codebase)
+- Update the URL on the Google Business Profile listing to `https://discovermagazines.co.uk/advertising` so search results point to the canonical page directly.
+- Optional: if you have Cloudflare in front of the domain, add a Page Rule / Bulk Redirect for a true HTTP 301.
