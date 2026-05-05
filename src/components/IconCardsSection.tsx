@@ -62,13 +62,15 @@ const IconCardsSection = () => {
     ? allCards
     : allCards.filter(c => c.link !== '/whats-on' && c.link !== '/business-directory');
 
+  const visibleCards = cards.filter(c => c.link !== '/competitions');
+
   return (
     <section className="py-8 md:py-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile: Horizontal scroll */}
         <div className="md:hidden">
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-            {cards.map((card, index) => {
+            {visibleCards.map((card, index) => {
               const IconComponent = card.icon;
               return (
                 <Card 
@@ -97,7 +99,7 @@ const IconCardsSection = () => {
           </div>
           {/* Scroll indicator dots */}
           <div className="flex justify-center gap-1.5 mt-2">
-            {cards.map((_, index) => (
+            {visibleCards.map((_, index) => (
               <div 
                 key={index} 
                 className="w-2 h-2 rounded-full bg-muted-foreground/30"
@@ -106,15 +108,15 @@ const IconCardsSection = () => {
           </div>
         </div>
 
-        {/* Desktop: Grid layout */}
-        <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-6">
-          {cards.map((card, index) => {
+        {/* Desktop: Centred flex layout */}
+        <div className="hidden md:flex flex-wrap justify-center gap-6">
+          {visibleCards.map((card, index) => {
             const IconComponent = card.icon;
             return (
               <Card 
                 key={index} 
                 onClick={() => navigate(card.link)}
-                className={`group hover:shadow-lg transition-shadow duration-300 cursor-pointer ${
+                className={`group hover:shadow-lg transition-shadow duration-300 cursor-pointer w-[280px] ${
                   card.priority ? 'ring-2 ring-red-500 ring-offset-2' : ''
                 }`}
               >
