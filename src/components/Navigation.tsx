@@ -137,38 +137,36 @@ const Navigation = () => {
                       {section.title}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <div className="w-full bg-white border border-border shadow-lg rounded-lg">
+                      <div className="w-[640px] lg:w-[760px] bg-white border border-border shadow-lg rounded-lg">
                         <div className="grid md:grid-cols-4 lg:grid-cols-5">
                           {/* Main content sections */}
                           <div className="md:col-span-3 lg:col-span-3 p-6">
-                            <div className="grid gap-6 md:grid-cols-2">
-                              <div>
-                                <h3 className="text-sm font-semibold text-foreground mb-4">{section.title}</h3>
-                                <div className="space-y-3">
-                                  {section.items.map((item) => {
+                            <div>
+                              <h3 className="text-sm font-semibold text-foreground mb-4">{section.title}</h3>
+                              <div className="space-y-3">
+                                {section.items.map((item) => {
                                     const IconComponent = item.icon;
                                     return (
-                                      <NavigationMenuLink key={item.name} asChild>
-                                        <div
-                                          onClick={() => handleNavigation(item.href)}
-                                          className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
-                                        >
-                                          <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
-                                            <IconComponent size={20} />
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors">
-                                              {item.name}
-                                            </div>
-                                            <p className="text-sm text-muted-foreground leading-tight mt-1">
-                                              {item.description}
-                                            </p>
-                                          </div>
+                                    <NavigationMenuLink key={item.name} asChild>
+                                      <div
+                                        onClick={() => handleNavigation(item.href)}
+                                        className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
+                                      >
+                                        <div className="flex-shrink-0 w-6 h-6 text-muted-foreground group-hover:text-community-green transition-colors">
+                                          <IconComponent size={20} />
                                         </div>
-                                      </NavigationMenuLink>
-                                    );
-                                  })}
-                                </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-sm font-medium text-foreground group-hover:text-community-green transition-colors whitespace-nowrap">
+                                            {item.name}
+                                          </div>
+                                          <p className="text-sm text-muted-foreground leading-tight mt-1">
+                                            {item.description}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </NavigationMenuLink>
+                                  );
+                                })}
                               </div>
                             </div>
                           </div>
