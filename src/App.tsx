@@ -2,7 +2,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import BusinessDirectory from "./pages/BusinessDirectory";
@@ -61,7 +61,10 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/payment-setup" element={<PaymentSetup />} />
-          
+
+          {/* Legacy URL redirect (old WordPress page from Google listing) */}
+          <Route path="/calendars-with-sidebar-2-2" element={<Navigate to="/advertising" replace />} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
