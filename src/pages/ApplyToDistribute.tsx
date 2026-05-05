@@ -132,7 +132,7 @@ const ApplyToDistribute = () => {
                   size="lg" 
                   className="bg-community-green hover:bg-community-green/90"
                   onClick={() => {
-                    window.open('https://roundcontrol.co.uk/discover-magazines-ltd/join-waiting-list', '_blank');
+                    window.open('https://roundcontrol.co.uk/discover-magazines/join-waiting-list', '_blank');
                   }}
                 >
                   Apply Now
