@@ -173,6 +173,18 @@ export function useCreateCompetitionEntry() {
         .single();
 
       if (error) throw error;
+
+      // Forward to external webhook (non-blocking failure)
+      try {
+        const { error: fnError } = await supabase.functions.invoke(
+          'send-competition-entry-webhook',
+          { body: entry },
+        );
+        if (fnError) console.error('Webhook invoke error:', fnError);
+      } catch (e) {
+        console.error('Webhook invoke threw:', e);
+      }
+
       return data;
     },
     onSuccess: () => {
