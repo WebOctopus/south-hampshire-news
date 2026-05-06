@@ -186,10 +186,6 @@ const Competitions = () => {
                           {competition.prize}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <Users className="w-4 h-4" />
-                        <span>{competition.entry_count.toLocaleString()} entries</span>
-                      </div>
                     </div>
                     
                     <Button 
