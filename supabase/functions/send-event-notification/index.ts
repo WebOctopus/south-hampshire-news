@@ -41,8 +41,8 @@ Deno.serve(async (req) => {
     }
 
     const eventPath = slug || event_id;
-    const eventUrl = `https://www.peacockpixelmedia.co.uk/events/${eventPath}`;
-    const adminUrl = `https://www.peacockpixelmedia.co.uk/admin`;
+    const eventUrl = `https://www.discovermagazines.co.uk/events/${eventPath}`;
+    const adminUrl = `https://www.discovermagazines.co.uk/admin`;
 
     const emailHtml = `
 <!DOCTYPE html>

@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     );
 
     // Generate the password reset link using Admin API
-    const siteUrl = "https://peacockpixelmedia.co.uk";
+    const siteUrl = "https://discovermagazines.co.uk";
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: email,
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
           <!-- Footer -->
           <tr>
             <td style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 160px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;" />
+              <img src="https://discovermagazines.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 160px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;" />
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr><td style="text-align: center; padding: 4px 0;">
                   <span style="color: #166534; font-size: 14px;">&#x1F4DE;</span>
@@ -143,8 +143,8 @@ Deno.serve(async (req) => {
                 Connecting South Hampshire communities since 2014
               </p>
               <p style="color: #9ca3af; font-size: 12px; margin: 0; text-align: center;">
-                <a href="https://peacockpixelmedia.co.uk" style="color: #166534; text-decoration: none;">Website</a> &bull;
-                <a href="https://peacockpixelmedia.co.uk/contact" style="color: #166534; text-decoration: none;">Contact Us</a>
+                <a href="https://discovermagazines.co.uk" style="color: #166534; text-decoration: none;">Website</a> &bull;
+                <a href="https://discovermagazines.co.uk/contact" style="color: #166534; text-decoration: none;">Contact Us</a>
               </p>
             </td>
           </tr>

@@ -6,8 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const SITE_URL = "https://www.peacockpixelmedia.co.uk";
-const FALLBACK_IMAGE = "https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png";
+const SITE_URL = "https://www.discovermagazines.co.uk";
+const FALLBACK_IMAGE = "https://discovermagazines.co.uk/lovable-uploads/discover-logo.png";
 
 function escapeHtml(input: string): string {
   return input
