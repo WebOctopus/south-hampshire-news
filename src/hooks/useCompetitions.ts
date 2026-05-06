@@ -166,11 +166,12 @@ export function useCreateCompetitionEntry() {
 
   return useMutation({
     mutationFn: async (entry: Omit<CompetitionEntry, 'id' | 'created_at'>) => {
-      const { data, error } = await supabase
+      // Insert only — anonymous users do not have SELECT access to
+      // competition_entries (entries are private to admins), so we must
+      // not chain .select() here or the request will fail.
+      const { error } = await supabase
         .from('competition_entries')
-        .insert(entry)
-        .select()
-        .single();
+        .insert(entry);
 
       if (error) throw error;
 
@@ -185,7 +186,7 @@ export function useCreateCompetitionEntry() {
         console.error('Webhook invoke threw:', e);
       }
 
-      return data;
+      return entry;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitions'] });
