@@ -32,10 +32,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const dashboardUrl = "https://www.peacockpixelmedia.co.uk/dashboard";
+    const dashboardUrl = "https://www.discovermagazines.co.uk/dashboard";
     const eventPath = slug || event_id;
     const eventUrl = eventPath
-      ? `https://www.peacockpixelmedia.co.uk/events/${eventPath}`
+      ? `https://www.discovermagazines.co.uk/events/${eventPath}`
       : null;
 
     const greeting = organiser_name ? `Hello ${organiser_name}` : "Hello";
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
       <table role="presentation" width="600" style="width:600px;max-width:100%;border-collapse:collapse;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <tr><td style="padding:40px 30px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
+          <img src="https://discovermagazines.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
         </div>
         <h2 style="color: #333; text-align: center; margin-bottom: 10px;">Your Event Has Been Submitted!</h2>
         <p style="color: #777; text-align: center; font-size: 14px; margin-bottom: 30px;">Event: <strong>${event_title}</strong></p>

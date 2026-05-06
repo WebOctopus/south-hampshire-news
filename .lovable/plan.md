@@ -1,34 +1,40 @@
-The database policy is now correct: `competition_entries` has an `INSERT` policy for both `anon` and `authenticated` users.
+## Goal
 
-The remaining problem is in the frontend mutation. It inserts the entry and then immediately asks Supabase to return the inserted row using:
+Fix the password reset link so it redirects to `discovermagazines.co.uk/reset-password` instead of the old `peacockpixelmedia.co.uk/reset-password`. Keep Resend sender addresses unchanged (still `@peacockpixelmedia.co.uk`).
 
+## Root Cause
+
+`supabase/functions/send-password-reset/index.ts` hard-codes:
 ```ts
-.insert(entry)
-.select()
-.single()
+const siteUrl = "https://peacockpixelmedia.co.uk";
+...
+redirectTo: `${siteUrl}/reset-password`
 ```
+This is what produces the broken `redirect_to=https://peacockpixelmedia.co.uk/reset-password` link in the email.
 
-Because competition entries contain personal data, anonymous users do not have `SELECT` access to `competition_entries`. That is good for privacy, but it means the submit flow can still fail after/while inserting because the frontend is trying to read the private entry back.
+## Changes
 
-## Plan
+Replace `peacockpixelmedia.co.uk` → `discovermagazines.co.uk` **only for site URLs / links / image hosts**, not for email `from:` addresses.
 
-1. Update `src/hooks/useCompetitions.ts`
-   - Change the public competition entry insert to only perform the insert.
-   - Remove `.select().single()` from `useCreateCompetitionEntry()`.
-   - Return the submitted entry payload locally instead of asking Supabase to read the private row back.
+Files to update:
 
-2. Preserve entry privacy
-   - Do not add a public `SELECT` policy for `competition_entries`.
-   - Admin-only viewing of entries remains unchanged.
+- `supabase/functions/send-password-reset/index.ts` — fixes the actual reset link (`siteUrl`, logo `<img>`, footer Website/Contact links)
+- `supabase/functions/send-welcome-email/index.ts` — dashboard URL, logo
+- `supabase/functions/send-booking-confirmation-email/index.ts` — admin/dashboard/auth/contact links, logo
+- `supabase/functions/send-event-notification/index.ts` — eventUrl, adminUrl
+- `supabase/functions/send-event-organiser-login/index.ts` — dashboardUrl, event link, logo
+- `supabase/functions/admin-manage-user/index.ts` — logo image URLs
+- `supabase/functions/event-og/index.ts` — `SITE_URL`, fallback OG image
 
-3. Keep the webhook behaviour
-   - Continue calling `send-competition-entry-webhook` only after the database insert succeeds.
-   - The webhook will still receive the competition ID and look up/send the competition title, prize, category, and entrant details.
+**Explicitly NOT changed**: every `from: "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>"` line stays as-is, since that's the verified Resend sender domain.
 
-4. Make the webhook callable from public submissions
-   - Add `send-competition-entry-webhook` to `supabase/config.toml` with `verify_jwt = false`, matching the other public form/webhook functions.
-   - This prevents the next failure after the insert is fixed, where an anonymous frontend submission could be blocked when invoking the Edge Function.
+## Important: Supabase Auth URL Configuration
 
-5. Verify the intended flow
-   - Confirm the frontend no longer attempts to read from `competition_entries` after submitting.
-   - Confirm anonymous users can submit while entries remain hidden from the public.
+For the new redirect URL to actually work (and not be silently dropped by Supabase), the Supabase Auth settings must allow it:
+
+- **Site URL**: `https://discovermagazines.co.uk`
+- **Additional Redirect URLs** must include:
+  - `https://discovermagazines.co.uk/reset-password`
+  - `https://www.discovermagazines.co.uk/reset-password`
+
+I can't change this from code — please update it in the Supabase dashboard under Authentication → URL Configuration. I'll include the link after applying the code changes.

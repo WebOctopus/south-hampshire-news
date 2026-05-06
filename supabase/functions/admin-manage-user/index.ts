@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
                 <table role="presentation" width="600" style="width:600px;max-width:100%;border-collapse:collapse;background:#ffffff;border-radius:8px;overflow:hidden;">
                   <tr><td style="padding:40px 20px;">
                   <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
+                    <img src="https://discovermagazines.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
                   </div>
                   <h2 style="color: #333; text-align: center;">Your Password Has Been Updated</h2>
                   <p style="color: #555; font-size: 16px;">Hello,</p>
@@ -310,7 +310,7 @@ Deno.serve(async (req) => {
                 <table role="presentation" width="600" style="width:600px;max-width:100%;border-collapse:collapse;background:#ffffff;border-radius:8px;overflow:hidden;">
                   <tr><td style="padding:40px 20px;">
                   <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
+                    <img src="https://discovermagazines.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 200px;" />
                   </div>
                   <h2 style="color: #333; text-align: center;">Welcome! Your Account Has Been Created</h2>
                   <p style="color: #555; font-size: 16px;">Hello${createDisplayName ? ' ' + createDisplayName : ''},</p>

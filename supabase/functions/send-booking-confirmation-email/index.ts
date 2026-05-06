@@ -146,11 +146,11 @@ ${detailRowsHtml}
 ${bogofInfo}
 </table>
 <div style="background-color:#f0fdf4;border-radius:8px;padding:15px;text-align:center;">
-<a href="https://peacockpixelmedia.co.uk/admin" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">View in Admin Dashboard</a>
+<a href="https://discovermagazines.co.uk/admin" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">View in Admin Dashboard</a>
 </div>
 </td></tr>
 <tr><td style="background-color:#f9fafb;padding:30px 40px;border-top:1px solid #e5e7eb;text-align:center;">
-<img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width:160px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />
+<img src="https://discovermagazines.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width:160px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />
 <table role="presentation" style="width:100%;border-collapse:collapse;">
 <tr><td style="text-align:center;padding:4px 0;">
 <span style="color:#166534;font-size:14px;">&#x1F4DE;</span>
@@ -181,7 +181,7 @@ function buildLoginCredentialsHtml(email: string, password: string): string {
 </table>
 <table role="presentation" style="width:100%;border-collapse:collapse;">
 <tr><td align="center">
-<a href="https://peacockpixelmedia.co.uk/auth" style="display:inline-block;background-color:#1e40af;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:14px;">Log In to View Your Quote</a>
+<a href="https://discovermagazines.co.uk/auth" style="display:inline-block;background-color:#1e40af;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:14px;">Log In to View Your Quote</a>
 </td></tr></table>
 <p style="color:#6b7280;font-size:12px;margin:12px 0 0;text-align:center;">We recommend changing your password after your first login.</p>
 </div>`;
@@ -193,7 +193,7 @@ function buildExistingUserLoginHtml(): string {
 <p style="color:#1e3a5f;font-size:14px;margin:0 0 15px;">A quote has been created for you. Log in to your existing account to view and manage it:</p>
 <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:12px;">
 <tr><td align="center">
-<a href="https://peacockpixelmedia.co.uk/auth?redirect=/dashboard?tab=quotes" style="display:inline-block;background-color:#1e40af;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:14px;">Log In to Your Dashboard</a>
+<a href="https://discovermagazines.co.uk/auth?redirect=/dashboard?tab=quotes" style="display:inline-block;background-color:#1e40af;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;font-size:14px;">Log In to Your Dashboard</a>
 </td></tr></table>
 <p style="color:#6b7280;font-size:12px;margin:0;text-align:center;">Forgot your password? Use the "Forgot Password" link on the login page to reset it.</p>
 </div>`;
@@ -260,7 +260,7 @@ ${nextStepsHtml}
 </div>
 <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:25px;">
 <tr><td align="center">
-<a href="https://peacockpixelmedia.co.uk/dashboard${isBooking ? '' : '?tab=quotes'}" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:14px 30px;border-radius:6px;font-weight:bold;font-size:16px;">Go to Your Dashboard</a>
+<a href="https://discovermagazines.co.uk/dashboard${isBooking ? '' : '?tab=quotes'}" style="display:inline-block;background-color:#166534;color:#fff;text-decoration:none;padding:14px 30px;border-radius:6px;font-weight:bold;font-size:16px;">Go to Your Dashboard</a>
 </td></tr></table>
 <div style="background-color:#f9fafb;border-radius:8px;padding:20px;">
 <p style="color:#555;font-size:14px;margin:0 0 8px;"><strong>Need help?</strong></p>
@@ -269,7 +269,7 @@ ${nextStepsHtml}
 </div>
 </td></tr>
 <tr><td style="background-color:#f9fafb;padding:30px 40px;border-top:1px solid #e5e7eb;text-align:center;">
-<img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width:160px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />
+<img src="https://discovermagazines.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width:160px;height:auto;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />
 <table role="presentation" style="width:100%;border-collapse:collapse;">
 <tr><td style="text-align:center;padding:4px 0;">
 <span style="color:#166534;font-size:14px;">&#x1F4DE;</span>
@@ -286,9 +286,9 @@ ${nextStepsHtml}
 </table>
 <p style="color:#9ca3af;font-size:12px;margin:16px 0 8px;">Connecting South Hampshire communities since 2014</p>
 <p style="color:#9ca3af;font-size:12px;margin:0;">
-<a href="https://peacockpixelmedia.co.uk" style="color:#166534;text-decoration:none;">Website</a> &bull;
-<a href="https://peacockpixelmedia.co.uk/contact" style="color:#166534;text-decoration:none;">Contact Us</a> &bull;
-<a href="https://peacockpixelmedia.co.uk/advertising" style="color:#166534;text-decoration:none;">Advertise</a>
+<a href="https://discovermagazines.co.uk" style="color:#166534;text-decoration:none;">Website</a> &bull;
+<a href="https://discovermagazines.co.uk/contact" style="color:#166534;text-decoration:none;">Contact Us</a> &bull;
+<a href="https://discovermagazines.co.uk/advertising" style="color:#166534;text-decoration:none;">Advertise</a>
 </p>
 </td></tr>
 </table></td></tr></table></body></html>`;
@@ -332,7 +332,7 @@ Deno.serve(async (req) => {
             company: payload.company || "Not provided",
             business_name: payload.company || "Not provided",
             details_table: "",
-            admin_url: "https://peacockpixelmedia.co.uk/admin",
+            admin_url: "https://discovermagazines.co.uk/admin",
           };
           adminSubject = applyTemplate(adminTemplate.subject, vars);
           adminHtml = applyTemplate(adminTemplate.html_body, vars);
@@ -458,12 +458,12 @@ Deno.serve(async (req) => {
           payment_terms: payload.pricing_model === "leafleting"
             ? "25% deposit to secure your slot, 75% balance due 10 days before distribution"
             : "",
-          dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
+          dashboard_url: "https://discovermagazines.co.uk/dashboard",
           // Credentials block (works for admin-created AND self-registered new users)
           login_credentials: loginCredentialsHtml,
           login_email: payload.email,
           login_password: payload.generated_password || "",
-          login_url: "https://peacockpixelmedia.co.uk/auth",
+          login_url: "https://discovermagazines.co.uk/auth",
         };
         customerSubject = applyTemplate(customerTemplate.subject, vars);
         let templatedHtml = applyTemplate(customerTemplate.html_body, vars);

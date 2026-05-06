@@ -81,7 +81,7 @@ function buildFallbackHtml(name: string): string {
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center">
-                    <a href="https://peacockpixelmedia.co.uk/dashboard" style="display: inline-block; background-color: #166534; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                    <a href="https://discovermagazines.co.uk/dashboard" style="display: inline-block; background-color: #166534; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: bold; font-size: 16px;">
                       Go to Your Dashboard
                     </a>
                   </td>
@@ -91,7 +91,7 @@ function buildFallbackHtml(name: string): string {
           </tr>
           <tr>
             <td style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <img src="https://peacockpixelmedia.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 160px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;" />
+              <img src="https://discovermagazines.co.uk/lovable-uploads/discover-logo.png" alt="Discover Magazine" style="max-width: 160px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;" />
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr><td style="text-align: center; padding: 4px 0;">
                   <span style="color: #166534; font-size: 14px;">&#x1F4DE;</span>
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
     if (template) {
       const vars: Record<string, string> = {
         customer_name: name,
-        dashboard_url: "https://peacockpixelmedia.co.uk/dashboard",
+        dashboard_url: "https://discovermagazines.co.uk/dashboard",
       };
       subject = applyTemplate(template.subject, vars);
       html = applyTemplate(template.html_body, vars);
