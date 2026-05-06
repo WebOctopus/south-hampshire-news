@@ -100,3 +100,6 @@ verify_jwt = false
 
 [functions.submit-event]
 verify_jwt = false
+
+[functions.send-competition-entry-webhook]
+verify_jwt = false

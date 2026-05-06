@@ -1,27 +1,34 @@
-# Allow public competition entry submissions
+The database policy is now correct: `competition_entries` has an `INSERT` policy for both `anon` and `authenticated` users.
 
-## Problem
-Submitting the Enter Competition form fails with:
-> new row violates row-level security policy for table "competition_entries"
+The remaining problem is in the frontend mutation. It inserts the entry and then immediately asks Supabase to return the inserted row using:
 
-The existing INSERT policy "Anyone can create competition entries" was created without specifying roles, so it doesn't actually allow `anon` or `authenticated` to insert. Only admins can insert today.
+```ts
+.insert(entry)
+.select()
+.single()
+```
 
-## Fix
-Run a migration on `public.competition_entries` that:
+Because competition entries contain personal data, anonymous users do not have `SELECT` access to `competition_entries`. That is good for privacy, but it means the submit flow can still fail after/while inserting because the frontend is trying to read the private entry back.
 
-1. Drops the existing INSERT policy `Anyone can create competition entries`.
-2. Recreates it explicitly granted to both `anon` and `authenticated`:
-   ```sql
-   CREATE POLICY "Anyone can create competition entries"
-     ON public.competition_entries
-     FOR INSERT
-     TO anon, authenticated
-     WITH CHECK (true);
-   ```
+## Plan
 
-Existing SELECT/ALL admin-only policies remain unchanged, so entries stay private to admins — only insertion becomes public.
+1. Update `src/hooks/useCompetitions.ts`
+   - Change the public competition entry insert to only perform the insert.
+   - Remove `.select().single()` from `useCreateCompetitionEntry()`.
+   - Return the submitted entry payload locally instead of asking Supabase to read the private row back.
 
-## Verification
-After the migration, a logged-out user submitting the form on `/competitions` should see "Entry submitted successfully!" and the entry should appear in `competition_entries` and trigger the existing webhook.
+2. Preserve entry privacy
+   - Do not add a public `SELECT` policy for `competition_entries`.
+   - Admin-only viewing of entries remains unchanged.
 
-No frontend code changes are required.
+3. Keep the webhook behaviour
+   - Continue calling `send-competition-entry-webhook` only after the database insert succeeds.
+   - The webhook will still receive the competition ID and look up/send the competition title, prize, category, and entrant details.
+
+4. Make the webhook callable from public submissions
+   - Add `send-competition-entry-webhook` to `supabase/config.toml` with `verify_jwt = false`, matching the other public form/webhook functions.
+   - This prevents the next failure after the insert is fixed, where an anonymous frontend submission could be blocked when invoking the Edge Function.
+
+5. Verify the intended flow
+   - Confirm the frontend no longer attempts to read from `competition_entries` after submitting.
+   - Confirm anonymous users can submit while entries remain hidden from the public.
