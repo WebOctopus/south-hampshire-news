@@ -31,7 +31,11 @@ const formSchema = z.object({
     .min(5, 'Please enter a valid postcode')
     .max(10, 'Postcode must be less than 10 characters')
     .regex(/^[A-Za-z0-9\s]+$/, 'Postcode can only contain letters, numbers and spaces'),
-  phone: z.string().optional(),
+  phone: z.string()
+    .trim()
+    .min(7, 'Please enter a valid phone number')
+    .max(20, 'Phone number must be less than 20 characters')
+    .regex(/^[0-9+\s()-]+$/, 'Phone number can only contain digits, spaces, +, -, ()'),
   message: z.string().max(1000, 'Message must be less than 1000 characters').optional(),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions',
@@ -69,7 +73,7 @@ const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntry
       name: data.name,
       email: data.email,
       postcode: data.postcode,
-      phone: data.phone || null,
+      phone: data.phone,
       message: data.message || null,
       agreed_to_terms: data.agreeToTerms,
     });
@@ -147,7 +151,7 @@ const CompetitionEntryForm = ({ competition, isOpen, onClose }: CompetitionEntry
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number (Optional)</FormLabel>
+                  <FormLabel>Phone Number *</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your phone number" {...field} />
                   </FormControl>
