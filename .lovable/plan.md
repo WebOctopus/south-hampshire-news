@@ -1,51 +1,38 @@
 ## Goal
-Ensure the Invoice Address captured in the Cost Calculator's contact step (postcode, address line 1, address line 2, town/city) is included in the webhook payload(s) sent to the CRM.
+Make sure customers who complete the **3+ Subscription (BOGOF)** booking form reliably receive the confirmation email that tells them what happens next (including setting up their Direct Debit from their dashboard).
+
+The existing in-dashboard GoCardless "Set Up Payment Plan" flow is **not changed** — BOGOF customers continue to set up payment themselves from their dashboard exactly as today.
 
 ## Findings
-- `ContactInformationStep.tsx` collects: `postcode`, `addressLine1`, `addressLine2`, `city`.
-- In `AdvertisingStepForm.tsx`, when building quote / booking records, the code reads `contactData.address` (which doesn't exist — the field is `addressLine1`). So address data is currently being silently dropped into `selections.address = ''`.
-- Two webhook edge functions are involved:
-  - `send-quote-booking-webhook` — receives a payload built by `buildCrmWebhookPayload` in `src/lib/webhookPayloadResolver.ts`. This builder does not emit any address fields.
-  - `send-booking-webhook` — emits `contact.invoiceAddress: step3Data.invoiceAddress`, but `contactData` has no `invoiceAddress` field, so the value is `undefined`.
+
+The BOGOF "Book" journey in `src/components/AdvertisingStepForm.tsx` → `handleContactInfoBook` does call `send-booking-confirmation-email` after inserting the booking, and the BOGOF template exists. I tested the edge function directly with a BOGOF payload — it returned `success: true` via Resend. So the function works in isolation.
+
+Two reliability problems explain why the email "doesn't seem to arrive" for end-to-end BOGOF customers:
+
+1. **Fire-and-forget invoke + immediate navigation.** The `send-booking-confirmation-email` invoke is wrapped in its own `try/catch` but the surrounding flow does not `await` the network round-trip before `setTimeout(() => navigate('/dashboard'), 1500)`. Catches log to `console.error` only. A transient Resend hiccup, slow network, or the page transition cancelling the in-flight `fetch` will lose the email with zero trace.
+2. **No audit trail.** Edge function logs are short-retention and there is no `email_send_log` table. When a customer says "I didn't get an email", there is no way to confirm whether the function was invoked, let alone whether Resend accepted it.
 
 ## Changes
 
-### 1. Fix field-name mismatch in `src/components/AdvertisingStepForm.tsx`
-Replace the four occurrences of `contactData.address` with `contactData.addressLine1` (in the quote `selections`, booking `selections`, and the `bogof_return_interest` quote `selections`). Persist `addressLine1`, `addressLine2`, `city`, `postcode` consistently in `selections`.
+### 1. Add an `email_send_log` table
+New table with columns: `id`, `booking_id` (nullable), `quote_id` (nullable), `template_name`, `recipient_email`, `recipient_type` (`'customer' | 'admin'`), `status` (`'sent' | 'failed'`), `provider_message_id`, `error_message`, `metadata jsonb`, `created_at`. RLS: admins can read all; writes only via service role from the edge function.
 
-### 2. Include invoice address in CRM payload (`src/lib/webhookPayloadResolver.ts`)
-Extend `buildCrmWebhookPayload` to read invoice address from either the raw input or `raw.selections` and emit flat CRM-friendly fields:
-- `invoice_postcode`
-- `invoice_address_line_1`
-- `invoice_address_line_2`
-- `invoice_city`
-- `invoice_address` (single-line concatenation: `"<line1>, <line2>, <city>, <postcode>"`, skipping empties) for convenience in the CRM.
+### 2. Write to `email_send_log` from `send-booking-confirmation-email`
+In `supabase/functions/send-booking-confirmation-email/index.ts`, after each Resend send (admin + customer), insert a row capturing success/failure, Resend message id, and any error. Gives us a permanent record we can query.
 
-### 3. Pass invoice address to the resolver in `AdvertisingStepForm.tsx`
-At each `resolveWebhookPayload({...}, lookups)` call (quote save, booking save, plus the dashboard variants), add:
-```ts
-invoice_address: {
-  postcode: contactData.postcode,
-  address_line_1: contactData.addressLine1,
-  address_line_2: contactData.addressLine2,
-  city: contactData.city,
-}
-```
-Also apply this in `src/components/dashboard/CreateBookingForm.tsx` and `src/components/dashboard/BookingDetailsDialog.tsx` where the same resolver is called (using their existing `selections` address fields).
+### 3. Await the confirmation-email invoke in the booking flow
+In `src/components/AdvertisingStepForm.tsx` (`handleContactInfoBook`), `await` the `send-booking-confirmation-email` invoke before the `setTimeout` redirect fires. Other webhooks can stay fire-and-forget. Apply the same `await` change at equivalent call sites in:
+- `src/pages/Advertising.tsx`
+- `src/components/dashboard/CreateBookingForm.tsx`
 
-### 4. Update `supabase/functions/send-booking-webhook/index.ts`
-Replace the single `invoiceAddress: step3Data.invoiceAddress` with an object built from the flat fields:
-```ts
-invoiceAddress: {
-  postcode: step3Data.postcode,
-  addressLine1: step3Data.addressLine1,
-  addressLine2: step3Data.addressLine2,
-  city: step3Data.city,
-}
-```
-No other changes to that function.
+This removes the navigation-cancels-fetch race that disproportionately affects BOGOF customers.
 
-## Out of scope
-- No DB schema changes (the address is already persisted inside `bookings.selections` / `quotes.selections`).
-- No UI changes to the Invoice Address card.
-- Email templates and other edge functions are not modified.
+### 4. Surface a softer warning if the email fails
+If the awaited invoke returns an error, show a non-blocking toast: *"Your booking is saved, but we couldn't send your confirmation email. Our team will follow up shortly."* and still proceed to the dashboard. Customer knows to expect follow-up instead of silently wondering.
+
+## Explicitly NOT changing
+- **Dashboard payment flow stays exactly as today** — BOGOF customers continue to set up their Direct Debit themselves via the existing "Set Up Payment Plan" / GoCardless journey inside their dashboard.
+- No changes to `gocardless-webhook`, `PaymentSetup.tsx`, mandate/subscription creation, or invoice generation.
+- No new post-payment email — the existing pre-payment `booking_bogof_customer` template already explains the next steps.
+- No template copy changes, no Resend domain switch, no Lovable Emails migration.
+- No changes to Fixed Term or Leafleting beyond the shared `await` fix in step 3 (they get the same reliability benefit "for free").
