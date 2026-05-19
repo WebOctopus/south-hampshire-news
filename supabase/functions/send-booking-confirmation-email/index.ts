@@ -467,6 +467,13 @@ Deno.serve(async (req) => {
             ? buildExistingUserLoginHtml()
             : "");
 
+        const rawFinalTotal = payload.pricing_breakdown?.finalTotal ?? payload.final_total ?? 0;
+        // BOGOF stores finalTotal as paid+free (matched bonus). The customer's
+        // contracted commitment is only the paid half.
+        const committedCost = payload.pricing_model === 'bogof'
+          ? rawFinalTotal / 2
+          : rawFinalTotal;
+
         const vars: Record<string, string> = {
           customer_name: (payload.contact_name || payload.email.split("@")[0]).split(" ")[0],
           company: payload.company || "",
@@ -504,16 +511,10 @@ Deno.serve(async (req) => {
             } catch { return raw; }
           })(),
           // Shared – use pricing_breakdown.finalTotal as the authoritative full campaign cost
-          total_cost: formatCurrency(
-            payload.pricing_breakdown?.finalTotal ?? payload.final_total
-          ),
+          total_cost: formatCurrency(committedCost),
           // Leafleting payment breakdown
-          deposit_amount: formatCurrency(
-            ((payload.pricing_breakdown?.finalTotal ?? payload.final_total) || 0) * 0.25
-          ),
-          remaining_amount: formatCurrency(
-            ((payload.pricing_breakdown?.finalTotal ?? payload.final_total) || 0) * 0.75
-          ),
+          deposit_amount: formatCurrency(committedCost * 0.25),
+          remaining_amount: formatCurrency(committedCost * 0.75),
           payment_terms: payload.pricing_model === "leafleting"
             ? "25% deposit to secure your slot, 75% balance due 10 days before distribution"
             : "",
