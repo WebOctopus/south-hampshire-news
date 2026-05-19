@@ -36,7 +36,12 @@ serve(async (req) => {
         businessType: step3Data.businessType,
         companyName: step3Data.companyName,
         companySector: step3Data.companySector,
-        invoiceAddress: step3Data.invoiceAddress
+        invoiceAddress: {
+          postcode: step3Data.postcode || '',
+          addressLine1: step3Data.addressLine1 || '',
+          addressLine2: step3Data.addressLine2 || '',
+          city: step3Data.city || '',
+        }
       },
       
       // Pricing Model Selection (Step 1)
