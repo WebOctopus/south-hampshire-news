@@ -191,7 +191,7 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
       return;
     }
     // Optional address prefill — GoCardless collects address on their hosted page if not provided
-    const addressLine1 = booking.selections?.address || '';
+    const addressLine1 = booking.selections?.addressLine1 || booking.selections?.address || '';
     const city = booking.selections?.city || '';
     const postcode = (booking.selections?.postcode && booking.selections.postcode !== 'POSTCODE') ? booking.selections.postcode : '';
 
