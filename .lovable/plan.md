@@ -1,30 +1,49 @@
-## Goal
-When a returning BOGOF customer clicks **Book Now**, also send their data to your CRM via the existing `send-quote-booking-webhook` — matching what the eligible-booking path already does.
+## Problem
 
-## Findings
+On the 3+ Subscription (BOGOF) booking confirmation email, the **Committed (contracted) Cost + VAT** row shows £1080 when it should be £540 + VAT.
 
-In `src/components/AdvertisingStepForm.tsx → handleContactInfoBook`, the eligible BOGOF branch posts to `send-quote-booking-webhook` (the external CRM webhook, via `resolveWebhookPayload`) with the full booking payload including `invoice_address`, `bogof_paid_areas`, `bogof_free_areas`, etc.
+## Root cause
 
-The **returning-BOGOF branch** (the `isReturningBogofCustomer` block) inserts into `quotes` + `quote_requests`, now sends the confirmation email, but does **not** call the CRM webhook — so the CRM never learns about returning-customer interest leads.
+In `src/components/AdvertisingStepForm.tsx`, the BOGOF pricing breakdown stores `finalTotal` as the **full undiscounted** value (paid areas + matched free areas). The monthly price calc proves this:
 
-Noted: GoHighLevel is no longer in use. The legacy `send-booking-webhook` call in the eligible branch is out of scope for this change; only `send-quote-booking-webhook` is your active CRM webhook.
+```ts
+// pricing_model === 'bogof'
+monthly_price = finalTotal / 2 / minPayments   // = 1080 / 2 / 6 = £90 ✓
+```
 
-## Change
+So `finalTotal = £1080` represents paid (£540) + free-bonus (£540). The customer's actual contracted commitment is `finalTotal / 2 = £540` (= £90 × 6 instalments).
 
-In the returning-BOGOF branch (right after the `quotes` + `quote_requests` inserts and the confirmation-email block), add a single call to `send-quote-booking-webhook` with:
+The email edge function `send-booking-confirmation-email/index.ts` populates the `{{total_cost}}` template variable directly from `pricing_breakdown.finalTotal ?? final_total`, so BOGOF emails show £1080 instead of £540.
 
-- `record_type: 'quote'`
-- `record_id: insertedQuote?.id`
-- `pricing_model: 'bogof'`
-- `status: 'bogof_return_interest'` (so the CRM can route returning-customer leads differently from confirmed bookings)
-- `is_returning_bogof_customer: true` flag
-- Same field set as the eligible branch: contact name, email, phone, company, `title`, `ad_size`, `duration`, `selected_areas`, `bogof_paid_areas`, `bogof_free_areas`, totals (`subtotal`, `final_total`, `monthly_price`, `total_circulation`, `volume_discount_percent`), `pricing_breakdown`, `selections`, and `invoice_address` (`postcode`, `address_line_1`, `address_line_2`, `city`)
-- Same `bookingWebhookLookups` object (`areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas, leafletSizes, leafletDurations`) passed to `resolveWebhookPayload` so IDs resolve to names before sending
+Fixed Term and Leafleting are unaffected — for those models `finalTotal` already equals what the customer pays.
 
-Wrap in try/catch with `console.error` only — non-blocking, same pattern as the eligible branch. No user-facing toast on webhook failure.
+## Fix
 
-## Explicitly NOT changing
-- Eligible BOGOF / Fixed Term / Leaflet webhook paths — already working.
-- The legacy `send-booking-webhook` (GHL) — not touched; we'll leave any cleanup of that for a separate request.
-- Confirmation email logic added in the previous step.
-- `resolveWebhookPayload` or any edge function code.
+In `supabase/functions/send-booking-confirmation-email/index.ts`, when `payload.pricing_model === 'bogof'`, compute the committed cost as half of `finalTotal` before assigning it to the `total_cost` template variable.
+
+```ts
+const rawFinalTotal = payload.pricing_breakdown?.finalTotal ?? payload.final_total ?? 0;
+const committedCost = payload.pricing_model === 'bogof'
+  ? rawFinalTotal / 2     // BOGOF stores paid+free; customer only pays half
+  : rawFinalTotal;
+
+// then:
+total_cost: formatCurrency(committedCost),
+deposit_amount: formatCurrency(committedCost * 0.25),   // leafleting only
+remaining_amount: formatCurrency(committedCost * 0.75), // leafleting only
+```
+
+Leafleting deposit / remaining values continue to use the non-halved total (BOGOF doesn't use them, so no impact there either way — but routing them through `committedCost` keeps the logic consistent because for non-BOGOF `committedCost === rawFinalTotal`).
+
+## Scope
+
+- **Edit**: `supabase/functions/send-booking-confirmation-email/index.ts` only — single derivation added before the template `vars` map (around lines 506–516).
+- **Not touched**: `AdvertisingStepForm.tsx`, pricing calculator, DB email templates, webhook payloads, monthly_price logic.
+
+## Verification
+
+After deploy, re-trigger a BOGOF booking matching the screenshot (monthly £90):
+- `{{monthly_price}}` → £90.00 (unchanged)
+- `{{total_cost}}` → £540.00 (was £1080.00)
+
+Fixed Term and Leafleting confirmation emails should be unchanged.
