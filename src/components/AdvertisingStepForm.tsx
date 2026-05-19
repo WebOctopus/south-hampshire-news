@@ -792,6 +792,49 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           });
         }
 
+        // Send returning-BOGOF lead to external CRM webhook (non-blocking)
+        try {
+          const leadAdSizeData = adSizes?.find(a => a.id === campaignData.selectedAdSize);
+          const leadDurationData = durations?.find(d => d.id === campaignData.selectedDuration) ||
+                                    subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+          const bookingWebhookLookups = { areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas, leafletSizes, leafletDurations };
+          await supabase.functions.invoke('send-quote-booking-webhook', {
+            body: resolveWebhookPayload({
+              record_type: 'quote',
+              record_id: insertedQuote?.id,
+              pricing_model: 'bogof',
+              contact_name: fullName,
+              email: contactData.email,
+              phone: contactData.phone || '',
+              company: contactData.companyName || '',
+              title: quotePayload.title,
+              ad_size: (leadAdSizeData as any)?.name,
+              duration: leadDurationData?.name,
+              selected_areas: effectiveSelectedAreas,
+              bogof_paid_areas: campaignData.bogofPaidAreas || [],
+              bogof_free_areas: campaignData.bogofFreeAreas || [],
+              total_circulation: campaignData.pricingBreakdown?.totalCirculation,
+              subtotal: campaignData.pricingBreakdown?.subtotal,
+              final_total: campaignData.pricingBreakdown?.finalTotal,
+              monthly_price: quotePayload.monthly_price,
+              volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
+              status: 'bogof_return_interest',
+              is_returning_bogof_customer: true,
+              pricing_breakdown: campaignData.pricingBreakdown,
+              selections: quotePayload.selections,
+              invoice_address: {
+                postcode: contactData.postcode || '',
+                address_line_1: contactData.addressLine1 || '',
+                address_line_2: contactData.addressLine2 || '',
+                city: contactData.city || '',
+              }
+            }, bookingWebhookLookups)
+          });
+          console.log('Returning BOGOF CRM webhook sent successfully');
+        } catch (crmWebhookError) {
+          console.error('Returning BOGOF CRM webhook error:', crmWebhookError);
+        }
+
         // Store information for dashboard
         if (isNewUser) {
           localStorage.setItem('newUserFromCalculator', 'true');
