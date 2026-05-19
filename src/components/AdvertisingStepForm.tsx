@@ -881,7 +881,13 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             status: 'pending',
             pricing_breakdown: campaignData.pricingBreakdown,
-            selections: bookingPayload.selections
+            selections: bookingPayload.selections,
+            invoice_address: {
+              postcode: contactData.postcode || '',
+              address_line_1: contactData.addressLine1 || '',
+              address_line_2: contactData.addressLine2 || '',
+              city: contactData.city || '',
+            }
           }, bookingWebhookLookups)
         });
         console.log('Booking CRM webhook sent successfully');
