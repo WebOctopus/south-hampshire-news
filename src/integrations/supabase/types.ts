@@ -729,6 +729,48 @@ export type Database = {
         }
         Relationships: []
       }
+      email_send_log: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          provider_message_id: string | null
+          quote_id: string | null
+          recipient_email: string
+          recipient_type: string
+          status: string
+          template_name: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          provider_message_id?: string | null
+          quote_id?: string | null
+          recipient_email: string
+          recipient_type: string
+          status: string
+          template_name: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          provider_message_id?: string | null
+          quote_id?: string | null
+          recipient_email?: string
+          recipient_type?: string
+          status?: string
+          template_name?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           available_variables: string[]

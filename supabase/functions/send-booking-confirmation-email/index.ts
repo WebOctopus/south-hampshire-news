@@ -73,6 +73,39 @@ function getPricingModelLabel(model: string): string {
   }
 }
 
+async function logEmailSend(params: {
+  template_name: string;
+  recipient_email: string;
+  recipient_type: "customer" | "admin";
+  status: "sent" | "failed";
+  provider_message_id?: string | null;
+  error_message?: string | null;
+  booking_id?: string | null;
+  quote_id?: string | null;
+  metadata?: Record<string, unknown> | null;
+}) {
+  try {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { error } = await supabaseAdmin.from("email_send_log").insert({
+      template_name: params.template_name,
+      recipient_email: params.recipient_email,
+      recipient_type: params.recipient_type,
+      status: params.status,
+      provider_message_id: params.provider_message_id ?? null,
+      error_message: params.error_message ?? null,
+      booking_id: params.booking_id ?? null,
+      quote_id: params.quote_id ?? null,
+      metadata: params.metadata ?? null,
+    });
+    if (error) console.error("email_send_log insert error:", error);
+  } catch (e) {
+    console.error("email_send_log insert threw:", e);
+  }
+}
+
 function formatCurrency(amount: number | undefined): string {
   if (!amount && amount !== 0) return "N/A";
   return `£${Number(amount).toFixed(2)}`;
@@ -348,11 +381,37 @@ Deno.serve(async (req) => {
           subject: adminSubject,
           html: adminHtml,
         });
-        results.admin = { success: true, data: adminResult };
-        console.log("Admin notification sent:", adminResult);
+        const adminProviderId = (adminResult as any)?.data?.id ?? null;
+        const adminProviderError = (adminResult as any)?.error?.message ?? null;
+        const adminOk = !adminProviderError;
+        results.admin = adminOk
+          ? { success: true, data: adminResult }
+          : { success: false, error: adminProviderError };
+        console.log("Admin notification result:", adminResult);
+        await logEmailSend({
+          template_name: "booking_quote_admin",
+          recipient_email: adminEmail,
+          recipient_type: "admin",
+          status: adminOk ? "sent" : "failed",
+          provider_message_id: adminProviderId,
+          error_message: adminProviderError,
+          booking_id: payload.record_type === "booking" ? payload.record_id ?? null : null,
+          quote_id: payload.record_type === "quote" ? payload.record_id ?? null : null,
+          metadata: { pricing_model: payload.pricing_model },
+        });
       } catch (adminError: any) {
         console.error("Admin email error:", adminError);
         results.admin = { success: false, error: adminError.message };
+        await logEmailSend({
+          template_name: "booking_quote_admin",
+          recipient_email: adminEmail,
+          recipient_type: "admin",
+          status: "failed",
+          error_message: adminError?.message ?? String(adminError),
+          booking_id: payload.record_type === "booking" ? payload.record_id ?? null : null,
+          quote_id: payload.record_type === "quote" ? payload.record_id ?? null : null,
+          metadata: { pricing_model: payload.pricing_model },
+        });
       }
     } else {
       console.warn("ADMIN_NOTIFICATION_EMAIL not configured, skipping admin email");
@@ -520,14 +579,45 @@ Deno.serve(async (req) => {
         subject: customerSubject,
         html: customerHtml,
       });
-      results.customer = { success: true, data: customerResult };
-      console.log("Customer confirmation sent:", customerResult);
+      const customerProviderId = (customerResult as any)?.data?.id ?? null;
+      const customerProviderError = (customerResult as any)?.error?.message ?? null;
+      const customerOk = !customerProviderError;
+      results.customer = customerOk
+        ? { success: true, data: customerResult }
+        : { success: false, error: customerProviderError };
+      console.log("Customer confirmation result:", customerResult);
+      await logEmailSend({
+        template_name: `${payload.record_type}_${payload.pricing_model}_customer`,
+        recipient_email: payload.email,
+        recipient_type: "customer",
+        status: customerOk ? "sent" : "failed",
+        provider_message_id: customerProviderId,
+        error_message: customerProviderError,
+        booking_id: payload.record_type === "booking" ? payload.record_id ?? null : null,
+        quote_id: payload.record_type === "quote" ? payload.record_id ?? null : null,
+        metadata: { pricing_model: payload.pricing_model },
+      });
     } catch (customerError: any) {
       console.error("Customer email error:", customerError);
       results.customer = { success: false, error: customerError.message };
+      await logEmailSend({
+        template_name: `${payload.record_type}_${payload.pricing_model}_customer`,
+        recipient_email: payload.email,
+        recipient_type: "customer",
+        status: "failed",
+        error_message: customerError?.message ?? String(customerError),
+        booking_id: payload.record_type === "booking" ? payload.record_id ?? null : null,
+        quote_id: payload.record_type === "quote" ? payload.record_id ?? null : null,
+        metadata: { pricing_model: payload.pricing_model },
+      });
     }
 
-    return new Response(JSON.stringify({ success: true, results }), {
+    const customerEmailOk = results.customer?.success === true;
+    return new Response(JSON.stringify({
+      success: true,
+      customer_email_sent: customerEmailOk,
+      results,
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
