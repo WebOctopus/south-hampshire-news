@@ -73,6 +73,39 @@ function getPricingModelLabel(model: string): string {
   }
 }
 
+async function logEmailSend(params: {
+  template_name: string;
+  recipient_email: string;
+  recipient_type: "customer" | "admin";
+  status: "sent" | "failed";
+  provider_message_id?: string | null;
+  error_message?: string | null;
+  booking_id?: string | null;
+  quote_id?: string | null;
+  metadata?: Record<string, unknown> | null;
+}) {
+  try {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { error } = await supabaseAdmin.from("email_send_log").insert({
+      template_name: params.template_name,
+      recipient_email: params.recipient_email,
+      recipient_type: params.recipient_type,
+      status: params.status,
+      provider_message_id: params.provider_message_id ?? null,
+      error_message: params.error_message ?? null,
+      booking_id: params.booking_id ?? null,
+      quote_id: params.quote_id ?? null,
+      metadata: params.metadata ?? null,
+    });
+    if (error) console.error("email_send_log insert error:", error);
+  } catch (e) {
+    console.error("email_send_log insert threw:", e);
+  }
+}
+
 function formatCurrency(amount: number | undefined): string {
   if (!amount && amount !== 0) return "N/A";
   return `£${Number(amount).toFixed(2)}`;
