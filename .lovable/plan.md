@@ -1,16 +1,20 @@
-## Make Phone Number Required on Competition Entry Form
+## Delete the "DUMMY £" Ad Size
 
-Update `src/components/CompetitionEntryForm.tsx`:
+The FK error is because 3 bookings still reference this ad size:
 
-1. Change the zod schema for `phone` from `z.string().optional()` to a required, validated UK phone field:
-   ```ts
-   phone: z.string()
-     .trim()
-     .min(7, 'Please enter a valid phone number')
-     .max(20, 'Phone number must be less than 20 characters')
-     .regex(/^[0-9+\s()-]+$/, 'Phone number can only contain digits, spaces, +, -, ()'),
-   ```
-2. Update the form label from `Phone Number (Optional)` to `Phone Number *`.
-3. Remove the `|| null` fallback in `onSubmit` so `phone` is sent as the validated string.
+| Contact | Email | Status | Total | Created |
+|---|---|---|---|---|
+| Melanie Tinson | melanietinson17@gmail.com | pending | £4.80 | 17 Mar 2026 |
+| Princess Skye | pa.svs@langdonscott.co.uk | pending | £1.00 | 18 Mar 2026 |
+| Prince Skye | pa.svs@langdonscott.co.uk | pending | £2.00 | 18 Mar 2026 |
 
-No DB / backend changes required — the `competition_entries.phone` column already accepts the value, and existing rows with null phones remain valid.
+All three look like test bookings (pending status, tiny totals tied to the dummy product).
+
+### Proposed steps (single migration)
+
+1. Delete the 3 bookings above by id (no related artwork/invoices/payments to clean up since they're pending test rows — I'll add safety deletes for booking_artwork / invoices / gocardless_* tied to those booking ids just in case).
+2. Delete the ad size row `e4eba992-2d7f-466e-9b62-62c42c079b6d` ("DUMMY £").
+
+### Please confirm
+
+Are you happy for me to delete those 3 test bookings as part of removing the dummy ad size? If any of them are real, tell me which to keep and I'll reassign them to a real ad size instead.
