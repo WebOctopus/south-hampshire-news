@@ -1,48 +1,30 @@
 ## Goal
-Guarantee that every customer who clicks **Book Now** on the 3+ Subscription (BOGOF) form receives a confirmation email with their booking details.
+When a returning BOGOF customer clicks **Book Now**, also send their data to your CRM via the existing `send-quote-booking-webhook` — matching what the eligible-booking path already does.
 
 ## Findings
 
-There are two BOGOF "Book Now" branches in `src/components/AdvertisingStepForm.tsx → handleContactInfoBook`:
+In `src/components/AdvertisingStepForm.tsx → handleContactInfoBook`, the eligible BOGOF branch posts to `send-quote-booking-webhook` (the external CRM webhook, via `resolveWebhookPayload`) with the full booking payload including `invoice_address`, `bogof_paid_areas`, `bogof_free_areas`, etc.
 
-1. **Eligible new BOGOF customer** (lines ~764+): inserts into `bookings` and **already** calls `send-booking-confirmation-email` with `record_type: 'booking'`, `pricing_model: 'bogof'`. The DB template `booking_bogof_customer` exists. The recent audit-log + toast work covers this path.
+The **returning-BOGOF branch** (the `isReturningBogofCustomer` block) inserts into `quotes` + `quote_requests`, now sends the confirmation email, but does **not** call the CRM webhook — so the CRM never learns about returning-customer interest leads.
 
-2. **Returning BOGOF customer** (lines 688–762): eligibility check flips `isReturningBogofCustomer = true`, the code saves a `bogof_return_interest` row into `quotes` + `quote_requests`, shows a "Thanks for Your Interest!" toast, and **early-returns at line 761 without sending any email**. Database shows 5 such records over the past 3 months — none of those customers received a confirmation email after clicking Book Now.
+Noted: GoHighLevel is no longer in use. The legacy `send-booking-webhook` call in the eligible branch is out of scope for this change; only `send-quote-booking-webhook` is your active CRM webhook.
 
-This is the gap that matches the user's report.
+## Change
 
-## Changes
+In the returning-BOGOF branch (right after the `quotes` + `quote_requests` inserts and the confirmation-email block), add a single call to `send-quote-booking-webhook` with:
 
-### 1. Send a confirmation email in the returning-BOGOF branch
-In `handleContactInfoBook`, after the `quote_requests` insert and before the `setTimeout(navigate)`, await a call to `send-booking-confirmation-email` with:
-- `record_type: 'quote'` (it's saved as a quote/lead, not a booking)
+- `record_type: 'quote'`
+- `record_id: insertedQuote?.id`
 - `pricing_model: 'bogof'`
-- `record_id`: the inserted quote id (capture it from `.select('id').single()`)
-- `contact_name`, `email`, `phone`, `company`, `title` from the payload we already built
-- `bogof_paid_areas` / `bogof_free_areas` mapped to names (same mapping the eligible branch uses)
-- `selected_areas`, `total_circulation`, `subtotal`, `final_total`, `monthly_price`, `pricing_breakdown`, `selections`, `distribution_start_date`
-- A new flag `is_returning_bogof_customer: true` so the template (and future template variants) can tailor copy
+- `status: 'bogof_return_interest'` (so the CRM can route returning-customer leads differently from confirmed bookings)
+- `is_returning_bogof_customer: true` flag
+- Same field set as the eligible branch: contact name, email, phone, company, `title`, `ad_size`, `duration`, `selected_areas`, `bogof_paid_areas`, `bogof_free_areas`, totals (`subtotal`, `final_total`, `monthly_price`, `total_circulation`, `volume_discount_percent`), `pricing_breakdown`, `selections`, and `invoice_address` (`postcode`, `address_line_1`, `address_line_2`, `city`)
+- Same `bookingWebhookLookups` object (`areas, adSizes, durations, subscriptionDurations, paymentOptions, leafletAreas, leafletSizes, leafletDurations`) passed to `resolveWebhookPayload` so IDs resolve to names before sending
 
-### 2. Add a dedicated template for returning BOGOF customers
-Create a new DB row in `email_templates`:
-- `name = 'quote_bogof_return_interest_customer'`
-- Subject: *"Thanks for your interest — Discover Magazine 3+ Subscription"*
-- Body: explains the booking interest has been received, our team will be in touch with returning-customer rates, includes their selected areas + ad size + duration for confirmation, plus support contact details. Reuses the existing branded shell from `quote_bogof_customer` for consistency.
-
-The edge function's existing fallback (specific template name → generic `quote_saved_customer`) means even if the template row isn't created in time, the customer still gets a generic confirmation. The dedicated template is just nicer.
-
-### 3. Reuse existing reliability work
-No new code needed — the edge function already:
-- Writes every send (success or failure) to `email_send_log`.
-- Returns `customer_email_sent: boolean`.
-
-The new call site will check that flag and show the same soft toast warning ("Booking interest saved — confirmation email delayed, our team will follow up") if the send fails, matching the existing eligible-branch behaviour.
-
-### 4. Light verification after deploy
-Run a quick `email_send_log` query for the test BOGOF booking the user is about to make, to confirm a row appears with `status = 'sent'`.
+Wrap in try/catch with `console.error` only — non-blocking, same pattern as the eligible branch. No user-facing toast on webhook failure.
 
 ## Explicitly NOT changing
-- Dashboard GoCardless "Set Up Payment Plan" flow.
-- The eligible BOGOF booking path (already emails + logs after the last change).
-- Quote save / Fixed Term / Leaflet flows.
-- Template copy of `booking_bogof_customer` itself.
+- Eligible BOGOF / Fixed Term / Leaflet webhook paths — already working.
+- The legacy `send-booking-webhook` (GHL) — not touched; we'll leave any cleanup of that for a separate request.
+- Confirmation email logic added in the previous step.
+- `resolveWebhookPayload` or any edge function code.
