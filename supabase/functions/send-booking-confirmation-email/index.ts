@@ -482,6 +482,7 @@ Deno.serve(async (req) => {
           // Fixed Term vars
           ad_size: payload.ad_size || "N/A",
           dimensions: adDimensions,
+          title_dimensions: adDimensions,
           duration: payload.duration || "N/A",
           circulation: payload.total_circulation ? payload.total_circulation.toLocaleString() : "N/A",
           monthly_price: formatCurrency(payload.monthly_price),
