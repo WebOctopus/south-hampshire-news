@@ -732,7 +732,11 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         };
 
         // Save to both quotes and quote_requests
-        const { error: quoteError } = await supabase.from('quotes').insert(quotePayload);
+        const { data: insertedQuote, error: quoteError } = await supabase
+          .from('quotes')
+          .insert(quotePayload)
+          .select('id')
+          .single();
         if (quoteError) {
           console.error('Quote save error:', quoteError);
         }
@@ -740,6 +744,52 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         const { error: requestError } = await supabase.from('quote_requests').insert(quotePayload);
         if (requestError) {
           console.error('Quote request save error:', requestError);
+        }
+
+        // Send confirmation email to returning BOGOF customer
+        try {
+          const adSizeDataForEmail = adSizes?.find(a => a.id === campaignData.selectedAdSize);
+          const durationDataForEmail = durations?.find(d => d.id === campaignData.selectedDuration) ||
+                                        subscriptionDurations?.find(d => d.id === campaignData.selectedDuration);
+          const { data: emailResp, error: emailInvokeErr } = await supabase.functions.invoke('send-booking-confirmation-email', {
+            body: {
+              record_type: 'quote',
+              record_id: insertedQuote?.id,
+              pricing_model: 'bogof',
+              contact_name: fullName,
+              email: contactData.email,
+              phone: contactData.phone || '',
+              company: contactData.companyName || '',
+              title: quotePayload.title,
+              ad_size: adSizeDataForEmail?.name,
+              duration: durationDataForEmail?.name,
+              selected_areas: (effectiveSelectedAreas || []).map((id: string) => areas?.find(a => a.id === id)?.name || id),
+              bogof_paid_areas: (campaignData.bogofPaidAreas || []).map((id: string) => areas?.find(a => a.id === id)?.name || id),
+              bogof_free_areas: (campaignData.bogofFreeAreas || []).map((id: string) => areas?.find(a => a.id === id)?.name || id),
+              total_circulation: campaignData.pricingBreakdown?.totalCirculation,
+              subtotal: campaignData.pricingBreakdown?.subtotal,
+              final_total: campaignData.pricingBreakdown?.finalTotal,
+              monthly_price: quotePayload.monthly_price,
+              volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
+              pricing_breakdown: campaignData.pricingBreakdown,
+              distribution_start_date: quotePayload.distribution_start_date,
+              is_returning_bogof_customer: true,
+            }
+          });
+          const customerOk = !emailInvokeErr && (emailResp as any)?.customer_email_sent === true;
+          console.log('Returning BOGOF confirmation email result:', { emailResp, emailInvokeErr });
+          if (!customerOk) {
+            toast({
+              title: "Interest saved — confirmation email delayed",
+              description: "We've recorded your interest, but couldn't send the confirmation email. Our team will follow up shortly.",
+            });
+          }
+        } catch (emailError) {
+          console.error('Returning BOGOF confirmation email error:', emailError);
+          toast({
+            title: "Interest saved — confirmation email delayed",
+            description: "We've recorded your interest, but couldn't send the confirmation email. Our team will follow up shortly.",
+          });
         }
 
         // Store information for dashboard
