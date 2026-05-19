@@ -468,7 +468,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           ? leafletDurations?.find(d => d.id === campaignData.selectedDuration)
           : (durations?.find(d => d.id === campaignData.selectedDuration) || 
              subscriptionDurations?.find(d => d.id === campaignData.selectedDuration));
-        await supabase.functions.invoke('send-booking-confirmation-email', {
+        const { data: quoteEmailResp, error: quoteEmailInvokeErr } = await supabase.functions.invoke('send-booking-confirmation-email', {
           body: {
             record_type: 'quote',
             record_id: quoteData.id,
@@ -502,9 +502,20 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             } : {}),
           }
         });
-        console.log('Quote confirmation email sent');
+        const quoteCustomerOk = !quoteEmailInvokeErr && (quoteEmailResp as any)?.customer_email_sent === true;
+        console.log('Quote confirmation email result:', { quoteEmailResp, quoteEmailInvokeErr });
+        if (!quoteCustomerOk) {
+          toast({
+            title: "Quote saved — confirmation email delayed",
+            description: "Your quote is saved, but we couldn't send the confirmation email. Our team will follow up shortly.",
+          });
+        }
       } catch (emailError) {
         console.error('Quote confirmation email error:', emailError);
+        toast({
+          title: "Quote saved — confirmation email delayed",
+          description: "Your quote is saved, but we couldn't send the confirmation email. Our team will follow up shortly.",
+        });
       }
 
       // Also save to quote_requests table for admin tracking
