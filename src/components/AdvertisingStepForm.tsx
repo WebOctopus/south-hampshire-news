@@ -393,7 +393,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           selectedAreas: Array.isArray(campaignData.selectedAreas) ? campaignData.selectedAreas : [],
           bogofPaidAreas: Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
           bogofFreeAreas: Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-          address: contactData.address || '',
+          addressLine1: contactData.addressLine1 || '',
           addressLine2: contactData.addressLine2 || '',
           city: contactData.city || '',
           postcode: contactData.postcode || '',
@@ -445,7 +445,13 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             status: 'draft',
             pricing_breakdown: campaignData.pricingBreakdown,
-            selections: quotePayload.selections
+            selections: quotePayload.selections,
+            invoice_address: {
+              postcode: contactData.postcode || '',
+              address_line_1: contactData.addressLine1 || '',
+              address_line_2: contactData.addressLine2 || '',
+              city: contactData.city || '',
+            }
           }, webhookLookups)
         });
         console.log('Quote webhook sent successfully');
@@ -704,7 +710,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             selectedAreas: Array.isArray(campaignData.selectedAreas) ? campaignData.selectedAreas : [],
             bogofPaidAreas: Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
             bogofFreeAreas: Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-            address: contactData.address || '',
+            addressLine1: contactData.addressLine1 || '',
             addressLine2: contactData.addressLine2 || '',
             city: contactData.city || '',
             postcode: contactData.postcode || '',
@@ -781,7 +787,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             selectedMonths: campaignData.selectedMonths || {},
             selectedStartingIssue: campaignData.selectedStartingIssue || null,
             payment_option_id: campaignData.selectedPaymentOption || null,
-            address: contactData.address || '',
+            addressLine1: contactData.addressLine1 || '',
             addressLine2: contactData.addressLine2 || '',
             city: contactData.city || '',
             postcode: contactData.postcode || '',
@@ -875,7 +881,13 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             status: 'pending',
             pricing_breakdown: campaignData.pricingBreakdown,
-            selections: bookingPayload.selections
+            selections: bookingPayload.selections,
+            invoice_address: {
+              postcode: contactData.postcode || '',
+              address_line_1: contactData.addressLine1 || '',
+              address_line_2: contactData.addressLine2 || '',
+              city: contactData.city || '',
+            }
           }, bookingWebhookLookups)
         });
         console.log('Booking CRM webhook sent successfully');

@@ -180,6 +180,12 @@ interface RawWebhookData {
   agency_discount_percent?: number;
   pricing_breakdown?: any;
   selections?: any;
+  invoice_address?: {
+    postcode?: string;
+    address_line_1?: string;
+    address_line_2?: string;
+    city?: string;
+  };
   [key: string]: any;
 }
 
@@ -260,6 +266,20 @@ export function buildCrmWebhookPayload(raw: RawWebhookData, lookups: CrmLookups)
   if (raw.pricing_breakdown?.designFee) {
     payload.design_fee = raw.pricing_breakdown.designFee;
   }
+
+  // Invoice address — accept either explicit invoice_address object or fall back to selections fields
+  const sel = raw.selections || {};
+  const invPostcode = raw.invoice_address?.postcode ?? sel.postcode ?? '';
+  const invLine1 = raw.invoice_address?.address_line_1 ?? sel.addressLine1 ?? sel.address ?? '';
+  const invLine2 = raw.invoice_address?.address_line_2 ?? sel.addressLine2 ?? '';
+  const invCity = raw.invoice_address?.city ?? sel.city ?? '';
+  payload.invoice_postcode = invPostcode;
+  payload.invoice_address_line_1 = invLine1;
+  payload.invoice_address_line_2 = invLine2;
+  payload.invoice_city = invCity;
+  payload.invoice_address = [invLine1, invLine2, invCity, invPostcode]
+    .filter((p) => p && String(p).trim().length > 0)
+    .join(', ');
 
   return payload;
 }
