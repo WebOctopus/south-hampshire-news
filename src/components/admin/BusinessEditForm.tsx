@@ -440,6 +440,19 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
 
           <Separator />
 
+          {/* Opening Hours */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4" /> Opening Hours
+            </h3>
+            <OpeningHoursEditor
+              value={formData.opening_hours}
+              onChange={(v) => handleChange('opening_hours', v)}
+            />
+          </div>
+
+          <Separator />
+
           {/* Social Media */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2">
