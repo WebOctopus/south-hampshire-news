@@ -6,20 +6,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface CSVRow {
-  "Company name"?: string;
-  "Street Address"?: string;
-  "Street Address 2"?: string;
-  "Street Address 3"?: string;
-  "Postal Code"?: string;
-  "City"?: string;
-  "Company Domain Name"?: string;
-  "Phone Number"?: string;
-  "Company Email"?: string;
-  "Sector"?: string;
-  "Biz Type"?: string;
-  "14 Editions - Local"?: string;
-  "Tag"?: string;
+type CSVRow = Record<string, string | undefined>;
+
+const normaliseKey = (s: string) =>
+  s.replace(/^\ufeff/, '').toLowerCase().trim().replace(/[\s_\-]+/g, ' ').replace(/\s+/g, ' ');
+
+const FIELD_ALIASES = {
+  name: ['name', 'company name', 'company', 'business name', 'business', 'trading name'],
+  address1: ['street address', 'address', 'address 1', 'address line 1'],
+  address2: ['street address 2', 'address 2', 'address line 2'],
+  address3: ['street address 3', 'address 3', 'address line 3'],
+  postcode: ['postal code', 'postcode', 'post code', 'zip', 'zip code'],
+  city: ['city', 'town'],
+  website: ['company domain name', 'website', 'domain', 'url'],
+  phone: ['phone number', 'phone', 'telephone', 'tel', 'mobile'],
+  email: ['company email', 'email', 'email address'],
+  sector: ['sector', 'industry', 'category'],
+  biz_type: ['biz type', 'business type', 'type'],
+  edition_area: ['14 editions - local', '14 editions local', 'edition', 'edition area', 'local edition', 'area'],
+  tag: ['tag', 'tags', 'label'],
+};
+
+function buildNormMap(row: CSVRow): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const k of Object.keys(row)) {
+    out[normaliseKey(k)] = (row[k] ?? '') as string;
+  }
+  return out;
+}
+
+function pick(normRow: Record<string, string>, aliases: string[]): string {
+  for (const a of aliases) {
+    const v = normRow[normaliseKey(a)];
+    if (v !== undefined && String(v).trim() !== '') return String(v);
+  }
+  return '';
 }
 
 interface ImportRequest {
@@ -120,7 +141,8 @@ serve(async (req) => {
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const name = row["Company name"]?.trim();
+      const norm = buildNormMap(row);
+      const name = pick(norm, FIELD_ALIASES.name).trim();
 
       // Skip rows without a company name
       if (!name) {
@@ -130,18 +152,18 @@ serve(async (req) => {
 
       // Combine address lines 2 and 3
       const addressParts = [
-        row["Street Address 2"]?.trim(),
-        row["Street Address 3"]?.trim()
+        pick(norm, FIELD_ALIASES.address2).trim(),
+        pick(norm, FIELD_ALIASES.address3).trim()
       ].filter(Boolean);
 
       // Normalize website URL
-      let website = row["Company Domain Name"]?.trim() || null;
+      let website = pick(norm, FIELD_ALIASES.website).trim() || null;
       if (website && !website.startsWith('http://') && !website.startsWith('https://')) {
         website = `https://${website}`;
       }
 
       // Slug: name → name-city → name-city-2, name-city-3, ...
-      const city = row["City"]?.trim() || '';
+      const city = pick(norm, FIELD_ALIASES.city).trim();
       const baseSlug = slugify(name) || 'business';
       let candidate = baseSlug;
       if (existingSlugs.has(candidate)) {
@@ -157,17 +179,17 @@ serve(async (req) => {
 
       mappedRows.push({
         name,
-        address_line1: row["Street Address"]?.trim() || null,
+        address_line1: pick(norm, FIELD_ALIASES.address1).trim() || null,
         address_line2: addressParts.length > 0 ? addressParts.join(", ") : null,
-        postcode: row["Postal Code"]?.trim() || null,
-        city: row["City"]?.trim() || null,
+        postcode: pick(norm, FIELD_ALIASES.postcode).trim() || null,
+        city: city || null,
         website,
-        phone: row["Phone Number"]?.trim() || null,
-        email: row["Company Email"]?.trim() || null,
-        sector: row["Sector"]?.trim() || null,
-        biz_type: row["Biz Type"]?.trim() || null,
-        edition_area: row["14 Editions - Local"]?.trim() || null,
-        tag: row["Tag"]?.trim() || null,
+        phone: pick(norm, FIELD_ALIASES.phone).trim() || null,
+        email: pick(norm, FIELD_ALIASES.email).trim() || null,
+        sector: pick(norm, FIELD_ALIASES.sector).trim() || null,
+        biz_type: pick(norm, FIELD_ALIASES.biz_type).trim() || null,
+        edition_area: pick(norm, FIELD_ALIASES.edition_area).trim() || null,
+        tag: pick(norm, FIELD_ALIASES.tag).trim() || null,
         slug: candidate,
         is_active: true,
         is_verified: false,
