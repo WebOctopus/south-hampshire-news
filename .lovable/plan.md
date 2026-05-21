@@ -1,19 +1,10 @@
-## Update favicon to peacock branding
+## Update SEO title
 
-Use the uploaded SVG as the primary favicon, with the PNG as fallback for browsers that don't support SVG favicons.
+Change the site `<title>` in `index.html` from "Discover-Style Community Magazine" to **"South Hampshire's Leading Local Magazine Group"**.
 
 ### Steps
-
-1. Copy the uploaded files into `public/`:
-   - `user-uploads://Pcock.svg` → `public/favicon.svg`
-   - `user-uploads://Pcock.png` → `public/favicon.png`
-2. Remove the existing `public/favicon.ico` (browsers auto-request `/favicon.ico` and it would override the new one).
-3. Update the favicon `<link>` tags in `index.html`:
-   ```html
-   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-   <link rel="icon" type="image/png" href="/favicon.png">
-   ```
-   (Modern browsers pick the SVG; older ones fall back to the PNG.)
+1. Edit `index.html` — replace the `<title>` text.
+2. Also update `og:title` to match so social previews stay consistent.
 
 ### Out of scope
-- No changes to the OG image, app code, or branding elsewhere.
+- Meta description, per-route titles (none currently use Helmet), and any other branding text.
