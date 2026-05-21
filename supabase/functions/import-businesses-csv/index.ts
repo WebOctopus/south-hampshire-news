@@ -19,6 +19,7 @@ interface CSVRow {
   "Sector"?: string;
   "Biz Type"?: string;
   "14 Editions - Local"?: string;
+  "Tag"?: string;
 }
 
 interface ImportRequest {
@@ -79,6 +80,10 @@ serve(async (req) => {
     // On first batch and replaceAll mode, clear existing data
     if (batchIndex === 0 && replaceAll) {
       console.log('Clearing existing businesses for replace-all import...');
+      // Clear dependent rows first
+      await supabase.from('business_claim_requests').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('business_reviews').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('featured_advertisers').delete().not('business_id', 'is', null);
       const { error: deleteError } = await supabase
         .from('businesses')
         .delete()
@@ -92,6 +97,20 @@ serve(async (req) => {
         );
       }
       console.log('Existing businesses cleared');
+    }
+
+    // Slug helpers
+    const slugify = (s: string) =>
+      s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+    // Pre-load existing slugs to avoid collisions across batches
+    const existingSlugs = new Set<string>();
+    {
+      const { data: existing } = await supabase
+        .from('businesses')
+        .select('slug')
+        .not('slug', 'is', null);
+      (existing || []).forEach((r: any) => r.slug && existingSlugs.add(r.slug));
     }
 
     // Process and map rows
@@ -121,6 +140,21 @@ serve(async (req) => {
         website = `https://${website}`;
       }
 
+      // Slug: name → name-city → name-city-2, name-city-3, ...
+      const city = row["City"]?.trim() || '';
+      const baseSlug = slugify(name) || 'business';
+      let candidate = baseSlug;
+      if (existingSlugs.has(candidate)) {
+        const citySlug = slugify(city);
+        candidate = citySlug ? `${baseSlug}-${citySlug}` : baseSlug;
+        let n = 2;
+        while (existingSlugs.has(candidate)) {
+          candidate = citySlug ? `${baseSlug}-${citySlug}-${n}` : `${baseSlug}-${n}`;
+          n++;
+        }
+      }
+      existingSlugs.add(candidate);
+
       mappedRows.push({
         name,
         address_line1: row["Street Address"]?.trim() || null,
@@ -133,6 +167,8 @@ serve(async (req) => {
         sector: row["Sector"]?.trim() || null,
         biz_type: row["Biz Type"]?.trim() || null,
         edition_area: row["14 Editions - Local"]?.trim() || null,
+        tag: row["Tag"]?.trim() || null,
+        slug: candidate,
         is_active: true,
         is_verified: false,
         featured: false
