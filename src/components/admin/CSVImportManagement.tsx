@@ -357,7 +357,8 @@ export function CSVImportManagement() {
             </TableHeader>
             <TableBody>
               {COLUMN_MAPPING.map((mapping) => {
-                const found = parsedCSV?.headers.includes(mapping.csv);
+                const normHeaders = new Set((parsedCSV?.headers || []).map(normaliseKey));
+                const found = mapping.aliases.some(a => normHeaders.has(normaliseKey(a)));
                 return (
                   <TableRow key={mapping.csv}>
                     <TableCell className="font-mono text-sm">{mapping.csv}</TableCell>
