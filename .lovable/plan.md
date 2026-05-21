@@ -1,22 +1,42 @@
-## Export Business Listings to CSV
+# Fix: 172 rows skipped on import
 
-Add an "Export to CSV" button in the admin **CSV Import Management** panel (alongside the existing Template/Import controls). Clicking it downloads every business as a CSV.
+## Root cause
+The edge function `import-businesses-csv` reads `row["Company name"]` with an exact key match. Your CSV uses `Name` as the header, so every row is treated as "no company name" and skipped (matching the screenshot: 172 Skipped, 0 Imported).
 
-### Columns (in order)
-Mirror the import template, plus the listing URL:
+## Fix approach
+Make header lookup tolerant and accept aliases for every supported field, in both the edge function and the client-side CSV parser/preview.
 
-`Company name, Street Address, Street Address 2, Postal Code, City, Company Domain Name, Phone Number, Company Email, Sector, Biz Type, 14 Editions - Local, Tag, Listing URL`
+### Header normalisation
+Normalise keys when reading each row: `lowercase`, trim, strip BOM, collapse whitespace and punctuation to a single space. Look up values by normalised key.
 
-- `Listing URL` = `${window.location.origin}/business/${slug}` (empty if slug missing).
-- `Street Address 2` keeps the combined `address_line2` value as stored.
+### Accepted aliases per field
+- **name** (required): `name`, `company name`, `company`, `business name`, `business`, `trading name`
+- **address_line1**: `street address`, `address`, `address 1`, `address line 1`
+- **address_line2**: combine `street address 2` / `address 2` / `address line 2` + `street address 3` / `address 3` / `address line 3`
+- **postcode**: `postal code`, `postcode`, `post code`, `zip`, `zip code`
+- **city**: `city`, `town`
+- **website**: `company domain name`, `website`, `domain`, `url`
+- **phone**: `phone number`, `phone`, `telephone`, `tel`, `mobile`
+- **email**: `company email`, `email`, `email address`
+- **sector**: `sector`, `industry`, `category`
+- **biz_type**: `biz type`, `business type`, `type`
+- **edition_area**: `14 editions - local`, `14 editions local`, `edition`, `edition area`, `local edition`, `area`
+- **tag**: `tag`, `tags`, `label`
 
-### Implementation
-- New `handleExport()` in `src/components/admin/CSVImportManagement.tsx`:
-  - `supabase.from('businesses').select('name, address_line1, address_line2, postcode, city, website, phone, email, sector, biz_type, edition_area, tag, slug').order('name')`
-  - Build CSV client-side with proper quoting (escape `"` → `""`, wrap fields containing `,`, `"`, or newlines).
-  - Trigger download as `businesses-export-YYYY-MM-DD.csv` via Blob + anchor.
-- Add an "Export CSV" button in the existing actions row. Show a loading state and a toast on success/failure.
+## Files to change
+1. **`supabase/functions/import-businesses-csv/index.ts`**
+   - Add `normaliseKey()` and `pickField(row, aliases[])` helpers.
+   - Build a normalised-key map for each row once, then resolve every field through the alias list above.
+   - Replace all `row["Exact Header"]` lookups.
 
-### Notes
-- No backend or schema changes — admin RLS already grants full access to `businesses`.
-- No pagination needed for current row counts; if rows grow large later we can switch to streamed export.
+2. **`src/components/admin/CSVImportManagement.tsx`**
+   - Apply the same alias/normalisation logic in the client preview + field-detection UI (the green/red tick column), so the preview reflects what the edge function will actually use.
+   - Keep the existing template download unchanged (still shows canonical headers).
+
+## Out of scope
+- No DB schema changes.
+- No change to slug generation, replace-all behaviour, or export.
+- Template CSV keeps current canonical headers; only the importer becomes tolerant.
+
+## Validation
+After deploy, re-run the same 172-row import with `Name` header. Expect Imported = 172 (minus any genuinely blank rows), Skipped = 0.
