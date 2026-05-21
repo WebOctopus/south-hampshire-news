@@ -45,6 +45,7 @@ const COLUMN_MAPPING = [
   { csv: 'Sector', db: 'sector', required: false },
   { csv: 'Biz Type', db: 'biz_type', required: false },
   { csv: '14 Editions - Local', db: 'edition_area', required: false },
+  { csv: 'Tag', db: 'tag', required: false },
 ];
 
 const BATCH_SIZE = 500;

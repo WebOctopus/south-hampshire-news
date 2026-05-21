@@ -26,6 +26,8 @@ interface BusinessCategory {
 
 interface Business {
   id: string;
+  slug?: string;
+  tag?: string;
   name: string;
   description: string;
   category_id: string;
@@ -55,10 +57,12 @@ const BusinessDirectory = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
+  const [selectedTag, setSelectedTag] = useState<string>('all');
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -89,11 +93,21 @@ const BusinessDirectory = () => {
     setLocations(uniqueLocations);
   }, []);
 
+  const fetchTags = useCallback(async () => {
+    const { data, error } = await supabase.rpc('get_distinct_tags');
+    if (error) {
+      console.error('Error fetching tags:', error);
+      return;
+    }
+    setTags((data?.map((row: { tag: string }) => row.tag) || []) as string[]);
+  }, []);
+
   const fetchTotalCount = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_public_businesses_count', {
       category_filter: selectedCategory !== 'all' ? selectedCategory : null,
       search_term: searchTerm || null,
       edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
+      tag_filter: selectedTag !== 'all' ? selectedTag : null,
     });
 
     if (error) {
@@ -102,7 +116,7 @@ const BusinessDirectory = () => {
     }
 
     return data || 0;
-  }, [searchTerm, selectedCategory, selectedLocation]);
+  }, [searchTerm, selectedCategory, selectedLocation, selectedTag]);
 
   const fetchBusinesses = useCallback(async () => {
     // Increment request ID to track this specific request
@@ -123,6 +137,7 @@ const BusinessDirectory = () => {
           limit_count: ITEMS_PER_PAGE,
           offset_count: (currentPage - 1) * ITEMS_PER_PAGE,
           edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
+          tag_filter: selectedTag !== 'all' ? selectedTag : null,
         })
       ]);
 
@@ -160,12 +175,13 @@ const BusinessDirectory = () => {
         setLoading(false);
       }
     }
-  }, [searchTerm, selectedCategory, selectedLocation, currentPage, fetchTotalCount]);
+  }, [searchTerm, selectedCategory, selectedLocation, selectedTag, currentPage, fetchTotalCount]);
 
   useEffect(() => {
     fetchCategories();
     fetchLocations();
-  }, [fetchCategories, fetchLocations]);
+    fetchTags();
+  }, [fetchCategories, fetchLocations, fetchTags]);
 
   useEffect(() => {
     // Only fetch if a specific location is selected (anti-scraping)
@@ -292,6 +308,25 @@ const BusinessDirectory = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {tags.length > 0 && (
+                <Select value={selectedTag} onValueChange={(value) => {
+                  setSelectedTag(value);
+                  setCurrentPage(1);
+                }}>
+                  <SelectTrigger className="w-full md:w-56 h-12 text-black">
+                    <div className="flex items-center gap-2">
+                      <Filter size={16} className="text-gray-500" />
+                      <SelectValue placeholder="All Groups" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Groups</SelectItem>
+                    {tags.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </section>

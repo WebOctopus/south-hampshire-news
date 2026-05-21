@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 interface BusinessCardProps {
   business: {
     id: string;
+    slug?: string;
+    tag?: string;
     name: string;
     description: string;
     category_id: string;
@@ -37,7 +39,7 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
   const isAuthenticated = !!user;
 
   const handleCardClick = () => {
-    navigate(`/business/${business.id}`);
+    navigate(`/business/${business.slug || business.id}`);
   };
 
   const handleWebsiteClick = (e: React.MouseEvent) => {
@@ -93,6 +95,11 @@ const BusinessCard = ({ business }: BusinessCardProps) => {
             {business.business_categories?.name && (
               <Badge variant="secondary" className="bg-community-green/10 text-community-green border-community-green/20">
                 {business.business_categories.name}
+              </Badge>
+            )}
+            {business.tag && (
+              <Badge variant="secondary" className="bg-community-navy/10 text-community-navy border-community-navy/20">
+                {business.tag}
               </Badge>
             )}
             {business.biz_type && (

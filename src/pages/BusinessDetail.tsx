@@ -37,7 +37,7 @@ interface Business {
 }
 
 const BusinessDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -45,14 +45,14 @@ const BusinessDetail = () => {
   const isAuthenticated = !!user;
 
   useEffect(() => {
-    if (id) {
+    if (slug) {
       fetchBusiness();
     }
-  }, [id]);
+  }, [slug]);
 
   const fetchBusiness = async () => {
-    const { data, error } = await supabase.rpc('get_business_detail', {
-      business_id: id
+    const { data, error } = await supabase.rpc('get_business_detail_by_slug', {
+      business_slug: slug as string
     });
     
     if (error) {

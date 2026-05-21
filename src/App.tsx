@@ -48,7 +48,7 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/support" element={<Support />} />
           <Route path="/business-directory" element={<AdminOnlyRoute><BusinessDirectory /></AdminOnlyRoute>} />
-          <Route path="/business/:id" element={<AdminOnlyRoute><BusinessDetail /></AdminOnlyRoute>} />
+          <Route path="/business/:slug" element={<AdminOnlyRoute><BusinessDetail /></AdminOnlyRoute>} />
           <Route path="/stories" element={<StoriesArchive />} />
           <Route path="/story/:id" element={<Story />} />
           <Route path="/auth" element={<Auth />} />
