@@ -11,6 +11,7 @@ import { Building2, MapPin, Phone, Globe, Clock, Save, X, Share2, Image as Image
 import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
+import { OpeningHoursEditor, type OpeningHoursValue } from '@/components/directory/OpeningHoursEditor';
 
 interface UserBusinessEditFormProps {
   business: any;
@@ -50,8 +51,8 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
     youtube_url: business?.youtube_url || '',
   });
 
-  const [openingHours, setOpeningHours] = useState<Record<string, string>>(
-    business?.opening_hours || {}
+  const [openingHours, setOpeningHours] = useState<OpeningHoursValue>(
+    (business?.opening_hours as OpeningHoursValue) || {}
   );
 
   useEffect(() => {
@@ -67,10 +68,6 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleHoursChange = (day: string, value: string) => {
-    setOpeningHours(prev => ({ ...prev, [day]: value }));
   };
 
   const handleLogoUpload = async (file: File): Promise<string | null> => {
