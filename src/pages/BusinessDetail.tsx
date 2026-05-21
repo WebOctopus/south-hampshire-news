@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Phone, Smartphone, Globe, Mail, ImageIcon, Info, Plus } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ImageIcon, Info, Plus } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessClaimButton } from '@/components/BusinessClaimButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { BusinessDetailHero } from '@/components/directory/BusinessDetailHero';
 import { MeetTheOwnerCard } from '@/components/directory/MeetTheOwnerCard';
 import { OpeningHoursCard } from '@/components/directory/OpeningHoursCard';
-import { UnverifiedOverlay } from '@/components/directory/UnverifiedOverlay';
+import { BusinessDetailsCard } from '@/components/directory/BusinessDetailsCard';
 
 interface Business {
   id: string;
@@ -110,53 +109,42 @@ const BusinessDetail = () => {
   const allImages = [business.featured_image_url, ...(business.images || [])].filter(Boolean);
   const isOwner = !!user && user.id === business.owner_id;
   const canManage = isOwner || isAdmin;
-  const websiteHost = business.website
-    ? (() => {
-        try {
-          return new URL(business.website.startsWith('http') ? business.website : `https://${business.website}`).hostname.replace(/^www\./, '');
-        } catch {
-          return business.website;
-        }
-      })()
-    : null;
-  const address = [business.address_line1, business.address_line2, business.city, business.postcode]
-    .filter(Boolean)
-    .join(', ');
 
   // Gallery: show actual images + empty placeholder slots up to multiple of 3 (min 6 when owner can manage)
   const minTiles = canManage ? 6 : Math.max(3, allImages.length);
   const gallerySlots = Array.from({ length: Math.max(minTiles, allImages.length) }, (_, i) => allImages[i] ?? null);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[hsl(180_20%_97%)]">
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        <Link to="/business-directory" className="inline-flex items-center text-community-green hover:text-green-600 mb-6">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Directory
-        </Link>
+      <div className="bg-background border-b border-community-teal/15 text-xs text-muted-foreground">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-3 flex items-center gap-1.5">
+          <Link to="/business-directory" className="text-community-purple hover:underline">
+            Directory
+          </Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="truncate">{business.name}</span>
+        </div>
+      </div>
 
-        <BusinessDetailHero business={business} />
+      <BusinessDetailHero business={business} />
 
+      <main className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-8">
         <div className="relative">
           <div className={!business.is_verified ? 'opacity-60 pointer-events-none select-none' : ''}>
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-3 gap-4 lg:gap-[18px]">
               {/* Left column (2/3) */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-[14px]">
                 {business.description && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                        <Info className="h-4 w-4" /> About
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-foreground/80 leading-relaxed whitespace-pre-line">
-                        {business.description}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div className="bg-card border border-community-teal/25 rounded-xl p-5">
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-muted-foreground mb-3">
+                      <Info className="h-3.5 w-3.5 text-community-teal" /> About
+                    </div>
+                    <p className="text-[13px] text-foreground/75 leading-[1.7] whitespace-pre-line">
+                      {business.description}
+                    </p>
+                  </div>
                 )}
 
                 <MeetTheOwnerCard
@@ -168,89 +156,46 @@ const BusinessDetail = () => {
               </div>
 
               {/* Right column (1/3) */}
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                      <Info className="h-4 w-4" /> Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-sm">
-                    {business.phone && (
-                      <a href={`tel:${business.phone}`} className="flex items-center gap-3 text-community-green hover:underline">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span>{business.phone}</span>
-                      </a>
-                    )}
-                    {business.phone && (
-                      <a href={`tel:${business.phone}`} className="flex items-center gap-3 text-community-green hover:underline">
-                        <Smartphone className="h-4 w-4 text-muted-foreground" />
-                        <span>{business.phone}</span>
-                      </a>
-                    )}
-                    {websiteHost && (
-                      <a
-                        href={business.website.startsWith('http') ? business.website : `https://${business.website}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-3 text-community-green hover:underline"
-                      >
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span className="truncate">{websiteHost}</span>
-                      </a>
-                    )}
-                    {business.email && (
-                      <a href={`mailto:${business.email}`} className="flex items-center gap-3 text-community-green hover:underline">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="truncate">{business.email}</span>
-                      </a>
-                    )}
-                    {address && (
-                      <div className="flex items-start gap-3 text-foreground/80">
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <span>
-                          {business.address_line1 && <span className="block">{business.address_line1}</span>}
-                          {business.address_line2 && <span className="block">{business.address_line2}</span>}
-                          <span className="block">
-                            {[business.city, business.postcode].filter(Boolean).join(', ')}
-                          </span>
-                        </span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
+              <div className="space-y-[14px]">
+                <BusinessDetailsCard business={business} />
                 <OpeningHoursCard openingHours={business.opening_hours} />
               </div>
             </div>
 
             {/* Gallery */}
             <section className="mt-8">
-              <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
-                <ImageIcon className="h-4 w-4" /> Gallery
+              <h2 className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-muted-foreground mb-3">
+                <ImageIcon className="h-3.5 w-3.5 text-community-teal" /> Gallery
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
                 {gallerySlots.map((src, i) =>
                   src ? (
-                    <div key={i} className="aspect-[4/3] rounded-xl overflow-hidden bg-muted border">
-                      <img src={src} alt={`${business.name} ${i + 1}`} className="w-full h-full object-cover" />
+                    <div
+                      key={i}
+                      className="aspect-[4/3] rounded-[10px] overflow-hidden bg-card border border-community-teal/25"
+                    >
+                      <img
+                        src={src}
+                        alt={`${business.name} ${i + 1}`}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ) : canManage ? (
                     <button
                       key={i}
                       type="button"
-                      className="aspect-[4/3] rounded-xl bg-muted/40 border border-dashed flex flex-col items-center justify-center text-muted-foreground hover:bg-muted transition"
+                      className="aspect-[4/3] rounded-[10px] bg-card border border-dashed border-community-teal/40 flex flex-col items-center justify-center gap-1.5 text-community-teal/70 hover:border-community-teal/70 transition-colors"
                     >
-                      <Plus className="h-6 w-6 mb-1" />
-                      <span className="text-sm">Add photo</span>
+                      <Plus className="h-5 w-5" />
+                      <span className="text-[11px] text-muted-foreground">Add photo</span>
                     </button>
                   ) : (
                     <div
                       key={i}
-                      className="aspect-[4/3] rounded-xl bg-muted/40 border flex flex-col items-center justify-center text-muted-foreground"
+                      className="aspect-[4/3] rounded-[10px] bg-card border border-community-teal/25 flex flex-col items-center justify-center gap-1.5 text-community-teal/40"
                     >
-                      <ImageIcon className="h-6 w-6 mb-1" />
-                      <span className="text-sm">Photo {i + 1}</span>
+                      <ImageIcon className="h-6 w-6" />
+                      <span className="text-[11px] text-muted-foreground">Photo {i + 1}</span>
                     </div>
                   )
                 )}
@@ -259,8 +204,8 @@ const BusinessDetail = () => {
           </div>
 
           {!business.is_verified && (
-            <div className="absolute inset-0 flex items-start justify-center pt-24 z-10">
-              <div className="max-w-md w-full mx-4 bg-card border-2 border-community-green/30 rounded-2xl p-6 md:p-8 shadow-xl text-center">
+            <div className="absolute inset-0 flex items-start justify-center pt-12 z-10">
+              <div className="max-w-md w-full mx-4 bg-card border-2 border-community-teal/40 rounded-2xl p-6 md:p-8 shadow-xl text-center">
                 <h3 className="font-heading text-xl md:text-2xl mb-2">
                   Apply to verify this business
                 </h3>
@@ -276,6 +221,13 @@ const BusinessDetail = () => {
             </div>
           )}
         </div>
+
+        <Link
+          to="/business-directory"
+          className="inline-flex items-center text-community-purple hover:underline mt-8 text-sm"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Directory
+        </Link>
       </main>
 
       <Footer />
