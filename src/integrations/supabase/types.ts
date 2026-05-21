@@ -441,6 +441,7 @@ export type Database = {
         Row: {
           address_line1: string | null
           address_line2: string | null
+          advertises_in_discover: boolean
           biz_type: string | null
           category_id: string | null
           city: string | null
@@ -462,6 +463,10 @@ export type Database = {
           name: string
           opening_hours: Json | null
           owner_id: string | null
+          owner_name: string | null
+          owner_photo_url: string | null
+          owner_quote: string | null
+          owner_role: string | null
           phone: string | null
           postcode: string | null
           sector: string | null
@@ -476,6 +481,7 @@ export type Database = {
         Insert: {
           address_line1?: string | null
           address_line2?: string | null
+          advertises_in_discover?: boolean
           biz_type?: string | null
           category_id?: string | null
           city?: string | null
@@ -497,6 +503,10 @@ export type Database = {
           name: string
           opening_hours?: Json | null
           owner_id?: string | null
+          owner_name?: string | null
+          owner_photo_url?: string | null
+          owner_quote?: string | null
+          owner_role?: string | null
           phone?: string | null
           postcode?: string | null
           sector?: string | null
@@ -511,6 +521,7 @@ export type Database = {
         Update: {
           address_line1?: string | null
           address_line2?: string | null
+          advertises_in_discover?: boolean
           biz_type?: string | null
           category_id?: string | null
           city?: string | null
@@ -532,6 +543,10 @@ export type Database = {
           name?: string
           opening_hours?: Json | null
           owner_id?: string | null
+          owner_name?: string | null
+          owner_photo_url?: string | null
+          owner_quote?: string | null
+          owner_role?: string | null
           phone?: string | null
           postcode?: string | null
           sector?: string | null
@@ -2288,6 +2303,7 @@ export type Database = {
         Returns: {
           address_line1: string
           address_line2: string
+          advertises_in_discover: boolean
           business_categories: Json
           category_id: string
           city: string
@@ -2303,6 +2319,10 @@ export type Database = {
           name: string
           opening_hours: Json
           owner_id: string
+          owner_name: string
+          owner_photo_url: string
+          owner_quote: string
+          owner_role: string
           phone: string
           postcode: string
           slug: string
@@ -2339,6 +2359,7 @@ export type Database = {
         Returns: {
           address_line1: string
           address_line2: string
+          advertises_in_discover: boolean
           biz_type: string
           business_categories: Json
           category_id: string
@@ -2367,6 +2388,43 @@ export type Database = {
           tag_filter?: string
         }
         Returns: number
+      }
+      get_recently_added_businesses: {
+        Args: { limit_count?: number }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          biz_type: string
+          business_categories: Json
+          category_id: string
+          city: string
+          id: string
+          is_verified: boolean
+          logo_url: string
+          name: string
+          postcode: string
+          slug: string
+          website: string
+        }[]
+      }
+      get_verified_businesses: {
+        Args: { limit_count?: number }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          advertises_in_discover: boolean
+          biz_type: string
+          business_categories: Json
+          category_id: string
+          city: string
+          id: string
+          is_verified: boolean
+          logo_url: string
+          name: string
+          postcode: string
+          slug: string
+          website: string
+        }[]
       }
       has_role: {
         Args: {
