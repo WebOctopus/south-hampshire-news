@@ -220,6 +220,51 @@ export function CSVImportManagement() {
     URL.revokeObjectURL(url);
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('name, address_line1, address_line2, postcode, city, website, phone, email, sector, biz_type, edition_area, tag, slug')
+        .order('name');
+      if (error) throw error;
+
+      const headers = [
+        'Company name', 'Street Address', 'Street Address 2', 'Postal Code',
+        'City', 'Company Domain Name', 'Phone Number', 'Company Email',
+        'Sector', 'Biz Type', '14 Editions - Local', 'Tag', 'Listing URL'
+      ];
+      const escape = (v: any) => {
+        const s = v == null ? '' : String(v);
+        return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const origin = window.location.origin;
+      const lines = [headers.join(',')];
+      for (const b of (data || [])) {
+        lines.push([
+          b.name, b.address_line1, b.address_line2, b.postcode,
+          b.city, b.website, b.phone, b.email,
+          b.sector, b.biz_type, b.edition_area, b.tag,
+          b.slug ? `${origin}/business/${b.slug}` : ''
+        ].map(escape).join(','));
+      }
+      const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `businesses-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Export complete', description: `${data?.length || 0} businesses exported.` });
+    } catch (err: any) {
+      toast({ title: 'Export failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -262,6 +307,11 @@ export function CSVImportManagement() {
             <Button variant="ghost" onClick={downloadTemplate}>
               <Download className="h-4 w-4 mr-2" />
               Download Template
+            </Button>
+
+            <Button variant="ghost" onClick={handleExport} disabled={isExporting}>
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? 'Exporting…' : 'Export CSV'}
             </Button>
 
             {parsedCSV && (

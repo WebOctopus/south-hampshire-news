@@ -1,28 +1,22 @@
-## Auto-generate listing URL (slug) on Business listings
+## Export Business Listings to CSV
 
-The CSV importer already generates a `slug` for each row. The admin `BusinessEditForm` (used for both Create and Edit) does not currently set `slug`, so businesses added or renamed via the admin UI end up with `slug = null` and can't be opened on the new `/business/:slug` route.
+Add an "Export to CSV" button in the admin **CSV Import Management** panel (alongside the existing Template/Import controls). Clicking it downloads every business as a CSV.
 
-### What to change
+### Columns (in order)
+Mirror the import template, plus the listing URL:
 
-**File: `src/components/admin/BusinessEditForm.tsx`**
+`Company name, Street Address, Street Address 2, Postal Code, City, Company Domain Name, Phone Number, Company Email, Sector, Biz Type, 14 Editions - Local, Tag, Listing URL`
 
-1. Add a small `slugify(name)` helper (same logic as the edge function: lowercase → replace non-alphanumerics with `-` → trim leading/trailing `-`).
+- `Listing URL` = `${window.location.origin}/business/${slug}` (empty if slug missing).
+- `Street Address 2` keeps the combined `address_line2` value as stored.
 
-2. In `handleSubmit`, before insert/update:
-   - Compute `baseSlug = slugify(formData.name) || 'business'`.
-   - Query `businesses` for any existing slug that equals `baseSlug` OR starts with `baseSlug-`, excluding the current business id (on update).
-   - Pick a final slug using the same fallback order as the importer:
-     - `baseSlug` if free
-     - else `baseSlug-{slugify(city)}` if city present and free
-     - else append `-2`, `-3`, … until free
-   - Include `slug: finalSlug` in `saveData`.
-
-3. On Update, only recompute the slug when `formData.name` (or `city`, when city suffix is in play) has changed from `business.name`/`business.city`. If unchanged, keep the existing slug. This avoids surprise URL changes on routine edits.
-
-4. Read-only UI hint: under the Business Name input, display a small muted line "URL: /business/{previewSlug}" computed live from the current name + city, so admins can see what the link will be. No editable slug field — fully automatic per the request.
+### Implementation
+- New `handleExport()` in `src/components/admin/CSVImportManagement.tsx`:
+  - `supabase.from('businesses').select('name, address_line1, address_line2, postcode, city, website, phone, email, sector, biz_type, edition_area, tag, slug').order('name')`
+  - Build CSV client-side with proper quoting (escape `"` → `""`, wrap fields containing `,`, `"`, or newlines).
+  - Trigger download as `businesses-export-YYYY-MM-DD.csv` via Blob + anchor.
+- Add an "Export CSV" button in the existing actions row. Show a loading state and a toast on success/failure.
 
 ### Notes
-
-- No DB or edge function changes — the importer flow stays as-is.
-- No change to `UserBusinessEditForm` unless you want owners' edits to also regenerate; flag if so.
-- Existing imported businesses already have slugs and will be untouched on edit unless their name changes.
+- No backend or schema changes — admin RLS already grants full access to `businesses`.
+- No pagination needed for current row counts; if rows grow large later we can switch to streamed export.
