@@ -58,7 +58,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     return `${baseSlug}-${n}`;
   };
 
-  const previewSlug = slugify(formData?.name || '') || 'business';
   
   const [formData, setFormData] = useState({
     name: business?.name || '',
@@ -104,6 +103,8 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const previewSlug = slugify(formData.name || '') || 'business';
 
   const handleLogoUpload = async (file: File): Promise<string | null> => {
     const businessId = createdBusinessId || business?.id;
