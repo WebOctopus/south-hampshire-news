@@ -10,10 +10,11 @@ import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/di
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, MapPin, Phone, Globe, Settings, Share2, Image as ImageIcon } from 'lucide-react';
+import { Building2, MapPin, Phone, Globe, Settings, Share2, Image as ImageIcon, Clock } from 'lucide-react';
 import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
+import { OpeningHoursEditor, type OpeningHoursValue } from '@/components/directory/OpeningHoursEditor';
 
 interface BusinessEditFormProps {
   business?: any | null;
@@ -89,6 +90,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     linkedin_url: business?.linkedin_url || '',
     tiktok_url: business?.tiktok_url || '',
     youtube_url: business?.youtube_url || '',
+    opening_hours: (business?.opening_hours as OpeningHoursValue) || {},
   });
 
   useEffect(() => {
@@ -147,7 +149,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     setLoading(true);
 
     try {
-      const saveData = {
+      const saveData: any = {
         ...formData,
         owner_id: formData.owner_id || null,
         category_id: formData.category_id || null,
@@ -434,6 +436,19 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                 />
               </div>
             )}
+          </div>
+
+          <Separator />
+
+          {/* Opening Hours */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4" /> Opening Hours
+            </h3>
+            <OpeningHoursEditor
+              value={formData.opening_hours}
+              onChange={(v) => handleChange('opening_hours', v)}
+            />
           </div>
 
           <Separator />
