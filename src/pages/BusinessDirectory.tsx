@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Filter, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import BusinessCard from '../components/BusinessCard';
 import BusinessAuthPromptDialog from '@/components/BusinessAuthPromptDialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { DirectoryHero } from '@/components/directory/DirectoryHero';
+import { SectorPills } from '@/components/directory/SectorPills';
+import { LocationPillsGrid } from '@/components/directory/LocationPillsGrid';
+import { VerifiedBusinessesRow } from '@/components/directory/VerifiedBusinessesRow';
+import { RecentlyAddedRow } from '@/components/directory/RecentlyAddedRow';
 // Helper to clean area names (remove "Area X - " prefix)
 const cleanAreaName = (areaName: string): string => {
   return areaName.replace(/^Area \d+\s*-\s*/, '').trim();
@@ -263,75 +266,39 @@ const BusinessDirectory = () => {
     <div className="min-h-screen no-select">
       <Navigation />
       <main>
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-community-navy to-community-green text-white py-8 md:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold mb-4 md:mb-6">
-              Business Directory
-            </h1>
-            <p className="text-lg md:text-xl mb-6 md:mb-8 max-w-3xl mx-auto px-4">
-              Discover local businesses across SO & PO postcodes. 
-              Support your community and find the services you need.
-            </p>
-            
-            {/* Search Bar */}
-            <div className="max-w-4xl mx-auto space-y-4 md:space-y-0 md:flex md:gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <Input
-                  type="text"
-                  placeholder="Search businesses, services..."
-                  className="pl-10 h-12 text-black"
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                />
-              </div>
-              <Select value={selectedLocation} onValueChange={(value) => {
-                setSelectedLocation(value);
-                setCurrentPage(1);
-              }}>
-                <SelectTrigger className="w-full md:w-56 h-12 text-black">
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-gray-500" />
-                    <SelectValue placeholder="Your Location" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Your Location</SelectItem>
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {cleanAreaName(location)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {tags.length > 0 && (
-                <Select value={selectedTag} onValueChange={(value) => {
-                  setSelectedTag(value);
-                  setCurrentPage(1);
-                }}>
-                  <SelectTrigger className="w-full md:w-56 h-12 text-black">
-                    <div className="flex items-center gap-2">
-                      <Filter size={16} className="text-gray-500" />
-                      <SelectValue placeholder="All Groups" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Groups</SelectItem>
-                    {tags.map((t) => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+        <DirectoryHero
+          searchTerm={searchTerm}
+          onSearchChange={(v) => { setSearchTerm(v); setCurrentPage(1); }}
+          selectedLocation={selectedLocation}
+          onLocationChange={(v) => { setSelectedLocation(v); setCurrentPage(1); }}
+          locations={locations}
+          cleanAreaName={cleanAreaName}
+          onSearch={() => { setCurrentPage(1); }}
+        />
+
+        {/* Sector + location pill rows */}
+        <section className="py-8 md:py-10 border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <SectorPills
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={(id) => { setSelectedCategory(id); setCurrentPage(1); }}
+            />
+            <LocationPillsGrid
+              locations={locations}
+              selected={selectedLocation}
+              onSelect={(loc) => { setSelectedLocation(loc); setCurrentPage(1); }}
+              cleanAreaName={cleanAreaName}
+            />
           </div>
         </section>
-        {/* Business Listings Section */}
-        <section className="py-8 md:py-16">
+
+        {/* Always-visible curated rows */}
+        <VerifiedBusinessesRow />
+        <RecentlyAddedRow />
+
+        {/* Full results grid (location-gated) */}
+        <section id="all-results" className="py-8 md:py-16 border-t">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
               <h2 className="text-2xl md:text-3xl font-heading font-bold">
