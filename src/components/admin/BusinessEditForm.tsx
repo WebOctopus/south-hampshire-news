@@ -149,7 +149,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     setLoading(true);
 
     try {
-      const saveData = {
+      const saveData: any = {
         ...formData,
         owner_id: formData.owner_id || null,
         category_id: formData.category_id || null,
