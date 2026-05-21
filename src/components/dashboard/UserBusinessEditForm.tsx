@@ -94,7 +94,7 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
       const updateData = {
         ...formData,
         category_id: formData.category_id || null,
-        opening_hours: openingHours,
+        opening_hours: openingHours as any,
       };
 
       const { error } = await supabase
