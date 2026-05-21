@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Phone, Mail, ExternalLink, Clock, Star, ImageIcon, Lock } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Smartphone, Globe, Mail, ImageIcon, Info, Plus } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessClaimButton } from '@/components/BusinessClaimButton';
 import { useAuth } from '@/contexts/AuthContext';
+import { BusinessDetailHero } from '@/components/directory/BusinessDetailHero';
+import { MeetTheOwnerCard } from '@/components/directory/MeetTheOwnerCard';
+import { OpeningHoursCard } from '@/components/directory/OpeningHoursCard';
+import { UnverifiedOverlay } from '@/components/directory/UnverifiedOverlay';
 
 interface Business {
   id: string;
@@ -30,6 +32,11 @@ interface Business {
   featured: boolean;
   opening_hours: any;
   owner_id: string | null;
+  owner_name?: string | null;
+  owner_role?: string | null;
+  owner_photo_url?: string | null;
+  owner_quote?: string | null;
+  advertises_in_discover?: boolean | null;
   business_categories: {
     name: string;
     icon: string;
@@ -40,9 +47,7 @@ const BusinessDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const { user } = useAuth();
-  const isAuthenticated = !!user;
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     if (slug) {
@@ -69,24 +74,6 @@ const BusinessDetail = () => {
       setBusiness(null);
     }
     setLoading(false);
-  };
-
-  const handleWebsiteClick = () => {
-    if (business?.website) {
-      window.open(business.website.startsWith('http') ? business.website : `https://${business.website}`, '_blank');
-    }
-  };
-
-  const handleEmailClick = () => {
-    if (business?.email) {
-      window.open(`mailto:${business.email}`);
-    }
-  };
-
-  const handlePhoneClick = () => {
-    if (business?.phone) {
-      window.open(`tel:${business.phone}`);
-    }
   };
 
   if (loading) {
@@ -121,348 +108,173 @@ const BusinessDetail = () => {
   }
 
   const allImages = [business.featured_image_url, ...(business.images || [])].filter(Boolean);
+  const isOwner = !!user && user.id === business.owner_id;
+  const canManage = isOwner || isAdmin;
+  const websiteHost = business.website
+    ? (() => {
+        try {
+          return new URL(business.website.startsWith('http') ? business.website : `https://${business.website}`).hostname.replace(/^www\./, '');
+        } catch {
+          return business.website;
+        }
+      })()
+    : null;
+  const address = [business.address_line1, business.address_line2, business.city, business.postcode]
+    .filter(Boolean)
+    .join(', ');
+
+  // Gallery: show actual images + empty placeholder slots up to multiple of 3 (min 6 when owner can manage)
+  const minTiles = canManage ? 6 : Math.max(3, allImages.length);
+  const gallerySlots = Array.from({ length: Math.max(minTiles, allImages.length) }, (_, i) => allImages[i] ?? null);
 
   return (
     <div className="min-h-screen">
       <Navigation />
-      
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Back Button */}
+
+      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <Link to="/business-directory" className="inline-flex items-center text-community-green hover:text-green-600 mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Directory
         </Link>
 
-        {/* Mobile Business Header */}
-        <div className="lg:hidden mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-3">
-                {business.name}
-              </h1>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <Badge variant="secondary" className="bg-community-green/10 text-community-green">
-                  {business.business_categories?.name}
-                </Badge>
-                {business.is_verified && (
-                  <Badge variant="default" className="bg-blue-100 text-blue-800">
-                    Verified
-                  </Badge>
+        <BusinessDetailHero business={business} />
+
+        <div className="relative">
+          <div className={!business.is_verified ? 'opacity-60 pointer-events-none select-none' : ''}>
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Left column (2/3) */}
+              <div className="lg:col-span-2 space-y-6">
+                {business.description && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        <Info className="h-4 w-4" /> About
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-foreground/80 leading-relaxed whitespace-pre-line">
+                        {business.description}
+                      </p>
+                    </CardContent>
+                  </Card>
                 )}
-                {business.featured && (
-                  <Badge variant="default" className="bg-yellow-100 text-yellow-800">
-                    Featured
-                  </Badge>
-                )}
+
+                <MeetTheOwnerCard
+                  ownerName={business.owner_name}
+                  ownerRole={business.owner_role}
+                  ownerPhotoUrl={business.owner_photo_url}
+                  ownerQuote={business.owner_quote}
+                />
+              </div>
+
+              {/* Right column (1/3) */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      <Info className="h-4 w-4" /> Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    {business.phone && (
+                      <a href={`tel:${business.phone}`} className="flex items-center gap-3 text-community-green hover:underline">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span>{business.phone}</span>
+                      </a>
+                    )}
+                    {business.phone && (
+                      <a href={`tel:${business.phone}`} className="flex items-center gap-3 text-community-green hover:underline">
+                        <Smartphone className="h-4 w-4 text-muted-foreground" />
+                        <span>{business.phone}</span>
+                      </a>
+                    )}
+                    {websiteHost && (
+                      <a
+                        href={business.website.startsWith('http') ? business.website : `https://${business.website}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-3 text-community-green hover:underline"
+                      >
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <span className="truncate">{websiteHost}</span>
+                      </a>
+                    )}
+                    {business.email && (
+                      <a href={`mailto:${business.email}`} className="flex items-center gap-3 text-community-green hover:underline">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="truncate">{business.email}</span>
+                      </a>
+                    )}
+                    {address && (
+                      <div className="flex items-start gap-3 text-foreground/80">
+                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <span>
+                          {business.address_line1 && <span className="block">{business.address_line1}</span>}
+                          {business.address_line2 && <span className="block">{business.address_line2}</span>}
+                          <span className="block">
+                            {[business.city, business.postcode].filter(Boolean).join(', ')}
+                          </span>
+                        </span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <OpeningHoursCard openingHours={business.opening_hours} />
               </div>
             </div>
-            {business.logo_url && (
-              <img
-                src={business.logo_url}
-                alt={`${business.name} logo`}
-                className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg ml-4 flex-shrink-0"
-              />
-            )}
+
+            {/* Gallery */}
+            <section className="mt-8">
+              <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+                <ImageIcon className="h-4 w-4" /> Gallery
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {gallerySlots.map((src, i) =>
+                  src ? (
+                    <div key={i} className="aspect-[4/3] rounded-xl overflow-hidden bg-muted border">
+                      <img src={src} alt={`${business.name} ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ) : canManage ? (
+                    <button
+                      key={i}
+                      type="button"
+                      className="aspect-[4/3] rounded-xl bg-muted/40 border border-dashed flex flex-col items-center justify-center text-muted-foreground hover:bg-muted transition"
+                    >
+                      <Plus className="h-6 w-6 mb-1" />
+                      <span className="text-sm">Add photo</span>
+                    </button>
+                  ) : (
+                    <div
+                      key={i}
+                      className="aspect-[4/3] rounded-xl bg-muted/40 border flex flex-col items-center justify-center text-muted-foreground"
+                    >
+                      <ImageIcon className="h-6 w-6 mb-1" />
+                      <span className="text-sm">Photo {i + 1}</span>
+                    </div>
+                  )
+                )}
+              </div>
+            </section>
           </div>
-          
-          {business.description && (
-            <p className="text-gray-600 text-base leading-relaxed mb-4">
-              {business.description}
-            </p>
+
+          {!business.is_verified && (
+            <div className="absolute inset-0 flex items-start justify-center pt-24 z-10">
+              <div className="max-w-md w-full mx-4 bg-card border-2 border-community-green/30 rounded-2xl p-6 md:p-8 shadow-xl text-center">
+                <h3 className="font-heading text-xl md:text-2xl mb-2">
+                  Apply to verify this business
+                </h3>
+                <p className="text-sm text-muted-foreground mb-5">
+                  Claim and verify this listing to receive a <strong>£100 voucher code</strong> to advertise in Discover Magazine.
+                </p>
+                <BusinessClaimButton
+                  businessId={business.id}
+                  businessName={business.name}
+                  ownerId={business.owner_id}
+                />
+              </div>
+            </div>
           )}
-          
-          {/* Mobile Contact Actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
-            {isAuthenticated ? (
-              <>
-                {business.phone && (
-                  <Button
-                    onClick={handlePhoneClick}
-                    variant="outline"
-                    className="w-full text-sm"
-                    size="sm"
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call
-                  </Button>
-                )}
-                {business.email && (
-                  <Button
-                    onClick={handleEmailClick}
-                    variant="outline"
-                    className="w-full text-sm"
-                    size="sm"
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Email
-                  </Button>
-                )}
-              </>
-            ) : (
-              <Link to="/auth" className="col-span-full">
-                <Button
-                  variant="outline"
-                  className="w-full text-sm"
-                  size="sm"
-                >
-                  <Lock className="h-4 w-4 mr-2" />
-                  Sign in to view contact details
-                </Button>
-              </Link>
-            )}
-            {business.website && (
-              <Button
-                onClick={handleWebsiteClick}
-                className="w-full bg-community-green hover:bg-green-600 text-sm"
-                size="sm"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Website
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Hero Section */}
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
-          {/* Image Gallery */}
-          <div className="space-y-4">
-            {allImages.length > 0 ? (
-              <>
-                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <img
-                    src={allImages[selectedImageIndex]}
-                    alt={business.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {allImages.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {allImages.map((image, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImageIndex(index)}
-                        className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 ${
-                          selectedImageIndex === index ? 'border-community-green' : 'border-transparent'
-                        }`}
-                      >
-                        <img
-                          src={image}
-                          alt={`${business.name} ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="aspect-video rounded-lg bg-gray-100 flex items-center justify-center">
-                <ImageIcon className="h-12 w-12 text-gray-400" />
-              </div>
-            )}
-          </div>
-
-          {/* Desktop Business Info */}
-          <div className="hidden lg:block space-y-6">
-            <div>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">
-                    {business.name}
-                  </h1>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="bg-community-green/10 text-community-green">
-                      {business.business_categories?.name}
-                    </Badge>
-                    {business.is_verified && (
-                      <Badge variant="default" className="bg-blue-100 text-blue-800">
-                        Verified
-                      </Badge>
-                    )}
-                    {business.featured && (
-                      <Badge variant="default" className="bg-yellow-100 text-yellow-800">
-                        Featured
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                {business.logo_url && (
-                  <img
-                    src={business.logo_url}
-                    alt={`${business.name} logo`}
-                    className="w-16 h-16 object-cover rounded-lg ml-4"
-                  />
-                )}
-              </div>
-
-              {business.description && (
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  {business.description}
-                </p>
-              )}
-            </div>
-
-            {/* Desktop Contact Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {isAuthenticated ? (
-                <>
-                  {business.phone && (
-                    <Button
-                      onClick={handlePhoneClick}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <Phone className="h-4 w-4 mr-2" />
-                      Call
-                    </Button>
-                  )}
-                  {business.email && (
-                    <Button
-                      onClick={handleEmailClick}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <Mail className="h-4 w-4 mr-2" />
-                      Email
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Link to="/auth" className="col-span-full">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    Sign in to view contact details
-                  </Button>
-                </Link>
-              )}
-              {business.website && (
-                <Button
-                  onClick={handleWebsiteClick}
-                  className="w-full bg-community-green hover:bg-green-600"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Website
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Details Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5 text-community-green" />
-                Contact Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {(business.address_line1 || business.city || business.postcode) && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-gray-600">
-                    {business.address_line1 && <div>{business.address_line1}</div>}
-                    {business.address_line2 && <div>{business.address_line2}</div>}
-                    <div>
-                      {business.city && business.city}
-                      {business.city && business.postcode && ', '}
-                      {business.postcode && business.postcode}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {isAuthenticated ? (
-                <>
-                  {business.phone && (
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                      <a
-                        href={`tel:${business.phone}`}
-                        className="text-community-green hover:text-green-600 transition-colors"
-                      >
-                        {business.phone}
-                      </a>
-                    </div>
-                  )}
-
-                  {business.email && (
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                      <a
-                        href={`mailto:${business.email}`}
-                        className="text-community-green hover:text-green-600 transition-colors"
-                      >
-                        {business.email}
-                      </a>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
-                  <Lock className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                  <div className="text-gray-600">
-                    <Link to="/auth" className="text-community-green hover:text-green-600 transition-colors">
-                      Sign in to view contact details
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {business.website && (
-                <div className="flex items-center gap-3">
-                  <ExternalLink className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                  <a
-                    href={business.website.startsWith('http') ? business.website : `https://${business.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-community-green hover:text-green-600 transition-colors"
-                  >
-                    Visit Website
-                  </a>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Claim Business */}
-          <BusinessClaimButton
-            businessId={business.id}
-            businessName={business.name}
-            ownerId={business.owner_id}
-          />
-
-          {/* Opening Hours */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-community-green" />
-                Opening Hours
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {business.opening_hours ? (
-                <div className="space-y-2">
-                  {Object.entries(business.opening_hours).map(([day, hours]) => (
-                    <div key={day} className="flex justify-between">
-                      <span className="capitalize font-medium">{day}</span>
-                      <span className="text-gray-600">{hours as string}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-4">
-                  Opening hours not available
-                </p>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </main>
 
