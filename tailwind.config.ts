@@ -33,6 +33,8 @@ export default {
 			colors: {
 				'community-green': '#10b981',
 				'community-navy': '#1e293b',
+				'community-purple': '#5B2D8E',
+				'community-teal': '#00A896',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
