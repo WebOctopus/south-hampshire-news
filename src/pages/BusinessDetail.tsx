@@ -147,6 +147,46 @@ const BusinessDetail = () => {
                   </div>
                 )}
 
+                {/* Gallery */}
+                <section>
+                  <h2 className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-muted-foreground mb-3">
+                    <ImageIcon className="h-3.5 w-3.5 text-community-teal" /> Gallery
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+                    {gallerySlots.map((src, i) =>
+                      src ? (
+                        <div
+                          key={i}
+                          className="aspect-[4/3] rounded-[10px] overflow-hidden bg-card border border-community-teal/25"
+                        >
+                          <img
+                            src={src}
+                            alt={`${business.name} ${i + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : canManage ? (
+                        <button
+                          key={i}
+                          type="button"
+                          className="aspect-[4/3] rounded-[10px] bg-card border border-dashed border-community-teal/40 flex flex-col items-center justify-center gap-1.5 text-community-teal/70 hover:border-community-teal/70 transition-colors"
+                        >
+                          <Plus className="h-5 w-5" />
+                          <span className="text-[11px] text-muted-foreground">Add photo</span>
+                        </button>
+                      ) : (
+                        <div
+                          key={i}
+                          className="aspect-[4/3] rounded-[10px] bg-card border border-community-teal/25 flex flex-col items-center justify-center gap-1.5 text-community-teal/40"
+                        >
+                          <ImageIcon className="h-6 w-6" />
+                          <span className="text-[11px] text-muted-foreground">Photo {i + 1}</span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </section>
+
                 <MeetTheOwnerCard
                   ownerName={business.owner_name}
                   ownerRole={business.owner_role}
@@ -162,45 +202,6 @@ const BusinessDetail = () => {
               </div>
             </div>
 
-            {/* Gallery */}
-            <section className="mt-8">
-              <h2 className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-muted-foreground mb-3">
-                <ImageIcon className="h-3.5 w-3.5 text-community-teal" /> Gallery
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                {gallerySlots.map((src, i) =>
-                  src ? (
-                    <div
-                      key={i}
-                      className="aspect-[4/3] rounded-[10px] overflow-hidden bg-card border border-community-teal/25"
-                    >
-                      <img
-                        src={src}
-                        alt={`${business.name} ${i + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : canManage ? (
-                    <button
-                      key={i}
-                      type="button"
-                      className="aspect-[4/3] rounded-[10px] bg-card border border-dashed border-community-teal/40 flex flex-col items-center justify-center gap-1.5 text-community-teal/70 hover:border-community-teal/70 transition-colors"
-                    >
-                      <Plus className="h-5 w-5" />
-                      <span className="text-[11px] text-muted-foreground">Add photo</span>
-                    </button>
-                  ) : (
-                    <div
-                      key={i}
-                      className="aspect-[4/3] rounded-[10px] bg-card border border-community-teal/25 flex flex-col items-center justify-center gap-1.5 text-community-teal/40"
-                    >
-                      <ImageIcon className="h-6 w-6" />
-                      <span className="text-[11px] text-muted-foreground">Photo {i + 1}</span>
-                    </div>
-                  )
-                )}
-              </div>
-            </section>
           </div>
 
           {!business.is_verified && (
