@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Building2, MapPin, Phone, Globe, Settings, Share2, Image as ImageIcon } from 'lucide-react';
 import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
+import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
 
 interface BusinessEditFormProps {
   business?: any | null;
@@ -76,6 +77,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     edition_area: business?.edition_area || '',
     logo_url: business?.logo_url || '',
     featured_image_url: business?.featured_image_url || '',
+    images: (business?.images as string[]) || [],
     is_active: business?.is_active ?? true,
     is_verified: business?.is_verified ?? false,
     featured: business?.featured ?? false,
@@ -417,6 +419,17 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onUpload={handleFeaturedUpload}
                   onClear={() => handleChange('featured_image_url', '')}
                   aspectRatio="landscape"
+                  disabled={isUploading}
+                />
+              </div>
+            )}
+            {!(isCreateMode && !createdBusinessId) && (
+              <div className="space-y-2">
+                <Label>Gallery</Label>
+                <BusinessGalleryEditor
+                  businessId={(createdBusinessId || business?.id) as string}
+                  images={formData.images}
+                  onChange={(imgs) => handleChange('images', imgs)}
                   disabled={isUploading}
                 />
               </div>
