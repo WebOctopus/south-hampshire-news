@@ -1,51 +1,28 @@
-## Directory Redevelopment Plan
+## Auto-generate listing URL (slug) on Business listings
 
-### 1. Database changes (migration)
+The CSV importer already generates a `slug` for each row. The admin `BusinessEditForm` (used for both Create and Edit) does not currently set `slug`, so businesses added or renamed via the admin UI end up with `slug = null` and can't be opened on the new `/business/:slug` route.
 
-- Add `tag TEXT` column to `businesses` (nullable, indexed for filtering).
-- Ensure `slug TEXT UNIQUE` column on `businesses` is populated and indexed (column already exists, currently unused).
-- Add lookup function `get_business_detail_by_slug(slug TEXT)` mirroring existing `get_business_detail`.
-- Update `get_public_businesses` and `get_public_businesses_count` RPCs to:
-  - Return `slug` and `tag` fields.
-  - Accept new optional `tag_filter TEXT` argument.
-- Add `get_distinct_tags()` RPC for the filter dropdown.
-- Wipe directory data in this order to clear FK-style relationships:
-  1. `business_claim_requests`
-  2. `business_reviews`
-  3. `featured_advertisers` rows where `business_id IS NOT NULL` (set null or delete — recommend delete since they're directory-tied)
-  4. `businesses`
+### What to change
 
-### 2. CSV import (`import-businesses-csv` edge function + admin UI)
+**File: `src/components/admin/BusinessEditForm.tsx`**
 
-- Add `Tag` column to `COLUMN_MAPPING` (maps to `businesses.tag`).
-- On insert, generate a slug from `name`:
-  - Base: lowercase, hyphenate, strip non-alphanumeric (reuse `slugify_text` SQL function pattern in JS).
-  - On collision within the same import or against the DB, append `-{citySlug}`.
-  - If still colliding, append `-2`, `-3`, etc.
-- Update Column Mapping table and Preview table in `CSVImportManagement.tsx` to include Tag.
-- Template download includes `Tag` header.
+1. Add a small `slugify(name)` helper (same logic as the edge function: lowercase → replace non-alphanumerics with `-` → trim leading/trailing `-`).
 
-### 3. Frontend routing
+2. In `handleSubmit`, before insert/update:
+   - Compute `baseSlug = slugify(formData.name) || 'business'`.
+   - Query `businesses` for any existing slug that equals `baseSlug` OR starts with `baseSlug-`, excluding the current business id (on update).
+   - Pick a final slug using the same fallback order as the importer:
+     - `baseSlug` if free
+     - else `baseSlug-{slugify(city)}` if city present and free
+     - else append `-2`, `-3`, … until free
+   - Include `slug: finalSlug` in `saveData`.
 
-- Change route from `/business/:id` to `/business/:slug` in `App.tsx`.
-- `BusinessDetail.tsx` reads `slug` param, calls `get_business_detail_by_slug`.
-- `BusinessCard.tsx` navigates to `/business/${business.slug}`.
-- `BusinessDirectory.tsx` Business interface gains `slug` and `tag`.
+3. On Update, only recompute the slug when `formData.name` (or `city`, when city suffix is in play) has changed from `business.name`/`business.city`. If unchanged, keep the existing slug. This avoids surprise URL changes on routine edits.
 
-### 4. Directory filter + badge
+4. Read-only UI hint: under the Business Name input, display a small muted line "URL: /business/{previewSlug}" computed live from the current name + city, so admins can see what the link will be. No editable slug field — fully automatic per the request.
 
-- Add Tag dropdown to `BusinessDirectory.tsx` next to Location, populated from `get_distinct_tags()`.
-- Pass `tag_filter` through to RPC calls.
-- `BusinessCard.tsx`: render tag as a badge alongside category/biz_type.
+### Notes
 
-### 5. Cleanup
-
-- Remove any stale UUID-based deep links in code (search for `/business/${...id}`).
-- Update memory note `mem://rules/business-directory` to reflect slug routing + tag column.
-
-### Technical notes
-
-- Slug generation in edge function uses simple regex: `name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')`. City suffix uses same transform on `city` value.
-- Collision check: build a `Set<string>` of slugs allocated in current batch, plus a single bulk SELECT of existing slugs at start of the function (cheap since we just wiped the table on replaceAll, and reasonable otherwise).
-- Existing UUID-based URLs will 404 — acceptable per "redevelop" framing and confirmed by deletion choice.
-- RLS unchanged; new RPCs use `SECURITY DEFINER` like existing siblings.
+- No DB or edge function changes — the importer flow stays as-is.
+- No change to `UserBusinessEditForm` unless you want owners' edits to also regenerate; flag if so.
+- Existing imported businesses already have slugs and will be untouched on edit unless their name changes.
