@@ -33,20 +33,23 @@ interface CumulativeResult {
 }
 
 const COLUMN_MAPPING = [
-  { csv: 'Company name', db: 'name', required: true },
-  { csv: 'Street Address', db: 'address_line1', required: false },
-  { csv: 'Street Address 2', db: 'address_line2', required: false },
-  { csv: 'Street Address 3', db: '(appended to address_line2)', required: false },
-  { csv: 'Postal Code', db: 'postcode', required: false },
-  { csv: 'City', db: 'city', required: false },
-  { csv: 'Company Domain Name', db: 'website', required: false },
-  { csv: 'Phone Number', db: 'phone', required: false },
-  { csv: 'Company Email', db: 'email', required: false },
-  { csv: 'Sector', db: 'sector', required: false },
-  { csv: 'Biz Type', db: 'biz_type', required: false },
-  { csv: '14 Editions - Local', db: 'edition_area', required: false },
-  { csv: 'Tag', db: 'tag', required: false },
+  { csv: 'Company name', db: 'name', required: true, aliases: ['name', 'company name', 'company', 'business name', 'business', 'trading name'] },
+  { csv: 'Street Address', db: 'address_line1', required: false, aliases: ['street address', 'address', 'address 1', 'address line 1'] },
+  { csv: 'Street Address 2', db: 'address_line2', required: false, aliases: ['street address 2', 'address 2', 'address line 2'] },
+  { csv: 'Street Address 3', db: '(appended to address_line2)', required: false, aliases: ['street address 3', 'address 3', 'address line 3'] },
+  { csv: 'Postal Code', db: 'postcode', required: false, aliases: ['postal code', 'postcode', 'post code', 'zip', 'zip code'] },
+  { csv: 'City', db: 'city', required: false, aliases: ['city', 'town'] },
+  { csv: 'Company Domain Name', db: 'website', required: false, aliases: ['company domain name', 'website', 'domain', 'url'] },
+  { csv: 'Phone Number', db: 'phone', required: false, aliases: ['phone number', 'phone', 'telephone', 'tel', 'mobile'] },
+  { csv: 'Company Email', db: 'email', required: false, aliases: ['company email', 'email', 'email address'] },
+  { csv: 'Sector', db: 'sector', required: false, aliases: ['sector', 'industry', 'category'] },
+  { csv: 'Biz Type', db: 'biz_type', required: false, aliases: ['biz type', 'business type', 'type'] },
+  { csv: '14 Editions - Local', db: 'edition_area', required: false, aliases: ['14 editions - local', '14 editions local', 'edition', 'edition area', 'local edition', 'area'] },
+  { csv: 'Tag', db: 'tag', required: false, aliases: ['tag', 'tags', 'label'] },
 ];
+
+const normaliseKey = (s: string) =>
+  s.replace(/^\ufeff/, '').toLowerCase().trim().replace(/[\s_\-]+/g, ' ').replace(/\s+/g, ' ');
 
 const BATCH_SIZE = 500;
 
@@ -354,7 +357,8 @@ export function CSVImportManagement() {
             </TableHeader>
             <TableBody>
               {COLUMN_MAPPING.map((mapping) => {
-                const found = parsedCSV?.headers.includes(mapping.csv);
+                const normHeaders = new Set((parsedCSV?.headers || []).map(normaliseKey));
+                const found = mapping.aliases.some(a => normHeaders.has(normaliseKey(a)));
                 return (
                   <TableRow key={mapping.csv}>
                     <TableCell className="font-mono text-sm">{mapping.csv}</TableCell>
