@@ -1,56 +1,39 @@
-# Redesign Business Detail Page
+# Add Opening Hours Editor to Both Forms
 
-Lift the visual layout from the uploaded mock (`discover-directory-page3_1.html`) and apply it to `/business/:slug`. All current behaviour — claim flow, verified-only content gating, gallery upload for owners/admins, opening hours "open now", directions/website/email/phone actions — stays exactly as is. Only markup, spacing, and styling change.
+Add an opening-hours editor to the admin `BusinessEditForm` (currently has none) and replace the freeform text-per-day editor in the user-facing `UserBusinessEditForm` with the same component, so both write the same shape. The Business Detail page already renders `opening_hours` via `OpeningHoursCard` — no detail-page changes needed; it will pick up edits automatically.
 
-## Layout Structure (matching the mock)
+## Shape stored in `businesses.opening_hours` (JSON)
 
-```text
-Navigation (existing)
-Breadcrumb: Directory > Search results > {Business name}
-Hero band (teal background, full-width)
-  ┌─────────────────────────────────────────────────────┐
-  │ [Logo 80px]  Badges (Verified / Advertises)         │
-  │              Business Name (serif, large)            │
-  │              Tagline / address                       │
-  │              [Call] [Website] [Email] [Directions]   │
-  │              [verify-cta pill if unverified]         │
-  └─────────────────────────────────────────────────────┘
-Two-column body (2fr / 1fr)
-  Left:  About card · Meet the owner card
-  Right: Details card · Opening hours card
-Gallery section (full width, 3-col grid)
-Footer (existing)
+Keep one schema across forms and the public card:
+
+```json
+{
+  "monday":    { "open": "09:00", "close": "17:00", "closed": false },
+  "tuesday":   { "closed": true },
+  ...
+}
 ```
 
-## Visual Language
+`OpeningHoursCard` and `isOpenNow` already handle this object shape and fall back to a string. Existing rows containing strings stay readable.
 
-Map mock values to existing semantic tokens — no new hard-coded colours in components:
-- Hero background → `community-green` (teal already in palette)
-- Card borders → soft teal tint (use `border-community-green/20` or extend `--card-border` token in `index.css`)
-- Accent purple for owner quote bar & verify pill → existing `community-purple` token (extend in `index.css`/`tailwind.config.ts` if not already present)
-- Headings → existing `font-heading` (serif)
-- Body → existing sans
-- Card titles: small uppercase, tracked, muted, with small teal icon
+## New shared component
 
-## Files to Change
+`src/components/directory/OpeningHoursEditor.tsx`
+- 7 rows (Mon–Sun), each with: a "Closed" switch, an opening time `<input type="time">`, a closing time `<input type="time">`.
+- "Copy to all" link on the first weekday row to apply Mon's hours to Tue–Fri.
+- Emits the canonical object shape above via `onChange(value)`.
+- Accepts legacy string values and parses `"9:00 - 17:00"` / `"Closed"` on first render so existing data is preserved.
 
-- `src/pages/BusinessDetail.tsx` — replace outer layout with breadcrumb + hero band + 2-col body + gallery section. Keep data fetching, `canManage`, gallery slot logic, unverified overlay/claim, all handlers untouched.
-- `src/components/directory/BusinessDetailHero.tsx` — restyle to the teal hero band with badges row, serif name, tagline, and a horizontal action button row (Call / Website / Email / Directions). Same props, same conditional rendering.
-- `src/components/directory/MeetTheOwnerCard.tsx` — restyle: round avatar, name, role, purple left-border quote with serif italic. Same props.
-- `src/components/directory/OpeningHoursCard.tsx` — restyle rows to match mock (day left muted, hours right, "Open now" in teal). Same logic.
-- New small component `src/components/directory/BusinessDetailsCard.tsx` — extracts the Details card (phone, mobile, website, email, address) from `BusinessDetail.tsx` so the page file stays tidy. Same fields, same links.
-- `src/index.css` / `tailwind.config.ts` — add any missing tokens (soft-teal card border, community-purple accent) if not already defined. No raw hex in components.
+## Files to change
 
-## Functionality Preserved
+- `src/components/admin/BusinessEditForm.tsx` — add an "Opening Hours" card (after the Images section) using `OpeningHoursEditor`, wired to `formData.opening_hours`.
+- `src/components/dashboard/UserBusinessEditForm.tsx` — replace the existing text-input grid (lines ~393–419) with `OpeningHoursEditor`. Drop `openingHours` string-record state and the `handleHoursChange` helper; submit the editor's object directly under `opening_hours`. Migrate any string state on mount.
+- New: `src/components/directory/OpeningHoursEditor.tsx`.
 
-- Slug fetch via `get_business_detail_by_slug` RPC
-- Owner/admin detection (`canManage`) and gallery edit affordance (existing upload integration stays)
-- Unverified state: content dimmed + `BusinessClaimButton` overlay
-- Opening-hours "open now" indicator
-- All `tel:`, `mailto:`, `https://` and Google Maps directions links
+No detail-page changes (already renders correctly). No DB migration — `opening_hours` is already `jsonb`.
 
-## Out of Scope
+## Out of scope
 
-- Editor forms (admin/dashboard) untouched
-- No data model or RPC changes
-- No new images uploaded; mock's icon font replaced with existing lucide icons
+- No new permissions or RLS changes.
+- Detail page styling stays as just-redesigned.
+- No timezone handling — times are stored as plain `HH:MM` strings, same as today.
