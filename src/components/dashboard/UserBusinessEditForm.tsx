@@ -399,19 +399,7 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {DAYS_OF_WEEK.map((day) => (
-              <div key={day} className="flex items-center gap-2">
-                <Label htmlFor={day} className="w-24 capitalize">{day}</Label>
-                <Input
-                  id={day}
-                  value={openingHours[day] || ''}
-                  onChange={(e) => handleHoursChange(day, e.target.value)}
-                  placeholder="e.g., 9:00 - 17:00"
-                />
-              </div>
-            ))}
-          </div>
+          <OpeningHoursEditor value={openingHours} onChange={setOpeningHours} />
         </CardContent>
       </Card>
 
