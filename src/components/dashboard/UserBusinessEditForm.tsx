@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Building2, MapPin, Phone, Globe, Clock, Save, X, Share2, Image as ImageIcon } from 'lucide-react';
 import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
+import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
 
 interface UserBusinessEditFormProps {
   business: any;
@@ -39,6 +40,7 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
     postcode: business?.postcode || '',
     logo_url: business?.logo_url || '',
     featured_image_url: business?.featured_image_url || '',
+    images: (business?.images as string[]) || [],
     // Social media
     facebook_url: business?.facebook_url || '',
     instagram_url: business?.instagram_url || '',
@@ -302,6 +304,15 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
               onUpload={handleFeaturedUpload}
               onClear={() => handleChange('featured_image_url', '')}
               aspectRatio="landscape"
+              disabled={isUploading}
+            />
+          </div>
+          <div className="mt-6 space-y-2">
+            <Label>Gallery</Label>
+            <BusinessGalleryEditor
+              businessId={business.id}
+              images={formData.images}
+              onChange={(imgs) => setFormData((prev) => ({ ...prev, images: imgs }))}
               disabled={isUploading}
             />
           </div>
