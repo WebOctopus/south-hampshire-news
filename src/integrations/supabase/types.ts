@@ -466,6 +466,7 @@ export type Database = {
           postcode: string | null
           sector: string | null
           slug: string | null
+          tag: string | null
           tiktok_url: string | null
           twitter_url: string | null
           updated_at: string
@@ -500,6 +501,7 @@ export type Database = {
           postcode?: string | null
           sector?: string | null
           slug?: string | null
+          tag?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
           updated_at?: string
@@ -534,6 +536,7 @@ export type Database = {
           postcode?: string | null
           sector?: string | null
           slug?: string | null
+          tag?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
           updated_at?: string
@@ -2280,10 +2283,44 @@ export type Database = {
           website: string
         }[]
       }
+      get_business_detail_by_slug: {
+        Args: { business_slug: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          business_categories: Json
+          category_id: string
+          city: string
+          created_at: string
+          description: string
+          email: string
+          featured: boolean
+          featured_image_url: string
+          id: string
+          images: string[]
+          is_verified: boolean
+          logo_url: string
+          name: string
+          opening_hours: Json
+          owner_id: string
+          phone: string
+          postcode: string
+          slug: string
+          tag: string
+          updated_at: string
+          website: string
+        }[]
+      }
       get_distinct_edition_areas: {
         Args: never
         Returns: {
           edition_area: string
+        }[]
+      }
+      get_distinct_tags: {
+        Args: never
+        Returns: {
+          tag: string
         }[]
       }
       get_effective_advertiser_status: {
@@ -2297,6 +2334,7 @@ export type Database = {
           limit_count?: number
           offset_count?: number
           search_term?: string
+          tag_filter?: string
         }
         Returns: {
           address_line1: string
@@ -2315,6 +2353,8 @@ export type Database = {
           logo_url: string
           name: string
           postcode: string
+          slug: string
+          tag: string
           updated_at: string
           website: string
         }[]
@@ -2324,6 +2364,7 @@ export type Database = {
           category_filter?: string
           edition_area_filter?: string
           search_term?: string
+          tag_filter?: string
         }
         Returns: number
       }
