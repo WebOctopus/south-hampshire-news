@@ -28,6 +28,36 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(business?.id || null);
   
   const isCreateMode = !business?.id;
+
+  const slugify = (s: string) =>
+    (s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+  const resolveSlug = async (name: string, city: string, excludeId?: string | null): Promise<string> => {
+    const baseSlug = slugify(name) || 'business';
+    const citySlug = slugify(city);
+    const { data } = await supabase
+      .from('businesses')
+      .select('id, slug')
+      .or(`slug.eq.${baseSlug},slug.like.${baseSlug}-%`);
+    const taken = new Set(
+      (data || [])
+        .filter((r: any) => !excludeId || r.id !== excludeId)
+        .map((r: any) => r.slug)
+        .filter(Boolean)
+    );
+    if (!taken.has(baseSlug)) return baseSlug;
+    if (citySlug) {
+      const withCity = `${baseSlug}-${citySlug}`;
+      if (!taken.has(withCity)) return withCity;
+      let n = 2;
+      while (taken.has(`${withCity}-${n}`)) n++;
+      return `${withCity}-${n}`;
+    }
+    let n = 2;
+    while (taken.has(`${baseSlug}-${n}`)) n++;
+    return `${baseSlug}-${n}`;
+  };
+
   
   const [formData, setFormData] = useState({
     name: business?.name || '',
@@ -73,6 +103,8 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const previewSlug = slugify(formData.name || '') || 'business';
 
   const handleLogoUpload = async (file: File): Promise<string | null> => {
     const businessId = createdBusinessId || business?.id;
@@ -121,9 +153,10 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
 
       if (isCreateMode && !createdBusinessId) {
         // CREATE new business
+        const slug = await resolveSlug(formData.name, formData.city, null);
         const { data, error } = await supabase
           .from('businesses')
-          .insert(saveData)
+          .insert({ ...saveData, slug })
           .select()
           .single();
 
@@ -136,10 +169,18 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
         });
       } else {
         // UPDATE existing business
+        const idForUpdate = createdBusinessId || business?.id;
+        let updatePayload: any = saveData;
+        const nameChanged = business?.name !== formData.name;
+        const cityChanged = business?.city !== formData.city;
+        if (!business?.slug || nameChanged || cityChanged) {
+          const slug = await resolveSlug(formData.name, formData.city, idForUpdate);
+          updatePayload = { ...saveData, slug };
+        }
         const { error } = await supabase
           .from('businesses')
-          .update(saveData)
-          .eq('id', createdBusinessId || business?.id);
+          .update(updatePayload)
+          .eq('id', idForUpdate);
 
         if (error) throw error;
 
@@ -190,6 +231,9 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onChange={(e) => handleChange('name', e.target.value)}
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  URL: /business/{previewSlug}
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category_id">Category</Label>
