@@ -2272,6 +2272,12 @@ export type Database = {
           title: string
         }[]
       }
+      get_available_sectors: {
+        Args: { edition_area_filter?: string; search_term?: string }
+        Returns: {
+          category_id: string
+        }[]
+      }
       get_business_detail: {
         Args: { business_id: string }
         Returns: {
