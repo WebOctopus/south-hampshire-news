@@ -109,13 +109,15 @@ export function BusinessDetailHero({ business }: Props) {
               </a>
             )}
             {!business.is_verified && (
-              <div className="hero-claim-cta inline-flex">
-                <BusinessClaimButton
-                  businessId={business.id}
-                  businessName={business.name}
-                  ownerId={business.owner_id ?? null}
-                />
-              </div>
+              <BusinessClaimButton
+                businessId={business.id}
+                businessName={business.name}
+                ownerId={business.owner_id ?? null}
+                hideWhenPending
+                triggerLabel="Apply to verify"
+                triggerIcon={<ShieldCheck className="h-3.5 w-3.5" />}
+                triggerClassName="inline-flex items-center gap-1.5 bg-white text-community-teal hover:bg-white/90 text-xs font-medium px-4 py-2 rounded-lg transition-colors border border-white"
+              />
             )}
           </div>
         </div>
