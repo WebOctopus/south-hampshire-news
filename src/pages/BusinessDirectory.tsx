@@ -365,27 +365,42 @@ const BusinessDirectory = () => {
       <main>
         <DirectoryHero
           searchTerm={searchTerm}
-          onSearchChange={(v) => { setSearchTerm(v); setCurrentPage(1); }}
+          onSearchChange={(v) => { setSearchTerm(v); setSuggestionsOpen(true); }}
           selectedLocation={selectedLocation}
-          onLocationChange={(v) => { setSelectedLocation(v); setCurrentPage(1); }}
+          onLocationChange={(v) => {
+            setSelectedLocation(v);
+            setCurrentPage(1);
+            if (v === 'all') setHasSearched(false);
+          }}
           locations={locations}
           cleanAreaName={cleanAreaName}
-          onSearch={() => { setCurrentPage(1); }}
+          onSearch={commitSearch}
+          suggestions={suggestions}
+          suggestionsLoading={suggestionsLoading}
+          suggestionsOpen={suggestionsOpen}
+          onSuggestionsOpenChange={setSuggestionsOpen}
+          onSuggestionPick={handleSuggestionPick}
         />
 
         {/* Sector + location pill rows */}
         <section className="py-8 md:py-10 border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <SectorPills
-              categories={categories}
-              selected={selectedCategory}
-              onSelect={(id) => { setSelectedCategory(id); setCurrentPage(1); }}
-              availableIds={availableCategoryIds}
-            />
+            {selectedLocation !== 'all' && hasSearched && (
+              <SectorPills
+                categories={categories}
+                selected={selectedCategory}
+                onSelect={(id) => { setSelectedCategory(id); setCurrentPage(1); }}
+                availableIds={availableCategoryIds}
+              />
+            )}
             <LocationPillsGrid
               locations={locations}
               selected={selectedLocation}
-              onSelect={(loc) => { setSelectedLocation(loc); setCurrentPage(1); }}
+              onSelect={(loc) => {
+                setSelectedLocation(loc);
+                setCurrentPage(1);
+                if (loc === 'all') setHasSearched(false);
+              }}
               cleanAreaName={cleanAreaName}
             />
           </div>
