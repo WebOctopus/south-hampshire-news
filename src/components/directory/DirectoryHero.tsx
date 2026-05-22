@@ -2,6 +2,7 @@ import { MapPin, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchSuggestions, type Suggestion } from './SearchSuggestions';
 
 interface Props {
   searchTerm: string;
@@ -11,11 +12,17 @@ interface Props {
   locations: string[];
   cleanAreaName: (s: string) => string;
   onSearch: () => void;
+  suggestions: Suggestion[];
+  suggestionsLoading: boolean;
+  suggestionsOpen: boolean;
+  onSuggestionsOpenChange: (open: boolean) => void;
+  onSuggestionPick: (s: Suggestion) => void;
 }
 
 export function DirectoryHero({
   searchTerm, onSearchChange, selectedLocation, onLocationChange,
   locations, cleanAreaName, onSearch,
+  suggestions, suggestionsLoading, suggestionsOpen, onSuggestionsOpenChange, onSuggestionPick,
 }: Props) {
   return (
     <section className="relative bg-community-navy text-white overflow-hidden">
@@ -52,6 +59,18 @@ export function DirectoryHero({
               className="pl-10 h-14 text-black bg-white border-0 text-base"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
+              onFocus={() => onSuggestionsOpenChange(true)}
+              onBlur={() => setTimeout(() => onSuggestionsOpenChange(false), 150)}
+              onKeyDown={(e) => { if (e.key === 'Escape') onSuggestionsOpenChange(false); }}
+            />
+            <SearchSuggestions
+              open={suggestionsOpen}
+              loading={suggestionsLoading}
+              term={searchTerm}
+              suggestions={suggestions}
+              locationSelected={selectedLocation !== 'all'}
+              onPick={onSuggestionPick}
+              onSeeAll={() => { onSuggestionsOpenChange(false); onSearch(); }}
             />
           </div>
           <Select value={selectedLocation} onValueChange={onLocationChange}>
