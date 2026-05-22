@@ -3,20 +3,40 @@ import { Info, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { RecentBusinessCard, type RecentBusiness } from './RecentBusinessCard';
 
-export function RecentlyAddedRow() {
+interface RecentlyAddedRowProps {
+  searchTerm?: string;
+  selectedCategory?: string;
+  selectedLocation?: string;
+  selectedTag?: string;
+}
+
+export function RecentlyAddedRow({
+  searchTerm = '',
+  selectedCategory = 'all',
+  selectedLocation = 'all',
+  selectedTag = 'all',
+}: RecentlyAddedRowProps = {}) {
   const [items, setItems] = useState<RecentBusiness[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     (async () => {
-      const { data, error } = await supabase.rpc('get_recently_added_businesses', { limit_count: 6 });
+      const { data, error } = await supabase.rpc('get_recently_added_businesses', {
+        limit_count: 6,
+        search_term: searchTerm.trim() || undefined,
+        category_filter: selectedCategory !== 'all' ? selectedCategory : undefined,
+        edition_area_filter: selectedLocation !== 'all' ? selectedLocation : undefined,
+        tag_filter: selectedTag !== 'all' ? selectedTag : undefined,
+      });
       if (cancelled) return;
       if (!error && data) setItems(data as any);
+      else if (!error) setItems([]);
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [searchTerm, selectedCategory, selectedLocation, selectedTag]);
 
   if (!loading && items.length === 0) return null;
 

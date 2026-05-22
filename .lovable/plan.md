@@ -1,8 +1,22 @@
-## Move Discover favicon to footer only on verified cards
+## Filter Verified + Recently Added rows by directory search criteria
 
-In `src/components/directory/VerifiedBusinessCard.tsx`:
+Both rows currently fetch with no filters. The `get_verified_businesses` and `get_recently_added_businesses` RPCs already accept `search_term`, `category_filter`, `edition_area_filter`, and `tag_filter`. Wire those through so the rows respect the user's current search/sector/location/tag.
 
-- Remove the Discover favicon currently rendered under the business logo (top-left of the card).
-- Keep the favicon already in the footer row, immediately before the category tag (in line with the "View" link on the right).
+### Changes
 
-The footer favicon (added in the previous change) already renders when `advertises_in_discover` is true — no other change needed.
+**`src/components/directory/VerifiedBusinessesRow.tsx`**
+- Add props: `searchTerm`, `selectedCategory`, `selectedLocation`, `selectedTag`.
+- Pass them to the RPC (mapping `'all'` → `null`/omitted). Re-run the effect when any change.
+- Keep current "hide row when zero results" behavior — so the section disappears when nothing matches.
+
+**`src/components/directory/RecentlyAddedRow.tsx`**
+- Same prop additions and RPC argument wiring.
+- Same "hide when empty" behaviour.
+
+**`src/pages/BusinessDirectory.tsx`**
+- Pass the four filter values into both `<VerifiedBusinessesRow />` and `<RecentlyAddedRow />`.
+
+### Out of scope
+- No DB/RPC changes (filters already supported).
+- No change to the main results grid behaviour or the location-gating logic.
+- No card layout changes.

@@ -4,20 +4,40 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { VerifiedBusinessCard, type VerifiedBusiness } from './VerifiedBusinessCard';
 
-export function VerifiedBusinessesRow() {
+interface VerifiedBusinessesRowProps {
+  searchTerm?: string;
+  selectedCategory?: string;
+  selectedLocation?: string;
+  selectedTag?: string;
+}
+
+export function VerifiedBusinessesRow({
+  searchTerm = '',
+  selectedCategory = 'all',
+  selectedLocation = 'all',
+  selectedTag = 'all',
+}: VerifiedBusinessesRowProps = {}) {
   const [items, setItems] = useState<VerifiedBusiness[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     (async () => {
-      const { data, error } = await supabase.rpc('get_verified_businesses', { limit_count: 6 });
+      const { data, error } = await supabase.rpc('get_verified_businesses', {
+        limit_count: 6,
+        search_term: searchTerm.trim() || undefined,
+        category_filter: selectedCategory !== 'all' ? selectedCategory : undefined,
+        edition_area_filter: selectedLocation !== 'all' ? selectedLocation : undefined,
+        tag_filter: selectedTag !== 'all' ? selectedTag : undefined,
+      });
       if (cancelled) return;
       if (!error && data) setItems(data as any);
+      else if (!error) setItems([]);
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [searchTerm, selectedCategory, selectedLocation, selectedTag]);
 
   if (!loading && items.length === 0) return null;
 
