@@ -31,18 +31,7 @@ export function VerifiedBusinessCard({ business }: { business: VerifiedBusiness 
     >
       {/* Top: icon + name + address */}
       <div className="p-5 flex gap-4 items-start bg-[hsl(40,30%,97%)]">
-        <div className="flex flex-col items-center gap-2">
-          <BusinessIcon business={business} size={64} />
-          {business.advertises_in_discover && (
-            <img
-              src="/favicon.svg"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/favicon.png'; }}
-              title="Advertises in Discover"
-              alt="Advertises in Discover"
-              className="w-7 h-7 rounded-full object-contain"
-            />
-          )}
-        </div>
+        <BusinessIcon business={business} size={64} />
         <div className="flex-1 min-w-0">
           <h3 className="font-heading text-lg leading-tight mb-2 line-clamp-2">{business.name}</h3>
           <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-3">
