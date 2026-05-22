@@ -1,22 +1,33 @@
-## Filter Verified + Recently Added rows by directory search criteria
+# Verified Businesses row — "plumbing" search
 
-Both rows currently fetch with no filters. The `get_verified_businesses` and `get_recently_added_businesses` RPCs already accept `search_term`, `category_filter`, `edition_area_filter`, and `tag_filter`. Wire those through so the rows respect the user's current search/sector/location/tag.
+## Finding
 
-### Changes
+The behaviour you described is **already what the code does**:
 
-**`src/components/directory/VerifiedBusinessesRow.tsx`**
-- Add props: `searchTerm`, `selectedCategory`, `selectedLocation`, `selectedTag`.
-- Pass them to the RPC (mapping `'all'` → `null`/omitted). Re-run the effect when any change.
-- Keep current "hide row when zero results" behavior — so the section disappears when nothing matches.
+- `VerifiedBusinessesRow` passes `selectedLocation` to `get_verified_businesses` only when it is not `'all'`. If no location is selected, the location filter is omitted.
+- I ran the RPC directly with `search_term = 'plumbing'` and no location filter, and **MJM Plumbing & Heating Ltd** is returned (it's the only verified business matching "plumbing").
+- MJM is in **Area 7** only (SO32 Meon Valley / PO17 Wickham). So as soon as any other area is selected (hero dropdown or location pill), MJM is correctly filtered out.
 
-**`src/components/directory/RecentlyAddedRow.tsx`**
-- Same prop additions and RPC argument wiring.
-- Same "hide when empty" behaviour.
+## Most likely cause of what you saw
 
-**`src/pages/BusinessDirectory.tsx`**
-- Pass the four filter values into both `<VerifiedBusinessesRow />` and `<RecentlyAddedRow />`.
+A location was selected at the time you searched — either:
+- The hero "Your location" dropdown, or
+- A pill in the **Location** row below the sector pills (clicking one sets `selectedLocation`).
 
-### Out of scope
-- No DB/RPC changes (filters already supported).
-- No change to the main results grid behaviour or the location-gating logic.
-- No card layout changes.
+If neither is set (both showing "all"), MJM will appear in the Verified row when you type "plumbing".
+
+## Proposed action
+
+No code changes. To verify:
+
+1. On `/business-directory`, click any selected location pill again to deselect (or pick "Your location" → default) so `selectedLocation === 'all'`.
+2. Type `plumbing` in the search box.
+3. MJM Plumbing & Heating Ltd should appear in the Verified Businesses row.
+
+If after step 1–3 MJM still doesn't appear, it's a real bug and I'll dig further (likely candidates: stale request, pill component not resetting to `'all'`, or search not flowing into the row).
+
+## Optional small polish (only if you want it)
+
+- Show a subtle "Filtered by: *Area name*" chip above the Verified row when a location is active, so it's obvious why fewer (or zero) verified results appear.
+
+Let me know if you'd like the polish chip, or if you can confirm a location was selected when you tested.
