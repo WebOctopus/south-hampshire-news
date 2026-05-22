@@ -1,21 +1,43 @@
-## Fix: Verified & Recently Added rows missing on directory page
+## Improve owner assignment + Discover advertiser flag in admin Business edit form
 
-### What's wrong
+Two changes to `src/components/admin/BusinessEditForm.tsx`:
 
-Both `VerifiedBusinessesRow` and `RecentlyAddedRow` call Supabase RPCs (`get_verified_businesses`, `get_recently_added_businesses`) with just `{ limit_count: 6 }`. The DB now has **two overloads** of each function:
+### 1. "Advertises in Discover" toggle
 
-- `(limit_count int)`
-- `(limit_count int, search_term text, category_filter uuid, edition_area_filter text, tag_filter text)` — all with defaults
+Add a third row in the existing Admin Settings switch grid (next to Active / Verified / Featured) bound to the existing `advertises_in_discover` column on `businesses`. No schema work needed — the column already exists and powers the favicon on the directory cards.
 
-Because both overloads accept the same call signature, PostgREST throws `42725: function ... is not unique` and returns no data. The components then `return null`, so the sections disappear silently.
+### 2. Searchable owner dropdown
 
-### Fix
+Replace the free-text "Owner User ID" input with a searchable combobox listing every registered user. Selecting a user sets `owner_id` to their `user_id`; a "No owner (unclaimed)" option clears it. Search matches display name, company, and email.
 
-Create a migration that drops the older single-argument overloads, keeping the newer 5-argument versions (which still work when only `limit_count` is supplied because the rest default to NULL):
+To get the data securely (admin reads of `auth.users` aren't possible from the client), add a new SECURITY DEFINER RPC:
 
 ```sql
-DROP FUNCTION IF EXISTS public.get_verified_businesses(integer);
-DROP FUNCTION IF EXISTS public.get_recently_added_businesses(integer);
+CREATE OR REPLACE FUNCTION public.get_users_for_owner_assignment()
+RETURNS TABLE(user_id uuid, display_name text, company text, email text)
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT p.user_id, p.display_name, p.company, u.email::text
+  FROM public.profiles p
+  LEFT JOIN auth.users u ON u.id = p.user_id
+  WHERE public.has_role(auth.uid(), 'admin'::app_role)
+  ORDER BY COALESCE(p.display_name, u.email) ASC;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_users_for_owner_assignment() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_users_for_owner_assignment() TO authenticated;
 ```
 
-No client-side or component changes needed — once the duplicates are gone, the existing RPC calls resolve to the remaining overload and the rows render again.
+The function returns an empty set for non-admins (the `has_role` check in the WHERE clause).
+
+### UI details
+
+- Use the existing shadcn `Popover` + `Command` pattern (already used elsewhere in the codebase) for the combobox — trigger button shows the currently selected user's display name + email, or "No owner (unclaimed)".
+- Show display name as the primary label, with email and company as secondary text in each option.
+- Keep the helper text "Leave empty for unclaimed businesses".
+
+### Out of scope
+
+No changes to the public-facing user dashboard form, the directory cards, or RLS policies on `businesses` (existing `owner_id = auth.uid()` policy already lets owners edit their own listing once assigned).
