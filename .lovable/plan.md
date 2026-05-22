@@ -1,61 +1,28 @@
-# Make directory search, sector pills, and location pills work together
+# Hide sector pills that conflict with the typed search
 
 ## Problem
-The directory is returning `0 businesses found` because the current filters do not line up with the imported listing data:
-
-- Most active businesses have **Sector** and **Business Type** filled in, but almost all have no `category_id`.
-- The sector pill buttons currently filter by `category_id`, so choosing a pill like **Medical Services** excludes the matching listings.
-- Some edition areas exist in more than one text format, for example Southampton City appears as both `SO15-SO17` and `SO15,SO16,SO17`, so the location filter can accidentally hide valid matches from the same area.
-- Keyword search now checks `sector` and `biz_type`, but it still needs to combine cleanly with the pill filters and selected location.
+If a user types a keyword (e.g. "dentist") and then clicks a sector pill that doesn't match (e.g. "Retail"), the combined filter returns zero results. The pill looks clickable but is guaranteed to fail.
 
 ## Fix
-Update the directory backend functions and the directory page so all three controls work in unison:
+Make the sector pills aware of the current search term and selected location. When the user has typed something in the search box, only show pills that would actually return at least one business for that search + location. Pills that would produce zero results are hidden, so users can't pick a conflicting combination.
 
 ```text
-Search keyword  +  Sector pill  +  Location pill/dropdown  =  matching local businesses
+Search keyword → recompute which sector pills are still valid → hide the rest
 ```
 
-### 1. Make sector pills match imported businesses
-Update `get_public_businesses` and `get_public_businesses_count` so a selected category pill matches either:
+### Behaviour
+- No search typed → show all sector pills (current behaviour).
+- Search typed + location selected → show only pills whose sector has matching businesses for that search in that area. "All sectors" always remains.
+- Search typed but no location yet → still show all pills (we can't know matches until a location is chosen), matching the existing location-gated results grid.
+- Clearing the search → all pills return.
 
-- the listing's `category_id`, or
-- the listing's text `sector` matching the selected category name.
-
-This keeps the existing category pill UI while making it work with the current imported data.
-
-### 2. Make location filtering tolerant of area variants
-Update the location filter so listings in the same numbered Discover area match together, even where the postcode text is formatted differently.
-
-Example: selecting Southampton City should include both:
-
-```text
-Area 1 - Southampton City SO15-SO17
-Area 1 - Southampton City SO15,SO16,SO17
-```
-
-### 3. Keep keyword search hierarchical
-Keep keyword matching across:
-
-```text
-name | description | sector | business type | city | postcode | keywords
-```
-
-So broad searches can match sector, narrower searches can match business type, and free text still works.
-
-### 4. Tidy the frontend filter state
-Adjust the directory page so changing the search box, sector pill, or location pill consistently resets to page 1 and refreshes the same results list.
-
-Optionally de-duplicate location pills where they represent the same numbered Discover area, so users do not see multiple Southampton/Winchester variants.
-
-## Validation
-After implementing, verify examples directly against the live data:
-
-- **Medical Services** + **Southampton City** should show the Southampton medical listing.
-- **dentist** + **SO40 Totton** should show the dental listing in that area.
-- **Cleaning** + **Southampton City** should show cleaning businesses.
-- Search, sector pills, and location pills should all narrow the same result grid rather than fighting each other.
+### Implementation
+1. **New RPC `get_available_sectors(search_term, edition_area_filter)`** — returns the distinct set of sector category ids (matched via either `category_id` or text `sector` ↔ category name) for businesses matching the search term and area, using the same matching logic already in `get_public_businesses`.
+2. **Frontend** — in `BusinessDirectory.tsx`, when both `searchTerm` and `selectedLocation` are set, call the new RPC and store the allowed category id set. Pass it into `SectorPills` so it can hide non-matching pills.
+3. **`SectorPills`** — accept an optional `availableIds: Set<string> | null`. If provided, render only pills whose `id` is in the set (plus "All sectors"). If null, render everything.
+4. **Auto-reset** — if the currently selected pill becomes hidden after a search change, reset `selectedCategory` to `'all'` so results stay coherent.
 
 ## Out of scope
-- No change to public/private data exposure.
-- No removal of the location-required gate.
-- No redesign of the directory cards or hero.
+- No change to location pills or location filtering.
+- No change to the search input or RPC search logic itself.
+- No redesign of pill styling.
