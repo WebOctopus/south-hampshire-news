@@ -1,4 +1,4 @@
-import { Phone, Smartphone, Globe, Mail, MapPin, Info } from 'lucide-react';
+import { Phone, Smartphone, Globe, Mail, MapPin } from 'lucide-react';
 
 interface Props {
   business: {
@@ -106,9 +106,6 @@ export function BusinessDetailsCard({ business }: Props) {
 
   return (
     <div className="bg-card border border-community-teal/25 rounded-xl p-5">
-      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-muted-foreground mb-3">
-        <Info className="h-3.5 w-3.5 text-community-teal" /> Details
-      </div>
       <div className="text-sm">
         {rows.map(({ key, icon: Icon, node, on }) => (
           <div
