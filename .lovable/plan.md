@@ -1,23 +1,17 @@
-# Move verify CTA into hero + tidy Details header
+# Sharpen the business hero logo
+
+## Cause
+On the business detail hero, the icon tile renders a favicon-fallback image. We request it from Google at `size * 2` (160px for the 80px hero tile) and display it with `object-cover`, which crops/upscales a small bitmap and looks blurry.
 
 ## Changes
 
-### 1. Verify CTA as a hero action (`BusinessDetailHero.tsx`)
-- Remove the standalone verify card currently rendered below the grid in `BusinessDetail.tsx`.
-- Add an "Apply to verify" pill/button to the existing hero action row (Call / Website / Email / Directions), shown only when `is_verified` is false.
-- Style it consistently with the other hero buttons but visually distinct (e.g. white background with teal text, or amber accent) so it reads as a CTA.
-- Clicking it scrolls to / opens the existing `BusinessClaimButton` flow. Two options:
-  - a) Render the button inline in the hero (preferred — replaces overlay and panel entirely).
-  - b) Keep the bottom panel as a hidden anchor and have the hero pill scroll to it.
+`src/components/directory/BusinessIcon.tsx`
+- Request a higher-resolution source: clamp the requested favicon/logo size to at least 256px (Google's largest reliable size) regardless of the displayed `size` prop, so the bitmap is downscaled rather than upscaled.
+- Switch the `<img>` from `object-cover` to `object-contain` so non-square logos aren't cropped and upscaled.
+- Add `loading="eager"` and a subtle inner padding for favicon-style logos so they don't bleed to the rounded edge.
 
-Go with (a): inline the claim trigger into the hero row using the existing `BusinessClaimButton` styled to match the other hero pills, or wrap with the same dialog trigger.
-
-### 2. Section header for Details
-- In `BusinessDetail.tsx`, render a "Details" section header above `BusinessDetailsCard` matching the Gallery header style (small uppercase muted label with `Info` icon), so Details/Gallery line up visually at the top of their columns.
-- Remove the in-card "Details" header from `BusinessDetailsCard.tsx` (the row containing the `Info` icon + "Details" label). Keep card padding and contact rows unchanged.
-
-### 3. Remove the bottom verify panel
-- Delete the `{!business.is_verified && (...)}` panel added below the grid in `BusinessDetail.tsx`.
+`src/lib/businessIcon.ts`
+- In `getFaviconUrl`, request `sz=256` (cap input to 256) so Google returns the highest available resolution.
 
 ## Out of scope
-- Claim dialog behaviour, RPCs, opening hours card, gallery layout.
+- Business detail layout, claim button, details card.
