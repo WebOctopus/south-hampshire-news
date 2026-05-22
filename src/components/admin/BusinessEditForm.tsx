@@ -537,7 +537,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Settings className="h-4 w-4" /> Admin Settings
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex items-center justify-between">
                 <Label htmlFor="is_active">Active</Label>
                 <Switch
@@ -562,18 +562,95 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onCheckedChange={(checked) => handleChange('featured', checked)}
                 />
               </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="advertises_in_discover">Advertises in Discover</Label>
+                <Switch
+                  id="advertises_in_discover"
+                  checked={formData.advertises_in_discover}
+                  onCheckedChange={(checked) => handleChange('advertises_in_discover', checked)}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="owner_id">Owner User ID</Label>
-              <Input
-                id="owner_id"
-                value={formData.owner_id}
-                onChange={(e) => handleChange('owner_id', e.target.value)}
-                placeholder="Enter user UUID to assign ownership"
-              />
+              <Label>Listing Owner</Label>
+              {(() => {
+                const selected = owners.find((o) => o.user_id === formData.owner_id);
+                const label = selected
+                  ? `${selected.display_name || selected.email || 'Unnamed user'}${selected.email ? ` · ${selected.email}` : ''}`
+                  : 'No owner (unclaimed)';
+                return (
+                  <Popover open={ownerPickerOpen} onOpenChange={setOwnerPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={ownerPickerOpen}
+                        className="w-full justify-between font-normal"
+                      >
+                        <span className="truncate text-left">{label}</span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command
+                        filter={(value, search) => {
+                          if (!search) return 1;
+                          return value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
+                        }}
+                      >
+                        <CommandInput placeholder="Search by name, company, or email…" />
+                        <CommandList>
+                          <CommandEmpty>No users found.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value="no-owner-unclaimed"
+                              onSelect={() => {
+                                handleChange('owner_id', '');
+                                setOwnerPickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn('mr-2 h-4 w-4', !formData.owner_id ? 'opacity-100' : 'opacity-0')} />
+                              No owner (unclaimed)
+                            </CommandItem>
+                            {owners.map((o) => {
+                              const search = [o.display_name, o.email, o.company, o.user_id]
+                                .filter(Boolean)
+                                .join(' ');
+                              return (
+                                <CommandItem
+                                  key={o.user_id}
+                                  value={search}
+                                  onSelect={() => {
+                                    handleChange('owner_id', o.user_id);
+                                    setOwnerPickerOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      formData.owner_id === o.user_id ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="truncate">{o.display_name || o.email || 'Unnamed user'}</span>
+                                    <span className="text-xs text-muted-foreground truncate">
+                                      {[o.email, o.company].filter(Boolean).join(' · ')}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                );
+              })()}
               <p className="text-xs text-muted-foreground">
-                Leave empty for unclaimed businesses. Enter a user UUID to assign ownership.
+                Leave as "No owner (unclaimed)" if no business owner has been assigned yet. Assigning a user lets them edit this listing from their dashboard.
               </p>
             </div>
           </div>
