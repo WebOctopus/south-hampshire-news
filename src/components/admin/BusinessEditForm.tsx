@@ -10,7 +10,10 @@ import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/di
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, MapPin, Phone, Globe, Settings, Share2, Image as ImageIcon, Clock } from 'lucide-react';
+import { Building2, MapPin, Phone, Globe, Settings, Share2, Image as ImageIcon, Clock, Check, ChevronsUpDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
@@ -28,6 +31,8 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const [categories, setCategories] = useState<any[]>([]);
   const { uploadImage, isUploading } = useBusinessImageUpload();
   const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(business?.id || null);
+  const [owners, setOwners] = useState<Array<{ user_id: string; display_name: string | null; company: string | null; email: string | null }>>([]);
+  const [ownerPickerOpen, setOwnerPickerOpen] = useState(false);
   
   const isCreateMode = !business?.id;
 
