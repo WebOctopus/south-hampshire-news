@@ -5,7 +5,6 @@ import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { BusinessClaimButton } from '@/components/BusinessClaimButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { BusinessDetailHero } from '@/components/directory/BusinessDetailHero';
 import { MeetTheOwnerCard } from '@/components/directory/MeetTheOwnerCard';
