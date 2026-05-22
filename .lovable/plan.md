@@ -1,17 +1,5 @@
-# Sharpen the business hero logo
+# Double the hero logo tile size
 
-## Cause
-On the business detail hero, the icon tile renders a favicon-fallback image. We request it from Google at `size * 2` (160px for the 80px hero tile) and display it with `object-cover`, which crops/upscales a small bitmap and looks blurry.
+Change `BusinessDetailHero.tsx` so the `BusinessIcon` size prop goes from `80` to `160` (double). Keep the rounded-2xl tile styling and existing layout — the hero row already flex-wraps, so the larger logo will sit beside the heading on desktop and stack above on mobile.
 
-## Changes
-
-`src/components/directory/BusinessIcon.tsx`
-- Request a higher-resolution source: clamp the requested favicon/logo size to at least 256px (Google's largest reliable size) regardless of the displayed `size` prop, so the bitmap is downscaled rather than upscaled.
-- Switch the `<img>` from `object-cover` to `object-contain` so non-square logos aren't cropped and upscaled.
-- Add `loading="eager"` and a subtle inner padding for favicon-style logos so they don't bleed to the rounded edge.
-
-`src/lib/businessIcon.ts`
-- In `getFaviconUrl`, request `sz=256` (cap input to 256) so Google returns the highest available resolution.
-
-## Out of scope
-- Business detail layout, claim button, details card.
+No other components change. `BusinessIcon` already requests a 256px favicon and uses `object-contain`, so it will render crisply at the larger size.
