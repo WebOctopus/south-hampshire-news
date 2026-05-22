@@ -1,23 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { VerifiedBusinessCard, type VerifiedBusiness } from './VerifiedBusinessCard';
 
-export function VerifiedBusinessesRow() {
+interface Props {
+  searchTerm?: string;
+  categoryId?: string;
+  editionArea?: string;
+  tag?: string;
+}
+
+export function VerifiedBusinessesRow({ searchTerm, categoryId, editionArea, tag }: Props = {}) {
   const [items, setItems] = useState<VerifiedBusiness[]>([]);
   const [loading, setLoading] = useState(true);
+  const reqIdRef = useRef(0);
 
   useEffect(() => {
-    let cancelled = false;
+    const thisReq = ++reqIdRef.current;
+    setLoading(true);
     (async () => {
-      const { data, error } = await supabase.rpc('get_verified_businesses', { limit_count: 6 });
-      if (cancelled) return;
+      const { data, error } = await supabase.rpc('get_verified_businesses', {
+        limit_count: 6,
+        search_term: searchTerm?.trim() ? searchTerm.trim() : null,
+        category_filter: categoryId || null,
+        edition_area_filter: editionArea || null,
+        tag_filter: tag || null,
+      });
+      if (thisReq !== reqIdRef.current) return;
       if (!error && data) setItems(data as any);
+      else if (!error) setItems([]);
       setLoading(false);
     })();
-    return () => { cancelled = true; };
-  }, []);
+  }, [searchTerm, categoryId, editionArea, tag]);
 
   if (!loading && items.length === 0) return null;
 
