@@ -220,8 +220,12 @@ const BusinessDirectory = () => {
   // Recompute which sector pills are valid for the current search + location.
   // When the user hasn't typed a search, show every pill.
   useEffect(() => {
-    const term = searchTerm.trim();
-    if (!term || selectedLocation === 'all') {
+    if (!hasSearched || selectedLocation === 'all') {
+      setAvailableCategoryIds(null);
+      return;
+    }
+    const term = committedSearch.trim();
+    if (!term) {
       setAvailableCategoryIds(null);
       return;
     }
@@ -248,7 +252,47 @@ const BusinessDirectory = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [searchTerm, selectedLocation, selectedCategory]);
+  }, [committedSearch, hasSearched, selectedLocation, selectedCategory]);
+
+  // Predictive suggestions (debounced)
+  useEffect(() => {
+    const term = debouncedSearch.trim();
+    if (term.length < 2) {
+      setSuggestions([]);
+      setSuggestionsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setSuggestionsLoading(true);
+    (async () => {
+      const { data, error } = await supabase.rpc('search_businesses_suggest', {
+        search_term: term,
+        edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
+        limit_count: 8,
+      });
+      if (cancelled) return;
+      if (error) {
+        console.error('Error fetching suggestions:', error);
+        setSuggestions([]);
+      } else {
+        setSuggestions((data || []) as Suggestion[]);
+      }
+      setSuggestionsLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [debouncedSearch, selectedLocation]);
+
+  const commitSearch = useCallback(() => {
+    setCommittedSearch(searchTerm);
+    setHasSearched(true);
+    setCurrentPage(1);
+    setSuggestionsOpen(false);
+  }, [searchTerm]);
+
+  const handleSuggestionPick = useCallback((s: Suggestion) => {
+    setSuggestionsOpen(false);
+    navigate(`/business-directory/${s.slug || s.id}`);
+  }, [navigate]);
 
   // Handle #add hash in URL
   useEffect(() => {
