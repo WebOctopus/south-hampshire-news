@@ -75,11 +75,22 @@ export function VerifiedBusinessCard({ business }: { business: VerifiedBusiness 
 
       {/* Footer */}
       <div className="px-5 py-4 border-t flex items-center justify-between">
-        {business.business_categories?.name ? (
-          <Badge variant="outline" className="rounded-full">
-            {business.business_categories.name}
-          </Badge>
-        ) : <span />}
+        <div className="flex items-center gap-2 min-w-0">
+          {business.advertises_in_discover && (
+            <img
+              src="/favicon.svg"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/favicon.png'; }}
+              title="Advertises in Discover"
+              alt="Advertises in Discover"
+              className="w-5 h-5 object-contain flex-shrink-0"
+            />
+          )}
+          {business.business_categories?.name && (
+            <Badge variant="outline" className="rounded-full">
+              {business.business_categories.name}
+            </Badge>
+          )}
+        </div>
         <span className="inline-flex items-center gap-1 text-sm text-orange-600 font-medium group-hover:gap-2 transition-all">
           View <ArrowRight className="h-4 w-4" />
         </span>
