@@ -13,6 +13,8 @@ import { SectorPills } from '@/components/directory/SectorPills';
 import { LocationPillsGrid } from '@/components/directory/LocationPillsGrid';
 import { VerifiedBusinessesRow } from '@/components/directory/VerifiedBusinessesRow';
 import { RecentlyAddedRow } from '@/components/directory/RecentlyAddedRow';
+import type { Suggestion } from '@/components/directory/SearchSuggestions';
+import { useDebounce } from '@/hooks/useDebounce';
 // Helper to clean area names (remove "Area X - " prefix)
 const cleanAreaName = (areaName: string): string => {
   return areaName.replace(/^Area \d+\s*-\s*/, '').trim();
@@ -63,6 +65,12 @@ const BusinessDirectory = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [committedSearch, setCommittedSearch] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const debouncedSearch = useDebounce(searchTerm, 250);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [selectedTag, setSelectedTag] = useState<string>('all');
@@ -120,7 +128,7 @@ const BusinessDirectory = () => {
   const fetchTotalCount = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_public_businesses_count', {
       category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-      search_term: searchTerm || null,
+      search_term: committedSearch || null,
       edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
       tag_filter: selectedTag !== 'all' ? selectedTag : null,
     });
@@ -131,7 +139,7 @@ const BusinessDirectory = () => {
     }
 
     return data || 0;
-  }, [searchTerm, selectedCategory, selectedLocation, selectedTag]);
+  }, [committedSearch, selectedCategory, selectedLocation, selectedTag]);
 
   const fetchBusinesses = useCallback(async () => {
     // Increment request ID to track this specific request
@@ -148,7 +156,7 @@ const BusinessDirectory = () => {
         fetchTotalCount(),
         supabase.rpc('get_public_businesses', {
           category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-          search_term: searchTerm || null,
+          search_term: committedSearch || null,
           limit_count: ITEMS_PER_PAGE,
           offset_count: (currentPage - 1) * ITEMS_PER_PAGE,
           edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
@@ -190,7 +198,7 @@ const BusinessDirectory = () => {
         setLoading(false);
       }
     }
-  }, [searchTerm, selectedCategory, selectedLocation, selectedTag, currentPage, fetchTotalCount]);
+  }, [committedSearch, selectedCategory, selectedLocation, selectedTag, currentPage, fetchTotalCount]);
 
   useEffect(() => {
     fetchCategories();
