@@ -2395,43 +2395,94 @@ export type Database = {
         }
         Returns: number
       }
-      get_recently_added_businesses: {
-        Args: { limit_count?: number }
-        Returns: {
-          address_line1: string
-          address_line2: string
-          biz_type: string
-          business_categories: Json
-          category_id: string
-          city: string
-          id: string
-          is_verified: boolean
-          logo_url: string
-          name: string
-          postcode: string
-          slug: string
-          website: string
-        }[]
-      }
-      get_verified_businesses: {
-        Args: { limit_count?: number }
-        Returns: {
-          address_line1: string
-          address_line2: string
-          advertises_in_discover: boolean
-          biz_type: string
-          business_categories: Json
-          category_id: string
-          city: string
-          id: string
-          is_verified: boolean
-          logo_url: string
-          name: string
-          postcode: string
-          slug: string
-          website: string
-        }[]
-      }
+      get_recently_added_businesses:
+        | {
+            Args: { limit_count?: number }
+            Returns: {
+              address_line1: string
+              address_line2: string
+              biz_type: string
+              business_categories: Json
+              category_id: string
+              city: string
+              id: string
+              is_verified: boolean
+              logo_url: string
+              name: string
+              postcode: string
+              slug: string
+              website: string
+            }[]
+          }
+        | {
+            Args: {
+              category_filter?: string
+              edition_area_filter?: string
+              limit_count?: number
+              search_term?: string
+              tag_filter?: string
+            }
+            Returns: {
+              address_line1: string
+              address_line2: string
+              biz_type: string
+              business_categories: Json
+              category_id: string
+              city: string
+              id: string
+              is_verified: boolean
+              logo_url: string
+              name: string
+              postcode: string
+              slug: string
+              website: string
+            }[]
+          }
+      get_verified_businesses:
+        | {
+            Args: { limit_count?: number }
+            Returns: {
+              address_line1: string
+              address_line2: string
+              advertises_in_discover: boolean
+              biz_type: string
+              business_categories: Json
+              category_id: string
+              city: string
+              id: string
+              is_verified: boolean
+              logo_url: string
+              name: string
+              postcode: string
+              slug: string
+              website: string
+            }[]
+          }
+        | {
+            Args: {
+              category_filter?: string
+              edition_area_filter?: string
+              limit_count?: number
+              search_term?: string
+              tag_filter?: string
+            }
+            Returns: {
+              address_line1: string
+              address_line2: string
+              advertises_in_discover: boolean
+              biz_type: string
+              business_categories: Json
+              category_id: string
+              city: string
+              id: string
+              is_verified: boolean
+              logo_url: string
+              name: string
+              postcode: string
+              slug: string
+              website: string
+            }[]
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
