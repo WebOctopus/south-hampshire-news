@@ -44,7 +44,7 @@ export function BusinessDetailHero({ business }: Props) {
       <div className="relative max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-10 flex flex-col md:flex-row gap-5 md:gap-6 items-start md:items-center">
         <BusinessIcon
           business={business}
-          size={80}
+          size={160}
           className="bg-white/15 border-white/25 rounded-2xl"
         />
         <div className="flex-1 min-w-0">
