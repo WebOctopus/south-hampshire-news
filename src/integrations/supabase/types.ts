@@ -2419,6 +2419,15 @@ export type Database = {
           website: string
         }[]
       }
+      get_users_for_owner_assignment: {
+        Args: never
+        Returns: {
+          company: string
+          display_name: string
+          email: string
+          user_id: string
+        }[]
+      }
       get_verified_businesses: {
         Args: {
           category_filter?: string
