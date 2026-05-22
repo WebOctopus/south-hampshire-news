@@ -12,10 +12,14 @@ interface Props {
   categories: Category[];
   selected: string;
   onSelect: (id: string) => void;
+  availableIds?: Set<string> | null;
 }
 
-export function SectorPills({ categories, selected, onSelect }: Props) {
+export function SectorPills({ categories, selected, onSelect, availableIds }: Props) {
   if (!categories.length) return null;
+  const visible = availableIds
+    ? categories.filter((c) => availableIds.has(c.id))
+    : categories;
   return (
     <div className="flex flex-wrap gap-2 justify-center">
       <button
@@ -30,7 +34,7 @@ export function SectorPills({ categories, selected, onSelect }: Props) {
       >
         All sectors
       </button>
-      {categories.map((cat) => {
+      {visible.map((cat) => {
         const Icon = iconMap[cat.icon || ''] || Building2;
         const active = selected === cat.id;
         return (
