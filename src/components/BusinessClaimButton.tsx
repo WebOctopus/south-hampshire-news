@@ -13,9 +13,21 @@ interface BusinessClaimButtonProps {
   businessId: string;
   businessName: string;
   ownerId: string | null;
+  triggerClassName?: string;
+  triggerLabel?: string;
+  triggerIcon?: React.ReactNode;
+  hideWhenPending?: boolean;
 }
 
-export function BusinessClaimButton({ businessId, businessName, ownerId }: BusinessClaimButtonProps) {
+export function BusinessClaimButton({
+  businessId,
+  businessName,
+  ownerId,
+  triggerClassName,
+  triggerLabel,
+  triggerIcon,
+  hideWhenPending,
+}: BusinessClaimButtonProps) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -63,16 +75,24 @@ export function BusinessClaimButton({ businessId, businessName, ownerId }: Busin
   if (!userId) {
     return (
       <Link to="/auth">
-        <Button variant="outline" className="w-full">
-          <Building2 className="h-4 w-4 mr-2" />
-          Sign in to claim this business
-        </Button>
+        {triggerClassName ? (
+          <button type="button" className={triggerClassName}>
+            {triggerIcon ?? <Building2 className="h-3.5 w-3.5" />}
+            {triggerLabel ?? 'Sign in to claim'}
+          </button>
+        ) : (
+          <Button variant="outline" className="w-full">
+            <Building2 className="h-4 w-4 mr-2" />
+            Sign in to claim this business
+          </Button>
+        )}
       </Link>
     );
   }
 
   // User already has a claim
   if (existingClaim) {
+    if (hideWhenPending) return null;
     const statusIcon = existingClaim.status === 'pending' 
       ? <Clock className="h-4 w-4 mr-2 text-yellow-600" />
       : existingClaim.status === 'approved'
@@ -135,10 +155,17 @@ export function BusinessClaimButton({ businessId, businessName, ownerId }: Busin
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
-          <Building2 className="h-4 w-4 mr-2" />
-          Claim This Business
-        </Button>
+        {triggerClassName ? (
+          <button type="button" className={triggerClassName}>
+            {triggerIcon ?? <Building2 className="h-3.5 w-3.5" />}
+            {triggerLabel ?? 'Claim This Business'}
+          </button>
+        ) : (
+          <Button variant="outline" className="w-full">
+            <Building2 className="h-4 w-4 mr-2" />
+            Claim This Business
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
