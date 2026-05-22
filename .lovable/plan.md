@@ -1,15 +1,16 @@
-# Add Discover favicon to verified business cards
+# Make Discover favicon more visible on verified business cards
 
-Replace the small green "D" circle badge on `VerifiedBusinessCard` with the Discover site favicon (`/favicon.svg`, falling back to `/favicon.png`) so it visually represents that the business advertises in Discover.
+The favicon was already added under the logo on `VerifiedBusinessCard`, but it only renders when `advertises_in_discover` is true — so on cards where that flag is false it doesn't appear. The user wants it more prominently shown on cards in the "Verified businesses" row to indicate the business advertises in Discover.
 
 ## Changes
 
-- `src/components/directory/VerifiedBusinessCard.tsx`
-  - When `business.advertises_in_discover` is true, render an `<img src="/favicon.svg">` (≈28px, rounded) below the business logo in place of the current "D" letter badge.
-  - Keep the existing tooltip text ("Advertises in Discover") via the `title` attribute and `alt` text for accessibility.
-  - Preserve current layout (centered under the logo) so card structure is unchanged.
+`src/components/directory/VerifiedBusinessCard.tsx`
 
-No other components or business logic touched.
+- Keep the existing favicon under the business logo (top-left of the card).
+- Additionally, in the footer row (where the category tag sits), render the Discover favicon (≈18px) immediately before the category tag when `advertises_in_discover` is true, with tooltip/alt "Advertises in Discover".
+- No styling changes elsewhere; the footer remains a flex row with the favicon + tag on the left and the "View" link on the right.
+
+Only `advertises_in_discover === true` triggers the icon — businesses that don't advertise in Discover won't show it.
 # Double the hero logo tile size
 
 Change `BusinessDetailHero.tsx` so the `BusinessIcon` size prop goes from `80` to `160` (double). Keep the rounded-2xl tile styling and existing layout — the hero row already flex-wraps, so the larger logo will sit beside the heading on desktop and stack above on mobile.
