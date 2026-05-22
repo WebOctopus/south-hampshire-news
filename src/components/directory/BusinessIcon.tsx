@@ -17,7 +17,7 @@ interface Props {
 
 export function BusinessIcon({ business, size = 64, className }: Props) {
   const [failed, setFailed] = useState(false);
-  const src = failed ? null : getBusinessIconUrl(business, size * 2);
+  const src = failed ? null : getBusinessIconUrl(business, Math.max(size * 2, 256));
   const SectorIcon = iconMap[business?.business_categories?.icon || ''] || Building2;
 
   return (
@@ -33,7 +33,8 @@ export function BusinessIcon({ business, size = 64, className }: Props) {
           src={src}
           alt={business?.name ? `${business.name} logo` : 'Business logo'}
           onError={() => setFailed(true)}
-          className="w-full h-full object-cover"
+          loading="eager"
+          className="w-full h-full object-contain p-1"
         />
       ) : (
         <SectorIcon className="w-1/2 h-1/2 text-muted-foreground" strokeWidth={1.5} />
