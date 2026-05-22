@@ -1,3 +1,26 @@
+# Make Location dropdown type-searchable
+
+Replace the native `Select` in `DirectoryHero.tsx` with a searchable combobox (Popover + Command from shadcn) so the user can type to filter locations, matching the behaviour of the business-owner dropdown added earlier.
+
+## UX
+
+- Same trigger styling as today: white pill, map-pin icon, "Your location" placeholder, chevron.
+- Clicking opens a popover containing a `Command` with:
+  - `CommandInput` placeholder: "Search location or postcode..."
+  - `CommandEmpty`: "No matching area."
+  - `CommandGroup` listing every option (including "Your location" reset row).
+- Each item shows `cleanAreaName(loc)`. The searchable value combines the cleaned name **and** the raw string so typing a postcode (e.g. "SO31") still matches.
+- Selecting an item closes the popover and calls `onLocationChange(loc)`.
+- Width and height unchanged (`w-full md:w-64 h-14`), keyboard navigation works via Command.
+
+## Technical details
+
+- File: `src/components/directory/DirectoryHero.tsx` only. No prop changes — parent still passes `locations`, `selectedLocation`, `onLocationChange`, `cleanAreaName`.
+- Use existing `@/components/ui/popover` and `@/components/ui/command` primitives (already in project).
+- Local state: `const [open, setOpen] = useState(false)`.
+- Trigger button mirrors current select styling; show selected label or "Your location".
+- Items use `value={`${cleanAreaName(loc)} ${loc}`}` so Command's built-in fuzzy filter matches both display name and postcode tokens.
+- No DB, RPC, or other component changes.
 # Filter Verified + Recently Added rows by search criteria
 
 Make the "Verified businesses" and "Recently added" rows on `/business-directory` respect the current search term, sector, location, and tag — so they show only matching businesses (or nothing if no matches).
