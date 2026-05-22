@@ -340,8 +340,18 @@ const BusinessDirectory = () => {
         </section>
 
         {/* Always-visible curated rows */}
-        <VerifiedBusinessesRow />
-        <RecentlyAddedRow />
+        <VerifiedBusinessesRow
+          searchTerm={searchTerm}
+          categoryId={selectedCategory !== 'all' ? selectedCategory : undefined}
+          editionArea={selectedLocation !== 'all' ? selectedLocation : undefined}
+          tag={selectedTag !== 'all' ? selectedTag : undefined}
+        />
+        <RecentlyAddedRow
+          searchTerm={searchTerm}
+          categoryId={selectedCategory !== 'all' ? selectedCategory : undefined}
+          editionArea={selectedLocation !== 'all' ? selectedLocation : undefined}
+          tag={selectedTag !== 'all' ? selectedTag : undefined}
+        />
 
         {/* Full results grid (location-gated) */}
         <section id="all-results" className="py-8 md:py-16 border-t">
