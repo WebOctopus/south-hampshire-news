@@ -569,7 +569,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Settings className="h-4 w-4" /> Admin Settings
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="is_active">Active</Label>
                 <Switch
@@ -594,18 +594,96 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onCheckedChange={(checked) => handleChange('featured', checked)}
                 />
               </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="advertises_in_discover">Advertises in Discover</Label>
+                <Switch
+                  id="advertises_in_discover"
+                  checked={formData.advertises_in_discover}
+                  onCheckedChange={(checked) => handleChange('advertises_in_discover', checked)}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="owner_id">Owner User ID</Label>
-              <Input
-                id="owner_id"
-                value={formData.owner_id}
-                onChange={(e) => handleChange('owner_id', e.target.value)}
-                placeholder="Enter user UUID to assign ownership"
-              />
+              <Label>Owner</Label>
+              <div className="flex gap-2">
+                <Popover open={ownerPopoverOpen} onOpenChange={setOwnerPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      className="flex-1 justify-between font-normal"
+                    >
+                      <span className="truncate text-left">
+                        {selectedOwner
+                          ? ownerLabel(selectedOwner)
+                          : formData.owner_id
+                            ? formData.owner_id
+                            : 'Unassigned — search to assign an owner'}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command
+                      filter={(value, search) =>
+                        value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+                      }
+                    >
+                      <CommandInput placeholder="Search by name, company or email..." />
+                      <CommandList>
+                        <CommandEmpty>No users found.</CommandEmpty>
+                        <CommandGroup>
+                          {users.map((u) => {
+                            const value = `${u.display_name} ${u.company} ${u.email}`.trim();
+                            return (
+                              <CommandItem
+                                key={u.id}
+                                value={value}
+                                onSelect={() => {
+                                  handleChange('owner_id', u.id);
+                                  setOwnerPopoverOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    formData.owner_id === u.id ? 'opacity-100' : 'opacity-0'
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span className="text-sm">
+                                    {u.display_name || u.company || '(no name)'}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {[u.company && u.display_name ? u.company : '', u.email]
+                                      .filter(Boolean)
+                                      .join(' · ')}
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {formData.owner_id && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleChange('owner_id', '')}
+                    title="Clear owner"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Leave empty for unclaimed businesses. Enter a user UUID to assign ownership.
+                Leave empty for unclaimed businesses. Assigning an owner lets that user edit this listing.
               </p>
             </div>
           </div>
