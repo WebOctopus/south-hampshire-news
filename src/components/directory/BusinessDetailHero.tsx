@@ -1,9 +1,11 @@
-import { Phone, Globe, Mail, MapPin, CheckCircle2, Sparkles } from 'lucide-react';
+import { Phone, Globe, Mail, MapPin, CheckCircle2, Sparkles, ShieldCheck } from 'lucide-react';
 import { BusinessIcon } from './BusinessIcon';
 import { formatAddress } from '@/lib/businessIcon';
+import { BusinessClaimButton } from '@/components/BusinessClaimButton';
 
 interface Props {
   business: {
+    id: string;
     name: string;
     phone?: string | null;
     email?: string | null;
@@ -16,6 +18,7 @@ interface Props {
     is_verified?: boolean | null;
     advertises_in_discover?: boolean | null;
     description?: string | null;
+    owner_id?: string | null;
     business_categories?: { icon?: string | null; name?: string | null } | null;
   };
 }
@@ -104,6 +107,17 @@ export function BusinessDetailHero({ business }: Props) {
               >
                 <MapPin className="h-3.5 w-3.5" /> Directions
               </a>
+            )}
+            {!business.is_verified && (
+              <BusinessClaimButton
+                businessId={business.id}
+                businessName={business.name}
+                ownerId={business.owner_id ?? null}
+                hideWhenPending
+                triggerLabel="Apply to verify"
+                triggerIcon={<ShieldCheck className="h-3.5 w-3.5" />}
+                triggerClassName="inline-flex items-center gap-1.5 bg-white text-community-teal hover:bg-white/90 text-xs font-medium px-4 py-2 rounded-lg transition-colors border border-white"
+              />
             )}
           </div>
         </div>
