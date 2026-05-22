@@ -13,8 +13,6 @@ import { SectorPills } from '@/components/directory/SectorPills';
 import { LocationPillsGrid } from '@/components/directory/LocationPillsGrid';
 import { VerifiedBusinessesRow } from '@/components/directory/VerifiedBusinessesRow';
 import { RecentlyAddedRow } from '@/components/directory/RecentlyAddedRow';
-import type { Suggestion } from '@/components/directory/SearchSuggestions';
-import { useDebounce } from '@/hooks/useDebounce';
 // Helper to clean area names (remove "Area X - " prefix)
 const cleanAreaName = (areaName: string): string => {
   return areaName.replace(/^Area \d+\s*-\s*/, '').trim();
@@ -65,12 +63,6 @@ const BusinessDirectory = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [committedSearch, setCommittedSearch] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const debouncedSearch = useDebounce(searchTerm, 250);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [selectedTag, setSelectedTag] = useState<string>('all');
@@ -128,7 +120,7 @@ const BusinessDirectory = () => {
   const fetchTotalCount = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_public_businesses_count', {
       category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-      search_term: committedSearch || null,
+      search_term: searchTerm || null,
       edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
       tag_filter: selectedTag !== 'all' ? selectedTag : null,
     });
@@ -139,7 +131,7 @@ const BusinessDirectory = () => {
     }
 
     return data || 0;
-  }, [committedSearch, selectedCategory, selectedLocation, selectedTag]);
+  }, [searchTerm, selectedCategory, selectedLocation, selectedTag]);
 
   const fetchBusinesses = useCallback(async () => {
     // Increment request ID to track this specific request
@@ -156,7 +148,7 @@ const BusinessDirectory = () => {
         fetchTotalCount(),
         supabase.rpc('get_public_businesses', {
           category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-          search_term: committedSearch || null,
+          search_term: searchTerm || null,
           limit_count: ITEMS_PER_PAGE,
           offset_count: (currentPage - 1) * ITEMS_PER_PAGE,
           edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
@@ -198,7 +190,7 @@ const BusinessDirectory = () => {
         setLoading(false);
       }
     }
-  }, [committedSearch, selectedCategory, selectedLocation, selectedTag, currentPage, fetchTotalCount]);
+  }, [searchTerm, selectedCategory, selectedLocation, selectedTag, currentPage, fetchTotalCount]);
 
   useEffect(() => {
     fetchCategories();
@@ -220,12 +212,8 @@ const BusinessDirectory = () => {
   // Recompute which sector pills are valid for the current search + location.
   // When the user hasn't typed a search, show every pill.
   useEffect(() => {
-    if (!hasSearched || selectedLocation === 'all') {
-      setAvailableCategoryIds(null);
-      return;
-    }
-    const term = committedSearch.trim();
-    if (!term) {
+    const term = searchTerm.trim();
+    if (!term || selectedLocation === 'all') {
       setAvailableCategoryIds(null);
       return;
     }
@@ -252,47 +240,7 @@ const BusinessDirectory = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [committedSearch, hasSearched, selectedLocation, selectedCategory]);
-
-  // Predictive suggestions (debounced)
-  useEffect(() => {
-    const term = debouncedSearch.trim();
-    if (term.length < 2) {
-      setSuggestions([]);
-      setSuggestionsLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setSuggestionsLoading(true);
-    (async () => {
-      const { data, error } = await supabase.rpc('search_businesses_suggest', {
-        search_term: term,
-        edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
-        limit_count: 8,
-      });
-      if (cancelled) return;
-      if (error) {
-        console.error('Error fetching suggestions:', error);
-        setSuggestions([]);
-      } else {
-        setSuggestions((data || []) as Suggestion[]);
-      }
-      setSuggestionsLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [debouncedSearch, selectedLocation]);
-
-  const commitSearch = useCallback(() => {
-    setCommittedSearch(searchTerm);
-    setHasSearched(true);
-    setCurrentPage(1);
-    setSuggestionsOpen(false);
-  }, [searchTerm]);
-
-  const handleSuggestionPick = useCallback((s: Suggestion) => {
-    setSuggestionsOpen(false);
-    navigate(`/business-directory/${s.slug || s.id}`);
-  }, [navigate]);
+  }, [searchTerm, selectedLocation, selectedCategory]);
 
   // Handle #add hash in URL
   useEffect(() => {
@@ -365,42 +313,27 @@ const BusinessDirectory = () => {
       <main>
         <DirectoryHero
           searchTerm={searchTerm}
-          onSearchChange={(v) => { setSearchTerm(v); setSuggestionsOpen(true); }}
+          onSearchChange={(v) => { setSearchTerm(v); setCurrentPage(1); }}
           selectedLocation={selectedLocation}
-          onLocationChange={(v) => {
-            setSelectedLocation(v);
-            setCurrentPage(1);
-            if (v === 'all') setHasSearched(false);
-          }}
+          onLocationChange={(v) => { setSelectedLocation(v); setCurrentPage(1); }}
           locations={locations}
           cleanAreaName={cleanAreaName}
-          onSearch={commitSearch}
-          suggestions={suggestions}
-          suggestionsLoading={suggestionsLoading}
-          suggestionsOpen={suggestionsOpen}
-          onSuggestionsOpenChange={setSuggestionsOpen}
-          onSuggestionPick={handleSuggestionPick}
+          onSearch={() => { setCurrentPage(1); }}
         />
 
         {/* Sector + location pill rows */}
         <section className="py-8 md:py-10 border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            {selectedLocation !== 'all' && hasSearched && (
-              <SectorPills
-                categories={categories}
-                selected={selectedCategory}
-                onSelect={(id) => { setSelectedCategory(id); setCurrentPage(1); }}
-                availableIds={availableCategoryIds}
-              />
-            )}
+            <SectorPills
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={(id) => { setSelectedCategory(id); setCurrentPage(1); }}
+              availableIds={availableCategoryIds}
+            />
             <LocationPillsGrid
               locations={locations}
               selected={selectedLocation}
-              onSelect={(loc) => {
-                setSelectedLocation(loc);
-                setCurrentPage(1);
-                if (loc === 'all') setHasSearched(false);
-              }}
+              onSelect={(loc) => { setSelectedLocation(loc); setCurrentPage(1); }}
               cleanAreaName={cleanAreaName}
             />
           </div>

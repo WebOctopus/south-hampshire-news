@@ -2440,20 +2440,6 @@ export type Database = {
         Returns: boolean
       }
       is_advertiser_active: { Args: { _user_id: string }; Returns: boolean }
-      search_businesses_suggest: {
-        Args: {
-          edition_area_filter?: string
-          limit_count?: number
-          search_term: string
-        }
-        Returns: {
-          city: string
-          id: string
-          name: string
-          sector: string
-          slug: string
-        }[]
-      }
       slugify_text: { Args: { input_text: string }; Returns: string }
       validate_booking_access: {
         Args: { booking_user_id: string }
