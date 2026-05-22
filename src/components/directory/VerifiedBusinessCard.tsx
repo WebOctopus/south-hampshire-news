@@ -34,12 +34,13 @@ export function VerifiedBusinessCard({ business }: { business: VerifiedBusiness 
         <div className="flex flex-col items-center gap-2">
           <BusinessIcon business={business} size={64} />
           {business.advertises_in_discover && (
-            <span
+            <img
+              src="/favicon.svg"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/favicon.png'; }}
               title="Advertises in Discover"
-              className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-community-green/10 text-community-green text-[10px] font-bold"
-            >
-              D
-            </span>
+              alt="Advertises in Discover"
+              className="w-7 h-7 rounded-full object-contain"
+            />
           )}
         </div>
         <div className="flex-1 min-w-0">
