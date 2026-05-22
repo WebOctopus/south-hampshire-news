@@ -1,7 +1,17 @@
-import { MapPin, Search } from 'lucide-react';
+import { useState } from 'react';
+import { Check, ChevronDown, MapPin, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 interface Props {
   searchTerm: string;
@@ -17,6 +27,11 @@ export function DirectoryHero({
   searchTerm, onSearchChange, selectedLocation, onLocationChange,
   locations, cleanAreaName, onSearch,
 }: Props) {
+  const [locOpen, setLocOpen] = useState(false);
+  const selectedLabel =
+    selectedLocation && selectedLocation !== 'all'
+      ? cleanAreaName(selectedLocation)
+      : '';
   return (
     <section className="relative bg-community-navy text-white overflow-hidden">
       <div
@@ -54,20 +69,71 @@ export function DirectoryHero({
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
-          <Select value={selectedLocation} onValueChange={onLocationChange}>
-            <SelectTrigger className="w-full md:w-64 h-14 text-black bg-white border-0">
-              <div className="flex items-center gap-2">
-                <MapPin size={18} className="text-muted-foreground" />
-                <SelectValue placeholder="Your location" />
-              </div>
-            </SelectTrigger>
-            <SelectContent className="bg-white z-50">
-              <SelectItem value="all">Your location</SelectItem>
-              {locations.map((loc) => (
-                <SelectItem key={loc} value={loc}>{cleanAreaName(loc)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={locOpen} onOpenChange={setLocOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                role="combobox"
+                aria-expanded={locOpen}
+                className="w-full md:w-64 h-14 bg-white border-0 text-black hover:bg-white px-3 justify-between font-normal"
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <MapPin size={18} className="text-muted-foreground shrink-0" />
+                  <span className={cn('truncate', !selectedLabel && 'text-muted-foreground')}>
+                    {selectedLabel || 'Your location'}
+                  </span>
+                </span>
+                <ChevronDown size={18} className="text-muted-foreground shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[--radix-popover-trigger-width] p-0 bg-white z-50"
+              align="start"
+            >
+              <Command>
+                <CommandInput placeholder="Search area or postcode..." />
+                <CommandList>
+                  <CommandEmpty>No matching area.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="your location all"
+                      onSelect={() => {
+                        onLocationChange('all');
+                        setLocOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          selectedLocation === 'all' || !selectedLocation ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
+                      Your location
+                    </CommandItem>
+                    {locations.map((loc) => (
+                      <CommandItem
+                        key={loc}
+                        value={`${cleanAreaName(loc)} ${loc}`}
+                        onSelect={() => {
+                          onLocationChange(loc);
+                          setLocOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            selectedLocation === loc ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                        {cleanAreaName(loc)}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <Button type="submit" size="lg" className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white">
             <Search className="h-5 w-5 mr-2" /> Search
           </Button>
