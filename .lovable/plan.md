@@ -1,4 +1,33 @@
-# Improve advertiser flag and owner assignment in admin Edit form
+# Filter Verified + Recently Added rows by search criteria
+
+Make the "Verified businesses" and "Recently added" rows on `/business-directory` respect the current search term, sector, location, and tag — so they show only matching businesses (or nothing if no matches).
+
+## Database
+
+Update two `SECURITY DEFINER` RPCs to accept the same filter parameters used by `get_public_businesses` (all optional, defaulting to NULL so existing callers still work):
+
+- `get_verified_businesses(limit_count, search_term, category_filter, edition_area_filter, tag_filter)`
+- `get_recently_added_businesses(limit_count, search_term, category_filter, edition_area_filter, tag_filter)`
+
+Filtering logic mirrors `get_public_businesses`:
+- `search_term`: case-insensitive match on name / description / city / postcode / keywords.
+- `category_filter` (uuid): exact `category_id`.
+- `edition_area_filter` (text): exact `edition_area`.
+- `tag_filter` (text): exact `tag`.
+
+`get_verified_businesses` keeps its existing `is_verified = true` constraint and `featured DESC, updated_at DESC` ordering. `get_recently_added_businesses` keeps `is_verified = false` and `created_at DESC` ordering.
+
+## Frontend
+
+- `VerifiedBusinessesRow.tsx` and `RecentlyAddedRow.tsx`
+  - Accept new props: `searchTerm`, `categoryId`, `editionArea`, `tag`.
+  - Re-fetch (with a stale-request guard) whenever those props change, passing them through to the RPCs.
+  - Hide the section entirely when the filtered result is empty (already the behaviour — keep it).
+
+- `src/pages/BusinessDirectory.tsx`
+  - Pass the current `searchTerm`, `selectedCategory`, `selectedLocation`, `selectedTag` (mapping `'all'` → `undefined`) into both row components.
+
+No other components change. The previous changes (advertiser toggle, owner dropdown, favicon placement) stay in place.
 
 Two improvements to `src/components/admin/BusinessEditForm.tsx` Admin Settings panel.
 
