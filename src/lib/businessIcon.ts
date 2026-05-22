@@ -7,7 +7,8 @@ export function getFaviconUrl(website?: string | null, size = 128): string | nul
     const url = website.startsWith('http') ? website : `https://${website}`;
     const host = new URL(url).hostname.replace(/^www\./, '');
     if (!host) return null;
-    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=${size}`;
+    const sz = Math.min(256, Math.max(size, 256));
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=${sz}`;
   } catch {
     return null;
   }
