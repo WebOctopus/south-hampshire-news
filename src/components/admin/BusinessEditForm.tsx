@@ -87,6 +87,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     is_active: business?.is_active ?? true,
     is_verified: business?.is_verified ?? false,
     featured: business?.featured ?? false,
+    advertises_in_discover: business?.advertises_in_discover ?? false,
     owner_id: business?.owner_id || '',
     // Social media
     facebook_url: business?.facebook_url || '',
@@ -107,6 +108,14 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
       if (data) setCategories(data);
     };
     loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const loadOwners = async () => {
+      const { data, error } = await supabase.rpc('get_users_for_owner_assignment');
+      if (!error && data) setOwners(data as any);
+    };
+    loadOwners();
   }, []);
 
   const handleChange = (field: string, value: any) => {
