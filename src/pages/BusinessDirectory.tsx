@@ -91,9 +91,20 @@ const BusinessDirectory = () => {
       return;
     }
     
-    const uniqueLocations = (data?.map((row: { edition_area: string }) => row.edition_area) || []) as string[];
-    uniqueLocations.sort((a, b) => cleanAreaName(a).localeCompare(cleanAreaName(b)));
-    setLocations(uniqueLocations);
+    const raw = (data?.map((row: { edition_area: string }) => row.edition_area) || []) as string[];
+    // De-duplicate locations that share the same "Area N" prefix so users
+    // don't see e.g. both "SO15-SO17" and "SO15,SO16,SO17" variants.
+    const seenPrefix = new Set<string>();
+    const deduped: string[] = [];
+    for (const loc of raw) {
+      const prefixMatch = loc.match(/^(Area\s*\d+)/i);
+      const key = prefixMatch ? prefixMatch[1].toLowerCase() : loc.toLowerCase();
+      if (seenPrefix.has(key)) continue;
+      seenPrefix.add(key);
+      deduped.push(loc);
+    }
+    deduped.sort((a, b) => cleanAreaName(a).localeCompare(cleanAreaName(b)));
+    setLocations(deduped);
   }, []);
 
   const fetchTags = useCallback(async () => {
