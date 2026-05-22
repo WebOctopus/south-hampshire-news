@@ -132,7 +132,7 @@ const BusinessDetail = () => {
 
       <main className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-8">
         <div className="relative">
-          <div className={!business.is_verified ? 'opacity-60 pointer-events-none select-none' : ''}>
+          <div>
             <div className="grid lg:grid-cols-3 gap-4 lg:gap-[18px]">
               {/* Left column (2/3) */}
               <div className="lg:col-span-2 space-y-[14px]">
@@ -197,7 +197,12 @@ const BusinessDetail = () => {
 
               {/* Right column (1/3) */}
               <div className="space-y-[14px]">
-                <BusinessDetailsCard business={business} />
+                <section>
+                  <h2 className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[1px] text-muted-foreground mb-3">
+                    <Info className="h-3.5 w-3.5 text-community-teal" /> Details
+                  </h2>
+                  <BusinessDetailsCard business={business} />
+                </section>
                 <OpeningHoursCard openingHours={business.opening_hours} />
               </div>
             </div>
@@ -205,24 +210,6 @@ const BusinessDetail = () => {
           </div>
 
         </div>
-
-        {!business.is_verified && (
-          <div className="mt-8 flex justify-center">
-            <div className="max-w-md w-full bg-card border-2 border-community-teal/40 rounded-2xl p-6 md:p-8 shadow-xl text-center">
-              <h3 className="font-heading text-xl md:text-2xl mb-2">
-                Apply to verify this business
-              </h3>
-              <p className="text-sm text-muted-foreground mb-5">
-                Claim and verify this listing to receive a <strong>£100 voucher code</strong> to advertise in Discover Magazine.
-              </p>
-              <BusinessClaimButton
-                businessId={business.id}
-                businessName={business.name}
-                ownerId={business.owner_id}
-              />
-            </div>
-          </div>
-        )}
 
         <Link
           to="/business-directory"
