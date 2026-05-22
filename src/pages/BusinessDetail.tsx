@@ -204,24 +204,25 @@ const BusinessDetail = () => {
 
           </div>
 
-          {!business.is_verified && (
-            <div className="absolute inset-0 flex items-start justify-center pt-12 z-10">
-              <div className="max-w-md w-full mx-4 bg-card border-2 border-community-teal/40 rounded-2xl p-6 md:p-8 shadow-xl text-center">
-                <h3 className="font-heading text-xl md:text-2xl mb-2">
-                  Apply to verify this business
-                </h3>
-                <p className="text-sm text-muted-foreground mb-5">
-                  Claim and verify this listing to receive a <strong>£100 voucher code</strong> to advertise in Discover Magazine.
-                </p>
-                <BusinessClaimButton
-                  businessId={business.id}
-                  businessName={business.name}
-                  ownerId={business.owner_id}
-                />
-              </div>
-            </div>
-          )}
         </div>
+
+        {!business.is_verified && (
+          <div className="mt-8 flex justify-center">
+            <div className="max-w-md w-full bg-card border-2 border-community-teal/40 rounded-2xl p-6 md:p-8 shadow-xl text-center">
+              <h3 className="font-heading text-xl md:text-2xl mb-2">
+                Apply to verify this business
+              </h3>
+              <p className="text-sm text-muted-foreground mb-5">
+                Claim and verify this listing to receive a <strong>£100 voucher code</strong> to advertise in Discover Magazine.
+              </p>
+              <BusinessClaimButton
+                businessId={business.id}
+                businessName={business.name}
+                ownerId={business.owner_id}
+              />
+            </div>
+          </div>
+        )}
 
         <Link
           to="/business-directory"
