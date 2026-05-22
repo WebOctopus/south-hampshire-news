@@ -11,6 +11,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Building2, MapPin, Phone, Globe, Settings, Share2, Image as ImageIcon, Clock } from 'lucide-react';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
@@ -28,6 +32,8 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const [categories, setCategories] = useState<any[]>([]);
   const { uploadImage, isUploading } = useBusinessImageUpload();
   const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(business?.id || null);
+  const [users, setUsers] = useState<Array<{ id: string; display_name: string; company: string; email: string }>>([]);
+  const [ownerPopoverOpen, setOwnerPopoverOpen] = useState(false);
   
   const isCreateMode = !business?.id;
 
@@ -82,6 +88,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     is_active: business?.is_active ?? true,
     is_verified: business?.is_verified ?? false,
     featured: business?.featured ?? false,
+    advertises_in_discover: business?.advertises_in_discover ?? false,
     owner_id: business?.owner_id || '',
     // Social media
     facebook_url: business?.facebook_url || '',
@@ -103,6 +110,45 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     };
     loadCategories();
   }, []);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, company')
+          .order('display_name', { ascending: true });
+
+        let emailMap: Record<string, string> = {};
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            const { data: emailData } = await supabase.functions.invoke('admin-manage-user', {
+              body: { action: 'list_users_with_email', user_id: 'all' },
+            });
+            if (emailData?.emailMap) emailMap = emailData.emailMap;
+          }
+        } catch (e) {
+          console.error('Failed to load user emails:', e);
+        }
+
+        const merged = (profiles || []).map((p: any) => ({
+          id: p.user_id,
+          display_name: p.display_name || '',
+          company: p.company || '',
+          email: emailMap[p.user_id] || '',
+        }));
+        setUsers(merged);
+      } catch (e) {
+        console.error('Failed to load users:', e);
+      }
+    };
+    loadUsers();
+  }, []);
+
+  const selectedOwner = users.find((u) => u.id === formData.owner_id);
+  const ownerLabel = (u: { display_name: string; company: string; email: string }) =>
+    [u.display_name || u.company || '(no name)', u.email].filter(Boolean).join(' — ');
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
