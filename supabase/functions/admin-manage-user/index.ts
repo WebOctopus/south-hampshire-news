@@ -267,12 +267,26 @@ Deno.serve(async (req) => {
         });
 
         if (createError) {
-          // Handle existing user gracefully when allow_existing_user is set
-          if (allowExistingUser && (createError as any).code === 'email_exists') {
-            // Look up existing user by email
-            const { data: listData, error: listError } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
-            if (listError) throw listError;
-            const existingUser = listData.users.find((u: any) => u.email === createEmail);
+          // Handle existing user gracefully when allow_existing_user is set.
+          // Supabase Auth returns this condition in several shapes depending on version:
+          //   - { code: 'email_exists' }
+          //   - { status: 422, message/msg: 'User already registered' | 'A user with this email...' }
+          const errAny = createError as any;
+          const errMsg = (errAny.message ?? errAny.msg ?? '') as string;
+          const isExistingUserError =
+            errAny.code === 'email_exists' ||
+            errAny.status === 422 ||
+            /already\s*(registered|exists)|user\s*(already|exists)/i.test(errMsg);
+
+          if (allowExistingUser && isExistingUserError) {
+            // Look up existing user by email — paginate as a safety net.
+            let existingUser: any = null;
+            for (let page = 1; page <= 5 && !existingUser; page++) {
+              const { data: listData, error: listError } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 });
+              if (listError) throw listError;
+              existingUser = listData.users.find((u: any) => (u.email || '').toLowerCase() === createEmail.toLowerCase());
+              if (!listData.users.length || listData.users.length < 1000) break;
+            }
             if (existingUser) {
               result = {
                 success: true,
