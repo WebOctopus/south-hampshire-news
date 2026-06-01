@@ -656,6 +656,19 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                 </div>
               </div>
 
+              {/* Artwork Design Fee — informational, invoiced separately */}
+              {designFeeToShow > 0 && (
+                <div className="mt-6 rounded-md border border-dashed border-muted-foreground/30 bg-muted/30 p-4 space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Artwork Design Fee</span>
+                    <span className="font-semibold">{formatPrice(designFeeToShow)} + VAT</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Invoiced separately by our team after booking — not added to the online total above.
+                  </p>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="mt-6 space-y-4">
                 <h4 className="font-semibold text-lg text-center">What to Do Next</h4>
