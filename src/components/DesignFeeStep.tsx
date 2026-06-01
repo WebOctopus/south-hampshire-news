@@ -123,7 +123,9 @@ export const DesignFeeStep: React.FC<DesignFeeStepProps> = ({
                         onSave={(value) => onContentSave?.('designFee.yesDescription', value)}
                         as="span"
                       />
-                      {' '}The design fee of {formatPrice(designFee)} + VAT will be added to your booking.
+                      {' '}Our design team will contact you after booking and
+                      invoice the {formatPrice(designFee)} + VAT artwork fee
+                      separately — it is not added to your online total.
                     </p>
                     {designFee > 0 && needsDesign && (
                       <div className="pt-3 mt-3 border-t">
@@ -133,6 +135,9 @@ export const DesignFeeStep: React.FC<DesignFeeStepProps> = ({
                             {formatPrice(designFee)} + VAT
                           </Badge>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Invoiced separately by our team — not charged via the website.
+                        </p>
                       </div>
                     )}
                     <div className="pt-2">
