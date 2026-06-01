@@ -169,14 +169,15 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     }
   };
 
-// Calculate pricing options based on admin-configured payment options
-// The baseTotal already includes the design fee in finalTotal
+// Calculate pricing options based on admin-configured payment options.
+// The baseTotal is the chargeable online amount and EXCLUDES the artwork
+// design fee — that fee is invoiced separately by the admin team.
 const baseTotal = pricingBreakdown?.finalTotal || 0;
 const cpmRate = pricingBreakdown?.cpm || 0;
 
-// Show design fee as add-on in breakdown while keeping total inclusive
+// Artwork design fee is informational only — shown alongside the basket but
+// never added to baseTotal / monthly amounts.
 const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (designFee || 0) : 0);
-const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (designFeeToShow > 0 ? Math.max(0, baseTotal - designFeeToShow) : baseTotal);
 
   const effectivePaidAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   const effectiveFreeAreas = pricingModel === 'bogof' ? bogofFreeAreas : [];
