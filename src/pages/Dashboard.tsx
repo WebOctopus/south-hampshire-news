@@ -82,6 +82,8 @@ const Dashboard = () => {
   
   const contentRef = useRef<HTMLDivElement>(null);
   const hasAppliedSmartDefault = useRef(false);
+  const quotesLoaded = useRef(false);
+  const bookingsLoaded = useRef(false);
   const hasExistingBusiness = businesses.length > 0;
   const navigate = useNavigate();
   const location = useLocation();
@@ -189,6 +191,7 @@ const Dashboard = () => {
     if (data) {
       setQuotes(data);
     }
+    quotesLoaded.current = true;
   };
 
   const loadBookings = async () => {
@@ -201,6 +204,7 @@ const Dashboard = () => {
     if (data) {
       setBookings(data);
     }
+    bookingsLoaded.current = true;
   };
 
   const loadVoucherCount = async () => {
@@ -335,6 +339,7 @@ const Dashboard = () => {
         toast({ title: 'Quote saved', description: 'We saved your quote to your dashboard.' });
         localStorage.removeItem('pendingQuote');
         await loadQuotes();
+        hasAppliedSmartDefault.current = true;
         setActiveTab('quotes');
         
         const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
@@ -354,6 +359,8 @@ const Dashboard = () => {
   // Smart default tab: show the most relevant advertising content on first load
   useEffect(() => {
     if (hasAppliedSmartDefault.current || !user) return;
+    // Wait for data to finish loading so we don't lock in 'create-booking' prematurely
+    if (!quotesLoaded.current || !bookingsLoaded.current) return;
     
     // Don't override if URL param or localStorage flags already set the tab
     const urlParams = new URLSearchParams(window.location.search);
@@ -362,7 +369,8 @@ const Dashboard = () => {
     const isNewUserFromCalculator = localStorage.getItem('newUserFromCalculator');
     const justSavedQuote = localStorage.getItem('justSavedQuote');
     const justCreatedBooking = localStorage.getItem('justCreatedBooking');
-    if (isNewUserFromCalculator || justSavedQuote || justCreatedBooking) return;
+    const pendingQuote = localStorage.getItem('pendingQuote');
+    if (isNewUserFromCalculator || justSavedQuote || justCreatedBooking || pendingQuote) return;
     
     // Prioritize advertising content so users don't miss quotes/bookings
     if (bookings.length > 0) {
