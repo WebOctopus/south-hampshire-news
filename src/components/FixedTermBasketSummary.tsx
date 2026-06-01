@@ -224,13 +224,6 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   <span className="font-medium">{formatPrice(pricingBreakdown?.finalTotalBeforeDesign || finalTotal)}</span>
                 </div>
 
-                {pricingBreakdown?.designFee && pricingBreakdown.designFee > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Artwork Design Service</span>
-                    <span className="font-medium">{formatPrice(pricingBreakdown.designFee)}</span>
-                  </div>
-                )}
-
                 {saving > 0 && (
                   <>
                     <div className="flex justify-between items-center">
@@ -257,6 +250,21 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   <span className="text-xl font-bold">Total (Incl. VAT)</span>
                   <span className="text-2xl font-bold text-primary">{formatPrice(totalWithVAT)}</span>
                 </div>
+
+                {pricingBreakdown?.designFee && pricingBreakdown.designFee > 0 && (
+                  <>
+                    <Separator className="my-3" />
+                    <div className="rounded-md border border-dashed border-muted-foreground/30 bg-muted/30 p-3 space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Artwork Design Fee</span>
+                        <span className="font-medium">{formatPrice(pricingBreakdown.designFee)} + VAT</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Invoiced separately by our team — not charged via the website.
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 <Separator className="my-3" />
 

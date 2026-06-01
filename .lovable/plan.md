@@ -1,33 +1,40 @@
-# Verified Businesses row — "plumbing" search
+## Goal
 
-## Finding
+The "Yes, design my artwork" choice on the booking calculator must stop being added to the customer's online total / monthly payment. The artwork fee is now invoiced manually by admin after the booking. The Yes/No question, the displayed fee amount, and the choice flowing into bookings/webhooks all stay — only the addition to the chargeable total is removed.
 
-The behaviour you described is **already what the code does**:
+## Changes
 
-- `VerifiedBusinessesRow` passes `selectedLocation` to `get_verified_businesses` only when it is not `'all'`. If no location is selected, the location filter is omitted.
-- I ran the RPC directly with `search_term = 'plumbing'` and no location filter, and **MJM Plumbing & Heating Ltd** is returned (it's the only verified business matching "plumbing").
-- MJM is in **Area 7** only (SO32 Meon Valley / PO17 Wickham). So as soon as any other area is selected (hero dropdown or location pill), MJM is correctly filtered out.
+### 1. `src/components/AdvertisingStepForm.tsx` (pricing effect)
+The effect at ~lines 154–200 currently adds `designFee` into `pricingBreakdown.finalTotal` whenever `needsDesign` is true. Change it so the fee is no longer rolled into the chargeable total:
+- Keep `needsDesign` and `designFee` in `campaignData` state so the choice and the fee value still flow through to webhooks/CRM and to the summary UI.
+- Stop mutating `pricingBreakdown.finalTotal` / `finalTotalBeforeDesign` based on the design choice. `pricingBreakdown.designFee` itself can still be populated (so summaries can display it as an informational line), but it must NOT be included in `finalTotal` or in any monthly/full-payment derivation.
 
-## Most likely cause of what you saw
+### 2. `src/lib/paymentCalculations.ts`
+`calculatePaymentAmount` currently splits the design fee into the monthly amount and adds the full design fee to full-payment options. Update it to ignore `designFee` entirely when computing what the customer pays online: pass `0` or simply stop adding `designFee` into the returned amounts. The function signature can stay the same to avoid touching call sites.
 
-A location was selected at the time you searched — either:
-- The hero "Your location" dropdown, or
-- A pill in the **Location** row below the sector pills (clicking one sets `selectedLocation`).
+### 3. `src/components/DesignFeeStep.tsx` (copy only)
+Reword the Yes option so customers understand the fee is shown for reference but not charged via the site:
+- Remove: "The design fee of £X + VAT will be added to your booking."
+- Replace with: "Our design team will contact you after booking and invoice the £X + VAT artwork fee separately — it is not added to your online total."
+- Keep the price badge so the amount is still visible.
+- No change to the radio behaviour or the "No, finished artwork will be supplied" card.
 
-If neither is set (both showing "all"), MJM will appear in the Verified row when you type "plumbing".
+### 4. Summary components — still show the fee, clearly separated
+In `BookingSummaryStep.tsx`, `FixedTermBasketSummary.tsx`, and `MobilePricingSummary.tsx`:
+- Keep rendering an "Artwork Design Fee" row when `needsDesign` is true, showing the fee amount + VAT.
+- Label it as "Invoiced separately by our team" (small muted note) and ensure it is visually separated from the campaign subtotal/total.
+- Ensure the "Total to pay online" / monthly figures do NOT include the artwork fee.
+- Remove any `designFeeToShow` math that was grossing the campaign cost up — the fee is presented alongside the total, not inside it.
 
-## Proposed action
+### 5. Data flow preserved (verify, no functional change)
+- `campaignData.needsDesign` and `campaignData.designFee` continue to be passed into booking creation and into `send-booking-webhook` / `send-quote-booking-webhook` payloads so admin sees the customer's choice and the fee to invoice.
+- `webhookPayloadResolver.ts` already forwards `pricing_breakdown.designFee` — leave as-is; admin treats it as informational.
 
-No code changes. To verify:
+## Out of scope
+- No changes to the Yes/No question, the artwork upload step, admin-side invoicing UI, or any other pricing logic (BOGOF, durations, discounts).
+- No DB/migration changes.
 
-1. On `/business-directory`, click any selected location pill again to deselect (or pick "Your location" → default) so `selectedLocation === 'all'`.
-2. Type `plumbing` in the search box.
-3. MJM Plumbing & Heating Ltd should appear in the Verified Businesses row.
-
-If after step 1–3 MJM still doesn't appear, it's a real bug and I'll dig further (likely candidates: stale request, pill component not resetting to `'all'`, or search not flowing into the row).
-
-## Optional small polish (only if you want it)
-
-- Show a subtle "Filtered by: *Area name*" chip above the Verified row when a location is active, so it's obvious why fewer (or zero) verified results appear.
-
-Let me know if you'd like the polish chip, or if you can confirm a location was selected when you tested.
+## Verification
+- Pick an ad size, toggle Yes/No on the artwork step: the "Total to pay online" and monthly amount stay identical between the two choices.
+- When Yes is selected, the summary still shows the artwork fee amount with a clear "Invoiced separately" label, and that figure is NOT added to the online total.
+- Completing a booking still records `needsDesign: true` and the `designFee` value in the booking row and webhook payload.

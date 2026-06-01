@@ -169,14 +169,15 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     }
   };
 
-// Calculate pricing options based on admin-configured payment options
-// The baseTotal already includes the design fee in finalTotal
+// Calculate pricing options based on admin-configured payment options.
+// The baseTotal is the chargeable online amount and EXCLUDES the artwork
+// design fee — that fee is invoiced separately by the admin team.
 const baseTotal = pricingBreakdown?.finalTotal || 0;
 const cpmRate = pricingBreakdown?.cpm || 0;
 
-// Show design fee as add-on in breakdown while keeping total inclusive
+// Artwork design fee is informational only — shown alongside the basket but
+// never added to baseTotal / monthly amounts.
 const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (designFee || 0) : 0);
-const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (designFeeToShow > 0 ? Math.max(0, baseTotal - designFeeToShow) : baseTotal);
 
   const effectivePaidAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   const effectiveFreeAreas = pricingModel === 'bogof' ? bogofFreeAreas : [];
@@ -654,6 +655,19 @@ const campaignCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign ?? (desi
                   </p>
                 </div>
               </div>
+
+              {/* Artwork Design Fee — informational, invoiced separately */}
+              {designFeeToShow > 0 && (
+                <div className="mt-6 rounded-md border border-dashed border-muted-foreground/30 bg-muted/30 p-4 space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Artwork Design Fee</span>
+                    <span className="font-semibold">{formatPrice(designFeeToShow)} + VAT</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Invoiced separately by our team after booking — not added to the online total above.
+                  </p>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="mt-6 space-y-4">

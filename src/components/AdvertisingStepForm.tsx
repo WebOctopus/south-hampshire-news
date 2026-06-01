@@ -146,57 +146,49 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     }
   }, [campaignData.selectedAdSize, selectedPricingModel, adSizes]);
 
-  // Update pricing breakdown to include design fee when needed
+  // Track the customer's artwork design choice on the pricing breakdown for
+  // display/admin purposes only. The artwork fee is NOT added to finalTotal —
+  // it is invoiced separately by the admin team after booking.
   React.useEffect(() => {
     const pb = campaignData.pricingBreakdown;
     if (!pb) return;
 
-    if (campaignData.needsDesign && campaignData.designFee > 0) {
-      const designFeeAmount = campaignData.designFee;
-      setCampaignData(prev => {
-        const current = prev.pricingBreakdown;
-        if (!current) return prev;
-        // Determine the base (without design) safely
-        const baseWithoutDesign =
-          typeof current.finalTotalBeforeDesign === 'number'
-            ? current.finalTotalBeforeDesign
-            : current.finalTotal; // calculator's total excludes design
+    const desiredDesignFee =
+      campaignData.needsDesign && campaignData.designFee > 0
+        ? campaignData.designFee
+        : 0;
 
-        const newFinalTotal = baseWithoutDesign + designFeeAmount;
+    setCampaignData(prev => {
+      const current = prev.pricingBreakdown;
+      if (!current) return prev;
 
-        // If already correct, no state churn
-        if (current.finalTotal === newFinalTotal && current.designFee === designFeeAmount) {
-          return prev;
-        }
+      // The calculator's finalTotal already excludes the artwork fee. If a
+      // previous version had added it in, strip it back out using the
+      // recorded finalTotalBeforeDesign.
+      const baseWithoutDesign =
+        typeof current.finalTotalBeforeDesign === 'number'
+          ? current.finalTotalBeforeDesign
+          : current.finalTotal;
 
-        return {
-          ...prev,
-          pricingBreakdown: {
-            ...current,
-            designFee: designFeeAmount,
-            finalTotalBeforeDesign: baseWithoutDesign,
-            finalTotal: newFinalTotal,
-          },
-        };
-      });
-    } else if (pb && (!campaignData.needsDesign || campaignData.designFee === 0)) {
-      // Remove design fee if not needed by reverting to the original finalTotal
-      setCampaignData(prev => {
-        const current = prev.pricingBreakdown;
-        if (!current) return prev;
-        if (!current.designFee && !current.finalTotalBeforeDesign) return prev;
-        const restored = current.finalTotalBeforeDesign ?? current.finalTotal;
-        return {
-          ...prev,
-          pricingBreakdown: {
-            ...current,
-            designFee: 0,
-            finalTotal: restored,
-            finalTotalBeforeDesign: undefined,
-          },
-        };
-      });
-    }
+      if (
+        current.designFee === desiredDesignFee &&
+        current.finalTotal === baseWithoutDesign &&
+        current.finalTotalBeforeDesign === baseWithoutDesign
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        pricingBreakdown: {
+          ...current,
+          designFee: desiredDesignFee,
+          // Keep finalTotal as the chargeable amount (excludes artwork fee).
+          finalTotal: baseWithoutDesign,
+          finalTotalBeforeDesign: baseWithoutDesign,
+        },
+      };
+    });
   }, [campaignData.needsDesign, campaignData.designFee, campaignData.pricingBreakdown]);
   const [showFixedTermConfirmation, setShowFixedTermConfirmation] = useState(false);
   const [pendingNextStep, setPendingNextStep] = useState<(() => void) | null>(null);
