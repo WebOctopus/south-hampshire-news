@@ -11,8 +11,11 @@ export const calculatePaymentAmount = (
   paymentOptions: PaymentOption[],
   designFee: number = 0
 ): number => {
-  // Separate the design fee from the base total for proper calculation
-  const campaignCost = baseTotal - designFee;
+  // Artwork design fee is invoiced separately by the admin team and is NOT
+  // charged through the website. Force-ignore it in all online calculations
+  // while keeping the parameter for backwards compatibility with call sites.
+  designFee = 0;
+  const campaignCost = baseTotal;
   let amount = campaignCost;
 
   // Helper: compute the displayed Monthly Payment Plan amount
