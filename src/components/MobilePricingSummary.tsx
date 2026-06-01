@@ -126,18 +126,6 @@ export const MobilePricingSummary: React.FC<MobilePricingSummaryProps> = ({
           {/* Pricing */}
           {campaignData.pricingBreakdown?.finalTotal && (
             <div className="bg-primary/10 rounded p-3 space-y-2">
-              {campaignData.pricingBreakdown?.designFee && campaignData.pricingBreakdown.designFee > 0 && (
-                <div className="text-xs space-y-1 pb-2 border-b border-primary/20">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Campaign Cost:</span>
-                    <span className="font-medium">£{(campaignData.pricingBreakdown.finalTotalBeforeDesign || 0).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Artwork Design:</span>
-                    <span className="font-medium">£{campaignData.pricingBreakdown.designFee.toFixed(2)}</span>
-                  </div>
-                </div>
-              )}
               <div className="text-xs">
                 <span className="text-muted-foreground">Pre-payment Required:</span>
               </div>
@@ -148,6 +136,17 @@ export const MobilePricingSummary: React.FC<MobilePricingSummaryProps> = ({
               <div className="text-xs text-muted-foreground">
                 per insertion reaching {campaignData.pricingBreakdown.totalCirculation?.toLocaleString() || 'selected'} homes
               </div>
+              {campaignData.pricingBreakdown?.designFee && campaignData.pricingBreakdown.designFee > 0 && (
+                <div className="mt-2 pt-2 border-t border-primary/20 text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Artwork Design Fee:</span>
+                    <span className="font-medium">£{campaignData.pricingBreakdown.designFee.toFixed(2)} + VAT</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Invoiced separately — not charged via the website.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
