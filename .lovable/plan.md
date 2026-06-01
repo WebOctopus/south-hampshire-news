@@ -1,40 +1,34 @@
 ## Goal
 
-The "Yes, design my artwork" choice on the booking calculator must stop being added to the customer's online total / monthly payment. The artwork fee is now invoiced manually by admin after the booking. The Yes/No question, the displayed fee amount, and the choice flowing into bookings/webhooks all stay — only the addition to the chargeable total is removed.
+When a user lands on `/dashboard` for the first time after saving a quote or completing a booking, open the matching section (Saved Quotes or Bookings) instead of "Create Booking".
 
-## Changes
+## Why it's happening today
 
-### 1. `src/components/AdvertisingStepForm.tsx` (pricing effect)
-The effect at ~lines 154–200 currently adds `designFee` into `pricingBreakdown.finalTotal` whenever `needsDesign` is true. Change it so the fee is no longer rolled into the chargeable total:
-- Keep `needsDesign` and `designFee` in `campaignData` state so the choice and the fee value still flow through to webhooks/CRM and to the summary UI.
-- Stop mutating `pricingBreakdown.finalTotal` / `finalTotalBeforeDesign` based on the design choice. `pricingBreakdown.designFee` itself can still be populated (so summaries can display it as an informational line), but it must NOT be included in `finalTotal` or in any monthly/full-payment derivation.
+`src/pages/Dashboard.tsx` has two parallel mechanisms:
 
-### 2. `src/lib/paymentCalculations.ts`
-`calculatePaymentAmount` currently splits the design fee into the monthly amount and adds the full design fee to full-payment options. Update it to ignore `designFee` entirely when computing what the customer pays online: pass `0` or simply stop adding `designFee` into the returned amounts. The function signature can stay the same to avoid touching call sites.
+1. **localStorage flag handler** (lines ~276–321) — reads `justSavedQuote` / `justCreatedBooking` / `pendingQuote` and switches tab.
+2. **Smart-default handler** (lines ~355–381) — picks a tab based on whether `bookings`/`quotes` arrays have data, and locks the choice via `hasAppliedSmartDefault.current`.
 
-### 3. `src/components/DesignFeeStep.tsx` (copy only)
-Reword the Yes option so customers understand the fee is shown for reference but not charged via the site:
-- Remove: "The design fee of £X + VAT will be added to your booking."
-- Replace with: "Our design team will contact you after booking and invoice the £X + VAT artwork fee separately — it is not added to your online total."
-- Keep the price badge so the amount is still visible.
-- No change to the radio behaviour or the "No, finished artwork will be supplied" card.
+Two race conditions cause the wrong tab to win:
 
-### 4. Summary components — still show the fee, clearly separated
-In `BookingSummaryStep.tsx`, `FixedTermBasketSummary.tsx`, and `MobilePricingSummary.tsx`:
-- Keep rendering an "Artwork Design Fee" row when `needsDesign` is true, showing the fee amount + VAT.
-- Label it as "Invoiced separately by our team" (small muted note) and ensure it is visually separated from the campaign subtotal/total.
-- Ensure the "Total to pay online" / monthly figures do NOT include the artwork fee.
-- Remove any `designFeeToShow` math that was grossing the campaign cost up — the fee is presented alongside the total, not inside it.
+- **Pending-quote signup flow**: when an unauthenticated user saves a quote, `pendingQuote` is stored, then on login `savePending()` (line 326) inserts it. The smart-default effect fires first while `quotes`/`bookings` are still empty (data not yet loaded), so it sets `create-booking` and locks the ref. By the time `savePending` resolves, the lock prevents recovery.
+- **Loaded-state assumption**: smart-default treats `quotes.length === 0` / `bookings.length === 0` as "user has nothing", but at first render the loaders haven't returned yet — so a user with existing quotes still gets `create-booking` on a cold dashboard mount.
 
-### 5. Data flow preserved (verify, no functional change)
-- `campaignData.needsDesign` and `campaignData.designFee` continue to be passed into booking creation and into `send-booking-webhook` / `send-quote-booking-webhook` payloads so admin sees the customer's choice and the fee to invoice.
-- `webhookPayloadResolver.ts` already forwards `pricing_breakdown.designFee` — leave as-is; admin treats it as informational.
+## Fix
+
+All changes are in `src/pages/Dashboard.tsx`.
+
+1. **Track loaded state**: add two refs/flags (e.g. `quotesLoaded`, `bookingsLoaded`) that flip true at the end of `loadQuotes` / `loadBookings`. Smart-default effect must early-return until both are true so it never decides based on empty initial arrays.
+
+2. **Honour `pendingQuote` in the smart-default gate**: in the smart-default effect's "skip if a deliberate signal is present" check, also `return` when `localStorage.getItem('pendingQuote')` exists. This prevents the lock from being applied before `savePending` runs.
+
+3. **Lock the ref in the pending-quote path**: inside `savePending()` (line 326+), set `hasAppliedSmartDefault.current = true` immediately before (or alongside) `setActiveTab('quotes')`, so a later smart-default pass cannot override it.
+
+4. **Optional safety**: when a `justSavedQuote` / `justCreatedBooking` / `pendingQuote` signal is detected, set `hasAppliedSmartDefault.current = true` before any async loaders resolve (already done for the first two; just ensure ordering after the refactor).
+
+Result: a user who saves a quote and then logs in lands on **Saved Quotes**; a user who completes a booking lands on **Bookings**; the smart default only kicks in once data has actually loaded and no explicit signal is present.
 
 ## Out of scope
-- No changes to the Yes/No question, the artwork upload step, admin-side invoicing UI, or any other pricing logic (BOGOF, durations, discounts).
-- No DB/migration changes.
 
-## Verification
-- Pick an ad size, toggle Yes/No on the artwork step: the "Total to pay online" and monthly amount stay identical between the two choices.
-- When Yes is selected, the summary still shows the artwork fee amount with a clear "Invoiced separately" label, and that figure is NOT added to the online total.
-- Completing a booking still records `needsDesign: true` and the `designFee` value in the booking row and webhook payload.
+- No changes to the calculator, booking creation, or webhook flows — they already set the correct localStorage flags.
+- No sidebar/UI changes.
