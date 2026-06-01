@@ -1,34 +1,25 @@
-## Goal
+## Problem
 
-When a user lands on `/dashboard` for the first time after saving a quote or completing a booking, open the matching section (Saved Quotes or Bookings) instead of "Create Booking".
+New clients can't upload artwork because `ArtworkUploadTab` only lists bookings with `payment_status` in `('paid', 'confirmed', 'payment_pending')`. In the database the vast majority of bookings sit in `pending`, `checkout_initiated`, `mandate_active`, or `mandate_created`, so the tab renders the "No Artwork Required" empty state and the per-booking upload UI never appears.
 
-## Why it's happening today
-
-`src/pages/Dashboard.tsx` has two parallel mechanisms:
-
-1. **localStorage flag handler** (lines ~276–321) — reads `justSavedQuote` / `justCreatedBooking` / `pendingQuote` and switches tab.
-2. **Smart-default handler** (lines ~355–381) — picks a tab based on whether `bookings`/`quotes` arrays have data, and locks the choice via `hasAppliedSmartDefault.current`.
-
-Two race conditions cause the wrong tab to win:
-
-- **Pending-quote signup flow**: when an unauthenticated user saves a quote, `pendingQuote` is stored, then on login `savePending()` (line 326) inserts it. The smart-default effect fires first while `quotes`/`bookings` are still empty (data not yet loaded), so it sets `create-booking` and locks the ref. By the time `savePending` resolves, the lock prevents recovery.
-- **Loaded-state assumption**: smart-default treats `quotes.length === 0` / `bookings.length === 0` as "user has nothing", but at first render the loaders haven't returned yet — so a user with existing quotes still gets `create-booking` on a cold dashboard mount.
+The sidebar entry itself is already wired correctly for `active`/`none` advertisers (`src/pages/Dashboard.tsx` + `DashboardSidebar`), so no sidebar change is needed for this case.
 
 ## Fix
 
-All changes are in `src/pages/Dashboard.tsx`.
+In `src/components/dashboard/ArtworkUploadTab.tsx`:
 
-1. **Track loaded state**: add two refs/flags (e.g. `quotesLoaded`, `bookingsLoaded`) that flip true at the end of `loadQuotes` / `loadBookings`. Smart-default effect must early-return until both are true so it never decides based on empty initial arrays.
+1. **Broaden the booking query** so a freshly created booking is visible. Include any booking that isn't cancelled/failed:
+   - Replace the `.in('payment_status', [...])` filter with `.not('payment_status', 'in', '("cancelled","failed","refunded")')` (and keep the `user_id` + ordering).
+   - This surfaces `pending`, `checkout_initiated`, `payment_pending`, `paid`, `mandate_created`, `mandate_active`, etc.
 
-2. **Honour `pendingQuote` in the smart-default gate**: in the smart-default effect's "skip if a deliberate signal is present" check, also `return` when `localStorage.getItem('pendingQuote')` exists. This prevents the lock from being applied before `savePending` runs.
+2. **Per-booking status badge stays** (already renders `booking.payment_status`) so clients can see whether payment is still outstanding while they upload.
 
-3. **Lock the ref in the pending-quote path**: inside `savePending()` (line 326+), set `hasAppliedSmartDefault.current = true` immediately before (or alongside) `setActiveTab('quotes')`, so a later smart-default pass cannot override it.
+3. **Empty-state copy** stays for users with literally zero bookings, but reword to: "Once you've made a booking, you'll be able to upload your print-ready artwork here."
 
-4. **Optional safety**: when a `justSavedQuote` / `justCreatedBooking` / `pendingQuote` signal is detected, set `hasAppliedSmartDefault.current = true` before any async loaders resolve (already done for the first two; just ensure ordering after the refactor).
+4. **Upload entry point** remains inside the existing `ArtworkUploadSection` (per booking), as confirmed — no extra button on the Bookings tab.
 
-Result: a user who saves a quote and then logs in lands on **Saved Quotes**; a user who completes a booking lands on **Bookings**; the smart default only kicks in once data has actually loaded and no explicit signal is present.
+No changes to the sidebar, routing, or database. No business-logic changes to artwork acceptance rules (still 300dpi PDF/JPG via existing `ArtworkUploadSection`).
 
-## Out of scope
+## Files touched
 
-- No changes to the calculator, booking creation, or webhook flows — they already set the correct localStorage flags.
-- No sidebar/UI changes.
+- `src/components/dashboard/ArtworkUploadTab.tsx` — query filter + empty-state copy only.

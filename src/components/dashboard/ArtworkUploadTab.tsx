@@ -19,7 +19,7 @@ const ArtworkUploadTab = () => {
         .from('bookings')
         .select('*')
         .eq('user_id', user.id)
-        .in('payment_status', ['paid', 'confirmed', 'payment_pending'])
+        .not('payment_status', 'in', '("cancelled","failed","refunded")')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
@@ -69,9 +69,9 @@ const ArtworkUploadTab = () => {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Artwork Required</h3>
+          <h3 className="text-lg font-semibold mb-2">No Bookings Yet</h3>
           <p className="text-muted-foreground max-w-md">
-            Once you have a confirmed booking with payment, you'll be able to upload your artwork here.
+            Once you've made a booking, you'll be able to upload your print-ready artwork here.
           </p>
         </CardContent>
       </Card>
