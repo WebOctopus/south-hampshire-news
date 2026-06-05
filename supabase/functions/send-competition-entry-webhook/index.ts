@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const WEBHOOK_URL =
-  "https://nztjzyhtynfijonrkuem.supabase.co/functions/v1/inbound-webhook/bd116a69-213e-4fe4-a0f8-65b7dd8db823";
+  "https://qrbijjlviizhzuswiilf.supabase.co/functions/v1/inbound-webhook/bd116a69-213e-4fe4-a0f8-65b7dd8db823";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
