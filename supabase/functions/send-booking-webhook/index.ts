@@ -22,74 +22,39 @@ serve(async (req) => {
       userId 
     } = await req.json();
 
-    console.log('Sending booking webhook:', { bookingData, step1Data, step2Data, step3Data });
+    console.log('Recording booking webhook (storage only):', { bookingId: bookingData?.id });
 
-    // Create comprehensive webhook payload
+    // Flat, CRM-spec-compliant payload (email at root). Stored for audit only;
+    // the actual POST to the inbound webhook is handled by send-quote-booking-webhook.
+    const pricingModelDisplay = step1Data?.pricingModel === 'fixed' ? 'Pay As You Go'
+      : step1Data?.pricingModel === 'bogof' ? '3+ Subscription Package'
+      : 'Leafleting Service';
+
     const webhookPayload = {
-      // User/Contact Information (Step 3)
-      contact: {
-        firstName: step3Data.firstName,
-        lastName: step3Data.lastName,
-        fullName: `${step3Data.firstName} ${step3Data.lastName}`,
-        email: step3Data.email,
-        phone: step3Data.phone,
-        businessType: step3Data.businessType,
-        companyName: step3Data.companyName,
-        companySector: step3Data.companySector,
-        invoiceAddress: {
-          postcode: step3Data.postcode || '',
-          addressLine1: step3Data.addressLine1 || '',
-          addressLine2: step3Data.addressLine2 || '',
-          city: step3Data.city || '',
-        }
-      },
-      
-      // Pricing Model Selection (Step 1)
-      campaign: {
-        pricingModel: step1Data.pricingModel,
-        pricingModelDisplay: step1Data.pricingModel === 'fixed' ? 'Pay As You Go' : 
-                            step1Data.pricingModel === 'bogof' ? '3+ Subscription Package' : 
-                            'Leafleting Service'
-      },
-      
-      // Campaign Configuration (Step 2)
-      configuration: {
-        selectedAreas: step2Data.selectedAreas || [],
-        bogofPaidAreas: step2Data.bogofPaidAreas || [],
-        bogofFreeAreas: step2Data.bogofFreeAreas || [],
-        selectedAdSize: step2Data.selectedAdSize,
-        selectedDuration: step2Data.selectedDuration,
-        selectedMonths: step2Data.selectedMonths || {},
-        totalCirculation: step2Data.pricingBreakdown?.totalCirculation || 0
-      },
-      
-      // Pricing Information
-      pricing: {
-        subtotal: step2Data.pricingBreakdown?.subtotal || 0,
-        finalTotal: step2Data.pricingBreakdown?.finalTotal || 0,
-        monthlyPrice: bookingData.monthly_price || 0,
-        durationMultiplier: step2Data.pricingBreakdown?.durationMultiplier || 1,
-        volumeDiscountPercent: step2Data.pricingBreakdown?.volumeDiscountPercent || 0,
-        durationDiscountPercent: step2Data.pricingBreakdown?.durationDiscountPercent || 0,
-        breakdown: step2Data.pricingBreakdown
-      },
-      
-      // Booking Information
-      booking: {
-        id: bookingData.id,
-        status: bookingData.status,
-        title: bookingData.title,
-        userId: userId,
-        createdAt: new Date().toISOString()
-      },
-      
-      // Source Information
-      source: {
-        platform: 'Local Life Magazine Calculator',
-        timestamp: new Date().toISOString(),
-        userAgent: req.headers.get('user-agent') || '',
-        referrer: req.headers.get('referer') || ''
-      }
+      record_type: 'booking',
+      source: 'advertising_calculator',
+      status: bookingData?.status || 'submitted',
+      title: bookingData?.title || '',
+      email: step3Data?.email,
+      first_name: step3Data?.firstName || '',
+      last_name: step3Data?.lastName || '',
+      phone: step3Data?.phone || '',
+      company: step3Data?.companyName || '',
+      business_type: step3Data?.businessType || '',
+      company_sector: step3Data?.companySector || '',
+      pricing_model: step1Data?.pricingModel,
+      journey_tag: pricingModelDisplay,
+      subtotal: step2Data?.pricingBreakdown?.subtotal || 0,
+      final_total: step2Data?.pricingBreakdown?.finalTotal || 0,
+      monthly_price: bookingData?.monthly_price || 0,
+      total_circulation: step2Data?.pricingBreakdown?.totalCirculation || 0,
+      invoice_address_line_1: step3Data?.addressLine1 || '',
+      invoice_address_line_2: step3Data?.addressLine2 || '',
+      invoice_city: step3Data?.city || '',
+      invoice_postcode: step3Data?.postcode || '',
+      booking_id: bookingData?.id,
+      user_id: userId,
+      submitted_at: new Date().toISOString(),
     };
 
     // Initialize Supabase client
@@ -97,55 +62,18 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Send webhook to inbound webhook endpoint (configured via secret)
-    const webhookUrl = Deno.env.get('QUOTE_BOOKING_WEBHOOK_URL');
-    const apiKey = Deno.env.get('INBOUND_WEBHOOK_API_KEY');
-
-    if (!webhookUrl) {
-      console.error('QUOTE_BOOKING_WEBHOOK_URL is not configured');
-      return new Response(JSON.stringify({ success: false, error: 'Webhook URL not configured' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('Sending booking to inbound webhook:', webhookUrl);
-
-    const outboundHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (apiKey) outboundHeaders['x-api-key'] = apiKey;
-
-    const webhookResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: outboundHeaders,
-      body: JSON.stringify(webhookPayload),
-    });
-
-    const webhookResponseText = await webhookResponse.text();
-    let webhookResponseData;
-    
-    try {
-      webhookResponseData = JSON.parse(webhookResponseText);
-    } catch {
-      webhookResponseData = { rawResponse: webhookResponseText };
-    }
-
-    console.log('Inbound webhook response:', {
-      status: webhookResponse.status,
-      data: webhookResponseData
-    });
-
-    // Update booking record with webhook response
+    // Update booking record. The actual CRM POST is handled by send-quote-booking-webhook;
+    // here we only persist the flat audit payload and mark the booking as submitted.
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
         webhook_sent_at: new Date().toISOString(),
         webhook_response: {
-          status: webhookResponse.status,
-          response: webhookResponseData,
-          sent_at: new Date().toISOString()
+          note: 'CRM POST handled by send-quote-booking-webhook',
+          sent_at: new Date().toISOString(),
         },
         webhook_payload: webhookPayload,
-        status: webhookResponse.ok ? 'submitted' : 'webhook_failed'
+        status: 'submitted',
       })
       .eq('id', bookingData.id);
 
@@ -154,11 +82,9 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      success: webhookResponse.ok,
-      webhookStatus: webhookResponse.status,
-      webhookResponse: webhookResponseData,
+      success: true,
       bookingId: bookingData.id,
-      message: webhookResponse.ok ? 'Booking submitted successfully' : 'Webhook failed but booking saved'
+      message: 'Booking saved',
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
