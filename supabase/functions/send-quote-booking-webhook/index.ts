@@ -14,14 +14,7 @@ serve(async (req) => {
   try {
     const payload = await req.json();
 
-    console.log('Forwarding CRM webhook payload:', {
-      record_type: payload.record_type,
-      journey_tag: payload.journey_tag,
-      email: payload.email,
-    });
-
     const webhookUrl = Deno.env.get('QUOTE_BOOKING_WEBHOOK_URL');
-    const apiKey = Deno.env.get('INBOUND_WEBHOOK_API_KEY');
 
     if (!webhookUrl) {
       console.error('QUOTE_BOOKING_WEBHOOK_URL is not configured');
@@ -31,8 +24,39 @@ serve(async (req) => {
       });
     }
 
+    if (!payload?.email || typeof payload.email !== 'string') {
+      console.error('Rejected webhook: missing root-level email', {
+        record_type: payload?.record_type,
+        journey_tag: payload?.journey_tag,
+      });
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Root-level "email" is required by the inbound webhook spec',
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Extract destination workflow id from URL path for diagnostics
+    let workflowId: string | undefined;
+    try {
+      const parts = new URL(webhookUrl).pathname.split('/').filter(Boolean);
+      workflowId = parts[parts.length - 1];
+    } catch {
+      // ignore
+    }
+
+    console.log('Forwarding CRM webhook payload:', {
+      record_type: payload.record_type,
+      journey_tag: payload.journey_tag,
+      source: payload.source,
+      email: payload.email,
+      workflow_id: workflowId,
+    });
+
+    // Mirola inbound-webhook spec: POST JSON, no API key required.
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (apiKey) headers['x-api-key'] = apiKey;
 
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
@@ -48,7 +72,12 @@ serve(async (req) => {
       webhookResponseData = { rawResponse: webhookResponseText };
     }
 
-    console.log('Webhook response:', { status: webhookResponse.status, ok: webhookResponse.ok });
+    console.log('Webhook response:', {
+      status: webhookResponse.status,
+      ok: webhookResponse.ok,
+      workflow_id: workflowId,
+      body: webhookResponseData,
+    });
 
     if (!webhookResponse.ok) {
       console.error('Webhook failed:', { status: webhookResponse.status, response: webhookResponseData });
@@ -57,6 +86,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: webhookResponse.ok,
       webhookStatus: webhookResponse.status,
+      webhookResponse: webhookResponseData,
+      workflowId,
       message: webhookResponse.ok
         ? `${payload.record_type} webhook sent successfully`
         : `Webhook failed with status ${webhookResponse.status}`,
