@@ -97,16 +97,26 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Send webhook to Go High-Level
-    const webhookUrl = 'https://services.leadconnectorhq.com/hooks/gq9xLtPI8nwa8W9JRPBa/webhook-trigger/bf5bfcbd-01eb-4419-8eda-dbd1336c7d4a';
-    
-    console.log('Sending to Go High-Level:', webhookPayload);
-    
+    // Send webhook to inbound webhook endpoint (configured via secret)
+    const webhookUrl = Deno.env.get('QUOTE_BOOKING_WEBHOOK_URL');
+    const apiKey = Deno.env.get('INBOUND_WEBHOOK_API_KEY');
+
+    if (!webhookUrl) {
+      console.error('QUOTE_BOOKING_WEBHOOK_URL is not configured');
+      return new Response(JSON.stringify({ success: false, error: 'Webhook URL not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Sending booking to inbound webhook:', webhookUrl);
+
+    const outboundHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (apiKey) outboundHeaders['x-api-key'] = apiKey;
+
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: outboundHeaders,
       body: JSON.stringify(webhookPayload),
     });
 
@@ -119,7 +129,7 @@ serve(async (req) => {
       webhookResponseData = { rawResponse: webhookResponseText };
     }
 
-    console.log('Go High-Level response:', {
+    console.log('Inbound webhook response:', {
       status: webhookResponse.status,
       data: webhookResponseData
     });
