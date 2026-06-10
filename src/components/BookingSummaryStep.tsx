@@ -9,7 +9,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useStepForm } from '@/components/StepForm';
-import { getAreaGroupedSchedules, normalizeMonthToYYYYMM } from '@/lib/issueSchedule';
+import { getAreaGroupedSchedules, getCombinedStartingIssues, normalizeMonthToYYYYMM } from '@/lib/issueSchedule';
 import { calculatePaymentAmount as calcPaymentAmount } from '@/lib/paymentCalculations';
 import { parse } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -120,9 +120,12 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     effectiveSelectedAreas.includes(area.id)
   ) || [];
   
-  // Get schedule options from the first area (all areas will use the same starting date)
-  const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
-  const availableStartingIssues = areaGroupedSchedules.length > 0 ? areaGroupedSchedules[0].scheduleOptions : [];
+  // Build start-month options across ALL selected areas — a month is offered
+  // if at least one selected area can still meet its print/copy deadline.
+  // The per-area Campaign Schedule below shows each area's actual first
+  // issue, so areas that don't publish in the chosen month fall through
+  // to their next available issue automatically.
+  const availableStartingIssues = getCombinedStartingIssues(selectedAreaData);
 
   // Ensure a default starting issue is set (first available) if none chosen yet
   React.useEffect(() => {
@@ -283,6 +286,19 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                         </div>
                       ))}
                     </RadioGroup>
+                    {(() => {
+                      const currentValue = selectedStartingIssue || availableStartingIssues[0]?.value;
+                      const current = availableStartingIssues.find(o => o.value === currentValue);
+                      if (!current || current.value === 'later') return null;
+                      const eligibleCount = current.eligibleAreaIds.length;
+                      const ineligibleCount = current.ineligibleAreaIds.length;
+                      if (eligibleCount === 0 || ineligibleCount === 0) return null;
+                      return (
+                        <p className="text-xs text-muted-foreground mt-3">
+                          Starts this month for {eligibleCount} of {current.totalAreas} areas. The remaining {ineligibleCount} {ineligibleCount === 1 ? 'area starts' : 'areas start'} on their next available issue (see Campaign Schedule below).
+                        </p>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <p className="font-medium">Next available issue</p>

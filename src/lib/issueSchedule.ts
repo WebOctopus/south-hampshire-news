@@ -350,3 +350,74 @@ export function getAreaGroupedSchedules(areaSchedules: any[]): AreaGroupSchedule
 
   return result;
 }
+
+/**
+ * Build a combined list of start-month options across ALL selected areas.
+ * A month is included if AT LEAST ONE area still has an open print/copy
+ * deadline for it. Returns up to the first 3 future months sorted
+ * chronologically, plus a trailing "Later — please call" option.
+ *
+ * Also returns, per month value, the list of area IDs that are still
+ * eligible to start in that month (and those that aren't), so the UI can
+ * explain partial coverage to the customer.
+ */
+export interface CombinedStartingIssue extends IssueOption {
+  eligibleAreaIds: string[];
+  ineligibleAreaIds: string[];
+  totalAreas: number;
+}
+
+export function getCombinedStartingIssues(areaSchedules: any[]): CombinedStartingIssue[] {
+  if (!areaSchedules || areaSchedules.length === 0) return [];
+
+  const totalAreas = areaSchedules.length;
+  // Map YYYY-MM -> { eligibleAreaIds, ineligibleAreaIds }
+  const byMonth = new Map<string, { eligible: Set<string>; ineligible: Set<string> }>();
+
+  areaSchedules.forEach((area: any) => {
+    const schedule: any[] = area?.schedule || [];
+    schedule.forEach((entry: any) => {
+      const key = normalizeMonthToYYYYMM(entry.month, schedule);
+      if (!byMonth.has(key)) {
+        byMonth.set(key, { eligible: new Set(), ineligible: new Set() });
+      }
+      const bucket = byMonth.get(key)!;
+      if (isMonthAvailable(entry)) bucket.eligible.add(area.id);
+      else bucket.ineligible.add(area.id);
+    });
+  });
+
+  const sortedKeys = Array.from(byMonth.entries())
+    .filter(([, v]) => v.eligible.size > 0)
+    .map(([k]) => k)
+    .sort();
+
+  const topKeys = sortedKeys.slice(0, 3);
+
+  const options: CombinedStartingIssue[] = topKeys.map(key => {
+    const bucket = byMonth.get(key)!;
+    // Areas that don't list this month at all are also "ineligible" for it.
+    const ineligibleAreaIds = areaSchedules
+      .map((a: any) => a.id)
+      .filter((id: string) => !bucket.eligible.has(id));
+    return {
+      value: key,
+      label: formatMonthForDisplay(key),
+      month: key,
+      eligibleAreaIds: Array.from(bucket.eligible),
+      ineligibleAreaIds,
+      totalAreas,
+    };
+  });
+
+  options.push({
+    value: 'later',
+    label: 'Later—please call 023 8026 6388',
+    month: 'later',
+    eligibleAreaIds: [],
+    ineligibleAreaIds: [],
+    totalAreas,
+  });
+
+  return options;
+}
