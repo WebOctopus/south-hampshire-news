@@ -286,6 +286,19 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                         </div>
                       ))}
                     </RadioGroup>
+                    {(() => {
+                      const currentValue = selectedStartingIssue || availableStartingIssues[0]?.value;
+                      const current = availableStartingIssues.find(o => o.value === currentValue);
+                      if (!current || current.value === 'later') return null;
+                      const eligibleCount = current.eligibleAreaIds.length;
+                      const ineligibleCount = current.ineligibleAreaIds.length;
+                      if (eligibleCount === 0 || ineligibleCount === 0) return null;
+                      return (
+                        <p className="text-xs text-muted-foreground mt-3">
+                          Starts this month for {eligibleCount} of {current.totalAreas} areas. The remaining {ineligibleCount} {ineligibleCount === 1 ? 'area starts' : 'areas start'} on their next available issue (see Campaign Schedule below).
+                        </p>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <p className="font-medium">Next available issue</p>
