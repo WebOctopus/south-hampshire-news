@@ -948,13 +948,14 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
                             value={specialDealForm.deal_type}
                             onChange={(e) => setSpecialDealForm(prev => ({ ...prev, deal_type: e.target.value }))}
                           >
-                            <option value="percentage">Percentage Off</option>
-                            <option value="fixed">Fixed Amount Off</option>
+                            <option value="percentage_discount">Percentage Off</option>
+                            <option value="fixed_discount">Fixed Amount Off</option>
+                            <option value="bogof">BOGOF</option>
                           </select>
                         </div>
                         <div>
                           <Label htmlFor="deal_value">
-                            Deal Value {specialDealForm.deal_type === 'percentage' ? '(%)' : '(£)'}
+                            Deal Value {specialDealForm.deal_type === 'percentage_discount' ? '(%)' : '(£)'}
                           </Label>
                           <Input
                             id="deal_value"
@@ -1047,11 +1048,11 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
                         <TableCell className="font-medium">{deal.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {deal.deal_type === 'percentage' ? 'Percentage' : 'Fixed Amount'}
+                            {deal.deal_type === 'percentage_discount' ? 'Percentage' : deal.deal_type === 'bogof' ? 'BOGOF' : 'Fixed Amount'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {deal.deal_type === 'percentage' ? `${deal.deal_value}%` : `£${deal.deal_value}`}
+                          {deal.deal_type === 'percentage_discount' ? `${deal.deal_value}%` : deal.deal_type === 'bogof' ? '—' : `£${deal.deal_value}`}
                         </TableCell>
                         <TableCell>
                           {deal.valid_from && deal.valid_until 
