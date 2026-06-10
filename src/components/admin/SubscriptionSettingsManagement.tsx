@@ -107,7 +107,7 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
   const [specialDealForm, setSpecialDealForm] = useState({
     name: '',
     description: '',
-    deal_type: 'percentage',
+    deal_type: 'percentage_discount',
     deal_value: 0,
     min_areas: 1,
     valid_from: '',
@@ -342,7 +342,7 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
     setSpecialDealForm({
       name: '',
       description: '',
-      deal_type: 'percentage',
+      deal_type: 'percentage_discount',
       deal_value: 0,
       min_areas: 1,
       valid_from: '',
