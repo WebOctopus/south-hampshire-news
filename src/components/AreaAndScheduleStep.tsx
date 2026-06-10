@@ -225,29 +225,42 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
         ...bogofFreeAreas.map(id => effectiveAreas?.find(a => a.id === id)).filter(Boolean)
       ];
       
-      // Get the next 3 available start dates from all areas (filtered by print deadline)
-      const availableStartDates = (() => {
-        if (allAreas.length === 0 || !allAreas[0]?.schedule) return [];
-        
-        // Get all unique months from all areas
-        const allMonths = allAreas
-          .flatMap(area => area.schedule.map((s: any) => s.month))
-          .filter((month, index, self) => self.indexOf(month) === index);
-        
-        // Sort chronologically
-        const sortedMonths = allMonths.sort();
-        
-        // Filter using print deadline instead of just month comparison
-        const futureMonths = sortedMonths.filter(month => {
-          // Find the schedule entry for this month from any area
-          const monthSchedule = allAreas
-            .flatMap(area => (area.schedule as any[]) || [])
-            .find((s: any) => s.month === month);
-          
-          return monthSchedule ? isMonthAvailable(monthSchedule) : false;
+      // Get the next 3 available start dates across all selected areas.
+      // A month is available if AT LEAST ONE selected area can still meet its
+      // print/copy deadline for that month — the per-area Campaign Schedule
+      // summary below makes the per-area issue dates clear to the customer.
+      const { availableStartDates, monthAvailability } = (() => {
+        if (allAreas.length === 0) {
+          return { availableStartDates: [] as string[], monthAvailability: {} as Record<string, { eligible: any[]; ineligible: any[] }> };
+        }
+
+        const scheduleSample = allAreas.find(a => a?.schedule)?.schedule || [];
+
+        // Map normalised YYYY-MM key -> { eligible areas, ineligible areas }
+        const byMonth = new Map<string, { eligible: any[]; ineligible: any[] }>();
+
+        allAreas.forEach(area => {
+          const schedule = (area?.schedule as any[]) || [];
+          schedule.forEach((entry: any) => {
+            const key = normalizeMonthToYYYYMM(entry.month, schedule);
+            if (!byMonth.has(key)) byMonth.set(key, { eligible: [], ineligible: [] });
+            const bucket = byMonth.get(key)!;
+            if (isMonthAvailable(entry)) bucket.eligible.push(area);
+            else bucket.ineligible.push(area);
+          });
         });
-        
-        return futureMonths.slice(0, 3);
+
+        // Keep only months where at least one area is still eligible, sort chronologically
+        const sortedKeys = Array.from(byMonth.entries())
+          .filter(([, v]) => v.eligible.length > 0)
+          .map(([k]) => k)
+          .sort();
+
+        const topKeys = sortedKeys.slice(0, 3);
+        const availability: Record<string, { eligible: any[]; ineligible: any[] }> = {};
+        topKeys.forEach(k => { availability[k] = byMonth.get(k)!; });
+
+        return { availableStartDates: topKeys, monthAvailability: availability };
       })();
       
       const globalStartDate = Object.keys(selectedMonths).length > 0 
@@ -274,7 +287,11 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {availableStartDates.map((month: string, index: number) => {
                 const isSelected = globalStartDate === month;
-                
+                const avail = monthAvailability[month];
+                const eligibleCount = avail?.eligible.length ?? allAreas.length;
+                const ineligibleAreas = avail?.ineligible ?? [];
+                const partial = ineligibleAreas.length > 0;
+
                 return (
                   <div key={index} className={`
                     border rounded-lg p-4 cursor-pointer transition-all
@@ -305,9 +322,15 @@ export const AreaAndScheduleStep: React.FC<AreaAndScheduleStepProps> = ({
                         <div className="font-medium text-sm">
                           {formatMonthWithSchedule(month, allAreas[0]?.schedule || [])}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          Applies to all {allAreas.length} selected areas
-                        </div>
+                        {partial ? (
+                          <div className="text-xs text-muted-foreground">
+                            Starts this month for {eligibleCount} of {allAreas.length} areas. The remaining {ineligibleAreas.length} {ineligibleAreas.length === 1 ? 'area starts' : 'areas start'} on their next available issue (see Campaign Schedule below).
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground">
+                            Applies to all {allAreas.length} selected areas
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
