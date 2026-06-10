@@ -201,11 +201,11 @@ export function SpecialDealsManagement() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {deal.deal_type === 'percentage' ? 'Percentage' : 'Fixed Amount'}
+                          {deal.deal_type === 'percentage_discount' ? 'Percentage' : deal.deal_type === 'bogof' ? 'BOGOF' : 'Fixed Amount'}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">
-                        {deal.deal_type === 'percentage' ? `${deal.deal_value}%` : `£${deal.deal_value}`}
+                        {deal.deal_type === 'percentage_discount' ? `${deal.deal_value}%` : deal.deal_type === 'bogof' ? '—' : `£${deal.deal_value}`}
                       </TableCell>
                       <TableCell>{deal.min_areas}</TableCell>
                       <TableCell>
