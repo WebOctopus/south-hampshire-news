@@ -9,7 +9,7 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useLeafletData } from '@/hooks/useLeafletData';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useStepForm } from '@/components/StepForm';
-import { getAreaGroupedSchedules, normalizeMonthToYYYYMM } from '@/lib/issueSchedule';
+import { getAreaGroupedSchedules, getCombinedStartingIssues, normalizeMonthToYYYYMM } from '@/lib/issueSchedule';
 import { calculatePaymentAmount as calcPaymentAmount } from '@/lib/paymentCalculations';
 import { parse } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -120,9 +120,12 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
     effectiveSelectedAreas.includes(area.id)
   ) || [];
   
-  // Get schedule options from the first area (all areas will use the same starting date)
-  const areaGroupedSchedules = getAreaGroupedSchedules(selectedAreaData);
-  const availableStartingIssues = areaGroupedSchedules.length > 0 ? areaGroupedSchedules[0].scheduleOptions : [];
+  // Build start-month options across ALL selected areas — a month is offered
+  // if at least one selected area can still meet its print/copy deadline.
+  // The per-area Campaign Schedule below shows each area's actual first
+  // issue, so areas that don't publish in the chosen month fall through
+  // to their next available issue automatically.
+  const availableStartingIssues = getCombinedStartingIssues(selectedAreaData);
 
   // Ensure a default starting issue is set (first available) if none chosen yet
   React.useEffect(() => {
