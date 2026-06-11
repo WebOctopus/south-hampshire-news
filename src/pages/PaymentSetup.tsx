@@ -114,13 +114,13 @@ const PaymentSetup = () => {
           // Create the payment/subscription
           const isSubscription = paymentOption.option_type === 'monthly';
 
-          // For monthly subscriptions, calculate per-month amount
-          let paymentAmount = booking.final_total;
-          if (isSubscription && booking.pricing_model === 'bogof') {
-            const paidAreaCount = (booking.bogof_paid_area_ids || []).length || 1;
-            paymentAmount = (booking.monthly_price || 0) * paidAreaCount;
-          }
-          
+          // For monthly subscriptions, monthly_price already represents the
+          // full per-month DD amount across all areas — do not multiply by area count.
+          // The edge function also re-derives this server-side and ignores the client value.
+          const paymentAmount = isSubscription
+            ? (booking.monthly_price || 0)
+            : booking.final_total;
+
           const { error: paymentError } = await supabase.functions.invoke('create-gocardless-payment', {
             body: {
               bookingId,

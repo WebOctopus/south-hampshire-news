@@ -32,6 +32,13 @@ serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
+    // Service-role client for writes that must bypass RLS (no INSERT policies
+    // exist for these tables — using anon/auth client silently fails).
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       throw new Error('Unauthorized');
@@ -58,7 +65,31 @@ serve(async (req: Request) => {
       throw new Error('Payment option not found');
     }
 
+    // Always fetch the booking server-side so we can validate ownership and,
+    // for subscriptions, derive the charge amount from monthly_price (do NOT
+    // trust the client-sent amount).
+    const { data: bookingRow, error: bookingFetchError } = await supabaseAdmin
+      .from('bookings')
+      .select('id, user_id, monthly_price, final_total')
+      .eq('id', bookingId)
+      .single();
+
+    if (bookingFetchError || !bookingRow) {
+      console.error('Failed to load booking for payment:', bookingFetchError);
+      throw new Error('Booking not found');
+    }
+    if (bookingRow.user_id !== user.id) {
+      throw new Error('Unauthorized: booking does not belong to user');
+    }
+
     if (paymentType === 'subscription') {
+      // Server-derived amount. monthly_price already covers all areas for the
+      // monthly DD; ignore the client-supplied amount.
+      const subscriptionAmount = Number(bookingRow.monthly_price) || 0;
+      if (subscriptionAmount <= 0) {
+        throw new Error('Booking has no valid monthly_price for subscription');
+      }
+
       // Create subscription for monthly payments
       const subscriptionResponse = await fetch(`${GOCARDLESS_API_URL}/subscriptions`, {
         method: 'POST',
@@ -69,7 +100,7 @@ serve(async (req: Request) => {
         },
         body: JSON.stringify({
           subscriptions: {
-            amount: Math.round(amount * 100), // Convert to pence
+            amount: Math.round(subscriptionAmount * 100), // Convert to pence
             currency: 'GBP',
             name: `Advertising Campaign - Booking ${bookingId.substring(0, 8)}`,
             interval_unit: 'monthly',
@@ -96,22 +127,33 @@ serve(async (req: Request) => {
 
       console.log('Created subscription:', subscription.id);
 
-      // Save subscription to database
-      await supabase.from('gocardless_subscriptions').insert({
-        booking_id: bookingId,
-        gocardless_subscription_id: subscription.id,
-        gocardless_mandate_id: mandateId,
-        amount: amount,
-        currency: 'GBP',
-        interval_unit: 'monthly',
-        status: subscription.status,
-        start_date: subscription.start_date,
-      });
+      // Save subscription to database (service role — no INSERT RLS policy exists)
+      const { error: subInsertError } = await supabaseAdmin
+        .from('gocardless_subscriptions')
+        .insert({
+          booking_id: bookingId,
+          gocardless_subscription_id: subscription.id,
+          gocardless_mandate_id: mandateId,
+          amount: subscriptionAmount,
+          currency: 'GBP',
+          interval_unit: 'monthly',
+          status: subscription.status,
+          start_date: subscription.start_date,
+        });
+      if (subInsertError) {
+        console.error('Failed to insert gocardless_subscriptions:', subInsertError);
+        throw new Error(`Failed to save subscription: ${subInsertError.message}`);
+      }
 
       // Update booking
-      await supabase.from('bookings').update({
-        payment_status: 'subscription_pending',
-      }).eq('id', bookingId);
+      const { error: bookingUpdateError } = await supabaseAdmin
+        .from('bookings')
+        .update({ payment_status: 'subscription_pending' })
+        .eq('id', bookingId);
+      if (bookingUpdateError) {
+        console.error('Failed to update booking payment_status:', bookingUpdateError);
+        throw new Error(`Failed to update booking: ${bookingUpdateError.message}`);
+      }
 
       return new Response(
         JSON.stringify({
@@ -166,21 +208,32 @@ serve(async (req: Request) => {
 
       console.log('Created payment:', payment.id);
 
-      // Save payment to database
-      await supabase.from('gocardless_payments').insert({
-        booking_id: bookingId,
-        gocardless_payment_id: payment.id,
-        gocardless_mandate_id: mandateId,
-        amount: amount,
-        currency: 'GBP',
-        status: payment.status,
-        charge_date: payment.charge_date,
-      });
+      // Save payment to database (service role — no INSERT RLS policy exists)
+      const { error: payInsertError } = await supabaseAdmin
+        .from('gocardless_payments')
+        .insert({
+          booking_id: bookingId,
+          gocardless_payment_id: payment.id,
+          gocardless_mandate_id: mandateId,
+          amount: amount,
+          currency: 'GBP',
+          status: payment.status,
+          charge_date: payment.charge_date,
+        });
+      if (payInsertError) {
+        console.error('Failed to insert gocardless_payments:', payInsertError);
+        throw new Error(`Failed to save payment: ${payInsertError.message}`);
+      }
 
       // Update booking
-      await supabase.from('bookings').update({
-        payment_status: 'payment_pending',
-      }).eq('id', bookingId);
+      const { error: bookingUpdateError } = await supabaseAdmin
+        .from('bookings')
+        .update({ payment_status: 'payment_pending' })
+        .eq('id', bookingId);
+      if (bookingUpdateError) {
+        console.error('Failed to update booking payment_status:', bookingUpdateError);
+        throw new Error(`Failed to update booking: ${bookingUpdateError.message}`);
+      }
 
       return new Response(
         JSON.stringify({
