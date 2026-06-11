@@ -471,6 +471,11 @@ const CalculatorTest = () => {
       const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
       const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+      const normalisedFinalTotal = normaliseFinalTotal({
+        pricingModel,
+        monthlyPrice: monthlyFinal,
+        fallbackFinalTotal: pricingBreakdown.finalTotal,
+      });
       const basePayload = {
         email: formData.email,
         contact_name: formData.name,
@@ -485,7 +490,7 @@ const CalculatorTest = () => {
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
         subtotal: pricingBreakdown.subtotal,
-        final_total: pricingBreakdown.finalTotal,
+        final_total: normalisedFinalTotal,
         duration_multiplier: pricingBreakdown.durationMultiplier,
         total_circulation: pricingBreakdown.totalCirculation,
         volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
