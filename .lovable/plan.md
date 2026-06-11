@@ -1,63 +1,97 @@
-## VAT fix for Direct Debit collection & invoicing
+## Goal
 
-All stored figures (`subtotal`, `monthly_price`, `final_total`) remain ex-VAT. VAT (20%) is applied only at the payment layer (GoCardless) and surfaced clearly to customers + on invoices.
+Normalise `final_total` so that for **subscription** pricing models (currently only `bogof`) it equals `monthly_price × minimum_payments` (default 6) at every quote/booking write site. `fixed` / Pay-As-You-Go, `fixed_term`, and `leafleting` are priced per issue — the calculator's `finalTotal` is correct and left untouched.
 
-### 1. Single VAT source of truth
+The 11:33 broken booking came through `AdvertisingStepForm` L870 (direct insert, never patched in round 1). Verified — only `AdvertisingStepForm` (direct) and `Dashboard.handleTermsConfirm` (conversion) create `bookings` rows in the codebase.
 
-Create `supabase/functions/_shared/vat.ts`:
+## 1. Shared helper
+
+`src/lib/finalTotalNormaliser.ts` (frontend) and `supabase/functions/_shared/finalTotal.ts` (mirror):
+
 ```ts
-export const VAT_RATE = 0.20;
-export const withVat = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
-export const vatAmount = (net: number) => Math.round(net * VAT_RATE * 100) / 100;
+export const SUBSCRIPTION_PAYMENTS = 6;
+export const SUBSCRIPTION_MODELS = new Set<string>(['bogof']); // extend here for any future monthly product
+export const isSubscriptionModel = (m?: string | null) => !!m && SUBSCRIPTION_MODELS.has(String(m));
+export function normaliseFinalTotal({ pricingModel, monthlyPrice, fallbackFinalTotal, minimumPayments }: {
+  pricingModel?: string | null; monthlyPrice?: number | null; fallbackFinalTotal?: number | null; minimumPayments?: number;
+}) {
+  const payments = minimumPayments ?? SUBSCRIPTION_PAYMENTS;
+  if (isSubscriptionModel(pricingModel) && Number(monthlyPrice) > 0) {
+    return Math.round(Number(monthlyPrice) * payments * 100) / 100;
+  }
+  return Number(fallbackFinalTotal) || 0;
+}
 ```
 
-Mirror as `src/lib/vat.ts` for the frontend (same constant + helpers). No scattered `× 1.2` literals anywhere.
+For `fixed`/`leafleting` the helper returns the fallback unchanged → no behaviour change for those models, no risk to rows like booking `d3a77152` (3 × £180 = £540).
 
-### 2. `create-gocardless-payment` — charge inc VAT
+## 2. Apply helper at every quote / booking write site
 
-- Import `VAT_RATE` / `withVat`.
-- Subscription path: `subscriptionAmount = withVat(bookingRow.monthly_price)` (e.g. £129 → £154.80). Store the gross amount in `gocardless_subscriptions.amount` (that's what GC actually debits).
-- One-off path: re-derive server-side from `bookingRow.final_total` (ignore client `amount`), then `paymentAmount = withVat(finalTotal)`. Store gross in `gocardless_payments.amount`.
-- Pass gross amount (in pence) to GoCardless `/subscriptions` and `/payments`.
+Bookings inserts:
+- `src/components/AdvertisingStepForm.tsx` L870 (booking insert) and the companion webhook/email payloads at L975, L1016.
+- `src/pages/Dashboard.tsx` L763 — replace the inline subscription override with `normaliseFinalTotal(...)`.
 
-### 3. Pre-mandate UI — show actual DD amount
+Quote inserts/updates (so stored quote values are correct from the start, making conversion safe via any handler):
+- `src/components/dashboard/CreateBookingForm.tsx` L259 + companion webhook L311 / email L348; L401 + its downstream payloads.
+- `src/components/AdvertisingStepForm.tsx` L373 (+ webhook L435, email L482); L701 (+ webhook L810, email L763).
+- `src/pages/Advertising.tsx` L393 (quote_requests), L483, L538, L574, L647, L683 (quote inserts + downstream payloads).
+- `src/pages/Dashboard.tsx` L337 (pendingQuote replay).
+- `src/components/EditQuoteForm.tsx` L199 (quote update — recompute after `monthly_price` is finalised).
+- `src/components/LeafletingCalculator.tsx` L179 — leafleting → helper returns fallback unchanged, no edit needed.
 
-Update `BookingDetailsDialog.tsx` (the "Pay now" / payment-options screen the customer sees before being redirected to GoCardless) and `PaymentSetup.tsx` success messaging:
+## 3. Quote → booking conversion
 
-- For monthly: show `£154.80/month inc VAT (£129.00 + £25.80 VAT)`.
-- For one-off: show `£928.80 inc VAT (£774.00 + £154.80 VAT)`.
-- Use helpers from `src/lib/vat.ts`. Keep all *quote* surfaces (`ViewQuoteContent`, basket summaries, calculator) unchanged — they stay "+ VAT" / ex-VAT.
+`src/pages/Dashboard.tsx` `handleTermsConfirm` (L733) — replace the inline `correctedFinalTotal` with `normaliseFinalTotal(...)` so the helper is the single source of truth.
 
-Affected files (UI labels only): `src/components/dashboard/BookingDetailsDialog.tsx` (payment options block ~L884-910, "Direct Debit Setup Complete" block ~L670-700), and the toast/message in `src/pages/PaymentSetup.tsx`.
+## 4. Gate Monthly Direct Debit to subscription models
 
-### 4. `generate-invoice` — proper VAT breakdown
+`payment_options` has no `pricing_model` column — `option_type='monthly'` (Monthly Direct Debit, `minimum_payments = 6`) is currently selectable for every model. A `fixed` booking like `d3a77152` would, if Monthly DD were chosen, charge `withVat(£180) = £216/mo × 6` — wrong on both period and total.
 
-Schema additions (one migration):
+Two defences:
 
-- `invoices`: add `net_amount numeric`, `vat_rate numeric default 0.20`, `vat_amount numeric`, `gross_amount numeric`. Keep `amount` for back-compat (= gross).
-- `site_settings` (or a constant) — add `vat_registration_number text` so the number is editable later. Placeholder value `'GB000000000'` for now.
+**Frontend gate** — add `src/lib/paymentOptionFilters.ts` exporting `filterPaymentOptionsForModel(options, pricingModel)` which drops `option_type === 'monthly'` whenever `!isSubscriptionModel(pricingModel)`. Apply at the two radio-list render sites:
+- `src/components/dashboard/CreateBookingForm.tsx` (~L820 `sortedOptions`).
+- `src/components/BookingSummaryStep.tsx` (~L597 `paymentOptions.sort(...)`).
 
-Edge function changes (`supabase/functions/generate-invoice/index.ts`):
+**Server guard** — in `supabase/functions/create-gocardless-payment/index.ts`:
+1. Widen the booking select to include `pricing_model`:
+   ```ts
+   .select('id, user_id, monthly_price, final_total, pricing_model')
+   ```
+2. After fetching `bookingRow`, if `paymentType === 'subscription'` and `bookingRow.pricing_model` is not in the subscription set, return 400 `"Monthly subscription is not available for this booking type"` before any GoCardless API call.
 
-- Compute `net = booking.monthly_price` (subscription) or `booking.final_total` (one-off), then `vat = vatAmount(net)`, `gross = withVat(net)`. Insert all four columns; `amount` mirrors `gross` for back-compat.
-- PDF additions in `generateInvoicePdf`:
-  - Header block: add "VAT Reg No: {vat_registration_number}" under company name.
-  - Totals block: replace single "Total" line with:
-    ```
-    Subtotal (ex VAT):   £129.00
-    VAT @ 20%:           £25.80
-    Total (inc VAT):     £154.80
-    ```
-  - For subscription invoices, label as "Monthly Total (inc VAT)".
-  - Update the Campaign Details row amount to show the ex-VAT subtotal (unchanged value, clearer label).
+## 5. Backfill migration — written, NOT executed
 
-### 5. Out of scope (explicitly unchanged)
+Write the SQL to `.lovable/backfill-final-total.sql` (plain file, not under `supabase/migrations/` so it does not auto-run). User previews and runs separately via the SQL Editor after code verification.
 
-- Quote display, `pricingCalculator.ts`, `ViewQuoteContent.tsx`, basket summaries, calculator UI.
-- `bookings.subtotal`, `bookings.monthly_price`, `bookings.final_total` storage (still ex-VAT).
-- `complete-gocardless-redirect`, `gocardless-webhook` logic (they don't touch amounts).
+```sql
+-- Backfill: ONLY pricing_model = 'bogof'. Excludes 'fixed' (PAYG, e.g. booking d3a77152).
+-- Preview first:
+SELECT id, pricing_model, monthly_price, final_total, ROUND(monthly_price * 6, 2) AS corrected
+FROM public.bookings
+WHERE pricing_model = 'bogof'
+  AND monthly_price > 0
+  AND (final_total IS NULL OR final_total <> ROUND(monthly_price * 6, 2));
 
-### Migration summary
+-- Then apply:
+UPDATE public.bookings
+SET final_total = ROUND(monthly_price * 6, 2)
+WHERE pricing_model = 'bogof'
+  AND monthly_price IS NOT NULL AND monthly_price > 0
+  AND (final_total IS NULL OR final_total <> ROUND(monthly_price * 6, 2));
 
-- Add `net_amount`, `vat_rate`, `vat_amount`, `gross_amount` columns to `public.invoices` (nullable for historical rows).
-- Add `vat_registration_number` row to `site_settings` (or a column on a settings table — will confirm exact location when implementing).
+UPDATE public.quotes
+SET final_total = ROUND(monthly_price * 6, 2)
+WHERE pricing_model = 'bogof'
+  AND monthly_price IS NOT NULL AND monthly_price > 0
+  AND (final_total IS NULL OR final_total <> ROUND(monthly_price * 6, 2));
+```
+
+## 6. Out of scope (unchanged)
+
+VAT helpers, quote display surfaces, `pricingCalculator.ts`, all leafleting/fixed/fixed_term `final_total` semantics, edge functions that only update payment-status fields.
+
+## Files touched
+
+- new: `src/lib/finalTotalNormaliser.ts`, `src/lib/paymentOptionFilters.ts`, `supabase/functions/_shared/finalTotal.ts`, `.lovable/backfill-final-total.sql`
+- edited: `src/components/AdvertisingStepForm.tsx`, `src/pages/Advertising.tsx`, `src/pages/Dashboard.tsx`, `src/components/dashboard/CreateBookingForm.tsx`, `src/components/BookingSummaryStep.tsx`, `src/components/EditQuoteForm.tsx`, `supabase/functions/create-gocardless-payment/index.ts`
