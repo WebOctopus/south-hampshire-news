@@ -685,6 +685,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // If returning BOGOF customer, save as quote request instead of booking
       if (isReturningBogofCustomer) {
+        const returningMonthlyPrice = calculateMonthlyPrice(
+          Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          selectedPricingModel,
+          Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+          paymentOptions || []
+        );
+        const returningFinalTotal = normaliseFinalTotal({
+          pricingModel: selectedPricingModel,
+          monthlyPrice: returningMonthlyPrice,
+          fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        });
         const quotePayload = {
           user_id: userId,
           contact_name: fullName,
@@ -698,14 +709,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
           bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
           bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-          monthly_price: calculateMonthlyPrice(
-            Number(campaignData.pricingBreakdown?.finalTotal) || 0,
-            selectedPricingModel,
-            Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
-            paymentOptions || []
-          ),
+          monthly_price: returningMonthlyPrice,
           subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
-          final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          final_total: returningFinalTotal,
           duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
           total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
           volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
