@@ -831,7 +831,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                     <>
                       {/* Sort payment options */}
                       {(() => {
-                        const sortedOptions = [...paymentOptions].sort((a, b) => {
+                        const eligibleOptions = filterPaymentOptionsForModel(paymentOptions, pricingModel);
+                        const sortedOptions = [...eligibleOptions].sort((a, b) => {
                           const order: Record<string, number> = { 'monthly': 1, '6_months': 2, '12_months': 3 };
                           return (order[a.option_type] || 99) - (order[b.option_type] || 99);
                         });
