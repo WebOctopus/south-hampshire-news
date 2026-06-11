@@ -19,6 +19,8 @@ import { User } from '@supabase/supabase-js';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { calculatePaymentAmount, formatPaymentPrice } from '@/lib/paymentCalculations';
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
+import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
+import { filterPaymentOptionsForModel } from '@/lib/paymentOptionFilters';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
