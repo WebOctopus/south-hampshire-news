@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.10";
+import { VAT_RATE, withVat } from "../_shared/vat.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,12 +84,15 @@ serve(async (req: Request) => {
     }
 
     if (paymentType === 'subscription') {
-      // Server-derived amount. monthly_price already covers all areas for the
-      // monthly DD; ignore the client-supplied amount.
-      const subscriptionAmount = Number(bookingRow.monthly_price) || 0;
-      if (subscriptionAmount <= 0) {
+      // Server-derived NET amount. monthly_price already covers all areas
+      // for the monthly DD; ignore the client-supplied amount.
+      const netAmount = Number(bookingRow.monthly_price) || 0;
+      if (netAmount <= 0) {
         throw new Error('Booking has no valid monthly_price for subscription');
       }
+      // Apply VAT at the payment layer — bookings.monthly_price is ex-VAT.
+      const subscriptionAmount = withVat(netAmount);
+      console.log(`Subscription charge: net £${netAmount.toFixed(2)} + VAT @ ${VAT_RATE * 100}% = gross £${subscriptionAmount.toFixed(2)}`);
 
       // Create subscription for monthly payments
       const subscriptionResponse = await fetch(`${GOCARDLESS_API_URL}/subscriptions`, {
@@ -134,7 +138,7 @@ serve(async (req: Request) => {
           booking_id: bookingId,
           gocardless_subscription_id: subscription.id,
           gocardless_mandate_id: mandateId,
-          amount: subscriptionAmount,
+          amount: subscriptionAmount, // gross (inc VAT) — what GoCardless debits
           currency: 'GBP',
           interval_unit: 'monthly',
           status: subscription.status,
@@ -173,6 +177,14 @@ serve(async (req: Request) => {
       const chargeDate = new Date(today.setDate(today.getDate() + 3)); // 3 business days from now
       const chargeDateStr = chargeDate.toISOString().split('T')[0];
 
+      // Server-derived NET amount (ignore client-supplied amount).
+      const netOneOff = Number(bookingRow.final_total) || 0;
+      if (netOneOff <= 0) {
+        throw new Error('Booking has no valid final_total for one-off payment');
+      }
+      const grossOneOff = withVat(netOneOff);
+      console.log(`One-off charge: net £${netOneOff.toFixed(2)} + VAT @ ${VAT_RATE * 100}% = gross £${grossOneOff.toFixed(2)}`);
+
       const paymentResponse = await fetch(`${GOCARDLESS_API_URL}/payments`, {
         method: 'POST',
         headers: {
@@ -182,7 +194,7 @@ serve(async (req: Request) => {
         },
         body: JSON.stringify({
           payments: {
-            amount: Math.round(amount * 100), // Convert to pence
+            amount: Math.round(grossOneOff * 100), // gross (inc VAT), in pence
             currency: 'GBP',
             charge_date: chargeDateStr,
             description: `Advertising Campaign - Booking ${bookingId.substring(0, 8)}`,
@@ -215,7 +227,7 @@ serve(async (req: Request) => {
           booking_id: bookingId,
           gocardless_payment_id: payment.id,
           gocardless_mandate_id: mandateId,
-          amount: amount,
+          amount: grossOneOff, // gross (inc VAT) — what GoCardless debits
           currency: 'GBP',
           status: payment.status,
           charge_date: payment.charge_date,
