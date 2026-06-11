@@ -351,6 +351,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const fraudData = await getFraudDetectionData();
 
       // Save to quotes table
+      const quoteMonthlyPrice = calculateMonthlyPrice(
+        Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        selectedPricingModel,
+        Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+        paymentOptions || []
+      );
+      const quoteFinalTotal = normaliseFinalTotal({
+        pricingModel: selectedPricingModel,
+        monthlyPrice: quoteMonthlyPrice,
+        fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+      });
       const quotePayload = {
         user_id: userId,
         contact_name: fullName,
@@ -364,14 +375,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
         bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
         bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-        monthly_price: calculateMonthlyPrice(
-          Number(campaignData.pricingBreakdown?.finalTotal) || 0,
-          selectedPricingModel,
-          Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
-          paymentOptions || []
-        ),
+        monthly_price: quoteMonthlyPrice,
         subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
-        final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        final_total: quoteFinalTotal,
         duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
         total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
         volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
