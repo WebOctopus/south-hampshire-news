@@ -40,6 +40,7 @@ import { EditModeProvider, EditModeToggle, EditableText } from "@/components/inl
 import { useAdvertisingContent } from "@/hooks/useAdvertisingContent";
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
 interface FormData {
   name: string;
   email: string;
