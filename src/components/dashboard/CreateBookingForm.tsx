@@ -240,6 +240,17 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     
     setSubmitting(true);
     try {
+      const monthlyPriceValue = calculateMonthlyPrice(
+        pricingBreakdown.finalTotal,
+        pricingModel,
+        pricingBreakdown.durationMultiplier || 1,
+        paymentOptions,
+      );
+      const normalisedFinalTotal = normaliseFinalTotal({
+        pricingModel,
+        monthlyPrice: monthlyPriceValue,
+        fallbackFinalTotal: pricingBreakdown.finalTotal,
+      });
       const quotePayload = {
         user_id: user.id,
         contact_name: profile?.display_name || user.email?.split('@')[0] || '',
@@ -251,14 +262,9 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         selected_area_ids: pricingModel === 'leafleting' ? selectedAreas : (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas),
         bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : null,
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : null,
-        monthly_price: calculateMonthlyPrice(
-          pricingBreakdown.finalTotal,
-          pricingModel,
-          pricingBreakdown.durationMultiplier || 1,
-          paymentOptions
-        ),
+        monthly_price: monthlyPriceValue,
         subtotal: pricingBreakdown.subtotal,
-        final_total: pricingBreakdown.finalTotal,
+        final_total: normalisedFinalTotal,
         total_circulation: pricingBreakdown.totalCirculation,
         volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0) as number,
         duration_discount_percent: ('durationDiscount' in pricingBreakdown ? (pricingBreakdown.durationDiscount || 0) : 0) as number,
