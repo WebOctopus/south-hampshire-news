@@ -11,6 +11,7 @@ import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { useStepForm } from '@/components/StepForm';
 import { getAreaGroupedSchedules, getCombinedStartingIssues, normalizeMonthToYYYYMM } from '@/lib/issueSchedule';
 import { calculatePaymentAmount as calcPaymentAmount } from '@/lib/paymentCalculations';
+import { filterPaymentOptionsForModel } from '@/lib/paymentOptionFilters';
 import { parse } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
