@@ -333,7 +333,16 @@ const Dashboard = () => {
       if (!pending) return;
       try {
         const parsed = JSON.parse(pending);
-        const payload = { ...parsed, user_id: user.id } as any;
+        const { normaliseFinalTotal } = await import('@/lib/finalTotalNormaliser');
+        const payload = {
+          ...parsed,
+          user_id: user.id,
+          final_total: normaliseFinalTotal({
+            pricingModel: parsed?.pricing_model,
+            monthlyPrice: parsed?.monthly_price,
+            fallbackFinalTotal: parsed?.final_total,
+          }),
+        } as any;
         const { error } = await supabase.from('quotes').insert(payload);
         if (error) throw error;
         toast({ title: 'Quote saved', description: 'We saved your quote to your dashboard.' });
