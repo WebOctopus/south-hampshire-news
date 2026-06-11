@@ -26,6 +26,7 @@ import { getFraudDetectionData } from '@/hooks/useBogofEligibility';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
 import { useAdvertisingContent } from '@/hooks/useAdvertisingContent';
+import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -350,6 +351,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const fraudData = await getFraudDetectionData();
 
       // Save to quotes table
+      const quoteMonthlyPrice = calculateMonthlyPrice(
+        Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        selectedPricingModel,
+        Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+        paymentOptions || []
+      );
+      const quoteFinalTotal = normaliseFinalTotal({
+        pricingModel: selectedPricingModel,
+        monthlyPrice: quoteMonthlyPrice,
+        fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+      });
       const quotePayload = {
         user_id: userId,
         contact_name: fullName,
@@ -363,14 +375,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
         bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
         bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-        monthly_price: calculateMonthlyPrice(
-          Number(campaignData.pricingBreakdown?.finalTotal) || 0,
-          selectedPricingModel,
-          Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
-          paymentOptions || []
-        ),
+        monthly_price: quoteMonthlyPrice,
         subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
-        final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        final_total: quoteFinalTotal,
         duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
         total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
         volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
@@ -432,7 +439,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             bogof_free_areas: campaignData.bogofFreeAreas || [],
             total_circulation: campaignData.pricingBreakdown?.totalCirculation,
             subtotal: campaignData.pricingBreakdown?.subtotal,
-            final_total: campaignData.pricingBreakdown?.finalTotal,
+            final_total: quotePayload.final_total,
             monthly_price: quotePayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             status: 'draft',
@@ -479,7 +486,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             bogof_free_areas: (campaignData.bogofFreeAreas || []).map(id => areas?.find(a => a.id === id)?.name || id),
             total_circulation: campaignData.pricingBreakdown?.totalCirculation,
             subtotal: campaignData.pricingBreakdown?.subtotal,
-            final_total: campaignData.pricingBreakdown?.finalTotal,
+            final_total: quotePayload.final_total,
             monthly_price: quotePayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,
@@ -678,6 +685,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // If returning BOGOF customer, save as quote request instead of booking
       if (isReturningBogofCustomer) {
+        const returningMonthlyPrice = calculateMonthlyPrice(
+          Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          selectedPricingModel,
+          Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+          paymentOptions || []
+        );
+        const returningFinalTotal = normaliseFinalTotal({
+          pricingModel: selectedPricingModel,
+          monthlyPrice: returningMonthlyPrice,
+          fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        });
         const quotePayload = {
           user_id: userId,
           contact_name: fullName,
@@ -691,14 +709,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
           bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
           bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-          monthly_price: calculateMonthlyPrice(
-            Number(campaignData.pricingBreakdown?.finalTotal) || 0,
-            selectedPricingModel,
-            Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
-            paymentOptions || []
-          ),
+          monthly_price: returningMonthlyPrice,
           subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
-          final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+          final_total: returningFinalTotal,
           duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
           total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
           volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
@@ -760,7 +773,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               bogof_free_areas: (campaignData.bogofFreeAreas || []).map((id: string) => areas?.find(a => a.id === id)?.name || id),
               total_circulation: campaignData.pricingBreakdown?.totalCirculation,
               subtotal: campaignData.pricingBreakdown?.subtotal,
-              final_total: campaignData.pricingBreakdown?.finalTotal,
+              final_total: quotePayload.final_total,
               monthly_price: quotePayload.monthly_price,
               volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
               pricing_breakdown: campaignData.pricingBreakdown,
@@ -807,7 +820,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               bogof_free_areas: campaignData.bogofFreeAreas || [],
               total_circulation: campaignData.pricingBreakdown?.totalCirculation,
               subtotal: campaignData.pricingBreakdown?.subtotal,
-              final_total: campaignData.pricingBreakdown?.finalTotal,
+            final_total: quotePayload.final_total,
               monthly_price: quotePayload.monthly_price,
               volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
               status: 'bogof_return_interest',
@@ -847,6 +860,17 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       }
 
       // Create booking record for eligible customers
+      const bookingMonthlyPrice = calculateMonthlyPrice(
+        Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        selectedPricingModel,
+        Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
+        paymentOptions || []
+      );
+      const bookingFinalTotal = normaliseFinalTotal({
+        pricingModel: selectedPricingModel,
+        monthlyPrice: bookingMonthlyPrice,
+        fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+      });
       const bookingPayload = {
         user_id: userId,
         contact_name: fullName,
@@ -860,14 +884,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         selected_area_ids: Array.isArray(effectiveSelectedAreas) ? effectiveSelectedAreas : [],
         bogof_paid_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofPaidAreas) ? campaignData.bogofPaidAreas : [],
         bogof_free_area_ids: selectedPricingModel === 'bogof' && Array.isArray(campaignData.bogofFreeAreas) ? campaignData.bogofFreeAreas : [],
-        monthly_price: calculateMonthlyPrice(
-          Number(campaignData.pricingBreakdown?.finalTotal) || 0,
-          selectedPricingModel,
-          Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
-          paymentOptions || []
-        ),
+        monthly_price: bookingMonthlyPrice,
         subtotal: Number(campaignData.pricingBreakdown?.subtotal) || 0,
-        final_total: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
+        final_total: bookingFinalTotal,
         duration_multiplier: Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
         total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
         volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
@@ -972,7 +991,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             bogof_free_areas: campaignData.bogofFreeAreas || [],
             total_circulation: campaignData.pricingBreakdown?.totalCirculation,
             subtotal: campaignData.pricingBreakdown?.subtotal,
-            final_total: campaignData.pricingBreakdown?.finalTotal,
+            final_total: bookingPayload.final_total,
             monthly_price: bookingPayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             status: 'pending',
@@ -1013,7 +1032,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             bogof_free_areas: (campaignData.bogofFreeAreas || []).map(id => areas?.find(a => a.id === id)?.name || id),
             total_circulation: campaignData.pricingBreakdown?.totalCirculation,
             subtotal: campaignData.pricingBreakdown?.subtotal,
-            final_total: campaignData.pricingBreakdown?.finalTotal,
+            final_total: bookingPayload.final_total,
             monthly_price: bookingPayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
             pricing_breakdown: campaignData.pricingBreakdown,

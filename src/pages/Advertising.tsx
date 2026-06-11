@@ -40,6 +40,7 @@ import { EditModeProvider, EditModeToggle, EditableText } from "@/components/inl
 import { useAdvertisingContent } from "@/hooks/useAdvertisingContent";
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
+import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
 interface FormData {
   name: string;
   email: string;
@@ -390,7 +391,11 @@ const CalculatorTest = () => {
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
         subtotal: pricingBreakdown?.subtotal || 0,
-        final_total: pricingBreakdown?.finalTotal || 0,
+        final_total: normaliseFinalTotal({
+          pricingModel,
+          monthlyPrice: monthlyFinal,
+          fallbackFinalTotal: pricingBreakdown?.finalTotal || 0,
+        }),
         duration_multiplier: pricingBreakdown?.durationMultiplier || 1,
         total_circulation: pricingBreakdown?.totalCirculation || 0,
         volume_discount_percent: pricingBreakdown?.volumeDiscountPercent || 0,
@@ -466,6 +471,11 @@ const CalculatorTest = () => {
       const durationDiscountPercent = pricingModel === 'leafleting' ? 0 : (durationData as any)?.discount_percentage || 0;
       const subtotalAfterVolume = pricingBreakdown.subtotal - pricingBreakdown.volumeDiscount;
       const monthlyFinal = subtotalAfterVolume * (1 - durationDiscountPercent / 100);
+      const normalisedFinalTotal = normaliseFinalTotal({
+        pricingModel,
+        monthlyPrice: monthlyFinal,
+        fallbackFinalTotal: pricingBreakdown.finalTotal,
+      });
       const basePayload = {
         email: formData.email,
         contact_name: formData.name,
@@ -480,7 +490,7 @@ const CalculatorTest = () => {
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
         subtotal: pricingBreakdown.subtotal,
-        final_total: pricingBreakdown.finalTotal,
+        final_total: normalisedFinalTotal,
         duration_multiplier: pricingBreakdown.durationMultiplier,
         total_circulation: pricingBreakdown.totalCirculation,
         volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
@@ -535,7 +545,7 @@ const CalculatorTest = () => {
               bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
               total_circulation: pricingBreakdown.totalCirculation,
               subtotal: pricingBreakdown.subtotal,
-              final_total: pricingBreakdown.finalTotal,
+              final_total: basePayload.final_total,
               monthly_price: basePayload.monthly_price,
               volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
               status: 'draft',
@@ -571,7 +581,7 @@ const CalculatorTest = () => {
               bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas.map(id => areas?.find(a => a.id === id)?.name || id) : [],
               total_circulation: pricingBreakdown.totalCirculation,
               subtotal: pricingBreakdown.subtotal,
-              final_total: pricingBreakdown.finalTotal,
+              final_total: basePayload.final_total,
               monthly_price: basePayload.monthly_price,
               volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
               duration_discount_percent: durationDiscountPercent,
@@ -644,7 +654,7 @@ const CalculatorTest = () => {
                 bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
                 total_circulation: pricingBreakdown.totalCirculation,
                 subtotal: pricingBreakdown.subtotal,
-                final_total: pricingBreakdown.finalTotal,
+                final_total: basePayload.final_total,
                 monthly_price: basePayload.monthly_price,
                 volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
                 status: 'draft',
@@ -680,7 +690,7 @@ const CalculatorTest = () => {
                 bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas.map(id => areas?.find(a => a.id === id)?.name || id) : [],
                 total_circulation: pricingBreakdown.totalCirculation,
                 subtotal: pricingBreakdown.subtotal,
-                final_total: pricingBreakdown.finalTotal,
+                final_total: basePayload.final_total,
                 monthly_price: basePayload.monthly_price,
                 volume_discount_percent: pricingBreakdown.volumeDiscountPercent,
                 duration_discount_percent: durationDiscountPercent,

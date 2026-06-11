@@ -19,6 +19,8 @@ import { User } from '@supabase/supabase-js';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { calculatePaymentAmount, formatPaymentPrice } from '@/lib/paymentCalculations';
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
+import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
+import { filterPaymentOptionsForModel } from '@/lib/paymentOptionFilters';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -238,6 +240,17 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     
     setSubmitting(true);
     try {
+      const monthlyPriceValue = calculateMonthlyPrice(
+        pricingBreakdown.finalTotal,
+        pricingModel,
+        pricingBreakdown.durationMultiplier || 1,
+        paymentOptions,
+      );
+      const normalisedFinalTotal = normaliseFinalTotal({
+        pricingModel,
+        monthlyPrice: monthlyPriceValue,
+        fallbackFinalTotal: pricingBreakdown.finalTotal,
+      });
       const quotePayload = {
         user_id: user.id,
         contact_name: profile?.display_name || user.email?.split('@')[0] || '',
@@ -249,14 +262,9 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         selected_area_ids: pricingModel === 'leafleting' ? selectedAreas : (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas),
         bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : null,
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : null,
-        monthly_price: calculateMonthlyPrice(
-          pricingBreakdown.finalTotal,
-          pricingModel,
-          pricingBreakdown.durationMultiplier || 1,
-          paymentOptions
-        ),
+        monthly_price: monthlyPriceValue,
         subtotal: pricingBreakdown.subtotal,
-        final_total: pricingBreakdown.finalTotal,
+        final_total: normalisedFinalTotal,
         total_circulation: pricingBreakdown.totalCirculation,
         volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0) as number,
         duration_discount_percent: ('durationDiscount' in pricingBreakdown ? (pricingBreakdown.durationDiscount || 0) : 0) as number,
@@ -308,7 +316,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             bogof_free_areas: pricingModel === 'bogof' ? bogofFreeAreas : [],
             total_circulation: pricingBreakdown.totalCirculation,
             subtotal: pricingBreakdown.subtotal,
-            final_total: pricingBreakdown.finalTotal,
+            final_total: quotePayload.final_total,
             monthly_price: quotePayload.monthly_price,
             volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0),
             status: 'draft',
@@ -345,7 +353,7 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
             bogof_free_areas: (pricingModel === 'bogof' ? bogofFreeAreas : []).map(id => areas?.find(a => a.id === id)?.name || id),
             total_circulation: pricingBreakdown.totalCirculation,
             subtotal: pricingBreakdown.subtotal,
-            final_total: pricingBreakdown.finalTotal,
+            final_total: quotePayload.final_total,
             monthly_price: quotePayload.monthly_price,
             pricing_breakdown: pricingBreakdown,
             selections: quotePayload.selections,
@@ -379,6 +387,17 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
     
     setSubmitting(true);
     try {
+      const monthlyPriceValue = calculateMonthlyPrice(
+        pricingBreakdown.finalTotal,
+        pricingModel,
+        pricingBreakdown.durationMultiplier || 1,
+        paymentOptions,
+      );
+      const normalisedFinalTotal = normaliseFinalTotal({
+        pricingModel,
+        monthlyPrice: monthlyPriceValue,
+        fallbackFinalTotal: pricingBreakdown.finalTotal,
+      });
       // Save as quote first, then trigger terms acceptance flow
       const quotePayload = {
         user_id: user.id,
@@ -391,14 +410,9 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
         selected_area_ids: pricingModel === 'leafleting' ? selectedAreas : (pricingModel === 'bogof' ? [...bogofPaidAreas, ...bogofFreeAreas] : selectedAreas),
         bogof_paid_area_ids: pricingModel === 'bogof' ? bogofPaidAreas : null,
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : null,
-        monthly_price: calculateMonthlyPrice(
-          pricingBreakdown.finalTotal,
-          pricingModel,
-          pricingBreakdown.durationMultiplier || 1,
-          paymentOptions
-        ),
+        monthly_price: monthlyPriceValue,
         subtotal: pricingBreakdown.subtotal,
-        final_total: pricingBreakdown.finalTotal,
+        final_total: normalisedFinalTotal,
         total_circulation: pricingBreakdown.totalCirculation,
         volume_discount_percent: ('volumeDiscount' in pricingBreakdown ? pricingBreakdown.volumeDiscount : 0) as number,
         duration_discount_percent: ('durationDiscount' in pricingBreakdown ? (pricingBreakdown.durationDiscount || 0) : 0) as number,
@@ -817,7 +831,8 @@ export default function CreateBookingForm({ user, onBookingCreated, onQuoteSaved
                     <>
                       {/* Sort payment options */}
                       {(() => {
-                        const sortedOptions = [...paymentOptions].sort((a, b) => {
+                        const eligibleOptions = filterPaymentOptionsForModel(paymentOptions, pricingModel);
+                        const sortedOptions = [...eligibleOptions].sort((a, b) => {
                           const order: Record<string, number> = { 'monthly': 1, '6_months': 2, '12_months': 3 };
                           return (order[a.option_type] || 99) - (order[b.option_type] || 99);
                         });
