@@ -302,7 +302,7 @@ function generateInvoiceHtml(invoice: any, booking: any): string {
   `;
 }
 
-function generateInvoicePdf(invoice: any, booking: any): jsPDF {
+function generateInvoicePdf(invoice: any, booking: any, vatRegNumber: string): jsPDF {
   const doc = new jsPDF();
   
   const formatDate = (date: string) => {
@@ -314,7 +314,7 @@ function generateInvoicePdf(invoice: any, booking: any): jsPDF {
   };
 
   const formatPrice = (amount: number) => {
-    return `£${amount.toFixed(2)}`;
+    return `£${(Number(amount) || 0).toFixed(2)}`;
   };
 
   // Header - Company Info
@@ -325,6 +325,7 @@ function generateInvoicePdf(invoice: any, booking: any): jsPDF {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text('Community Magazine & Local Advertising', 20, 27);
+  doc.text(`VAT Reg No: ${vatRegNumber}`, 20, 33);
 
   // Invoice Title
   doc.setFontSize(24);
@@ -435,11 +436,29 @@ function generateInvoicePdf(invoice: any, booking: any): jsPDF {
   doc.setDrawColor(200, 200, 200);
   doc.line(20, yPos, 190, yPos);
   yPos += 10;
-  doc.setFontSize(14);
+
+  const net = Number(invoice.net_amount) || 0;
+  const vat = Number(invoice.vat_amount) || 0;
+  const gross = Number(invoice.gross_amount) || Number(invoice.amount) || 0;
+  const vatPct = Math.round((Number(invoice.vat_rate) || 0.2) * 100);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Subtotal (ex VAT):', 120, yPos);
+  doc.text(formatPrice(net), 175, yPos, { align: 'right' });
+
+  yPos += 7;
+  doc.text(`VAT @ ${vatPct}%:`, 120, yPos);
+  doc.text(formatPrice(vat), 175, yPos, { align: 'right' });
+
+  yPos += 9;
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  const totalLabel = invoice.payment_type === 'subscription' ? 'Total Monthly:' : 'Total:';
+  const totalLabel = invoice.payment_type === 'subscription'
+    ? 'Monthly Total (inc VAT):'
+    : 'Total (inc VAT):';
   doc.text(totalLabel, 120, yPos);
-  doc.text(formatPrice(invoice.amount), 160, yPos);
+  doc.text(formatPrice(gross), 175, yPos, { align: 'right' });
 
   // Footer
   yPos += 20;
