@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.10";
 import { VAT_RATE, withVat } from "../_shared/vat.ts";
+import { isSubscriptionModel } from "../_shared/finalTotal.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,7 +72,7 @@ serve(async (req: Request) => {
     // trust the client-sent amount).
     const { data: bookingRow, error: bookingFetchError } = await supabaseAdmin
       .from('bookings')
-      .select('id, user_id, monthly_price, final_total')
+      .select('id, user_id, monthly_price, final_total, pricing_model')
       .eq('id', bookingId)
       .single();
 
@@ -84,6 +85,23 @@ serve(async (req: Request) => {
     }
 
     if (paymentType === 'subscription') {
+      // Guard: Monthly Direct Debit is only valid for true subscription
+      // pricing models. Per-issue models (e.g. 'fixed' Pay-As-You-Go) would
+      // be charged monthly_price × 6 regardless of issue count — wrong.
+      if (!isSubscriptionModel(bookingRow.pricing_model)) {
+        console.error(
+          `Subscription rejected: pricing_model='${bookingRow.pricing_model}' is not a subscription model`,
+        );
+        return new Response(
+          JSON.stringify({
+            error: 'Monthly subscription is not available for this booking type',
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          },
+        );
+      }
       // Server-derived NET amount. monthly_price already covers all areas
       // for the monthly DD; ignore the client-supplied amount.
       const netAmount = Number(bookingRow.monthly_price) || 0;
