@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.10';
 import { jsPDF } from 'https://esm.sh/jspdf@2.5.2';
+import { VAT_RATE, withVat, vatAmount } from '../_shared/vat.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -64,13 +65,26 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to generate invoice number: ${invoiceNumberError.message}`);
     }
 
-    // Determine amount
-    let amount = booking.final_total || booking.subtotal || 0;
-    
-    // For subscriptions, amount is the monthly price
+    // Determine NET amount (all stored figures are ex-VAT)
+    let netAmount: number;
     if (type === 'subscription') {
-      amount = booking.monthly_price || amount;
+      netAmount = Number(booking.monthly_price) || Number(booking.final_total) || Number(booking.subtotal) || 0;
+    } else {
+      netAmount = Number(booking.final_total) || Number(booking.subtotal) || 0;
     }
+    const vat = vatAmount(netAmount);
+    const gross = withVat(netAmount);
+
+    // Fetch VAT registration number from site_settings (placeholder if absent)
+    const { data: vatSetting } = await supabase
+      .from('site_settings')
+      .select('setting_value')
+      .eq('setting_key', 'vat_registration_number')
+      .maybeSingle();
+    const vatRegNumber =
+      (typeof vatSetting?.setting_value === 'string'
+        ? vatSetting.setting_value
+        : (vatSetting?.setting_value as any)) || 'GB000000000';
 
     // Create invoice record
     const { data: invoice, error: invoiceError } = await supabase
@@ -78,7 +92,11 @@ Deno.serve(async (req) => {
       .insert({
         booking_id: bookingId,
         invoice_number: invoiceNumber,
-        amount,
+        amount: gross, // back-compat: amount = gross (inc VAT)
+        net_amount: netAmount,
+        vat_rate: VAT_RATE,
+        vat_amount: vat,
+        gross_amount: gross,
         payment_type: type,
         gocardless_payment_id: paymentId,
         gocardless_subscription_id: subscriptionId,
@@ -93,7 +111,7 @@ Deno.serve(async (req) => {
     }
 
     // Generate PDF invoice
-    const pdf = generateInvoicePdf(invoice, booking);
+    const pdf = generateInvoicePdf(invoice, booking, vatRegNumber);
     const pdfBytes = pdf.output('arraybuffer');
     
     console.log('PDF generated, uploading to storage...');
@@ -284,7 +302,7 @@ function generateInvoiceHtml(invoice: any, booking: any): string {
   `;
 }
 
-function generateInvoicePdf(invoice: any, booking: any): jsPDF {
+function generateInvoicePdf(invoice: any, booking: any, vatRegNumber: string): jsPDF {
   const doc = new jsPDF();
   
   const formatDate = (date: string) => {
@@ -296,7 +314,7 @@ function generateInvoicePdf(invoice: any, booking: any): jsPDF {
   };
 
   const formatPrice = (amount: number) => {
-    return `£${amount.toFixed(2)}`;
+    return `£${(Number(amount) || 0).toFixed(2)}`;
   };
 
   // Header - Company Info
@@ -307,6 +325,7 @@ function generateInvoicePdf(invoice: any, booking: any): jsPDF {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text('Community Magazine & Local Advertising', 20, 27);
+  doc.text(`VAT Reg No: ${vatRegNumber}`, 20, 33);
 
   // Invoice Title
   doc.setFontSize(24);
@@ -417,11 +436,29 @@ function generateInvoicePdf(invoice: any, booking: any): jsPDF {
   doc.setDrawColor(200, 200, 200);
   doc.line(20, yPos, 190, yPos);
   yPos += 10;
-  doc.setFontSize(14);
+
+  const net = Number(invoice.net_amount) || 0;
+  const vat = Number(invoice.vat_amount) || 0;
+  const gross = Number(invoice.gross_amount) || Number(invoice.amount) || 0;
+  const vatPct = Math.round((Number(invoice.vat_rate) || 0.2) * 100);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Subtotal (ex VAT):', 120, yPos);
+  doc.text(formatPrice(net), 175, yPos, { align: 'right' });
+
+  yPos += 7;
+  doc.text(`VAT @ ${vatPct}%:`, 120, yPos);
+  doc.text(formatPrice(vat), 175, yPos, { align: 'right' });
+
+  yPos += 9;
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  const totalLabel = invoice.payment_type === 'subscription' ? 'Total Monthly:' : 'Total:';
+  const totalLabel = invoice.payment_type === 'subscription'
+    ? 'Monthly Total (inc VAT):'
+    : 'Total (inc VAT):';
   doc.text(totalLabel, 120, yPos);
-  doc.text(formatPrice(invoice.amount), 160, yPos);
+  doc.text(formatPrice(gross), 175, yPos, { align: 'right' });
 
   // Footer
   yPos += 20;

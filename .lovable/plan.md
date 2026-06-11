@@ -1,41 +1,63 @@
-## Problem
+## VAT fix for Direct Debit collection & invoicing
 
-Three bugs in the GoCardless checkout / booking conversion:
+All stored figures (`subtotal`, `monthly_price`, `final_total`) remain ex-VAT. VAT (20%) is applied only at the payment layer (GoCardless) and surfaced clearly to customers + on invoices.
 
-1. **PaymentSetup** multiplies `monthly_price` by paid-area count when sending the subscription amount to GoCardless (`£129 × 3 = £387`). `monthly_price` already represents the all-areas monthly DD amount.
-2. **`bookings.final_total`** is copied from quote/calculator as `subtotal × durationMultiplier`, producing 2× the correct total (e.g. `£1,548` instead of `£774`). The intended total for a 6-month subscription is `monthly_price × 6`.
-3. **`create-gocardless-payment`** trusts the client-sent `amount` and uses the user-scoped Supabase client for inserts into `gocardless_subscriptions` / `gocardless_payments` / `gocardless_customers` and the `bookings` update — these inserts silently fail because there are no INSERT RLS policies for `authenticated`.
+### 1. Single VAT source of truth
 
-Quote display (£129/mo, £774) is correct and must not change.
-
-## Fix
-
-### 1. `src/pages/PaymentSetup.tsx` (lines ~115–122)
-Remove the `paidAreaCount` multiplication. For subscriptions, send `booking.monthly_price` directly:
+Create `supabase/functions/_shared/vat.ts`:
 ```ts
-const paymentAmount = isSubscription
-  ? (booking.monthly_price || 0)
-  : booking.final_total;
+export const VAT_RATE = 0.20;
+export const withVat = (net: number) => Math.round(net * (1 + VAT_RATE) * 100) / 100;
+export const vatAmount = (net: number) => Math.round(net * VAT_RATE * 100) / 100;
 ```
 
-### 2. Correct stored `bookings.final_total` for subscription bookings
-At every booking write site, set `final_total = monthly_price × 6` (use `paymentOptions.monthly.minimum_payments` where available, default 6) for `pricing_model` `bogof` and subscription `fixed`. Leafleting/one-off totals untouched.
+Mirror as `src/lib/vat.ts` for the frontend (same constant + helpers). No scattered `× 1.2` literals anywhere.
 
-Sites to update:
-- `src/pages/Dashboard.tsx` `handleTermsConfirm` (~L738): override `final_total` before insert.
-- `src/components/dashboard/CreateBookingForm.tsx` booking-insert paths (~L259, L311, L348, L401): same override (keep quote rows untouched so display stays correct).
+### 2. `create-gocardless-payment` — charge inc VAT
 
-`monthly_price` calculation in `CreateBookingForm` is unchanged (it already yields the correct £129).
+- Import `VAT_RATE` / `withVat`.
+- Subscription path: `subscriptionAmount = withVat(bookingRow.monthly_price)` (e.g. £129 → £154.80). Store the gross amount in `gocardless_subscriptions.amount` (that's what GC actually debits).
+- One-off path: re-derive server-side from `bookingRow.final_total` (ignore client `amount`), then `paymentAmount = withVat(finalTotal)`. Store gross in `gocardless_payments.amount`.
+- Pass gross amount (in pence) to GoCardless `/subscriptions` and `/payments`.
 
-### 3. `supabase/functions/create-gocardless-payment/index.ts`
-- Add a service-role client (`SUPABASE_SERVICE_ROLE_KEY`) alongside the auth-scoped client.
-- For `paymentType === 'subscription'`, fetch the booking server-side and use `booking.monthly_price` as the GoCardless `amount`; ignore the client-provided `amount`. Validate ownership (`booking.user_id === user.id`).
-- Switch the inserts into `gocardless_subscriptions` / `gocardless_payments` and the `bookings.payment_status` update to the service-role client.
-- Check `.error` on every insert/update and `throw` with a logged message so failures surface to the caller instead of being swallowed.
-- Apply the same service-role + error-throw pattern to the `gocardless_customers` insert if/where present in `complete-gocardless-redirect` is out of scope unless it lives in this function (it does not — leave untouched).
+### 3. Pre-mandate UI — show actual DD amount
 
-## Out of scope
-- Quote pricing display / `pricingCalculator.ts` finalTotal math.
-- `complete-gocardless-redirect` and `gocardless-webhook` logic.
-- One-off (non-subscription) payment amount calculation.
-- Adding RLS INSERT policies (we move to service role instead, per instructions).
+Update `BookingDetailsDialog.tsx` (the "Pay now" / payment-options screen the customer sees before being redirected to GoCardless) and `PaymentSetup.tsx` success messaging:
+
+- For monthly: show `£154.80/month inc VAT (£129.00 + £25.80 VAT)`.
+- For one-off: show `£928.80 inc VAT (£774.00 + £154.80 VAT)`.
+- Use helpers from `src/lib/vat.ts`. Keep all *quote* surfaces (`ViewQuoteContent`, basket summaries, calculator) unchanged — they stay "+ VAT" / ex-VAT.
+
+Affected files (UI labels only): `src/components/dashboard/BookingDetailsDialog.tsx` (payment options block ~L884-910, "Direct Debit Setup Complete" block ~L670-700), and the toast/message in `src/pages/PaymentSetup.tsx`.
+
+### 4. `generate-invoice` — proper VAT breakdown
+
+Schema additions (one migration):
+
+- `invoices`: add `net_amount numeric`, `vat_rate numeric default 0.20`, `vat_amount numeric`, `gross_amount numeric`. Keep `amount` for back-compat (= gross).
+- `site_settings` (or a constant) — add `vat_registration_number text` so the number is editable later. Placeholder value `'GB000000000'` for now.
+
+Edge function changes (`supabase/functions/generate-invoice/index.ts`):
+
+- Compute `net = booking.monthly_price` (subscription) or `booking.final_total` (one-off), then `vat = vatAmount(net)`, `gross = withVat(net)`. Insert all four columns; `amount` mirrors `gross` for back-compat.
+- PDF additions in `generateInvoicePdf`:
+  - Header block: add "VAT Reg No: {vat_registration_number}" under company name.
+  - Totals block: replace single "Total" line with:
+    ```
+    Subtotal (ex VAT):   £129.00
+    VAT @ 20%:           £25.80
+    Total (inc VAT):     £154.80
+    ```
+  - For subscription invoices, label as "Monthly Total (inc VAT)".
+  - Update the Campaign Details row amount to show the ex-VAT subtotal (unchanged value, clearer label).
+
+### 5. Out of scope (explicitly unchanged)
+
+- Quote display, `pricingCalculator.ts`, `ViewQuoteContent.tsx`, basket summaries, calculator UI.
+- `bookings.subtotal`, `bookings.monthly_price`, `bookings.final_total` storage (still ex-VAT).
+- `complete-gocardless-redirect`, `gocardless-webhook` logic (they don't touch amounts).
+
+### Migration summary
+
+- Add `net_amount`, `vat_rate`, `vat_amount`, `gross_amount` columns to `public.invoices` (nullable for historical rows).
+- Add `vat_registration_number` row to `site_settings` (or a column on a settings table — will confirm exact location when implementing).
