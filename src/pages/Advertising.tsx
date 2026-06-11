@@ -391,7 +391,11 @@ const CalculatorTest = () => {
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
         subtotal: pricingBreakdown?.subtotal || 0,
-        final_total: pricingBreakdown?.finalTotal || 0,
+        final_total: normaliseFinalTotal({
+          pricingModel,
+          monthlyPrice: monthlyFinal,
+          fallbackFinalTotal: pricingBreakdown?.finalTotal || 0,
+        }),
         duration_multiplier: pricingBreakdown?.durationMultiplier || 1,
         total_circulation: pricingBreakdown?.totalCirculation || 0,
         volume_discount_percent: pricingBreakdown?.volumeDiscountPercent || 0,
