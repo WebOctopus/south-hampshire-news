@@ -1223,13 +1223,17 @@ export type Database = {
           gocardless_mandate_id: string
           gocardless_payment_id: string | null
           gocardless_subscription_id: string | null
+          gross_amount: number | null
           id: string
           invoice_date: string
           invoice_number: string
+          net_amount: number | null
           payment_type: string
           pdf_url: string | null
           status: string
           updated_at: string
+          vat_amount: number | null
+          vat_rate: number
         }
         Insert: {
           amount: number
@@ -1239,13 +1243,17 @@ export type Database = {
           gocardless_mandate_id: string
           gocardless_payment_id?: string | null
           gocardless_subscription_id?: string | null
+          gross_amount?: number | null
           id?: string
           invoice_date?: string
           invoice_number: string
+          net_amount?: number | null
           payment_type: string
           pdf_url?: string | null
           status?: string
           updated_at?: string
+          vat_amount?: number | null
+          vat_rate?: number
         }
         Update: {
           amount?: number
@@ -1255,13 +1263,17 @@ export type Database = {
           gocardless_mandate_id?: string
           gocardless_payment_id?: string | null
           gocardless_subscription_id?: string | null
+          gross_amount?: number | null
           id?: string
           invoice_date?: string
           invoice_number?: string
+          net_amount?: number | null
           payment_type?: string
           pdf_url?: string | null
           status?: string
           updated_at?: string
+          vat_amount?: number | null
+          vat_rate?: number
         }
         Relationships: [
           {
