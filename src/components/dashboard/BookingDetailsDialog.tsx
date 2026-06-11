@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { calculatePaymentAmount } from '@/lib/paymentCalculations';
+import { VAT_RATE, withVat, vatAmount } from '@/lib/vat';
 interface BookingDetailsDialogProps {
   booking: any;
   open: boolean;
