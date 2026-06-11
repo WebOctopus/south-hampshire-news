@@ -906,6 +906,15 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                                   {option.option_type === 'direct_debit' && <span className="text-sm text-muted-foreground">/month</span>}
                                 </span>
                               </div>
+                              {/* Show actual amount that will be debited (inc VAT) */}
+                              <p className="text-sm text-muted-foreground mb-1">
+                                Direct Debit will collect{' '}
+                                <span className="font-semibold text-foreground">
+                                  {formatPrice(withVat(totalAmount))} inc VAT
+                                </span>{' '}
+                                ({formatPrice(totalAmount)} + {formatPrice(vatAmount(totalAmount))} VAT @ {VAT_RATE * 100}%)
+                                {(option.option_type === 'direct_debit' || option.option_type === 'monthly') && ' per month'}
+                              </p>
                               {option.discount_percentage > 0 && discount > 0 && <p className="text-sm text-green-600">
                                   Save {formatPrice(discount)} ({option.discount_percentage}% discount)
                                 </p>}
