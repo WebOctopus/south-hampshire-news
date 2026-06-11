@@ -735,6 +735,16 @@ const Dashboard = () => {
 
     setSubmitting(true);
     try {
+      // Subscription bookings (bogof and fixed) are billed monthly across
+      // 6 payments. The stored campaign total must equal monthly_price × 6,
+      // not subtotal × durationMultiplier (which double-counts bi-monthly issues).
+      const monthlyPaymentsCount = 6;
+      const isSubscription = quote.pricing_model === 'bogof' || quote.pricing_model === 'fixed';
+      const correctedFinalTotal =
+        isSubscription && quote.monthly_price
+          ? quote.monthly_price * monthlyPaymentsCount
+          : quote.final_total;
+
       const bookingData = {
         user_id: user.id,
         contact_name: quote.contact_name,
@@ -750,7 +760,7 @@ const Dashboard = () => {
         bogof_free_area_ids: quote.bogof_free_area_ids || [],
         monthly_price: quote.monthly_price,
         subtotal: quote.subtotal,
-        final_total: quote.final_total,
+        final_total: correctedFinalTotal,
         duration_multiplier: quote.duration_multiplier,
         total_circulation: quote.total_circulation,
         volume_discount_percent: quote.volume_discount_percent,
