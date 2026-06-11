@@ -15,6 +15,7 @@ import { useLeafletAreas, useLeafletCampaignDurations } from '@/hooks/useLeaflet
 import { useAgencyDiscount } from '@/hooks/useAgencyDiscount';
 import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { calculatePaymentAmount } from '@/lib/paymentCalculations';
+import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
 
 interface EditQuoteFormProps {
   quote: any;
@@ -196,7 +197,11 @@ const EditQuoteForm: React.FC<EditQuoteFormProps> = ({
         bogof_free_area_ids: pricingModel === 'bogof' ? bogofFreeAreas : [],
         monthly_price: monthlyFinal,
         subtotal: subtotal,
-        final_total: finalTotal,
+        final_total: normaliseFinalTotal({
+          pricingModel,
+          monthlyPrice: monthlyFinal,
+          fallbackFinalTotal: finalTotal,
+        }),
         duration_multiplier: durationMultiplier || 1,
         total_circulation: totalCirculation,
         volume_discount_percent: isModified ? (pricingBreakdown?.volumeDiscountPercent || 0) : (quote.volume_discount_percent || 0),
