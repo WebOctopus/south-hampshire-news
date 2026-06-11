@@ -587,7 +587,9 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">{paymentOptions.length} Payment Option{paymentOptions.length !== 1 ? 's' : ''}</CardTitle>
+              <CardTitle className="text-xl">
+                {filterPaymentOptionsForModel(paymentOptions, pricingModel).length} Payment Option{filterPaymentOptionsForModel(paymentOptions, pricingModel).length !== 1 ? 's' : ''}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup 
@@ -595,7 +597,7 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                 onValueChange={onPaymentOptionChange}
                 className="space-y-4"
               >
-                {paymentOptions
+                {filterPaymentOptionsForModel(paymentOptions, pricingModel)
                   .sort((a, b) => {
                     // Custom sorting: monthly first, then 6 months, then 12 months
                     const getOrder = (option: any) => {
