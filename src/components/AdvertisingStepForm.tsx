@@ -1003,24 +1003,9 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       // Note: Vouchers for BOGOF bookings will be created after payment is completed
       // This prevents vouchers from being generated for unpaid bookings
 
-      // Record discount-code redemption (best-effort — failure does not block booking).
-      if (campaignData.discount && bookingData?.id) {
-        try {
-          const productType = pricingModelToProductType(selectedPricingModel);
-          await supabase.rpc('record_discount_redemption', {
-            p_code: campaignData.discount.code,
-            p_user_id: userId!,
-            p_email: contactData.email,
-            p_booking_id: bookingData.id,
-            p_product_type: productType,
-            p_booking_value: rawBookingFinal,
-            p_discount_amount: bookingDiscountBlock?.discount_amount ?? 0,
-            p_free_item_text: campaignData.discount.free_item_text ?? undefined,
-          });
-        } catch (redemptionErr) {
-          console.error('Failed to record discount redemption:', redemptionErr);
-        }
-      }
+      // Discount-code redemption is recorded server-side after payment is confirmed
+      // (see stripe-webhook and create-gocardless-payment edge functions). Doing it
+      // here would consume the code even on abandoned checkouts.
 
       // Send webhook to Go High-Level
       try {
