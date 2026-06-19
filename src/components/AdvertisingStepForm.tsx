@@ -410,17 +410,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const fraudData = await getFraudDetectionData();
 
       // Save to quotes table
-      const quoteMonthlyPrice = calculateMonthlyPrice(
+      const rawQuoteMonthly = calculateMonthlyPrice(
         Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         selectedPricingModel,
         Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
         paymentOptions || []
       );
-      const quoteFinalTotal = normaliseFinalTotal({
+      const rawQuoteFinal = normaliseFinalTotal({
         pricingModel: selectedPricingModel,
-        monthlyPrice: quoteMonthlyPrice,
+        monthlyPrice: rawQuoteMonthly,
         fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
       });
+      const { monthly: quoteMonthlyPrice, finalTotal: quoteFinalTotal, discountBlock: quoteDiscountBlock } =
+        deriveDiscountedTotals(rawQuoteMonthly, rawQuoteFinal);
       const quotePayload = {
         user_id: userId,
         contact_name: fullName,
@@ -443,7 +445,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
         agency_discount_percent: Number(campaignData.pricingBreakdown?.agencyDiscountPercent) || 0,
         distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (() => { const firstMonth = Object.values(campaignData.selectedMonths || {})[0]?.[0]; return firstMonth && /^\d{4}-\d{2}$/.test(firstMonth) ? `${firstMonth}-01` : null; })(),
-        pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+        pricing_breakdown: { ...(JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any), discount: quoteDiscountBlock },
         selections: {
           pricingModel: selectedPricingModel,
           selectedAdSize: campaignData.selectedAdSize || null,
@@ -455,7 +457,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           addressLine2: contactData.addressLine2 || '',
           city: contactData.city || '',
           postcode: contactData.postcode || '',
-          ...campaignData
+          ...campaignData,
+          discount: quoteDiscountBlock,
         } as any
       };
 
