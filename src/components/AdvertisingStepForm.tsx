@@ -747,17 +747,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // If returning BOGOF customer, save as quote request instead of booking
       if (isReturningBogofCustomer) {
-        const returningMonthlyPrice = calculateMonthlyPrice(
+        const rawReturningMonthly = calculateMonthlyPrice(
           Number(campaignData.pricingBreakdown?.finalTotal) || 0,
           selectedPricingModel,
           Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
           paymentOptions || []
         );
-        const returningFinalTotal = normaliseFinalTotal({
+        const rawReturningFinal = normaliseFinalTotal({
           pricingModel: selectedPricingModel,
-          monthlyPrice: returningMonthlyPrice,
+          monthlyPrice: rawReturningMonthly,
           fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         });
+        const { monthly: returningMonthlyPrice, finalTotal: returningFinalTotal, discountBlock: returningDiscountBlock } =
+          deriveDiscountedTotals(rawReturningMonthly, rawReturningFinal);
         const quotePayload = {
           user_id: userId,
           contact_name: fullName,
@@ -780,7 +782,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
           agency_discount_percent: Number(campaignData.pricingBreakdown?.agencyDiscountPercent) || 0,
           distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (Object.values(campaignData.selectedMonths || {})[0]?.[0] ? `${Object.values(campaignData.selectedMonths || {})[0]?.[0]}-01` : null),
-          pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+          pricing_breakdown: { ...(JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any), discount: returningDiscountBlock },
           selections: {
             pricingModel: selectedPricingModel,
             selectedAdSize: campaignData.selectedAdSize || null,
@@ -792,7 +794,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             addressLine2: contactData.addressLine2 || '',
             city: contactData.city || '',
             postcode: contactData.postcode || '',
-            ...campaignData
+            ...campaignData,
+            discount: returningDiscountBlock,
           } as any,
           notes: 'Returning customer - previously used 3+ Subscription Package. Interested in booking again - please contact with new terms.',
           status: 'bogof_return_interest'
