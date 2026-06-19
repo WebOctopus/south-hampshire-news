@@ -46,6 +46,21 @@ function applyTemplate(html: string, vars: Record<string, string>): string {
   return result;
 }
 
+function stripDiscountLine(html: string): string {
+  return html.replace(/<!--DISCOUNT_LINE_START-->[\s\S]*?<!--DISCOUNT_LINE_END-->/g, "");
+}
+
+function getDiscountVars(payload: any): { hasCode: boolean; code: string; amount: string } {
+  const d: any = payload?.pricing_breakdown?.discount;
+  const amt = Number(d?.discount_amount) || 0;
+  const hasCode = !!(d && d.code && (amt > 0 || d.discount_type === 'free_item'));
+  return {
+    hasCode,
+    code: hasCode ? String(d.code) : "",
+    amount: hasCode && amt > 0 ? formatCurrency(amt) : "",
+  };
+}
+
 async function fetchTemplate(name: string): Promise<{ subject: string; html_body: string } | null> {
   try {
     const supabaseAdmin = createClient(
