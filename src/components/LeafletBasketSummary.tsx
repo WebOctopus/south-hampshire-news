@@ -341,27 +341,27 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                 {pricingBreakdown?.designFee && pricingBreakdown.designFee > 0 && (
                   <>
                     <div className="flex justify-between items-center text-sm">
-                      <span>Campaign Cost:</span>
-                      <span className="font-medium">{formatPrice(pricingBreakdown.finalTotalBeforeDesign || baseTotal)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
                       <span>Artwork Design Service:</span>
                       <span className="font-medium">{formatPrice(pricingBreakdown.designFee)}</span>
                     </div>
                     <div className="h-px bg-border my-2" />
                   </>
                 )}
-                
+
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">Total Cost:</span>
-                  <span className="text-2xl font-bold text-primary">{formatPrice(displayedTotal)}</span>
+                  <span className="text-sm text-muted-foreground">Campaign Cost excluding VAT</span>
+                  <span className="font-medium">{formatPrice(baseTotal)}</span>
                 </div>
                 {discount && discountResult.discountAmount > 0 && (
                   <div className="flex justify-between items-center text-sm text-green-700">
-                    <span>Discount ({discount.code}) — {discountResult.lineLabel}</span>
+                    <span>Discount code applied: {discount.code}</span>
                     <span className="font-medium">-{formatPrice(discountResult.discountAmount)}</span>
                   </div>
                 )}
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold">Total Cost excluding VAT</span>
+                  <span className="text-2xl font-bold text-primary">{formatPrice(displayedTotal)}</span>
+                </div>
                 {discount && discountResult.isFreeItem && (
                   <div className="flex justify-between items-center text-sm text-green-700">
                     <span>Free item ({discount.code}): {discountResult.lineLabel}</span>
