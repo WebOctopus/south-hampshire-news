@@ -559,8 +559,17 @@ Deno.serve(async (req) => {
           })(),
         };
         const customerDisc = getDiscountVars(payload);
+        // Scale the discount amount to the same basis as committedCost so the
+        // email reads subtotal − discount = total_cost consistently.
+        const rawDiscAmt = Number(payload.pricing_breakdown?.discount?.discount_amount) || 0;
+        const committedDiscAmt = payload.pricing_model === 'bogof' ? rawDiscAmt / 2 : rawDiscAmt;
         vars.discount_code = customerDisc.code;
-        vars.discount_amount = customerDisc.amount;
+        vars.discount_amount =
+          customerDisc.hasCode && committedDiscAmt > 0 ? formatCurrency(committedDiscAmt) : "";
+        // Pre-discount campaign cost row. When no code is used this equals total_cost.
+        vars.subtotal_excl_vat = formatCurrency(
+          committedCost + (customerDisc.hasCode ? committedDiscAmt : 0)
+        );
         customerSubject = applyTemplate(customerTemplate.subject, vars);
         const customerHtmlIn = customerDisc.hasCode
           ? customerTemplate.html_body
