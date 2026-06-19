@@ -189,6 +189,25 @@ const cpmRate = pricingBreakdown?.cpm || 0;
 // never added to baseTotal / monthly amounts.
 const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (designFee || 0) : 0);
 
+  // Helper that applies the discount to a single payment-option amount.
+  // The `option` carries the per-option meaning (monthly vs upfront).
+  const adjustOptionAmount = (amount: number, option: any): { amount: number; saving: number } => {
+    if (!discount) return { amount, saving: 0 };
+    const isMonthly = option.option_type === 'monthly';
+    const months = isMonthly
+      ? (option.minimum_payments || 12)
+      : (option.display_name?.includes('12') ? 12 : option.display_name?.includes('6') ? 6 : 1);
+    const result = applyDiscountToTotals({
+      productType: 'subscription',
+      baseFinalTotal: amount * months,
+      baseMonthly: isMonthly ? amount : amount / Math.max(1, months),
+      contractMonths: months,
+      discount,
+    });
+    const newAmount = isMonthly ? result.adjustedMonthly : result.adjustedFinalTotal;
+    return { amount: newAmount, saving: Math.max(0, amount - newAmount) };
+  };
+
   const effectivePaidAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   const effectiveFreeAreas = pricingModel === 'bogof' ? bogofFreeAreas : [];
 
