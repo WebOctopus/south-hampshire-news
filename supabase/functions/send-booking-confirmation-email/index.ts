@@ -558,8 +558,14 @@ Deno.serve(async (req) => {
             return `Free item (${d.code}): ${d.free_item_text || d.line_label || ''} — ${formatCurrency(0)}`;
           })(),
         };
+        const customerDisc = getDiscountVars(payload);
+        vars.discount_code = customerDisc.code;
+        vars.discount_amount = customerDisc.amount;
         customerSubject = applyTemplate(customerTemplate.subject, vars);
-        let templatedHtml = applyTemplate(customerTemplate.html_body, vars);
+        const customerHtmlIn = customerDisc.hasCode
+          ? customerTemplate.html_body
+          : stripDiscountLine(customerTemplate.html_body);
+        let templatedHtml = applyTemplate(customerHtmlIn, vars);
         // If admin-created and template doesn't have login_credentials placeholder, append credentials block
         // Helper to insert a block early in the email (before summary/footer, after intro)
         const insertBlockEarly = (html: string, block: string): string => {
