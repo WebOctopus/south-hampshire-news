@@ -925,17 +925,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       }
 
       // Create booking record for eligible customers
-      const bookingMonthlyPrice = calculateMonthlyPrice(
+      const rawBookingMonthly = calculateMonthlyPrice(
         Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         selectedPricingModel,
         Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
         paymentOptions || []
       );
-      const bookingFinalTotal = normaliseFinalTotal({
+      const rawBookingFinal = normaliseFinalTotal({
         pricingModel: selectedPricingModel,
-        monthlyPrice: bookingMonthlyPrice,
+        monthlyPrice: rawBookingMonthly,
         fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
       });
+      const { monthly: bookingMonthlyPrice, finalTotal: bookingFinalTotal, discountBlock: bookingDiscountBlock } =
+        deriveDiscountedTotals(rawBookingMonthly, rawBookingFinal);
       const bookingPayload = {
         user_id: userId,
         contact_name: fullName,
@@ -956,7 +958,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
         volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
         duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
-        pricing_breakdown: campaignData.pricingBreakdown ? JSON.parse(JSON.stringify(campaignData.pricingBreakdown)) : {},
+        pricing_breakdown: { ...(campaignData.pricingBreakdown ? JSON.parse(JSON.stringify(campaignData.pricingBreakdown)) : {}), discount: bookingDiscountBlock },
           selections: {
             pricingModel: selectedPricingModel,
             selectedAdSize: campaignData.selectedAdSize,
@@ -971,6 +973,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             addressLine2: contactData.addressLine2 || '',
             city: contactData.city || '',
             postcode: contactData.postcode || '',
+            discount: bookingDiscountBlock,
           },
         ip_address_hash: fraudData.ipHash,
         device_fingerprint: fraudData.deviceFingerprint,
