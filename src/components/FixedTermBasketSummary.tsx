@@ -243,7 +243,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                   />
                 )}
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Cost of This Booking</span>
+                  <span className="text-sm text-muted-foreground">Campaign Cost excluding VAT</span>
                   <span className="font-medium">{formatPrice(pricingBreakdown?.finalTotalBeforeDesign || finalTotal)}</span>
                 </div>
 
@@ -259,7 +259,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
 
                 {discount && discountResult.discountAmount > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-green-700">Discount ({discount.code}) — {discountResult.lineLabel}</span>
+                    <span className="text-sm text-green-700">Discount code applied: {discount.code}</span>
                     <span className="font-medium text-green-700">-{formatPrice(discountResult.discountAmount)}</span>
                   </div>
                 )}
@@ -271,7 +271,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                 )}
 
                 <div className="flex justify-between items-center text-lg">
-                  <span className="font-semibold">Subtotal (Excl. VAT)</span>
+                  <span className="font-semibold">Total Cost excluding VAT</span>
                   <span className="font-bold">{formatPrice(finalTotal)}</span>
                 </div>
 
