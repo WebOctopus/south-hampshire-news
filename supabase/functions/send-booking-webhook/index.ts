@@ -55,6 +55,10 @@ serve(async (req) => {
       booking_id: bookingData?.id,
       user_id: userId,
       submitted_at: new Date().toISOString(),
+      discount: bookingData?.pricing_breakdown?.discount || null,
+      discount_code: bookingData?.pricing_breakdown?.discount?.code || null,
+      discount_amount: bookingData?.pricing_breakdown?.discount?.discount_amount || 0,
+      free_item_text: bookingData?.pricing_breakdown?.discount?.free_item_text || null,
     };
 
     // Initialize Supabase client
