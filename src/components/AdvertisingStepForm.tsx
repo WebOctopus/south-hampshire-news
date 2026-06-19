@@ -255,6 +255,62 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
   // Campaign Duration validation is handled in stepLabels.onStepTransition below
 
+  // Apply a discount code (if any) to the booking/quote totals before insert.
+  // Returns the discounted monthly + final + a serialisable discount block
+  // for embedding in pricing_breakdown / selections.
+  const deriveDiscountedTotals = (rawMonthly: number, rawFinal: number) => {
+    const d = campaignData.discount;
+    if (!d) return { monthly: rawMonthly, finalTotal: rawFinal, discountBlock: null as any };
+    const productType = pricingModelToProductType(selectedPricingModel);
+    if (productType === 'subscription') {
+      const base = rawMonthly * 12;
+      const r = applyDiscountToTotals({
+        productType,
+        baseFinalTotal: base,
+        baseMonthly: rawMonthly,
+        contractMonths: 12,
+        discount: d,
+      });
+      return {
+        monthly: r.adjustedMonthly,
+        finalTotal: r.adjustedMonthly * 12,
+        discountBlock: {
+          code: d.code,
+          code_id: d.code_id ?? null,
+          discount_type: d.discount_type,
+          discount_value: d.discount_value,
+          free_item_text: d.free_item_text ?? null,
+          discount_amount: r.discountAmount,
+          line_label: r.lineLabel,
+          is_free_item: r.isFreeItem,
+          base_final_total: base,
+          base_monthly: rawMonthly,
+        },
+      };
+    }
+    const r = applyDiscountToTotals({
+      productType,
+      baseFinalTotal: rawFinal,
+      discount: d,
+    });
+    const monthly = rawFinal > 0 ? rawMonthly * (r.adjustedFinalTotal / rawFinal) : rawMonthly;
+    return {
+      monthly,
+      finalTotal: r.adjustedFinalTotal,
+      discountBlock: {
+        code: d.code,
+        code_id: d.code_id ?? null,
+        discount_type: d.discount_type,
+        discount_value: d.discount_value,
+        free_item_text: d.free_item_text ?? null,
+        discount_amount: r.discountAmount,
+        line_label: r.lineLabel,
+        is_free_item: r.isFreeItem,
+        base_final_total: rawFinal,
+      },
+    };
+  };
+
   const handleContactInfoSave = async (contactData: any) => {
     setSubmitting(true);
 
