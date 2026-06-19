@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.10";
 import { VAT_RATE, withVat } from "../_shared/vat.ts";
 import { isSubscriptionModel } from "../_shared/finalTotal.ts";
+import { recordDiscountRedemptionForBooking } from "../_shared/recordDiscountRedemption.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -177,6 +178,9 @@ serve(async (req: Request) => {
         throw new Error(`Failed to update booking: ${bookingUpdateError.message}`);
       }
 
+      // Consume discount code now that the DD subscription is set up.
+      await recordDiscountRedemptionForBooking(supabaseAdmin, bookingId);
+
       return new Response(
         JSON.stringify({
           success: true,
@@ -264,6 +268,9 @@ serve(async (req: Request) => {
         console.error('Failed to update booking payment_status:', bookingUpdateError);
         throw new Error(`Failed to update booking: ${bookingUpdateError.message}`);
       }
+
+      // Consume discount code now that the one-off payment is set up.
+      await recordDiscountRedemptionForBooking(supabaseAdmin, bookingId);
 
       return new Response(
         JSON.stringify({
