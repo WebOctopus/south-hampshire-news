@@ -747,6 +747,124 @@ export type Database = {
         }
         Relationships: []
       }
+      discount_code_redemptions: {
+        Row: {
+          booking_id: string | null
+          booking_value: number | null
+          code: string
+          discount_amount: number | null
+          discount_code_id: string
+          email: string | null
+          free_item_text: string | null
+          id: string
+          product_type: string | null
+          redeemed_at: string
+          user_id: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          booking_value?: number | null
+          code: string
+          discount_amount?: number | null
+          discount_code_id: string
+          email?: string | null
+          free_item_text?: string | null
+          id?: string
+          product_type?: string | null
+          redeemed_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          booking_value?: number | null
+          code?: string
+          discount_amount?: number | null
+          discount_code_id?: string
+          email?: string | null
+          free_item_text?: string | null
+          id?: string
+          product_type?: string | null
+          redeemed_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_code_redemptions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discount_code_redemptions_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_code_report"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discount_code_redemptions_discount_code_id_fkey"
+            columns: ["discount_code_id"]
+            isOneToOne: false
+            referencedRelation: "discount_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discount_codes: {
+        Row: {
+          applies_to_fixed_term: boolean
+          applies_to_leaflets: boolean
+          applies_to_subscription: boolean
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number | null
+          free_item_text: string | null
+          id: string
+          is_active: boolean
+          single_use_per_email: boolean
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          applies_to_fixed_term?: boolean
+          applies_to_leaflets?: boolean
+          applies_to_subscription?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type: string
+          discount_value?: number | null
+          free_item_text?: string | null
+          id?: string
+          is_active?: boolean
+          single_use_per_email?: boolean
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          applies_to_fixed_term?: boolean
+          applies_to_leaflets?: boolean
+          applies_to_subscription?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number | null
+          free_item_text?: string | null
+          id?: string
+          is_active?: boolean
+          single_use_per_email?: boolean
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           booking_id: string | null
@@ -2264,7 +2382,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      discount_code_report: {
+        Row: {
+          code: string | null
+          description: string | null
+          discount_type: string | null
+          discount_value: number | null
+          id: string | null
+          is_active: boolean | null
+          last_used_at: string | null
+          times_used: number | null
+          total_booking_value: number | null
+          total_discount_given: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_admin_role: { Args: { user_email: string }; Returns: string }
@@ -2473,6 +2607,19 @@ export type Database = {
         Returns: boolean
       }
       is_advertiser_active: { Args: { _user_id: string }; Returns: boolean }
+      record_discount_redemption: {
+        Args: {
+          p_booking_id: string
+          p_booking_value: number
+          p_code: string
+          p_discount_amount: number
+          p_email: string
+          p_free_item_text?: string
+          p_product_type: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       search_businesses_suggest: {
         Args: {
           edition_area_filter?: string
@@ -2491,6 +2638,10 @@ export type Database = {
       validate_booking_access: {
         Args: { booking_user_id: string }
         Returns: boolean
+      }
+      validate_discount_code: {
+        Args: { p_code: string; p_email?: string; p_product_type?: string }
+        Returns: Json
       }
     }
     Enums: {
