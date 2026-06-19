@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Plus, Edit, Trash2, Percent, Target, Gift, CreditCard } from 'lucide-react';
+import { Clock, Plus, Edit, Trash2, Percent, Target, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -30,20 +30,6 @@ interface VolumeDiscount {
   min_areas: number;
   max_areas: number;
   discount_percentage: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface SpecialDeal {
-  id: string;
-  name: string;
-  description: string;
-  deal_type: string;
-  deal_value: number;
-  min_areas: number;
-  valid_from: string | null;
-  valid_until: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -70,7 +56,6 @@ interface SubscriptionSettingsManagementProps {
 const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsManagementProps) => {
   const [durations, setDurations] = useState<Duration[]>([]);
   const [volumeDiscounts, setVolumeDiscounts] = useState<VolumeDiscount[]>([]);
-  const [specialDeals, setSpecialDeals] = useState<SpecialDeal[]>([]);
   const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('durations');
@@ -78,13 +63,11 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
   // Dialog states
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false);
   const [isVolumeDialogOpen, setIsVolumeDialogOpen] = useState(false);
-  const [isSpecialDealDialogOpen, setIsSpecialDealDialogOpen] = useState(false);
   const [isPaymentOptionDialogOpen, setIsPaymentOptionDialogOpen] = useState(false);
 
   // Editing states
   const [editingDuration, setEditingDuration] = useState<Duration | null>(null);
   const [editingVolumeDiscount, setEditingVolumeDiscount] = useState<VolumeDiscount | null>(null);
-  const [editingSpecialDeal, setEditingSpecialDeal] = useState<SpecialDeal | null>(null);
   const [editingPaymentOption, setEditingPaymentOption] = useState<PaymentOption | null>(null);
 
   // Form states
@@ -101,17 +84,6 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
     min_areas: 1,
     max_areas: 5,
     discount_percentage: 5,
-    is_active: true
-  });
-
-  const [specialDealForm, setSpecialDealForm] = useState({
-    name: '',
-    description: '',
-    deal_type: 'percentage_discount',
-    deal_value: 0,
-    min_areas: 1,
-    valid_from: '',
-    valid_until: '',
     is_active: true
   });
 
@@ -137,16 +109,14 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
 
   const loadAllData = async () => {
     try {
-      const [durationsData, volumeDiscountsData, specialDealsData, paymentOptionsData] = await Promise.all([
+      const [durationsData, volumeDiscountsData, paymentOptionsData] = await Promise.all([
         supabase.from('pricing_durations').select('*').order('sort_order'),
         supabase.from('volume_discounts').select('*').order('min_areas'),
-        supabase.from('special_deals').select('*').order('created_at', { ascending: false }),
         supabase.from('payment_options').select('*').order('sort_order')
       ]);
 
       setDurations(durationsData.data || []);
       setVolumeDiscounts(volumeDiscountsData.data || []);
-      setSpecialDeals(specialDealsData.data || []);
       setPaymentOptions(paymentOptionsData.data || []);
       onStatsUpdate();
     } catch (error) {
@@ -337,105 +307,6 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
     }
   };
 
-  // Special deal management functions
-  const resetSpecialDealForm = () => {
-    setSpecialDealForm({
-      name: '',
-      description: '',
-      deal_type: 'percentage_discount',
-      deal_value: 0,
-      min_areas: 1,
-      valid_from: '',
-      valid_until: '',
-      is_active: true
-    });
-    setEditingSpecialDeal(null);
-  };
-
-  const openSpecialDealDialog = (specialDeal?: SpecialDeal) => {
-    if (specialDeal) {
-      setEditingSpecialDeal(specialDeal);
-      setSpecialDealForm({
-        name: specialDeal.name,
-        description: specialDeal.description || '',
-        deal_type: specialDeal.deal_type,
-        deal_value: specialDeal.deal_value,
-        min_areas: specialDeal.min_areas || 1,
-        valid_from: specialDeal.valid_from ? specialDeal.valid_from.split('T')[0] : '',
-        valid_until: specialDeal.valid_until ? specialDeal.valid_until.split('T')[0] : '',
-        is_active: specialDeal.is_active
-      });
-    } else {
-      resetSpecialDealForm();
-    }
-    setIsSpecialDealDialogOpen(true);
-  };
-
-  const handleSaveSpecialDeal = async () => {
-    try {
-      const dealData = {
-        ...specialDealForm,
-        valid_from: specialDealForm.valid_from || null,
-        valid_until: specialDealForm.valid_until || null
-      };
-
-      let error;
-      
-      if (editingSpecialDeal) {
-        const { error: updateError } = await supabase
-          .from('special_deals')
-          .update(dealData)
-          .eq('id', editingSpecialDeal.id);
-        error = updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('special_deals')
-          .insert([dealData]);
-        error = insertError;
-      }
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `Special deal ${editingSpecialDeal ? 'updated' : 'created'} successfully.`
-      });
-
-      setIsSpecialDealDialogOpen(false);
-      resetSpecialDealForm();
-      loadAllData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save special deal.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDeleteSpecialDeal = async (specialDealId: string) => {
-    try {
-      const { error } = await supabase
-        .from('special_deals')
-        .delete()
-        .eq('id', specialDealId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Special deal deleted successfully."
-      });
-
-      loadAllData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete special deal.",
-        variant: "destructive"
-      });
-    }
-  };
 
   // Payment option management functions
   const resetPaymentOptionForm = () => {
@@ -549,14 +420,14 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
             Subscription Settings Management
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Manage subscription durations, volume discounts, and special deals
+            Manage subscription durations and volume discounts
           </p>
         </div>
       </div>
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="durations" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Durations
@@ -564,10 +435,6 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
           <TabsTrigger value="volume" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             Volume Discounts
-          </TabsTrigger>
-          <TabsTrigger value="deals" className="flex items-center gap-2">
-            <Gift className="h-4 w-4" />
-            Special Deals
           </TabsTrigger>
           <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
@@ -899,218 +766,6 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
           </Card>
         </TabsContent>
 
-        {/* Special Deals Management */}
-        <TabsContent value="deals" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Special Deals ({specialDeals.length})</span>
-                <Dialog open={isSpecialDealDialogOpen} onOpenChange={setIsSpecialDealDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={() => openSpecialDealDialog()}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Special Deal
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingSpecialDeal ? 'Edit Special Deal' : 'Add New Special Deal'}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div>
-                        <Label htmlFor="deal_name">Deal Name *</Label>
-                        <Input
-                          id="deal_name"
-                          value={specialDealForm.name}
-                          onChange={(e) => setSpecialDealForm(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="e.g., Black Friday Special"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="deal_description">Description</Label>
-                        <Input
-                          id="deal_description"
-                          value={specialDealForm.description}
-                          onChange={(e) => setSpecialDealForm(prev => ({ ...prev, description: e.target.value }))}
-                          placeholder="Brief description of the deal"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="deal_type">Deal Type</Label>
-                          <select
-                            id="deal_type"
-                            className="w-full p-2 border rounded-md"
-                            value={specialDealForm.deal_type}
-                            onChange={(e) => setSpecialDealForm(prev => ({ ...prev, deal_type: e.target.value }))}
-                          >
-                            <option value="percentage_discount">Percentage Off</option>
-                            <option value="fixed_discount">Fixed Amount Off</option>
-                            <option value="bogof">BOGOF</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label htmlFor="deal_value">
-                            Deal Value {specialDealForm.deal_type === 'percentage_discount' ? '(%)' : '(£)'}
-                          </Label>
-                          <Input
-                            id="deal_value"
-                            type="number"
-                            step="0.01"
-                            value={specialDealForm.deal_value}
-                            onChange={(e) => setSpecialDealForm(prev => ({ ...prev, deal_value: parseFloat(e.target.value) || 0 }))}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="deal_min_areas">Minimum Areas</Label>
-                        <Input
-                          id="deal_min_areas"
-                          type="number"
-                          value={specialDealForm.min_areas}
-                          onChange={(e) => setSpecialDealForm(prev => ({ ...prev, min_areas: parseInt(e.target.value) || 1 }))}
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="valid_from">Valid From</Label>
-                          <Input
-                            id="valid_from"
-                            type="date"
-                            value={specialDealForm.valid_from}
-                            onChange={(e) => setSpecialDealForm(prev => ({ ...prev, valid_from: e.target.value }))}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="valid_until">Valid Until</Label>
-                          <Input
-                            id="valid_until"
-                            type="date"
-                            value={specialDealForm.valid_until}
-                            onChange={(e) => setSpecialDealForm(prev => ({ ...prev, valid_until: e.target.value }))}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="deal_active"
-                          checked={specialDealForm.is_active}
-                          onCheckedChange={(checked) => setSpecialDealForm(prev => ({ ...prev, is_active: checked }))}
-                        />
-                        <Label htmlFor="deal_active">Active</Label>
-                      </div>
-
-                      <div className="flex gap-2 pt-4">
-                        <Button onClick={handleSaveSpecialDeal} className="flex-1">
-                          {editingSpecialDeal ? 'Update' : 'Create'} Special Deal
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setIsSpecialDealDialogOpen(false)}
-                          className="flex-1"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {specialDeals.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Gift className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No special deals found.</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Value</TableHead>
-                      <TableHead>Valid Period</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {specialDeals.map((deal) => (
-                      <TableRow key={deal.id}>
-                        <TableCell className="font-medium">{deal.name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {deal.deal_type === 'percentage_discount' ? 'Percentage' : deal.deal_type === 'bogof' ? 'BOGOF' : 'Fixed Amount'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {deal.deal_type === 'percentage_discount' ? `${deal.deal_value}%` : deal.deal_type === 'bogof' ? '—' : `£${deal.deal_value}`}
-                        </TableCell>
-                        <TableCell>
-                          {deal.valid_from && deal.valid_until 
-                            ? `${new Date(deal.valid_from).toLocaleDateString()} - ${new Date(deal.valid_until).toLocaleDateString()}`
-                            : 'No expiry'
-                          }
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={deal.is_active ? "default" : "secondary"}
-                            className={deal.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-                          >
-                            {deal.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openSpecialDealDialog(deal)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Special Deal</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{deal.name}"? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteSpecialDeal(deal.id)}
-                                    className="bg-red-600 hover:bg-red-700"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Payment Options Management */}
         <TabsContent value="payment" className="space-y-4">

@@ -1,56 +1,29 @@
-
 ## Goal
+Tidy the Cost Calculator Management console by removing the now-redundant "Special Deals" area, since its role is replaced by the new Discount Codes + Reporting features.
 
-Across the on-screen Booking Summary and all 9 booking/quote confirmation email templates, the cost block must read top-to-bottom as:
-
-1. **Campaign Cost excluding VAT** — pre-discount subtotal
-2. **Discount code applied: {{discount_code}} = −{{discount_amount}}** — only when a code was used (entire row hidden otherwise)
-3. **Total Cost excluding VAT** — bold headline = final discounted amount actually charged (`final_total`)
-
-Remove the legacy "Discount (if applicable): None" row everywhere.
+## Current state
+- Top-level tabs in `CostCalculatorManagement.tsx` already include: Locations, Ad Sizes & Pricing, Subscription Settings, Leaflets, Product Designer, **Discount Codes**, **Reporting**.
+- Inside the **Subscription Settings** tab (`SubscriptionSettingsManagement.tsx`) there are nested tabs: Durations, Volume Discounts, **Special Deals**, Payment Options.
+- A standalone `SpecialDealsManagement.tsx` component also exists but is not referenced anywhere else.
 
 ## Changes
 
-### 1. Edge function — `supabase/functions/send-booking-confirmation-email/index.ts`
+1. **`src/components/admin/SubscriptionSettingsManagement.tsx`**
+   - Remove the nested "Special Deals" tab trigger and its `TabsContent` block.
+   - Change `TabsList` from `grid-cols-4` to `grid-cols-3`.
+   - Remove related state, queries, form, dialog, and handlers tied to `specialDeals` / `SpecialDeal` so the file stays clean (interface, `useState`, the special-deals branch of the parallel `loadData` fetch, dialog open/close state, edit/save/delete handlers, form state).
+   - Update the header subtitle from "…volume discounts, and special deals" to "…and volume discounts".
+   - Drop the now-unused `Gift` icon import.
 
-- Add a new variable `subtotal_excl_vat` populated as:
-  - `final_total + discount_amount` when a discount code was used
-  - `final_total` (same as Total Cost) when no code
-- Continue populating `discount_code` / `discount_amount` from the stored discount block (already wired). When empty, the `DISCOUNT_LINE_START/END` marker block is stripped (already implemented).
-- No change to `final_total` — it remains the charged figure and maps to `{{total_cost}}`.
+2. **`src/components/admin/SpecialDealsManagement.tsx`**
+   - Delete the file (no remaining references in `src/`).
 
-### 2. Email templates (DB `email_templates.html_body`, via insert tool)
+3. **No changes** to top-level tabs in `CostCalculatorManagement.tsx` — Discount Codes and Reporting already live there.
 
-For each of the 9 templates (`booking_bogof_customer`, `booking_confirmation_customer`, `booking_fixed_customer`, `booking_leafleting_customer`, `quote_bogof_customer`, `quote_fixed_customer`, `quote_leafleting_customer`, `quote_saved_customer`, `booking_quote_admin`):
-
-- Replace the existing total/discount block with the new 3-row order:
-  ```
-  Campaign Cost excluding VAT          {{subtotal_excl_vat}}
-  <!--DISCOUNT_LINE_START-->
-  Discount code applied: {{discount_code}}    −{{discount_amount}}
-  <!--DISCOUNT_LINE_END-->
-  Total Cost excluding VAT  (bold)     {{total_cost}}
-  ```
-- Delete any legacy "Discount (if applicable): {{duration_discount}}" row.
-- Register `subtotal_excl_vat` in `available_variables` for these 9 templates (variables list only — no other content change).
-
-### 3. On-screen Booking Summary
-
-Update the Pricing Summary card in both:
-- `src/components/FixedTermBasketSummary.tsx`
-- `src/components/LeafletBasketSummary.tsx`
-
-To use the same 3-row order and labels:
-- Rename "Cost of This Booking" → **Campaign Cost excluding VAT** (value = pre-discount `finalTotalBeforeDesign || baseTotal`).
-- Keep the discount line (only rendered when `discount && discountResult.discountAmount > 0`), labelled **Discount code applied: {code}** with `−£amount`.
-- Rename "Subtotal (Excl. VAT)" → **Total Cost excluding VAT** (bold, value = `finalTotal` post-discount). This is the headline.
-- VAT row and Incl. VAT row remain underneath unchanged.
-- Remove any "Discount (if applicable): None" rendering.
-
-`MobilePricingSummary.tsx` and `ViewQuoteContent.tsx` already show only the final total — confirm and add the discount line above it in the same format if a discount is present, otherwise no change.
+## Out of scope
+- No DB / migration changes. The `special_deals` table and any data stay untouched; only the admin UI for managing them is removed. If you'd like the table dropped too, say the word and I'll add a migration.
 
 ## Verification
-
-- Re-send the previously failing BOGOF quote: email must show Campaign Cost > Discount line > bold Total Cost = charged amount.
-- Send a quote without a discount code: middle row must be absent; Campaign Cost == Total Cost.
-- On-screen Pricing Summary mirrors the same three rows.
+- Open Admin → Cost Calculator Management → Subscription Settings: only Durations / Volume Discounts / Payment Options tabs render.
+- Top-level Discount Codes and Reporting tabs continue to work.
+- Build passes with no unused imports.
