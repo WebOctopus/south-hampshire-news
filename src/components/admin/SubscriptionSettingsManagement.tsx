@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Plus, Edit, Trash2, Percent, Target, Gift, CreditCard } from 'lucide-react';
+import { Clock, Plus, Edit, Trash2, Percent, Target, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -30,20 +30,6 @@ interface VolumeDiscount {
   min_areas: number;
   max_areas: number;
   discount_percentage: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-interface SpecialDeal {
-  id: string;
-  name: string;
-  description: string;
-  deal_type: string;
-  deal_value: number;
-  min_areas: number;
-  valid_from: string | null;
-  valid_until: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -70,7 +56,6 @@ interface SubscriptionSettingsManagementProps {
 const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsManagementProps) => {
   const [durations, setDurations] = useState<Duration[]>([]);
   const [volumeDiscounts, setVolumeDiscounts] = useState<VolumeDiscount[]>([]);
-  const [specialDeals, setSpecialDeals] = useState<SpecialDeal[]>([]);
   const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('durations');
@@ -78,13 +63,11 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
   // Dialog states
   const [isDurationDialogOpen, setIsDurationDialogOpen] = useState(false);
   const [isVolumeDialogOpen, setIsVolumeDialogOpen] = useState(false);
-  const [isSpecialDealDialogOpen, setIsSpecialDealDialogOpen] = useState(false);
   const [isPaymentOptionDialogOpen, setIsPaymentOptionDialogOpen] = useState(false);
 
   // Editing states
   const [editingDuration, setEditingDuration] = useState<Duration | null>(null);
   const [editingVolumeDiscount, setEditingVolumeDiscount] = useState<VolumeDiscount | null>(null);
-  const [editingSpecialDeal, setEditingSpecialDeal] = useState<SpecialDeal | null>(null);
   const [editingPaymentOption, setEditingPaymentOption] = useState<PaymentOption | null>(null);
 
   // Form states
@@ -101,17 +84,6 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
     min_areas: 1,
     max_areas: 5,
     discount_percentage: 5,
-    is_active: true
-  });
-
-  const [specialDealForm, setSpecialDealForm] = useState({
-    name: '',
-    description: '',
-    deal_type: 'percentage_discount',
-    deal_value: 0,
-    min_areas: 1,
-    valid_from: '',
-    valid_until: '',
     is_active: true
   });
 
@@ -137,16 +109,14 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
 
   const loadAllData = async () => {
     try {
-      const [durationsData, volumeDiscountsData, specialDealsData, paymentOptionsData] = await Promise.all([
+      const [durationsData, volumeDiscountsData, paymentOptionsData] = await Promise.all([
         supabase.from('pricing_durations').select('*').order('sort_order'),
         supabase.from('volume_discounts').select('*').order('min_areas'),
-        supabase.from('special_deals').select('*').order('created_at', { ascending: false }),
         supabase.from('payment_options').select('*').order('sort_order')
       ]);
 
       setDurations(durationsData.data || []);
       setVolumeDiscounts(volumeDiscountsData.data || []);
-      setSpecialDeals(specialDealsData.data || []);
       setPaymentOptions(paymentOptionsData.data || []);
       onStatsUpdate();
     } catch (error) {
