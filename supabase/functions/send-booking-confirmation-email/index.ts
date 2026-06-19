@@ -371,6 +371,7 @@ Deno.serve(async (req) => {
         let adminHtml: string;
 
         if (adminTemplate) {
+          const adminDisc = getDiscountVars(payload);
           const vars: Record<string, string> = {
             type_label: typeLabel,
             model_label: modelLabel,
@@ -381,9 +382,14 @@ Deno.serve(async (req) => {
             business_name: payload.company || "Not provided",
             details_table: "",
             admin_url: "https://discovermagazines.co.uk/admin",
+            discount_code: adminDisc.code,
+            discount_amount: adminDisc.amount,
           };
           adminSubject = applyTemplate(adminTemplate.subject, vars);
-          adminHtml = applyTemplate(adminTemplate.html_body, vars);
+          const adminHtmlIn = adminDisc.hasCode
+            ? adminTemplate.html_body
+            : stripDiscountLine(adminTemplate.html_body);
+          adminHtml = applyTemplate(adminHtmlIn, vars);
         } else {
           adminSubject = `New ${typeLabel} Received – ${modelLabel}`;
           adminHtml = buildAdminEmailHtml(payload);
