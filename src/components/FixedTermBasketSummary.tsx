@@ -233,6 +233,15 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
+                {onDiscountChange && (
+                  <DiscountCodeInput
+                    productType="fixed_term"
+                    email={customerEmail}
+                    currentDiscount={discount}
+                    onApplied={onDiscountChange}
+                    onCleared={() => onDiscountChange(null)}
+                  />
+                )}
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Cost of This Booking</span>
                   <span className="font-medium">{formatPrice(pricingBreakdown?.finalTotalBeforeDesign || finalTotal)}</span>
@@ -246,6 +255,19 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                     </div>
                     <Separator />
                   </>
+                )}
+
+                {discount && discountResult.discountAmount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-700">Discount ({discount.code}) — {discountResult.lineLabel}</span>
+                    <span className="font-medium text-green-700">-{formatPrice(discountResult.discountAmount)}</span>
+                  </div>
+                )}
+                {discount && discountResult.isFreeItem && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-700">Free item ({discount.code}): {discountResult.lineLabel}</span>
+                    <span className="font-medium text-green-700">{formatPrice(0)}</span>
+                  </div>
                 )}
 
                 <div className="flex justify-between items-center text-lg">
