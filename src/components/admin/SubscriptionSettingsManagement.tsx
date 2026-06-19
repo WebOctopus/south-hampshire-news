@@ -9,9 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Plus, Edit, Trash2, Percent, Target, CreditCard } from 'lucide-react';
+import { Clock, Plus, Edit, Trash2, Percent, Target, CreditCard, Ticket, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import DiscountCodesManagement from './DiscountCodesManagement';
+import DiscountCodesReporting from './DiscountCodesReporting';
 
 interface Duration {
   id: string;
@@ -420,14 +422,14 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
             Subscription Settings Management
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Manage subscription durations and volume discounts
+            Manage subscription durations, volume discounts, payment options, discount codes, and reporting
           </p>
         </div>
       </div>
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="durations" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Durations
@@ -439,6 +441,14 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
           <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
             Payment Options
+          </TabsTrigger>
+          <TabsTrigger value="discountCodes" className="flex items-center gap-2">
+            <Ticket className="h-4 w-4" />
+            Discount Codes
+          </TabsTrigger>
+          <TabsTrigger value="discountReporting" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Reporting
           </TabsTrigger>
         </TabsList>
 
@@ -973,6 +983,14 @@ const SubscriptionSettingsManagement = ({ onStatsUpdate }: SubscriptionSettingsM
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="discountCodes" className="space-y-4">
+          <DiscountCodesManagement />
+        </TabsContent>
+
+        <TabsContent value="discountReporting" className="space-y-4">
+          <DiscountCodesReporting />
         </TabsContent>
       </Tabs>
     </div>
