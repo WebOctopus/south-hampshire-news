@@ -46,6 +46,21 @@ function applyTemplate(html: string, vars: Record<string, string>): string {
   return result;
 }
 
+function stripDiscountLine(html: string): string {
+  return html.replace(/<!--DISCOUNT_LINE_START-->[\s\S]*?<!--DISCOUNT_LINE_END-->/g, "");
+}
+
+function getDiscountVars(payload: any): { hasCode: boolean; code: string; amount: string } {
+  const d: any = payload?.pricing_breakdown?.discount;
+  const amt = Number(d?.discount_amount) || 0;
+  const hasCode = !!(d && d.code && (amt > 0 || d.discount_type === 'free_item'));
+  return {
+    hasCode,
+    code: hasCode ? String(d.code) : "",
+    amount: hasCode && amt > 0 ? formatCurrency(amt) : "",
+  };
+}
+
 async function fetchTemplate(name: string): Promise<{ subject: string; html_body: string } | null> {
   try {
     const supabaseAdmin = createClient(
@@ -356,6 +371,7 @@ Deno.serve(async (req) => {
         let adminHtml: string;
 
         if (adminTemplate) {
+          const adminDisc = getDiscountVars(payload);
           const vars: Record<string, string> = {
             type_label: typeLabel,
             model_label: modelLabel,
@@ -366,9 +382,14 @@ Deno.serve(async (req) => {
             business_name: payload.company || "Not provided",
             details_table: "",
             admin_url: "https://discovermagazines.co.uk/admin",
+            discount_code: adminDisc.code,
+            discount_amount: adminDisc.amount,
           };
           adminSubject = applyTemplate(adminTemplate.subject, vars);
-          adminHtml = applyTemplate(adminTemplate.html_body, vars);
+          const adminHtmlIn = adminDisc.hasCode
+            ? adminTemplate.html_body
+            : stripDiscountLine(adminTemplate.html_body);
+          adminHtml = applyTemplate(adminHtmlIn, vars);
         } else {
           adminSubject = `New ${typeLabel} Received – ${modelLabel}`;
           adminHtml = buildAdminEmailHtml(payload);
@@ -537,8 +558,14 @@ Deno.serve(async (req) => {
             return `Free item (${d.code}): ${d.free_item_text || d.line_label || ''} — ${formatCurrency(0)}`;
           })(),
         };
+        const customerDisc = getDiscountVars(payload);
+        vars.discount_code = customerDisc.code;
+        vars.discount_amount = customerDisc.amount;
         customerSubject = applyTemplate(customerTemplate.subject, vars);
-        let templatedHtml = applyTemplate(customerTemplate.html_body, vars);
+        const customerHtmlIn = customerDisc.hasCode
+          ? customerTemplate.html_body
+          : stripDiscountLine(customerTemplate.html_body);
+        let templatedHtml = applyTemplate(customerHtmlIn, vars);
         // If admin-created and template doesn't have login_credentials placeholder, append credentials block
         // Helper to insert a block early in the email (before summary/footer, after intro)
         const insertBlockEarly = (html: string, block: string): string => {
