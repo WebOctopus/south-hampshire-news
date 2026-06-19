@@ -17,6 +17,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useBogofEligibility } from '@/hooks/useBogofEligibility';
 import { supabase } from '@/integrations/supabase/client';
+import { DiscountCodeInput } from '@/components/DiscountCodeInput';
+import { applyDiscountToTotals, AppliedDiscount, pricingModelToProductType } from '@/lib/discountCalculations';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -36,6 +38,8 @@ interface BookingSummaryStepProps {
   designFee?: number;
   advertisingContent?: any;
   onContentSave?: (path: string, value: string) => void;
+  discount?: AppliedDiscount | null;
+  onDiscountChange?: (d: AppliedDiscount | null) => void;
 }
 
 export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
@@ -54,7 +58,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   needsDesign = false,
   designFee = 0,
   advertisingContent,
-  onContentSave
+  onContentSave,
+  discount = null,
+  onDiscountChange,
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
