@@ -244,7 +244,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                 )}
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Campaign Cost excluding VAT</span>
-                  <span className="font-medium">{formatPrice(pricingBreakdown?.finalTotalBeforeDesign || finalTotal)}</span>
+                  <span className="font-medium">{formatPrice(baseFinalTotal)}</span>
                 </div>
 
                 {saving > 0 && (
