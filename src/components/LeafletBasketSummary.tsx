@@ -138,6 +138,12 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     .reduce((sum, area) => sum + (area.bimonthly_circulation || 0), 0) || 0;
 
   const baseTotal = pricingBreakdown?.finalTotal || 0;
+  const discountResult = applyDiscountToTotals({
+    productType: 'leaflets',
+    baseFinalTotal: baseTotal,
+    discount,
+  });
+  const displayedTotal = discountResult.adjustedFinalTotal;
 
   const handleNext = () => {
     nextStep();
