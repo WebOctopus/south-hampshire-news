@@ -221,7 +221,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       selectedPaymentOption: '', // Clear payment option - user must select for subscription
       selectedStartingIssue: '', // Clear starting issue
       needsDesign: prev.needsDesign, // Keep design choice
-      designFee: prev.designFee // Keep design fee
+      designFee: prev.designFee, // Keep design fee
+      discount: null,
     }));
     
     setShowFixedTermConfirmation(false);
