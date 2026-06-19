@@ -27,6 +27,7 @@ import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
 import { useAdvertisingContent } from '@/hooks/useAdvertisingContent';
 import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
+import { applyDiscountToTotals, pricingModelToProductType, AppliedDiscount } from '@/lib/discountCalculations';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -79,7 +80,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     selectedPaymentOption: '' as string,
     selectedStartingIssue: '',
     needsDesign: false,
-    designFee: 0
+    designFee: 0,
+    discount: null as AppliedDiscount | null,
   });
   const [submitting, setSubmitting] = useState(false);
 
