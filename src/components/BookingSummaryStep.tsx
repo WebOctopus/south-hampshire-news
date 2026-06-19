@@ -617,6 +617,17 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {pricingModel === 'bogof' && onDiscountChange && (
+                <div className="mb-4">
+                  <DiscountCodeInput
+                    productType="subscription"
+                    email={userEmail}
+                    currentDiscount={discount}
+                    onApplied={onDiscountChange}
+                    onCleared={() => onDiscountChange(null)}
+                  />
+                </div>
+              )}
               <RadioGroup 
                 value={selectedPaymentOption} 
                 onValueChange={onPaymentOptionChange}
@@ -634,14 +645,15 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                     return getOrder(a) - getOrder(b);
                   })
                   .map((option) => {
-                  const amount = calcPaymentAmount(
+                  const baseAmount = calcPaymentAmount(
                     baseTotal,
                     option,
                     pricingModel,
                     paymentOptions,
                     designFeeToShow
                   );
-                  const savings = option.discount_percentage > 0 ? baseTotal - amount : 0;
+                  const { amount, saving: discountSaving } = adjustOptionAmount(baseAmount, option);
+                  const savings = (option.discount_percentage > 0 ? baseTotal - baseAmount : 0) + discountSaving;
                   
                   return (
                       <div key={option.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
@@ -656,6 +668,19 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                           <p className="text-lg font-bold text-primary">
                             {formatPrice(amount)} + VAT
                           </p>
+                          {discount && discountSaving > 0 && (
+                            <p className="text-xs text-green-700">
+                              Discount {discount.code} — {/* label */}
+                              {discount.discount_type === 'percentage'
+                                ? `${discount.discount_value}% off`
+                                : `£${Number(discount.discount_value).toFixed(2)} off`}
+                            </p>
+                          )}
+                          {discount && discount.discount_type === 'free_item' && (
+                            <p className="text-xs text-green-700">
+                              Free item ({discount.code}): {discount.free_item_text}
+                            </p>
+                          )}
                           {savings > 0 && (
                             <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                               Save {formatPrice(savings)}
