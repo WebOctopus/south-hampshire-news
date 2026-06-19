@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, MapPin, DollarSign, Clock, FileText, Package } from 'lucide-react';
+import { Calculator, MapPin, DollarSign, Clock, FileText, Package, Ticket } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePricingInvalidation } from '@/hooks/usePricingMutations';
 import LocationsManagement from './LocationsManagement';
@@ -11,6 +11,7 @@ import AdvertSizesPricingManagement from './AdvertSizesPricingManagement';
 import SubscriptionSettingsManagement from './SubscriptionSettingsManagement';
 import LeafletingManagement from './LeafletingManagement';
 import ProductDesignerManagement from './ProductDesignerManagement';
+import DiscountCodesManagement from './DiscountCodesManagement';
 
 const CostCalculatorManagement = () => {
   const [activeTab, setActiveTab] = useState('locations');
@@ -120,7 +121,7 @@ const CostCalculatorManagement = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="locations" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 Locations
@@ -140,6 +141,10 @@ const CostCalculatorManagement = () => {
               <TabsTrigger value="products" className="flex items-center gap-2">
                 <Package className="h-4 w-4" />
                 Product Designer
+              </TabsTrigger>
+              <TabsTrigger value="discountCodes" className="flex items-center gap-2">
+                <Ticket className="h-4 w-4" />
+                Discount Codes
               </TabsTrigger>
             </TabsList>
 
@@ -161,6 +166,10 @@ const CostCalculatorManagement = () => {
 
             <TabsContent value="products" className="mt-6">
               <ProductDesignerManagement />
+            </TabsContent>
+
+            <TabsContent value="discountCodes" className="mt-6">
+              <DiscountCodesManagement />
             </TabsContent>
           </Tabs>
         </CardContent>
