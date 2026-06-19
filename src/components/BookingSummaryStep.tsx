@@ -18,7 +18,7 @@ import { AlertCircle } from 'lucide-react';
 import { useBogofEligibility } from '@/hooks/useBogofEligibility';
 import { supabase } from '@/integrations/supabase/client';
 import { DiscountCodeInput } from '@/components/DiscountCodeInput';
-import { applyDiscountToTotals, AppliedDiscount, pricingModelToProductType } from '@/lib/discountCalculations';
+import { applyDiscountToTotals, AppliedDiscount } from '@/lib/discountCalculations';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
