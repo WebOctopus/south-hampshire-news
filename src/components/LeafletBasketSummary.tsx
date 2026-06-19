@@ -7,6 +7,8 @@ import { useLeafletData } from '@/hooks/useLeafletData';
 import { useStepForm } from '@/components/StepForm';
 import { parse } from 'date-fns';
 import { EditableText } from '@/components/inline-editor';
+import { DiscountCodeInput } from '@/components/DiscountCodeInput';
+import { applyDiscountToTotals, AppliedDiscount } from '@/lib/discountCalculations';
 
 interface LeafletBasketSummaryProps {
   selectedAreas: string[];
@@ -18,6 +20,9 @@ interface LeafletBasketSummaryProps {
   onMonthsChange?: (months: Record<string, string[]>) => void;
   advertisingContent?: any;
   onContentSave?: (path: string, value: string) => void;
+  discount?: AppliedDiscount | null;
+  onDiscountChange?: (d: AppliedDiscount | null) => void;
+  customerEmail?: string;
 }
 
 // Helper function to format month display to full "Month YYYY" format
@@ -84,7 +89,10 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
   onNext,
   onMonthsChange,
   advertisingContent,
-  onContentSave
+  onContentSave,
+  discount = null,
+  onDiscountChange,
+  customerEmail,
 }) => {
   const { leafletAreas, leafletSizes, leafletDurations } = useLeafletData();
   const { nextStep } = useStepForm();
