@@ -551,7 +551,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             final_total: quotePayload.final_total,
             monthly_price: quotePayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
-            pricing_breakdown: campaignData.pricingBreakdown,
+            pricing_breakdown: { ...(campaignData.pricingBreakdown || {}), discount: quoteDiscountBlock },
             selections: quotePayload.selections,
             distribution_start_date: quotePayload.distribution_start_date,
             // Admin-created quote: include credentials or login link in the email
@@ -841,7 +841,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
               final_total: quotePayload.final_total,
               monthly_price: quotePayload.monthly_price,
               volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
-              pricing_breakdown: campaignData.pricingBreakdown,
+              pricing_breakdown: { ...(campaignData.pricingBreakdown || {}), discount: returningDiscountBlock },
               distribution_start_date: quotePayload.distribution_start_date,
               is_returning_bogof_customer: true,
             }
@@ -1107,7 +1107,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             final_total: bookingPayload.final_total,
             monthly_price: bookingPayload.monthly_price,
             volume_discount_percent: campaignData.pricingBreakdown?.volumeDiscountPercent,
-            pricing_breakdown: campaignData.pricingBreakdown,
+            pricing_breakdown: { ...(campaignData.pricingBreakdown || {}), discount: bookingDiscountBlock },
             distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (() => { const firstMonth = Object.values(campaignData.selectedMonths || {})[0]?.[0]; return firstMonth && /^\d{4}-\d{2}$/.test(firstMonth) ? `${firstMonth}-01` : null; })(),
             // Admin-created booking: include credentials or login link in the email
             ...(isAdminCreating ? {
