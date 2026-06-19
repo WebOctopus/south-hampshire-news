@@ -1311,6 +1311,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   pricingBreakdown={campaignData.pricingBreakdown}
                   advertisingContent={advertisingContent}
                   onContentSave={updateAdvertisingField}
+                  discount={campaignData.discount}
+                  onDiscountChange={(d) => setCampaignData(prev => ({ ...prev, discount: d }))}
                 />
               ) : (
                 <BookingSummaryStep
@@ -1329,6 +1331,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   designFee={campaignData.designFee}
                   advertisingContent={advertisingContent}
                   onContentSave={updateAdvertisingField}
+                  discount={campaignData.discount}
+                  onDiscountChange={(d) => setCampaignData(prev => ({ ...prev, discount: d }))}
                 />
               )}
               
