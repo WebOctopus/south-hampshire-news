@@ -100,10 +100,16 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   
   // Cost calculations
   const baseTotal = pricingBreakdown?.baseTotal || 0;
-  const finalTotal = pricingBreakdown?.finalTotal || 0;
+  const baseFinalTotal = pricingBreakdown?.finalTotal || 0;
+  const discountResult = applyDiscountToTotals({
+    productType: 'fixed_term',
+    baseFinalTotal,
+    discount,
+  });
+  const finalTotal = discountResult.adjustedFinalTotal;
   const totalWithVAT = finalTotal * 1.20;
-  const bookingCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign || finalTotal;
-  const costPerInsert = totalInsertions > 0 ? bookingCostExclDesign / totalInsertions : 0;
+  const bookingCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign || baseFinalTotal;
+  const costPerInsert = totalInsertions > 0 ? finalTotal / Math.max(1, totalInsertions) : 0;
   const saving = baseTotal - finalTotal;
 
   const handleNext = () => {
