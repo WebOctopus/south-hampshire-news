@@ -7,6 +7,8 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useStepForm } from '@/components/StepForm';
 import { Separator } from '@/components/ui/separator';
 import { EditableText } from '@/components/inline-editor';
+import { DiscountCodeInput } from '@/components/DiscountCodeInput';
+import { applyDiscountToTotals, AppliedDiscount } from '@/lib/discountCalculations';
 
 interface FixedTermBasketSummaryProps {
   selectedAreas: string[];
@@ -17,6 +19,9 @@ interface FixedTermBasketSummaryProps {
   onNext?: () => void;
   advertisingContent?: any;
   onContentSave?: (path: string, value: string) => void;
+  discount?: AppliedDiscount | null;
+  onDiscountChange?: (d: AppliedDiscount | null) => void;
+  customerEmail?: string;
 }
 
 export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
@@ -27,7 +32,10 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   pricingBreakdown,
   onNext,
   advertisingContent,
-  onContentSave
+  onContentSave,
+  discount = null,
+  onDiscountChange,
+  customerEmail,
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { nextStep } = useStepForm();
