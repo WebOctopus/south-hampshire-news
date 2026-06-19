@@ -7,6 +7,8 @@ import { useLeafletData } from '@/hooks/useLeafletData';
 import { useStepForm } from '@/components/StepForm';
 import { parse } from 'date-fns';
 import { EditableText } from '@/components/inline-editor';
+import { DiscountCodeInput } from '@/components/DiscountCodeInput';
+import { applyDiscountToTotals, AppliedDiscount } from '@/lib/discountCalculations';
 
 interface LeafletBasketSummaryProps {
   selectedAreas: string[];
@@ -18,6 +20,9 @@ interface LeafletBasketSummaryProps {
   onMonthsChange?: (months: Record<string, string[]>) => void;
   advertisingContent?: any;
   onContentSave?: (path: string, value: string) => void;
+  discount?: AppliedDiscount | null;
+  onDiscountChange?: (d: AppliedDiscount | null) => void;
+  customerEmail?: string;
 }
 
 // Helper function to format month display to full "Month YYYY" format
@@ -84,7 +89,10 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
   onNext,
   onMonthsChange,
   advertisingContent,
-  onContentSave
+  onContentSave,
+  discount = null,
+  onDiscountChange,
+  customerEmail,
 }) => {
   const { leafletAreas, leafletSizes, leafletDurations } = useLeafletData();
   const { nextStep } = useStepForm();
@@ -130,6 +138,12 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
     .reduce((sum, area) => sum + (area.bimonthly_circulation || 0), 0) || 0;
 
   const baseTotal = pricingBreakdown?.finalTotal || 0;
+  const discountResult = applyDiscountToTotals({
+    productType: 'leaflets',
+    baseFinalTotal: baseTotal,
+    discount,
+  });
+  const displayedTotal = discountResult.adjustedFinalTotal;
 
   const handleNext = () => {
     nextStep();
@@ -299,6 +313,17 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
 
               {/* Pricing Summary */}
               <div className="space-y-3 pt-4 border-t">
+                {onDiscountChange && (
+                  <div className="pb-3">
+                    <DiscountCodeInput
+                      productType="leaflets"
+                      email={customerEmail}
+                      currentDiscount={discount}
+                      onApplied={onDiscountChange}
+                      onCleared={() => onDiscountChange(null)}
+                    />
+                  </div>
+                )}
                 {/* Show discount breakdown if combo discount is applied */}
                 {pricingBreakdown?.comboDiscountPercent > 0 && (
                   <>
@@ -329,15 +354,27 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                 
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total Cost:</span>
-                  <span className="text-2xl font-bold text-primary">{formatPrice(baseTotal)}</span>
+                  <span className="text-2xl font-bold text-primary">{formatPrice(displayedTotal)}</span>
                 </div>
+                {discount && discountResult.discountAmount > 0 && (
+                  <div className="flex justify-between items-center text-sm text-green-700">
+                    <span>Discount ({discount.code}) — {discountResult.lineLabel}</span>
+                    <span className="font-medium">-{formatPrice(discountResult.discountAmount)}</span>
+                  </div>
+                )}
+                {discount && discountResult.isFreeItem && (
+                  <div className="flex justify-between items-center text-sm text-green-700">
+                    <span>Free item ({discount.code}): {discountResult.lineLabel}</span>
+                    <span className="font-medium">{formatPrice(0)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>25% Deposit:</span>
-                  <span className="font-medium">{formatPrice(baseTotal * 0.25)}</span>
+                  <span className="font-medium">{formatPrice(displayedTotal * 0.25)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>Balance (75%):</span>
-                  <span className="font-medium">{formatPrice(baseTotal * 0.75)}</span>
+                  <span className="font-medium">{formatPrice(displayedTotal * 0.75)}</span>
                 </div>
               </div>
 

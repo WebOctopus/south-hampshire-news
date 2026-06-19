@@ -7,6 +7,8 @@ import { usePricingData } from '@/hooks/usePricingData';
 import { useStepForm } from '@/components/StepForm';
 import { Separator } from '@/components/ui/separator';
 import { EditableText } from '@/components/inline-editor';
+import { DiscountCodeInput } from '@/components/DiscountCodeInput';
+import { applyDiscountToTotals, AppliedDiscount } from '@/lib/discountCalculations';
 
 interface FixedTermBasketSummaryProps {
   selectedAreas: string[];
@@ -17,6 +19,9 @@ interface FixedTermBasketSummaryProps {
   onNext?: () => void;
   advertisingContent?: any;
   onContentSave?: (path: string, value: string) => void;
+  discount?: AppliedDiscount | null;
+  onDiscountChange?: (d: AppliedDiscount | null) => void;
+  customerEmail?: string;
 }
 
 export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
@@ -27,7 +32,10 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   pricingBreakdown,
   onNext,
   advertisingContent,
-  onContentSave
+  onContentSave,
+  discount = null,
+  onDiscountChange,
+  customerEmail,
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { nextStep } = useStepForm();
@@ -92,10 +100,16 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
   
   // Cost calculations
   const baseTotal = pricingBreakdown?.baseTotal || 0;
-  const finalTotal = pricingBreakdown?.finalTotal || 0;
+  const baseFinalTotal = pricingBreakdown?.finalTotal || 0;
+  const discountResult = applyDiscountToTotals({
+    productType: 'fixed_term',
+    baseFinalTotal,
+    discount,
+  });
+  const finalTotal = discountResult.adjustedFinalTotal;
   const totalWithVAT = finalTotal * 1.20;
-  const bookingCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign || finalTotal;
-  const costPerInsert = totalInsertions > 0 ? bookingCostExclDesign / totalInsertions : 0;
+  const bookingCostExclDesign = pricingBreakdown?.finalTotalBeforeDesign || baseFinalTotal;
+  const costPerInsert = totalInsertions > 0 ? finalTotal / Math.max(1, totalInsertions) : 0;
   const saving = baseTotal - finalTotal;
 
   const handleNext = () => {
@@ -219,6 +233,15 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
+                {onDiscountChange && (
+                  <DiscountCodeInput
+                    productType="fixed_term"
+                    email={customerEmail}
+                    currentDiscount={discount}
+                    onApplied={onDiscountChange}
+                    onCleared={() => onDiscountChange(null)}
+                  />
+                )}
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Cost of This Booking</span>
                   <span className="font-medium">{formatPrice(pricingBreakdown?.finalTotalBeforeDesign || finalTotal)}</span>
@@ -232,6 +255,19 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
                     </div>
                     <Separator />
                   </>
+                )}
+
+                {discount && discountResult.discountAmount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-700">Discount ({discount.code}) — {discountResult.lineLabel}</span>
+                    <span className="font-medium text-green-700">-{formatPrice(discountResult.discountAmount)}</span>
+                  </div>
+                )}
+                {discount && discountResult.isFreeItem && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-green-700">Free item ({discount.code}): {discountResult.lineLabel}</span>
+                    <span className="font-medium text-green-700">{formatPrice(0)}</span>
+                  </div>
                 )}
 
                 <div className="flex justify-between items-center text-lg">

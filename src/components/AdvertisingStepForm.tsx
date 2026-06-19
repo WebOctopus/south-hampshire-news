@@ -27,6 +27,7 @@ import { usePaymentOptions } from '@/hooks/usePaymentOptions';
 import { resolveWebhookPayload } from '@/lib/webhookPayloadResolver';
 import { useAdvertisingContent } from '@/hooks/useAdvertisingContent';
 import { normaliseFinalTotal } from '@/lib/finalTotalNormaliser';
+import { applyDiscountToTotals, pricingModelToProductType, AppliedDiscount } from '@/lib/discountCalculations';
 
 // Helper function to calculate the correct monthly price for display consistency
 const calculateMonthlyPrice = (
@@ -79,7 +80,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
     selectedPaymentOption: '' as string,
     selectedStartingIssue: '',
     needsDesign: false,
-    designFee: 0
+    designFee: 0,
+    discount: null as AppliedDiscount | null,
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -219,7 +221,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       selectedPaymentOption: '', // Clear payment option - user must select for subscription
       selectedStartingIssue: '', // Clear starting issue
       needsDesign: prev.needsDesign, // Keep design choice
-      designFee: prev.designFee // Keep design fee
+      designFee: prev.designFee, // Keep design fee
+      discount: null,
     }));
     
     setShowFixedTermConfirmation(false);
@@ -251,6 +254,62 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
   };
 
   // Campaign Duration validation is handled in stepLabels.onStepTransition below
+
+  // Apply a discount code (if any) to the booking/quote totals before insert.
+  // Returns the discounted monthly + final + a serialisable discount block
+  // for embedding in pricing_breakdown / selections.
+  const deriveDiscountedTotals = (rawMonthly: number, rawFinal: number) => {
+    const d = campaignData.discount;
+    if (!d) return { monthly: rawMonthly, finalTotal: rawFinal, discountBlock: null as any };
+    const productType = pricingModelToProductType(selectedPricingModel);
+    if (productType === 'subscription') {
+      const base = rawMonthly * 12;
+      const r = applyDiscountToTotals({
+        productType,
+        baseFinalTotal: base,
+        baseMonthly: rawMonthly,
+        contractMonths: 12,
+        discount: d,
+      });
+      return {
+        monthly: r.adjustedMonthly,
+        finalTotal: r.adjustedMonthly * 12,
+        discountBlock: {
+          code: d.code,
+          code_id: d.code_id ?? null,
+          discount_type: d.discount_type,
+          discount_value: d.discount_value,
+          free_item_text: d.free_item_text ?? null,
+          discount_amount: r.discountAmount,
+          line_label: r.lineLabel,
+          is_free_item: r.isFreeItem,
+          base_final_total: base,
+          base_monthly: rawMonthly,
+        },
+      };
+    }
+    const r = applyDiscountToTotals({
+      productType,
+      baseFinalTotal: rawFinal,
+      discount: d,
+    });
+    const monthly = rawFinal > 0 ? rawMonthly * (r.adjustedFinalTotal / rawFinal) : rawMonthly;
+    return {
+      monthly,
+      finalTotal: r.adjustedFinalTotal,
+      discountBlock: {
+        code: d.code,
+        code_id: d.code_id ?? null,
+        discount_type: d.discount_type,
+        discount_value: d.discount_value,
+        free_item_text: d.free_item_text ?? null,
+        discount_amount: r.discountAmount,
+        line_label: r.lineLabel,
+        is_free_item: r.isFreeItem,
+        base_final_total: rawFinal,
+      },
+    };
+  };
 
   const handleContactInfoSave = async (contactData: any) => {
     setSubmitting(true);
@@ -351,17 +410,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       const fraudData = await getFraudDetectionData();
 
       // Save to quotes table
-      const quoteMonthlyPrice = calculateMonthlyPrice(
+      const rawQuoteMonthly = calculateMonthlyPrice(
         Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         selectedPricingModel,
         Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
         paymentOptions || []
       );
-      const quoteFinalTotal = normaliseFinalTotal({
+      const rawQuoteFinal = normaliseFinalTotal({
         pricingModel: selectedPricingModel,
-        monthlyPrice: quoteMonthlyPrice,
+        monthlyPrice: rawQuoteMonthly,
         fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
       });
+      const { monthly: quoteMonthlyPrice, finalTotal: quoteFinalTotal, discountBlock: quoteDiscountBlock } =
+        deriveDiscountedTotals(rawQuoteMonthly, rawQuoteFinal);
       const quotePayload = {
         user_id: userId,
         contact_name: fullName,
@@ -384,7 +445,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
         agency_discount_percent: Number(campaignData.pricingBreakdown?.agencyDiscountPercent) || 0,
         distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (() => { const firstMonth = Object.values(campaignData.selectedMonths || {})[0]?.[0]; return firstMonth && /^\d{4}-\d{2}$/.test(firstMonth) ? `${firstMonth}-01` : null; })(),
-        pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+        pricing_breakdown: { ...(JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any), discount: quoteDiscountBlock },
         selections: {
           pricingModel: selectedPricingModel,
           selectedAdSize: campaignData.selectedAdSize || null,
@@ -396,7 +457,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           addressLine2: contactData.addressLine2 || '',
           city: contactData.city || '',
           postcode: contactData.postcode || '',
-          ...campaignData
+          ...campaignData,
+          discount: quoteDiscountBlock,
         } as any
       };
 
@@ -685,17 +747,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // If returning BOGOF customer, save as quote request instead of booking
       if (isReturningBogofCustomer) {
-        const returningMonthlyPrice = calculateMonthlyPrice(
+        const rawReturningMonthly = calculateMonthlyPrice(
           Number(campaignData.pricingBreakdown?.finalTotal) || 0,
           selectedPricingModel,
           Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
           paymentOptions || []
         );
-        const returningFinalTotal = normaliseFinalTotal({
+        const rawReturningFinal = normaliseFinalTotal({
           pricingModel: selectedPricingModel,
-          monthlyPrice: returningMonthlyPrice,
+          monthlyPrice: rawReturningMonthly,
           fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         });
+        const { monthly: returningMonthlyPrice, finalTotal: returningFinalTotal, discountBlock: returningDiscountBlock } =
+          deriveDiscountedTotals(rawReturningMonthly, rawReturningFinal);
         const quotePayload = {
           user_id: userId,
           contact_name: fullName,
@@ -718,7 +782,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
           duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
           agency_discount_percent: Number(campaignData.pricingBreakdown?.agencyDiscountPercent) || 0,
           distribution_start_date: campaignData.selectedStartingIssue ? `${campaignData.selectedStartingIssue}-01` : (Object.values(campaignData.selectedMonths || {})[0]?.[0] ? `${Object.values(campaignData.selectedMonths || {})[0]?.[0]}-01` : null),
-          pricing_breakdown: JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any,
+          pricing_breakdown: { ...(JSON.parse(JSON.stringify(campaignData.pricingBreakdown || {})) as any), discount: returningDiscountBlock },
           selections: {
             pricingModel: selectedPricingModel,
             selectedAdSize: campaignData.selectedAdSize || null,
@@ -730,7 +794,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             addressLine2: contactData.addressLine2 || '',
             city: contactData.city || '',
             postcode: contactData.postcode || '',
-            ...campaignData
+            ...campaignData,
+            discount: returningDiscountBlock,
           } as any,
           notes: 'Returning customer - previously used 3+ Subscription Package. Interested in booking again - please contact with new terms.',
           status: 'bogof_return_interest'
@@ -860,17 +925,19 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
       }
 
       // Create booking record for eligible customers
-      const bookingMonthlyPrice = calculateMonthlyPrice(
+      const rawBookingMonthly = calculateMonthlyPrice(
         Number(campaignData.pricingBreakdown?.finalTotal) || 0,
         selectedPricingModel,
         Number(campaignData.pricingBreakdown?.durationMultiplier) || 1,
         paymentOptions || []
       );
-      const bookingFinalTotal = normaliseFinalTotal({
+      const rawBookingFinal = normaliseFinalTotal({
         pricingModel: selectedPricingModel,
-        monthlyPrice: bookingMonthlyPrice,
+        monthlyPrice: rawBookingMonthly,
         fallbackFinalTotal: Number(campaignData.pricingBreakdown?.finalTotal) || 0,
       });
+      const { monthly: bookingMonthlyPrice, finalTotal: bookingFinalTotal, discountBlock: bookingDiscountBlock } =
+        deriveDiscountedTotals(rawBookingMonthly, rawBookingFinal);
       const bookingPayload = {
         user_id: userId,
         contact_name: fullName,
@@ -891,7 +958,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
         total_circulation: Number(campaignData.pricingBreakdown?.totalCirculation) || 0,
         volume_discount_percent: Number(campaignData.pricingBreakdown?.volumeDiscountPercent) || 0,
         duration_discount_percent: Number(campaignData.pricingBreakdown?.durationDiscountPercent) || 0,
-        pricing_breakdown: campaignData.pricingBreakdown ? JSON.parse(JSON.stringify(campaignData.pricingBreakdown)) : {},
+        pricing_breakdown: { ...(campaignData.pricingBreakdown ? JSON.parse(JSON.stringify(campaignData.pricingBreakdown)) : {}), discount: bookingDiscountBlock },
           selections: {
             pricingModel: selectedPricingModel,
             selectedAdSize: campaignData.selectedAdSize,
@@ -906,6 +973,7 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
             addressLine2: contactData.addressLine2 || '',
             city: contactData.city || '',
             postcode: contactData.postcode || '',
+            discount: bookingDiscountBlock,
           },
         ip_address_hash: fraudData.ipHash,
         device_fingerprint: fraudData.deviceFingerprint,
@@ -934,6 +1002,25 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
 
       // Note: Vouchers for BOGOF bookings will be created after payment is completed
       // This prevents vouchers from being generated for unpaid bookings
+
+      // Record discount-code redemption (best-effort — failure does not block booking).
+      if (campaignData.discount && bookingData?.id) {
+        try {
+          const productType = pricingModelToProductType(selectedPricingModel);
+          await supabase.rpc('record_discount_redemption', {
+            p_code: campaignData.discount.code,
+            p_user_id: userId!,
+            p_email: contactData.email,
+            p_booking_id: bookingData.id,
+            p_product_type: productType,
+            p_booking_value: rawBookingFinal,
+            p_discount_amount: bookingDiscountBlock?.discount_amount ?? 0,
+            p_free_item_text: campaignData.discount.free_item_text ?? undefined,
+          });
+        } catch (redemptionErr) {
+          console.error('Failed to record discount redemption:', redemptionErr);
+        }
+      }
 
       // Send webhook to Go High-Level
       try {
@@ -1308,6 +1395,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   pricingBreakdown={campaignData.pricingBreakdown}
                   advertisingContent={advertisingContent}
                   onContentSave={updateAdvertisingField}
+                  discount={campaignData.discount}
+                  onDiscountChange={(d) => setCampaignData(prev => ({ ...prev, discount: d }))}
                 />
               ) : (
                 <BookingSummaryStep
@@ -1326,6 +1415,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                   designFee={campaignData.designFee}
                   advertisingContent={advertisingContent}
                   onContentSave={updateAdvertisingField}
+                  discount={campaignData.discount}
+                  onDiscountChange={(d) => setCampaignData(prev => ({ ...prev, discount: d }))}
                 />
               )}
               
@@ -1437,6 +1528,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingBreakdown={campaignData.pricingBreakdown}
                 advertisingContent={advertisingContent}
                 onContentSave={updateAdvertisingField}
+                discount={campaignData.discount}
+                onDiscountChange={(d) => setCampaignData(prev => ({ ...prev, discount: d }))}
               />
             ) : selectedPricingModel === 'fixed' ? (
               <FixedTermBasketSummary
@@ -1447,6 +1540,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 pricingBreakdown={campaignData.pricingBreakdown}
                 advertisingContent={advertisingContent}
                 onContentSave={updateAdvertisingField}
+                discount={campaignData.discount}
+                onDiscountChange={(d) => setCampaignData(prev => ({ ...prev, discount: d }))}
               />
             ) : (
               <BookingSummaryStep
@@ -1465,6 +1560,8 @@ export const AdvertisingStepForm: React.FC<AdvertisingStepFormProps> = ({ childr
                 designFee={campaignData.designFee}
                 advertisingContent={advertisingContent}
                 onContentSave={updateAdvertisingField}
+                discount={campaignData.discount}
+                onDiscountChange={(d) => setCampaignData(prev => ({ ...prev, discount: d }))}
               />
             )}
             

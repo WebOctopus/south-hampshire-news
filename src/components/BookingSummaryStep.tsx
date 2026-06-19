@@ -17,6 +17,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useBogofEligibility } from '@/hooks/useBogofEligibility';
 import { supabase } from '@/integrations/supabase/client';
+import { DiscountCodeInput } from '@/components/DiscountCodeInput';
+import { applyDiscountToTotals, AppliedDiscount } from '@/lib/discountCalculations';
 
 interface BookingSummaryStepProps {
   pricingModel: 'fixed' | 'bogof' | 'leafleting';
@@ -36,6 +38,8 @@ interface BookingSummaryStepProps {
   designFee?: number;
   advertisingContent?: any;
   onContentSave?: (path: string, value: string) => void;
+  discount?: AppliedDiscount | null;
+  onDiscountChange?: (d: AppliedDiscount | null) => void;
 }
 
 export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
@@ -54,7 +58,9 @@ export const BookingSummaryStep: React.FC<BookingSummaryStepProps> = ({
   needsDesign = false,
   designFee = 0,
   advertisingContent,
-  onContentSave
+  onContentSave,
+  discount = null,
+  onDiscountChange,
 }) => {
   const { areas, adSizes, durations } = usePricingData();
   const { leafletAreas, leafletSizes } = useLeafletData();
@@ -182,6 +188,25 @@ const cpmRate = pricingBreakdown?.cpm || 0;
 // Artwork design fee is informational only — shown alongside the basket but
 // never added to baseTotal / monthly amounts.
 const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (designFee || 0) : 0);
+
+  // Helper that applies the discount to a single payment-option amount.
+  // The `option` carries the per-option meaning (monthly vs upfront).
+  const adjustOptionAmount = (amount: number, option: any): { amount: number; saving: number } => {
+    if (!discount) return { amount, saving: 0 };
+    const isMonthly = option.option_type === 'monthly';
+    const months = isMonthly
+      ? (option.minimum_payments || 12)
+      : (option.display_name?.includes('12') ? 12 : option.display_name?.includes('6') ? 6 : 1);
+    const result = applyDiscountToTotals({
+      productType: 'subscription',
+      baseFinalTotal: amount * months,
+      baseMonthly: isMonthly ? amount : amount / Math.max(1, months),
+      contractMonths: months,
+      discount,
+    });
+    const newAmount = isMonthly ? result.adjustedMonthly : result.adjustedFinalTotal;
+    return { amount: newAmount, saving: Math.max(0, amount - newAmount) };
+  };
 
   const effectivePaidAreas = pricingModel === 'bogof' ? bogofPaidAreas : selectedAreas;
   const effectiveFreeAreas = pricingModel === 'bogof' ? bogofFreeAreas : [];
@@ -592,6 +617,17 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {pricingModel === 'bogof' && onDiscountChange && (
+                <div className="mb-4">
+                  <DiscountCodeInput
+                    productType="subscription"
+                    email={userEmail}
+                    currentDiscount={discount}
+                    onApplied={onDiscountChange}
+                    onCleared={() => onDiscountChange(null)}
+                  />
+                </div>
+              )}
               <RadioGroup 
                 value={selectedPaymentOption} 
                 onValueChange={onPaymentOptionChange}
@@ -609,14 +645,15 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                     return getOrder(a) - getOrder(b);
                   })
                   .map((option) => {
-                  const amount = calcPaymentAmount(
+                  const baseAmount = calcPaymentAmount(
                     baseTotal,
                     option,
                     pricingModel,
                     paymentOptions,
                     designFeeToShow
                   );
-                  const savings = option.discount_percentage > 0 ? baseTotal - amount : 0;
+                  const { amount, saving: discountSaving } = adjustOptionAmount(baseAmount, option);
+                  const savings = (option.discount_percentage > 0 ? baseTotal - baseAmount : 0) + discountSaving;
                   
                   return (
                       <div key={option.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
@@ -631,6 +668,19 @@ const designFeeToShow = (pricingBreakdown?.designFee ?? 0) || (needsDesign ? (de
                           <p className="text-lg font-bold text-primary">
                             {formatPrice(amount)} + VAT
                           </p>
+                          {discount && discountSaving > 0 && (
+                            <p className="text-xs text-green-700">
+                              Discount {discount.code} — {/* label */}
+                              {discount.discount_type === 'percentage'
+                                ? `${discount.discount_value}% off`
+                                : `£${Number(discount.discount_value).toFixed(2)} off`}
+                            </p>
+                          )}
+                          {discount && discount.discount_type === 'free_item' && (
+                            <p className="text-xs text-green-700">
+                              Free item ({discount.code}): {discount.free_item_text}
+                            </p>
+                          )}
                           {savings > 0 && (
                             <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                               Save {formatPrice(savings)}

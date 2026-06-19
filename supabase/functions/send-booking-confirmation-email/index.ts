@@ -525,6 +525,17 @@ Deno.serve(async (req) => {
           login_email: payload.email,
           login_password: payload.generated_password || "",
           login_url: "https://discovermagazines.co.uk/auth",
+          // Discount-code line (rendered as plain text — templates can include {{discount_line}} / {{free_item_line}}).
+          discount_line: (() => {
+            const d: any = payload.pricing_breakdown?.discount;
+            if (!d || d.discount_type === 'free_item' || !d.discount_amount) return "";
+            return `Discount (${d.code}) — ${d.line_label || ''}: -${formatCurrency(d.discount_amount)}`;
+          })(),
+          free_item_line: (() => {
+            const d: any = payload.pricing_breakdown?.discount;
+            if (!d || d.discount_type !== 'free_item') return "";
+            return `Free item (${d.code}): ${d.free_item_text || d.line_label || ''} — ${formatCurrency(0)}`;
+          })(),
         };
         customerSubject = applyTemplate(customerTemplate.subject, vars);
         let templatedHtml = applyTemplate(customerTemplate.html_body, vars);
