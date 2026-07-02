@@ -1,17 +1,24 @@
 ## Goal
-Ensure the open chat popout window has the same side gap from the viewport edge as the launcher bubble, on whichever side the CRM positions the widget.
+Stop the launcher bubble from jumping position when it toggles into the close (X) state. It should stay in the exact same spot as the closed speech-icon bubble.
+
+## Cause
+When the widget opens, the loader's own styles reposition/resize `#octopus-chat-bubble` (moves it into the container corner and/or changes size), so our `display:flex!important` override reveals it in a new location. The icon swap itself is fine — the shift is layout.
 
 ## Change (index.html only)
-Extend the existing `HEIGHT_OVERRIDE_CSS` block (desktop only, `:not(.octopus-mobile)`) so `#octopus-chat-window` is inset from the edge to match the bubble's gap (~20px), mirrored for left-anchored widgets.
+Extend the desktop-only `HEIGHT_OVERRIDE_CSS` block so the open-state bubble is pinned to the same viewport position and size as the closed-state bubble:
 
-Add rules like:
-- `#octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-window{ right:20px!important; left:auto!important; }`
-- Left-side variant (when container/body indicates left placement, e.g. `.octopus-left` or `[data-position="left"]`): `left:20px!important; right:auto!important;`
+- `#octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-bubble{`
+  - `position:fixed!important;`
+  - `right:20px!important; bottom:20px!important; left:auto!important; top:auto!important;`
+  - `width:60px!important; height:60px!important;`
+  - `margin:0!important;`
+  - `transform:none!important;`
+- Mirror for left-anchored widgets (`.octopus-left` / `[data-position="left"]`): `left:20px!important; right:auto!important;`
 
-Keep the existing `bottom:80px` lift and the bubble→X toggle behavior. Mobile full-screen behavior untouched.
+Keep the existing icon-swap logic and the popout window offsets untouched.
 
 ## Verification
-Use Playwright at 1280×800 to open the widget and confirm the chat window's right edge sits ~20px from the viewport edge (matching the bubble). If possible, toggle a left-positioned variant and confirm the mirror.
+Playwright at 1280×800: capture the bubble's `getBoundingClientRect()` before click, click to open, capture again, assert the rect is unchanged (±1px). Confirm the X icon renders in the same spot as the speech icon.
 
 ## Files
 - `index.html`
