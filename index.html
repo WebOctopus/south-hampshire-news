@@ -154,7 +154,7 @@
         var bootObserver = new MutationObserver(function () {
           var bubble = document.getElementById('octopus-chat-bubble');
           var container = document.getElementById('octopus-chat-container');
-          if (bubble && !wired) wire(bubble, container);
+          if (bubble && container && !wired) wire(bubble, container);
         });
         bootObserver.observe(document.body, { childList: true, subtree: true });
       })();
