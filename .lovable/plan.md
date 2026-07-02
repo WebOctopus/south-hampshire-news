@@ -1,24 +1,12 @@
-## Goal
-Stop the launcher bubble from jumping position when it toggles into the close (X) state. It should stay in the exact same spot as the closed speech-icon bubble.
+Apply a 20px gap between the chat bubble and the open chat window to match the existing side gap.
 
-## Cause
-When the widget opens, the loader's own styles reposition/resize `#octopus-chat-bubble` (moves it into the container corner and/or changes size), so our `display:flex!important` override reveals it in a new location. The icon swap itself is fine — the shift is layout.
+Current behaviour
+- The desktop chat bubble is pinned at `bottom: 20px; right: 20px` (or `left: 20px` when anchored left) and is 60px tall.
+- The chat window is currently offset `bottom: 80px`, which makes it sit exactly on top of the bubble with no visible spacing.
 
-## Change (index.html only)
-Extend the desktop-only `HEIGHT_OVERRIDE_CSS` block so the open-state bubble is pinned to the same viewport position and size as the closed-state bubble:
+Change
+- In `index.html`, update the `HEIGHT_OVERRIDE_CSS` block so the open `#octopus-chat-window` is offset `bottom: 100px` instead of `bottom: 80px` on desktop (`:not(.octopus-mobile)`), for both right-aligned and left-aligned widget positions.
+- This adds a 20px vertical gap between the top of the bubble and the bottom of the chat window, matching the 20px horizontal side gap already in place.
 
-- `#octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-bubble{`
-  - `position:fixed!important;`
-  - `right:20px!important; bottom:20px!important; left:auto!important; top:auto!important;`
-  - `width:60px!important; height:60px!important;`
-  - `margin:0!important;`
-  - `transform:none!important;`
-- Mirror for left-anchored widgets (`.octopus-left` / `[data-position="left"]`): `left:20px!important; right:auto!important;`
-
-Keep the existing icon-swap logic and the popout window offsets untouched.
-
-## Verification
-Playwright at 1280×800: capture the bubble's `getBoundingClientRect()` before click, click to open, capture again, assert the rect is unchanged (±1px). Confirm the X icon renders in the same spot as the speech icon.
-
-## Files
-- `index.html`
+Verification
+- Use Playwright to open the chat widget on the homepage at desktop viewport, take a screenshot, and visually confirm a 20px gap between the bubble and the chat window. Optionally assert `getBoundingClientRect()` distance is 20px.
