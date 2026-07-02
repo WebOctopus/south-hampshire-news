@@ -1,26 +1,25 @@
-## Problem
+## Change
 
-Two click listeners are attached to `#octopus-chat-bubble`:
+Replace the existing widget loader script block in `index.html` with the simpler version supplied:
 
-1. The widget loader's original listener → always calls `openChat()`.
-2. Our added listener → calls `close()` when the container has `octopus-open`.
+```html
+<script src="https://qrbijjlviizhzuswiilf.supabase.co/functions/v1/widget-loader?id=f532ace8-8e6d-4694-81d1-ef91e7f36915" async></script>
+```
 
-On a click while closed, listener 1 opens the widget (adding `octopus-open`), then listener 2 fires on the same click, sees `octopus-open`, and immediately closes it. Net effect: the panel never appears to open.
+This drops the `data-position="left"`, `data-offset-x`, `data-offset-y`, and `data-color` attributes — the widget will use whatever defaults the loader ships with (likely bottom-right, default colour).
 
-## Fix
+## Also remove (since they only exist to patch the old left-anchored bubble)
 
-Edit `index.html` only. In the existing inline `<script>` block, replace the current "add a second listener" approach with a listener-swap:
+1. The `<style>` block that force-positions `#octopus-chat-container` and `#octopus-chat-bubble` to the bottom-left when open.
+2. The inline `<script>` block that clones the bubble, swaps the chat/X icon, and wires up `OctopusChat.toggle()`.
 
-1. When init runs, clone `#octopus-chat-bubble` with `bubble.replaceWith(bubble.cloneNode(true))` to strip the loader's `openChat` listener.
-2. Re-grab the fresh bubble node.
-3. Attach a single click handler that calls `window.OctopusChat.toggle()` — this cleanly opens when closed and closes when open, without double-firing.
-4. Keep the existing `MutationObserver` and `applyIcon` logic pointed at the new bubble node so the chat/X icon swap continues to work.
+Rationale: those overrides were tailored to the left-side custom config and to make the bubble act as its own close button. With the plain default loader they're no longer needed and would likely fight the widget's own behaviour.
 
-No CSS changes. Header X still works (it's separate). Mobile behaviour unchanged.
+## Confirm before I build
 
-## Technical details
+- OK to also delete the custom `<style>` and inline `<script>` blocks? (Recommended.)
+- Or keep them and only swap the loader `<script>` tag? (Not recommended — the CSS still targets `.octopus-open` and would misposition the new default-placed widget.)
 
-- File touched: `index.html` only.
-- The loader exposes `window.OctopusChat.toggle`, `.open`, `.close` — we rely on `toggle()` so state stays in sync regardless of how it was changed elsewhere.
-- Cloning the node is the standard way to remove an anonymous `addEventListener` handler we don't have a reference to.
-- The MutationObserver on `#octopus-chat-container` keeps the icon in sync when the widget is closed via the header X, Escape key, or an iframe message.
+## Files touched
+
+- `index.html` only.
