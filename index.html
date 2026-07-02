@@ -72,13 +72,17 @@
             return false;
           }
 
+          // Strip the loader's built-in click listener by cloning the node,
+          // then re-attach a single toggle handler so a click while open closes
+          // and a click while closed opens (no double-firing).
+          var fresh = bubble.cloneNode(true);
+          bubble.parentNode.replaceChild(fresh, bubble);
+          bubble = fresh;
+
           applyIcon(container, bubble);
 
-          // Close when the bubble is clicked while the chat is open.
           bubble.addEventListener('click', function () {
-            if (container.classList.contains('octopus-open')) {
-              window.OctopusChat.close();
-            }
+            window.OctopusChat.toggle();
           });
 
           // Keep the icon in sync with open/close state (header X, Escape, etc.).
