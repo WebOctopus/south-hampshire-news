@@ -35,8 +35,13 @@
         padding: 0 !important;
       }
       /* Keep the launcher bubble visible when the chat is open so it can act as a close (X) button */
-      #octopus-chat-container.octopus-open #octopus-chat-bubble {
+      #octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-bubble {
         display: flex !important;
+        position: fixed !important;
+        bottom: 20px !important;
+        left: 20px !important;
+        right: auto !important;
+        top: auto !important;
       }
     </style>
     <script
