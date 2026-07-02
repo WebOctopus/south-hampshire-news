@@ -1,18 +1,24 @@
-Reduce the open chat widget’s height so its top sits 160 px below the top of the viewport, clearing the page header/title.
+## Goal
+Restore the two behaviours from the earlier version of the widget, layered on top of the current widget-loader script (which controls colour, avatar, title and position):
 
-## Approach
-1. Keep the existing `widget-loader` `<script>` untouched so the server-controlled colour, avatar, title and position are preserved.
-2. Keep the existing bubble-as-close-X inline script intact.
-3. Add a tiny height override for the open widget container (desktop only):
-   - Target: `#octopus-chat-container.octopus-open`
-   - New `max-height: calc(100vh - 160px) !important;`
-   - Leave mobile (`octopus-mobile`) at full-screen so behaviour is unchanged on phones.
-4. Inject the override from the existing inline script after the widget mounts, so it reliably wins over the loader’s own injected stylesheet and avoids a separate `<style>` block that could load in the wrong order.
+1. When the chat is **open**, the launcher bubble swaps its logo/speech icon for a close **X**. When closed, it reverts to the original speech/logo icon.
+2. The chat window opens as a **popout above the bubble** (floating card anchored to the bubble), rather than pinned to the bottom-right edge of the viewport.
 
-## File changed
-- `index.html` only.
+## Changes (index.html only)
+
+1. Keep the existing widget-loader `<script>` untouched so colour, avatar, title and position remain server-controlled.
+2. The bubble→X toggle logic already exists in the inline script and works — leave it in place.
+3. Extend the existing `HEIGHT_OVERRIDE_CSS` block (desktop only, `:not(.octopus-mobile)`) so the open `#octopus-chat-container` behaves as a popout above the bubble:
+   - Fix width to ~380–400px and max-height `calc(100vh - 200px)` so it clears the header.
+   - Anchor the container above the bubble: `bottom: 96px` (bubble height + gap), `right: 20px`, `top: auto`, `left: auto`.
+   - Remove the loader's `padding-right`/`padding-bottom` on the open container so the card floats cleanly.
+   - Add a subtle popout look: rounded corners, shadow, `transform-origin: bottom right` for the open animation.
+4. Leave mobile (`.octopus-mobile`) untouched so it keeps opening full-screen.
+5. Inject the override via the existing `injectHeightOverride()` call in `wire()` — no new injection points needed.
 
 ## Verification
-- Open the chat on desktop and confirm its top edge clears the navigation / page title.
-- Confirm the bubble still swaps to X when open and back to the avatar when closed.
-- Confirm mobile still opens full-screen.
+- Desktop (1280×800) via Playwright: open the widget, confirm the container is a floating card positioned above the bubble (bottom ~96px, right ~20px), header of the page still visible, and the bubble shows the X icon. Close it, confirm bubble reverts to the speech/logo icon.
+- Mobile (375×667): open the widget, confirm it still fills the screen.
+
+## Files
+- `index.html`
