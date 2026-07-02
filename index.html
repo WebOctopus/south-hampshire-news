@@ -73,10 +73,11 @@
           if (!rect.width) return;
           var centre = rect.left + rect.width / 2;
           var side = centre < window.innerWidth / 2 ? 'left' : 'right';
-          if (side === anchorSide) return;
           anchorSide = side;
-          container.classList.remove('octopus-anchor-left', 'octopus-anchor-right');
-          container.classList.add('octopus-anchor-' + side);
+          var want = 'octopus-anchor-' + side;
+          var other = 'octopus-anchor-' + (side === 'left' ? 'right' : 'left');
+          if (container.classList.contains(other)) container.classList.remove(other);
+          if (!container.classList.contains(want)) container.classList.add(want);
         }
 
         function isOpen(container) {
