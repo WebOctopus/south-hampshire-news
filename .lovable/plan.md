@@ -1,29 +1,18 @@
-## Goal
+Reduce the open chat widget’s height so its top sits 160 px below the top of the viewport, clearing the page header/title.
 
-Re-add the "bubble acts as its own close button" behaviour on top of the current plain widget loader in `index.html`, without overriding the widget's own colour, avatar, title, or position.
+## Approach
+1. Keep the existing `widget-loader` `<script>` untouched so the server-controlled colour, avatar, title and position are preserved.
+2. Keep the existing bubble-as-close-X inline script intact.
+3. Add a tiny height override for the open widget container (desktop only):
+   - Target: `#octopus-chat-container.octopus-open`
+   - New `max-height: calc(100vh - 160px) !important;`
+   - Leave mobile (`octopus-mobile`) at full-screen so behaviour is unchanged on phones.
+4. Inject the override from the existing inline script after the widget mounts, so it reliably wins over the loader’s own injected stylesheet and avoids a separate `<style>` block that could load in the wrong order.
 
-## What to add back to `index.html`
-
-A single inline `<script>` (placed after the widget-loader `<script>`) that:
-
-1. Waits for the widget to mount (`MutationObserver` on `document.body` watching for `#octopus-chat-bubble` and `#octopus-chat-container`).
-2. When the bubble appears:
-   - Attaches a click handler that calls `window.OctopusChat.toggle()` (falling back to clicking the container's own trigger if the API isn't exposed).
-   - Observes the container for an "open" class / `aria-expanded` / visible state change.
-3. When the chat opens: replaces the bubble's inner icon with an inline X SVG.
-4. When the chat closes: restores the bubble's original inner HTML (cached on first sight, so the widget's own avatar/colour/logo is preserved).
-
-## What NOT to add
-
-- No `<style>` block. No positioning overrides. No colour overrides. No `data-*` attributes on the loader tag.
-- Do not touch the loader `<script>` tag itself — colour, avatar, title, and (default bottom-right) position all stay driven by the widget config keyed to `id=f532ace8-...`.
-
-## Behaviour after change
-
-- Widget renders with its configured colour, avatar, title, and default position.
-- Clicking the bubble opens the chat; the bubble's avatar swaps to an X.
-- Clicking the bubble (now an X) closes the chat; the original avatar returns.
-
-## Files touched
-
+## File changed
 - `index.html` only.
+
+## Verification
+- Open the chat on desktop and confirm its top edge clears the navigation / page title.
+- Confirm the bubble still swaps to X when open and back to the avatar when closed.
+- Confirm mobile still opens full-screen.
