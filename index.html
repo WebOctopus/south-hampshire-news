@@ -34,6 +34,10 @@
         height: min(520px, calc(100vh - 140px)) !important;
         padding: 0 !important;
       }
+      /* Keep the launcher bubble visible when the chat is open so it can act as a close (X) button */
+      #octopus-chat-container.octopus-open #octopus-chat-bubble {
+        display: flex !important;
+      }
     </style>
     <script
       src="https://qrbijjlviizhzuswiilf.supabase.co/functions/v1/widget-loader?id=f532ace8-8e6d-4694-81d1-ef91e7f36915"
@@ -43,5 +47,52 @@
       data-color="#10b981"
       async
     ></script>
+    <script>
+      (function () {
+        var CHAT_SVG =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
+        var CLOSE_SVG =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+
+        function applyIcon(container, bubble) {
+          var open = container.classList.contains('octopus-open');
+          bubble.innerHTML = open ? CLOSE_SVG : CHAT_SVG;
+          bubble.setAttribute('aria-label', open ? 'Close chat' : 'Open chat');
+        }
+
+        function init() {
+          var container = document.getElementById('octopus-chat-container');
+          var bubble = document.getElementById('octopus-chat-bubble');
+          if (!container || !bubble || !window.OctopusChat) {
+            return false;
+          }
+
+          applyIcon(container, bubble);
+
+          // Close when the bubble is clicked while the chat is open.
+          bubble.addEventListener('click', function () {
+            if (container.classList.contains('octopus-open')) {
+              window.OctopusChat.close();
+            }
+          });
+
+          // Keep the icon in sync with open/close state (header X, Escape, etc.).
+          var observer = new MutationObserver(function () {
+            applyIcon(container, bubble);
+          });
+          observer.observe(container, { attributes: true, attributeFilter: ['class'] });
+
+          return true;
+        }
+
+        var attempts = 0;
+        var timer = setInterval(function () {
+          attempts += 1;
+          if (init() || attempts > 100) {
+            clearInterval(timer);
+          }
+        }, 100);
+      })();
+    </script>
   </body>
 </html>
