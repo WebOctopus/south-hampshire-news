@@ -1,24 +1,28 @@
-## Change
+## Goal
 
-Replace the existing widget loader script block in `index.html` with the simpler version supplied:
+Re-add the "bubble acts as its own close button" behaviour on top of the current plain widget loader in `index.html`, without overriding the widget's own colour, avatar, title, or position.
 
-```html
-<script src="https://qrbijjlviizhzuswiilf.supabase.co/functions/v1/widget-loader?id=f532ace8-8e6d-4694-81d1-ef91e7f36915" async></script>
-```
+## What to add back to `index.html`
 
-This drops the `data-position="left"`, `data-offset-x`, `data-offset-y`, and `data-color` attributes — the widget will use whatever defaults the loader ships with (likely bottom-right, default colour).
+A single inline `<script>` (placed after the widget-loader `<script>`) that:
 
-## Also remove (since they only exist to patch the old left-anchored bubble)
+1. Waits for the widget to mount (`MutationObserver` on `document.body` watching for `#octopus-chat-bubble` and `#octopus-chat-container`).
+2. When the bubble appears:
+   - Attaches a click handler that calls `window.OctopusChat.toggle()` (falling back to clicking the container's own trigger if the API isn't exposed).
+   - Observes the container for an "open" class / `aria-expanded` / visible state change.
+3. When the chat opens: replaces the bubble's inner icon with an inline X SVG.
+4. When the chat closes: restores the bubble's original inner HTML (cached on first sight, so the widget's own avatar/colour/logo is preserved).
 
-1. The `<style>` block that force-positions `#octopus-chat-container` and `#octopus-chat-bubble` to the bottom-left when open.
-2. The inline `<script>` block that clones the bubble, swaps the chat/X icon, and wires up `OctopusChat.toggle()`.
+## What NOT to add
 
-Rationale: those overrides were tailored to the left-side custom config and to make the bubble act as its own close button. With the plain default loader they're no longer needed and would likely fight the widget's own behaviour.
+- No `<style>` block. No positioning overrides. No colour overrides. No `data-*` attributes on the loader tag.
+- Do not touch the loader `<script>` tag itself — colour, avatar, title, and (default bottom-right) position all stay driven by the widget config keyed to `id=f532ace8-...`.
 
-## Confirm before I build
+## Behaviour after change
 
-- OK to also delete the custom `<style>` and inline `<script>` blocks? (Recommended.)
-- Or keep them and only swap the loader `<script>` tag? (Not recommended — the CSS still targets `.octopus-open` and would misposition the new default-placed widget.)
+- Widget renders with its configured colour, avatar, title, and default position.
+- Clicking the bubble opens the chat; the bubble's avatar swaps to an X.
+- Clicking the bubble (now an X) closes the chat; the original avatar returns.
 
 ## Files touched
 
