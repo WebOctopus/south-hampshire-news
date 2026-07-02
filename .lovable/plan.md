@@ -1,24 +1,23 @@
-## Goal
-Move Discount Codes and Reporting from the top-level Calculator Management Console tabs into the nested tabs inside Subscription Settings Management, where there's now room.
+Add the Mirola chatbot widget script to the site so it appears as a floating button in the bottom-right on every page.
 
-## Changes
+## Implementation
 
-1. **`src/components/admin/CostCalculatorManagement.tsx`**
-   - Remove the `discountCodes` and `discountReporting` `TabsTrigger`s and their `TabsContent` blocks.
-   - Change `TabsList` from `grid-cols-7` back to `grid-cols-5`.
-   - Drop the now-unused imports: `DiscountCodesManagement`, `DiscountCodesReporting`, and the `Ticket` / `BarChart3` icons.
+Inject the script tag into `index.html` just before `</body>`:
 
-2. **`src/components/admin/SubscriptionSettingsManagement.tsx`**
-   - Import `DiscountCodesManagement`, `DiscountCodesReporting`, and the `Ticket` + `BarChart3` icons.
-   - Expand the nested `TabsList` from `grid-cols-3` to `grid-cols-5` and add two new triggers:
-     - `discountCodes` — "Discount Codes" (Ticket icon)
-     - `discountReporting` — "Reporting" (BarChart3 icon)
-   - Add matching `TabsContent` blocks rendering `<DiscountCodesManagement />` and `<DiscountCodesReporting />`.
-   - Update the header subtitle to mention discount codes & reporting alongside durations and volume discounts.
+```html
+<script
+  src="https://qrbijjlviizhzuswiilf.supabase.co/functions/v1/widget-loader?id=f532ace8-8e6d-4694-81d1-ef91e7f36915"
+  data-position="right"
+  data-offset-x="20"
+  data-offset-y="20"
+  data-color="#0066FF"
+  async
+></script>
+```
 
-3. **No prop changes** — both child components are self-contained and don't need `onStatsUpdate`.
+Placing it in `index.html` (rather than a React component) means:
+- Loads once, site-wide, on every route with no re-mount on navigation.
+- `async` so it doesn't block render.
+- No React wrapper needed — the widget-loader manages its own DOM.
 
-## Verification
-- Admin → Cost Calculator Management top-level tabs: Locations, Ad Sizes & Pricing, Subscription Settings, Leaflets, Product Designer (5 tabs).
-- Inside Subscription Settings: Durations, Volume Discounts, Payment Options, Discount Codes, Reporting (5 tabs), each renders its respective panel.
-- Build passes with no unused imports.
+No other files change.
