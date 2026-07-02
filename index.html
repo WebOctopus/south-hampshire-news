@@ -78,6 +78,7 @@
         function wire(bubble, container) {
           if (wired) return;
           wired = true;
+          injectHeightOverride();
           if (originalBubbleHTML === null) originalBubbleHTML = bubble.innerHTML;
 
           bubble.addEventListener('click', function (e) {
