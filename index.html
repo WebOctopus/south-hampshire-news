@@ -37,6 +37,14 @@
           /* Lift the chat window above the bubble so the bubble stays clickable as the close (X) button */
           '#octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-window{',
             'bottom:80px!important;',
+            'right:20px!important;',
+            'left:auto!important;',
+          '}',
+          /* Mirror the gap when the widget is anchored to the left side */
+          '#octopus-chat-container.octopus-open.octopus-left:not(.octopus-mobile) #octopus-chat-window,',
+          '#octopus-chat-container.octopus-open[data-position="left"]:not(.octopus-mobile) #octopus-chat-window{',
+            'left:20px!important;',
+            'right:auto!important;',
           '}',
           /* Keep the bubble visible when open so it can act as the close (X) button */
           '#octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-bubble{',
