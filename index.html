@@ -34,37 +34,50 @@
           '#octopus-chat-container.octopus-open:not(.octopus-mobile){',
             'max-height:calc(100vh - 160px)!important;',
           '}',
-          /* Lift the chat window above the bubble so the bubble stays clickable as the close (X) button */
-          '#octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-window{',
+          /* Lift the chat window above the bubble (20px gap) on whichever side the widget is anchored */
+          '#octopus-chat-container.octopus-open.octopus-anchor-right:not(.octopus-mobile) #octopus-chat-window{',
             'bottom:100px!important;',
             'right:20px!important;',
             'left:auto!important;',
           '}',
-          /* Mirror the gap when the widget is anchored to the left side */
-          '#octopus-chat-container.octopus-open.octopus-left:not(.octopus-mobile) #octopus-chat-window,',
-          '#octopus-chat-container.octopus-open[data-position="left"]:not(.octopus-mobile) #octopus-chat-window{',
+          '#octopus-chat-container.octopus-open.octopus-anchor-left:not(.octopus-mobile) #octopus-chat-window{',
+            'bottom:100px!important;',
             'left:20px!important;',
             'right:auto!important;',
           '}',
-          /* Keep the bubble visible when open so it can act as the close (X) button */
+          /* Keep the bubble pinned so it can act as the close (X) button without jumping */
           '#octopus-chat-container.octopus-open:not(.octopus-mobile) #octopus-chat-bubble{',
             'display:flex!important;',
             'position:fixed!important;',
-            'right:20px!important;',
             'bottom:20px!important;',
-            'left:auto!important;',
             'top:auto!important;',
             'margin:0!important;',
             'transform:none!important;',
           '}',
-          '#octopus-chat-container.octopus-open.octopus-left:not(.octopus-mobile) #octopus-chat-bubble,',
-          '#octopus-chat-container.octopus-open[data-position="left"]:not(.octopus-mobile) #octopus-chat-bubble{',
+          '#octopus-chat-container.octopus-open.octopus-anchor-right:not(.octopus-mobile) #octopus-chat-bubble{',
+            'right:20px!important;',
+            'left:auto!important;',
+          '}',
+          '#octopus-chat-container.octopus-open.octopus-anchor-left:not(.octopus-mobile) #octopus-chat-bubble{',
             'left:20px!important;',
             'right:auto!important;',
           '}'
         ].join('');
         var originalBubbleHTML = null;
         var wired = false;
+        var anchorSide = null;
+
+        function detectAnchor(bubble, container) {
+          if (!bubble || !container) return;
+          var rect = bubble.getBoundingClientRect();
+          if (!rect.width) return;
+          var centre = rect.left + rect.width / 2;
+          var side = centre < window.innerWidth / 2 ? 'left' : 'right';
+          if (side === anchorSide) return;
+          anchorSide = side;
+          container.classList.remove('octopus-anchor-left', 'octopus-anchor-right');
+          container.classList.add('octopus-anchor-' + side);
+        }
 
         function isOpen(container) {
           if (!container) return false;
@@ -77,6 +90,7 @@
 
         function applyIcon(bubble, container) {
           if (!bubble) return;
+          detectAnchor(bubble, container);
           if (isOpen(container)) {
             if (bubble.innerHTML !== CLOSE_SVG) {
               bubble.setAttribute('data-octopus-close', 'true');
