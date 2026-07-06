@@ -354,7 +354,7 @@ export const LeafletBasketSummary: React.FC<LeafletBasketSummaryProps> = ({
                 </div>
                 {discount && discountResult.discountAmount > 0 && (
                   <div className="flex justify-between items-center text-sm text-green-700">
-                    <span>Discount code applied: {discount.code}</span>
+                    <span>Voucher code applied: {discount.code}</span>
                     <span className="font-medium">-{formatPrice(discountResult.discountAmount)}</span>
                   </div>
                 )}

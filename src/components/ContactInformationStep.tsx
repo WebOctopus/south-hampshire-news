@@ -684,7 +684,7 @@ export const ContactInformationStep: React.FC<ContactInformationStepProps> = ({
                   </div>
                   <Label className="text-green-800 font-semibold">Have a Voucher Code?</Label>
                 </div>
-                <p className="text-sm text-green-600 mb-4">Enter your discount code below to save on your leafleting campaign.</p>
+                <p className="text-sm text-green-600 mb-4">Enter your voucher code below to save on your leafleting campaign.</p>
                 {appliedVoucher ? (
                   <div className="flex items-center justify-between p-3 bg-green-100 border border-green-300 rounded-lg">
                     <div className="flex items-center gap-2">
