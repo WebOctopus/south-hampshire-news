@@ -259,7 +259,7 @@ export const FixedTermBasketSummary: React.FC<FixedTermBasketSummaryProps> = ({
 
                 {discount && discountResult.discountAmount > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-green-700">Discount code applied: {discount.code}</span>
+                    <span className="text-sm text-green-700">Voucher code applied: {discount.code}</span>
                     <span className="font-medium text-green-700">-{formatPrice(discountResult.discountAmount)}</span>
                   </div>
                 )}
