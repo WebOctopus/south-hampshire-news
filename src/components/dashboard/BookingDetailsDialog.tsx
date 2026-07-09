@@ -891,8 +891,10 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         };
                         return getOrder(a) - getOrder(b);
                       })
-                      .map(option => {
-                  const baseTotal = booking.final_total || booking.monthly_price;
+                       .map(option => {
+                   const baseTotal = booking.pricing_model === 'bogof' && booking.monthly_price
+                     ? booking.monthly_price * 12
+                     : (booking.final_total || booking.monthly_price);
                   const pricingModel = booking.pricing_model || 'fixed';
                   const designFee = booking.pricing_breakdown?.designFee || 0;
                   const totalAmount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
