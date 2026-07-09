@@ -432,7 +432,9 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
 
                           const selectedPaymentOptionId = booking.selections?.payment_option_id;
                           const selectedOption = paymentOptions.find(opt => opt.option_type === selectedPaymentOptionId);
-                          const baseTotal = booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price;
+                          const baseTotal = booking.pricing_model === 'bogof' && booking.monthly_price
+                            ? booking.monthly_price * 12
+                            : (booking.pricing_breakdown?.baseTotal || booking.final_total || booking.monthly_price);
                           const designFee = booking.pricing_breakdown?.designFee || 0;
                           if (selectedOption && paymentOptions.length > 0) {
                             return formatPrice(calculatePaymentAmount(baseTotal, selectedOption, booking.pricing_model, paymentOptions, designFee)) + ' + VAT';
@@ -889,8 +891,10 @@ export const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
                         };
                         return getOrder(a) - getOrder(b);
                       })
-                      .map(option => {
-                  const baseTotal = booking.final_total || booking.monthly_price;
+                       .map(option => {
+                   const baseTotal = booking.pricing_model === 'bogof' && booking.monthly_price
+                     ? booking.monthly_price * 12
+                     : (booking.final_total || booking.monthly_price);
                   const pricingModel = booking.pricing_model || 'fixed';
                   const designFee = booking.pricing_breakdown?.designFee || 0;
                   const totalAmount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
