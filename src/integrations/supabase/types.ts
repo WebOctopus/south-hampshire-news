@@ -2401,6 +2401,31 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_client: { Args: { p_email: string }; Returns: Json }
+      admin_list_clients: {
+        Args: never
+        Returns: {
+          ad_sizes_used: string[]
+          bookings_count: number
+          company: string
+          display_name: string
+          effective_advertiser_status: string
+          email: string
+          has_accepted_terms: boolean
+          has_account: boolean
+          has_confirmed_payment: boolean
+          has_used_discount: boolean
+          last_activity_at: string
+          locations_used: string[]
+          paid_bookings_count: number
+          phone: string
+          plan_types_used: string[]
+          quote_requests_count: number
+          quotes_count: number
+          total_confirmed_spend: number
+          user_id: string
+        }[]
+      }
       assign_admin_role: { Args: { user_email: string }; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_voucher_code: { Args: never; Returns: string }
