@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ClientDossierPanel from './ClientDossierPanel';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -183,6 +183,12 @@ export default function ClientsManagement({
   const [usedDiscount, setUsedDiscount] = useState(false);
 
   const [dossierEmail, setDossierEmail] = useState<string | null>(null);
+  const [dossierOpen, setDossierOpen] = useState(false);
+
+  const openDossier = (email: string) => {
+    setDossierEmail(email);
+    setDossierOpen(true);
+  };
 
   const refresh = async () => {
     setLoading(true);
@@ -400,7 +406,7 @@ export default function ClientsManagement({
                         <TableCell className="font-medium">
                           <div className="flex flex-col gap-1">
                             <button
-                              onClick={() => setDossierEmail(c.email)}
+                              onClick={() => openDossier(c.email)}
                               className="text-left text-primary hover:underline"
                             >
                               {c.display_name || '—'}
@@ -537,17 +543,11 @@ export default function ClientsManagement({
         </CardContent>
       </Card>
 
-      <Dialog open={!!dossierEmail} onOpenChange={(o) => !o && setDossierEmail(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Client dossier coming next</DialogTitle>
-            <DialogDescription>
-              The full dossier view for <strong>{dossierEmail}</strong> — powered by
-              <code className="ml-1">admin_get_client</code> — will be added in the next step.
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+      <ClientDossierPanel
+        email={dossierEmail}
+        open={dossierOpen}
+        onOpenChange={setDossierOpen}
+      />
     </div>
   );
 }
