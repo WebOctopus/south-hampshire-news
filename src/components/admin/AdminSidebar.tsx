@@ -51,7 +51,7 @@ const menuItems = [
     section: "claim-requests"
   },
   {
-    title: "Users",
+    title: "Clients",
     icon: Users,
     section: "users"
   },
