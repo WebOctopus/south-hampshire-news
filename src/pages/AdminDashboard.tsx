@@ -273,6 +273,7 @@ const AdminDashboard = () => {
       await invokeAdminAction('delete_user', targetUser.user_id);
       toast({ title: "Success", description: "User deleted successfully." });
       loadUsers();
+      refreshClients();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
@@ -303,6 +304,7 @@ const AdminDashboard = () => {
       await invokeAdminAction('update_role', targetUser.user_id, { role: newRole });
       toast({ title: "Success", description: `Role updated to ${newRole}.` });
       loadUsers();
+      refreshClients();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
@@ -317,6 +319,7 @@ const AdminDashboard = () => {
       if (error) throw error;
       toast({ title: "Success", description: `Advertiser status set to ${newStatus}.` });
       loadUsers();
+      refreshClients();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
@@ -344,6 +347,7 @@ const AdminDashboard = () => {
       setCreateUserForm({ email: '', password: '', displayName: '' });
       setSendCreateEmail(false);
       loadUsers();
+      refreshClients();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -460,6 +464,7 @@ const AdminDashboard = () => {
     if (isAdmin) {
       loadBusinesses();
       loadUsers();
+      refreshClients();
       loadStories();
     }
   }, [isAdmin]);
@@ -963,6 +968,7 @@ const AdminDashboard = () => {
       setIsUserEditDialogOpen(false);
       setEditingUser(null);
       loadUsers();
+      refreshClients();
     }
   };
 
