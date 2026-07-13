@@ -1,40 +1,27 @@
-## The bug
+## Plan: Payment-verified advertiser status
 
-In `src/components/dashboard/BookingDetailsDialog.tsx`, the payment radio list (around line 893) computes:
+Replace `public.get_effective_advertiser_status(_user_id uuid)` with a version that determines "active" from real payment signals rather than booking status/date guesses. Database-only change — no edge functions, webhooks, `is_advertiser_active()`, or dashboard code touched (they call through this function and inherit the fix automatically).
 
-```ts
-const baseTotal = booking.final_total || booking.monthly_price;
-const totalAmount = calculatePaymentAmount(baseTotal, option, pricingModel, paymentOptions, designFee);
-```
+### Migration
 
-For a 3+ Subscription (`pricing_model = 'bogof'`), `calculatePaymentAmount` treats `baseTotal` as the **12‑month campaign cost** and derives the monthly as `baseTotal / 2 / minimum_payments`.
+Single migration that runs `CREATE OR REPLACE FUNCTION public.get_effective_advertiser_status(_user_id uuid) ...` with the exact body supplied in the request.
 
-- On `BookingSummaryStep` it is called with `pricingBreakdown.finalTotal` (= `monthly × 12` = £2,856), so monthly = 2856 / 2 / 6 = **£238** ✓
-- On the dashboard it is called with `booking.final_total`, which is normalised to `monthly × 6` = £1,428 (see `finalTotalNormaliser` / `SUBSCRIPTION_PAYMENTS = 6`), so monthly = 1428 / 2 / 6 = **£119** ✗
+New precedence:
+1. Manual override on `profiles.advertiser_status` (`active`/`lapsed`/`none`) wins.
+2. **ACTIVE** — booking joined to `gocardless_mandates.status='active'` OR `gocardless_subscriptions.status='active'` (no date check; fixes long-running subscribers wrongly lapsing after 12 months).
+3. **ACTIVE** — one-off `bookings.payment_status='paid'` where `distribution_start_date` is within the last 2 months or future (fallback to `updated_at` within 2 months when null).
+4. **LAPSED** — any historical booking with `payment_status IN ('paid','mandate_active','subscription_active')`.
+5. **NONE** otherwise.
 
-Result: the "Monthly Direct Debit" radio shows half the correct amount and the 12‑months‑in‑advance option is also under‑priced (£1,285 instead of ~£2,570).
+### Verification (after migration approval)
 
-## Fix
+Run `supabase--read_query` calls to check `get_effective_advertiser_status` returns:
+- `'active'` for a user with a live GoCardless mandate/subscription
+- `'lapsed'` for a user whose only paid booking is >2 months old with no live mandate
+- `'none'` for a user with only pending/unpaid bookings
 
-Presentation‑only change in `src/components/dashboard/BookingDetailsDialog.tsx` — no business logic, no DB writes, no edge functions.
+Confirm `is_advertiser_active()` (unchanged) still returns the right boolean, which means the dashboard artwork gate keeps working without any frontend edit.
 
-1. When `booking.pricing_model === 'bogof'` (subscription), derive the base total that `calculatePaymentAmount` expects from `booking.monthly_price`:
-   ```ts
-   const baseTotal =
-     booking.pricing_model === 'bogof' && booking.monthly_price
-       ? booking.monthly_price * 12
-       : (booking.final_total || booking.monthly_price);
-   ```
-   Apply this in the payment‑radio block (around line 893). This restores parity with `BookingSummaryStep` so monthly renders as £238 and the 12‑month option renders as monthly × 12 × 0.9.
+### Out of scope
 
-2. Apply the same derivation to the "Monthly Cost / Campaign Cost" line (around line 435) so any selected‑option recalculation there stays consistent.
-
-3. Leave `paymentCalculations.ts`, the normaliser, edge functions, and stored booking values untouched — the amount actually charged by the `create-gocardless-payment` edge function is re‑derived server‑side from `monthly_price` and is already correct.
-
-## Verification
-
-- Open the affected booking in the dashboard and confirm:
-  - Monthly Direct Debit shows **£238.00 + VAT** with "Direct Debit will collect £285.60 inc VAT … per month".
-  - 12 months in advance shows **~£2,570.40 + VAT** with a 10% saving of ~£285.60.
-- Confirm the Campaign Overview "Monthly Cost" still reads **£238.00 + VAT**.
-- Spot‑check a non‑bogof (Pay As You Go) booking to confirm its payment options are unchanged.
+No changes to: edge functions, `stripe-webhook`, `gocardless-webhook`, `is_advertiser_active()`, artwork gate, dashboard components, or any table schema.
