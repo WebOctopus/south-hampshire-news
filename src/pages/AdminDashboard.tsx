@@ -70,6 +70,15 @@ const AdminDashboard = () => {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [clientsRefreshSignal, setClientsRefreshSignal] = useState(0);
   const refreshClients = () => setClientsRefreshSignal((n) => n + 1);
+
+  const accountByEmail = useMemo(() => {
+    const map = new Map<string, any>();
+    users.forEach((u) => {
+      const email = (userEmails[u.user_id] || '').trim().toLowerCase();
+      if (email) map.set(email, u);
+    });
+    return map;
+  }, [users, userEmails]);
   
   // Create user states
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
