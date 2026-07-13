@@ -740,184 +740,30 @@ const AdminDashboard = () => {
       case 'users':
         return (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">User Management</h2>
-              <p className="text-muted-foreground">Manage user roles, permissions, and agency memberships. These settings control access to the booking & quote dashboard.</p>
-            </div>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <CardTitle>User Roles & Agency Management</CardTitle>
-                <Button onClick={() => { setCreateUserForm({ email: '', password: '', displayName: '' }); setSendCreateEmail(false); setIsCreateUserOpen(true); }}>
-                  <UserPlus className="h-4 w-4 mr-2" /> Create User
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <Input
-                    placeholder="Search by display name or company..."
-                    value={userSearchTerm}
-                    onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="max-w-sm"
-                  />
-                </div>
-                {users.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No users found.</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Display Name</TableHead>
-                          <TableHead>Company</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Advertiser Status</TableHead>
-                          <TableHead>Agency Status</TableHead>
-                          <TableHead>Agency Name</TableHead>
-                          <TableHead>Discount %</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.filter((u) => {
-                          if (!userSearchTerm.trim()) return true;
-                          const term = userSearchTerm.toLowerCase();
-                          return (u.display_name || '').toLowerCase().includes(term) ||
-                                 (u.company || '').toLowerCase().includes(term);
-                        }).map((u) => {
-                          const currentRole = u.user_roles && u.user_roles.length > 0 ? u.user_roles[0].role : 'user';
-                          return (
-                            <TableRow key={u.user_id}>
-                              <TableCell className="font-medium">
-                                {u.display_name || 'No name'}
-                              </TableCell>
-                              <TableCell>
-                                {u.company || '-'}
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {userEmails[u.user_id] || <span className="text-muted-foreground italic">Loading...</span>}
-                              </TableCell>
-                              <TableCell>
-                                <Select
-                                  value={currentRole}
-                                  onValueChange={(val) => handleUpdateRole(u, val)}
-                                >
-                                  <SelectTrigger className="w-[110px] h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="user">User</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col gap-1">
-                                  {(() => {
-                                    const eff = effectiveAdvertiserStatuses[u.user_id] || 'none';
-                                    const colorClass =
-                                      eff === 'active'
-                                        ? 'bg-green-100 text-green-800'
-                                        : eff === 'lapsed'
-                                        ? 'bg-amber-100 text-amber-800'
-                                        : 'bg-muted text-muted-foreground';
-                                    return (
-                                      <span className={`px-2 py-0.5 rounded-full text-xs w-fit capitalize ${colorClass}`}>
-                                        {eff}
-                                      </span>
-                                    );
-                                  })()}
-                                  <Select
-                                    value={u.advertiser_status || 'auto'}
-                                    onValueChange={(val) => handleUpdateAdvertiserStatus(u, val)}
-                                  >
-                                    <SelectTrigger className="w-[110px] h-7 text-xs">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="auto">Auto</SelectItem>
-                                      <SelectItem value="active">Active</SelectItem>
-                                      <SelectItem value="lapsed">Lapsed</SelectItem>
-                                      <SelectItem value="none">None</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  u.is_agency_member 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-muted text-muted-foreground'
-                                }`}>
-                                  {u.is_agency_member ? 'Agency Member' : 'Regular User'}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                {u.agency_name || '-'}
-                              </TableCell>
-                              <TableCell>
-                                {u.is_agency_member ? `${u.agency_discount_percent || 0}%` : '-'}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-1">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setEditingUser(u);
-                                      setIsUserEditDialogOpen(true);
-                                    }}
-                                  >
-                                    <Edit className="h-3 w-3 mr-1" /> Edit
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                              setPasswordTarget(u);
-                                      setNewPassword('');
-                                      setSendPasswordEmail(false);
-                                      setIsSetPasswordOpen(true);
-                                    }}
-                                  >
-                                    <KeyRound className="h-3 w-3 mr-1" /> Password
-                                  </Button>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button variant="destructive" size="sm">
-                                        <Trash2 className="h-3 w-3 mr-1" /> Delete
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete User Account</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          This will permanently delete the account for <strong>{u.display_name || userEmails[u.user_id] || 'this user'}</strong>. 
-                                          All their bookings, quotes, and data will be removed. This action cannot be undone.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteUser(u)}>
-                                          Delete User
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ClientsManagement
+              accountByEmail={accountByEmail}
+              effectiveAdvertiserStatuses={effectiveAdvertiserStatuses}
+              onOpenCreateUser={() => {
+                setCreateUserForm({ email: '', password: '', displayName: '' });
+                setSendCreateEmail(false);
+                setIsCreateUserOpen(true);
+              }}
+              onUpdateRole={handleUpdateRole}
+              onUpdateAdvertiserStatus={handleUpdateAdvertiserStatus}
+              onEdit={(u) => {
+                setEditingUser(u);
+                setIsUserEditDialogOpen(true);
+              }}
+              onSetPassword={(u) => {
+                setPasswordTarget(u);
+                setNewPassword('');
+                setSendPasswordEmail(false);
+                setIsSetPasswordOpen(true);
+              }}
+              onDelete={handleDeleteUser}
+              refreshSignal={clientsRefreshSignal}
+              onAfterMutation={refreshClients}
+            />
 
             {/* Set Password Dialog */}
             <Dialog open={isSetPasswordOpen} onOpenChange={setIsSetPasswordOpen}>
