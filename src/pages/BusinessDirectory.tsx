@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { DirectoryHero } from '@/components/directory/DirectoryHero';
-import { SectorPills } from '@/components/directory/SectorPills';
-import { LocationPillsGrid } from '@/components/directory/LocationPillsGrid';
 import { VerifiedBusinessesRow } from '@/components/directory/VerifiedBusinessesRow';
 import { RecentlyAddedRow } from '@/components/directory/RecentlyAddedRow';
 // Helper to clean area names (remove "Area X - " prefix)
@@ -70,7 +68,7 @@ const BusinessDirectory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [availableCategoryIds, setAvailableCategoryIds] = useState<Set<string> | null>(null);
+  
   const requestIdRef = useRef(0);
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
