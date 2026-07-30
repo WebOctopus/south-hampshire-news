@@ -207,38 +207,6 @@ const BusinessDirectory = () => {
     }
   }, [fetchBusinesses, selectedLocation]);
 
-  // Recompute which sector pills are valid for the current search + location.
-  // When the user hasn't typed a search, show every pill.
-  useEffect(() => {
-    const term = searchTerm.trim();
-    if (!term || selectedLocation === 'all') {
-      setAvailableCategoryIds(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data, error } = await supabase.rpc('get_available_sectors', {
-        search_term: term,
-        edition_area_filter: selectedLocation,
-      });
-      if (cancelled) return;
-      if (error) {
-        console.error('Error fetching available sectors:', error);
-        setAvailableCategoryIds(null);
-        return;
-      }
-      const ids = new Set<string>(
-        (data || []).map((row: { category_id: string }) => row.category_id),
-      );
-      setAvailableCategoryIds(ids);
-      // If the currently selected pill is no longer valid, reset to "all".
-      if (selectedCategory !== 'all' && !ids.has(selectedCategory)) {
-        setSelectedCategory('all');
-        setCurrentPage(1);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [searchTerm, selectedLocation, selectedCategory]);
 
   // Handle #add hash in URL
   useEffect(() => {
@@ -318,24 +286,6 @@ const BusinessDirectory = () => {
           cleanAreaName={cleanAreaName}
           onSearch={() => { setCurrentPage(1); }}
         />
-
-        {/* Sector + location pill rows */}
-        <section className="py-8 md:py-10 border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <SectorPills
-              categories={categories}
-              selected={selectedCategory}
-              onSelect={(id) => { setSelectedCategory(id); setCurrentPage(1); }}
-              availableIds={availableCategoryIds}
-            />
-            <LocationPillsGrid
-              locations={locations}
-              selected={selectedLocation}
-              onSelect={(loc) => { setSelectedLocation(loc); setCurrentPage(1); }}
-              cleanAreaName={cleanAreaName}
-            />
-          </div>
-        </section>
 
         {/* Always-visible curated rows */}
         <VerifiedBusinessesRow
