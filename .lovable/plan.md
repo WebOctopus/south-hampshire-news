@@ -1,36 +1,33 @@
-# Fix: admin_list_clients ambiguous `email` reference
+## Goal
+Restructure `/business-directory` so the curated business rows sit immediately under the hero, and the sector/location pill filters are removed.
 
-## Problem
+## Current layout
+1. DirectoryHero (search + location dropdown)
+2. Sector pills + location pills
+3. Verified businesses
+4. Recently added
+5. Full results grid (location-gated, heading = "Featured Businesses" when no category selected)
 
-`supabase.rpc('admin_list_clients')` returns Postgres error `42702` — *column reference "email" is ambiguous* — so the Clients directory shows "No clients found" and a toast error.
+## New layout
+1. DirectoryHero
+2. Verified businesses
+3. Recently added
+4. Full results grid
 
-Root cause is inside the function's `activity` CTE:
+## Changes
+1. **Remove the sector/location pills section** from `src/pages/BusinessDirectory.tsx`.
+   - Delete the `<section>` containing `SectorPills` and `LocationPillsGrid`.
+   - Remove the `SectorPills` and `LocationPillsGrid` imports.
+   - Remove the `availableCategoryIds` state and the `get_available_sectors` effect that existed only to drive the sector pills.
+   - `selectedCategory` will stay `'all'`; it is still passed down to the curated rows but has no user-facing control.
 
-```sql
-activity AS (
-  SELECT email, max(ts) AS last_activity_at FROM (
-    ...
-  ) t GROUP BY email
-)
-```
+2. **Move curated rows up** so `VerifiedBusinessesRow` and `RecentlyAddedRow` render directly after `DirectoryHero`.
 
-The function is declared `RETURNS TABLE(email text, …)`, which makes `email` a PL/pgSQL OUT variable. The bare `email` in `SELECT email` and `GROUP BY email` collides with that variable.
+3. **Tidy the full-results heading** to avoid a duplicate "Featured Businesses" label now that the curated rows occupy that name. Change the grid heading to `"All Businesses"` (or `"Businesses"`) when no category is selected.
 
-## Fix
-
-One migration that `CREATE OR REPLACE`s `admin_list_clients` with the two bare references qualified as `t.email`. Everything else in the function stays byte-for-byte identical — same signature, same STABLE SECURITY DEFINER, same search_path, same result columns, same body.
-
-```sql
-activity AS (
-  SELECT t.email, max(t.ts) AS last_activity_at FROM (
-    ...
-  ) t GROUP BY t.email
-)
-```
-
-No schema changes, no grants change, no client code change. After the migration the RPC returns rows and the Clients directory populates.
+4. **Verify** the page loads, the hero search/location dropdown still works, and the two curated rows appear under the hero.
 
 ## Out of scope
-
-- Any change to `admin_get_client`, `ClientsManagement.tsx`, or the dossier panel.
-- Any refactor of the other CTEs (all already qualified).
+- No changes to `DirectoryHero`, `VerifiedBusinessesRow`, `RecentlyAddedRow`, or the data-fetching logic inside them.
+- No changes to the full-results grid behaviour (still location-gated).
+- No backend or edge-function changes.
