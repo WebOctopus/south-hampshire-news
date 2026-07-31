@@ -18,6 +18,8 @@ import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
 import { OpeningHoursEditor, type OpeningHoursValue } from '@/components/directory/OpeningHoursEditor';
+import { BusinessKeywordsEditor } from '@/components/directory/BusinessKeywordsEditor';
+import { BusinessAreasEditor } from '@/components/directory/BusinessAreasEditor';
 
 interface BusinessEditFormProps {
   business?: any | null;
@@ -28,7 +30,6 @@ interface BusinessEditFormProps {
 export function BusinessEditForm({ business, onClose, onSave }: BusinessEditFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
   const { uploadImage, isUploading } = useBusinessImageUpload();
   const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(business?.id || null);
   const [owners, setOwners] = useState<Array<{ user_id: string; display_name: string | null; company: string | null; email: string | null }>>([]);
@@ -69,10 +70,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const [formData, setFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
-    keywords: business?.keywords || '',
-    biz_type: business?.biz_type || '',
-    sector: business?.sector || '',
-    category_id: business?.category_id || '',
     email: business?.email || '',
     phone: business?.phone || '',
     website: business?.website || '',
@@ -80,7 +77,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     address_line2: business?.address_line2 || '',
     city: business?.city || '',
     postcode: business?.postcode || '',
-    edition_area: business?.edition_area || '',
     logo_url: business?.logo_url || '',
     featured_image_url: business?.featured_image_url || '',
     images: (business?.images as string[]) || [],
@@ -98,17 +94,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     youtube_url: business?.youtube_url || '',
     opening_hours: (business?.opening_hours as OpeningHoursValue) || {},
   });
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      const { data } = await supabase
-        .from('business_categories')
-        .select('*')
-        .order('name');
-      if (data) setCategories(data);
-    };
-    loadCategories();
-  }, []);
 
   useEffect(() => {
     const loadOwners = async () => {
