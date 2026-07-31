@@ -32,4 +32,11 @@ Copy uses British English and the project's terminology. The rejection email sho
 
 ## Verification
 
-Confirm the five rows exist and appear in Admin > Email Templates, then trigger a claim submission and an approve/reject in the admin queue and check `email_send_log` records one row per send with the matching `template_name`.
+Confirm the five rows exist and appear in Admin > Email Templates, then prove the database templates — not the hard-coded fallback — are what actually gets sent:
+
+1. Insert a deliberate, unique marker string into each new template body (for example an HTML comment carrying the template name). The marker exists only in the database copy, never in the function's fallback HTML.
+2. Trigger a real claim submission, then an approve and a reject from the admin queue, and a removal submission plus approval.
+3. For each, check `email_send_log` has a row with the expected `template_name` (`directory_claim_submitted_admin`, `directory_claim_approved_customer`, `directory_claim_rejected_customer`, `directory_removal_submitted_admin`, `directory_removal_approved_customer`) and status `sent`.
+4. Inspect the delivered email (or the rendered body) for the marker and for the branded 600px shell. If the marker is absent, the `directory_<type>` lookup did not match and the fallback ran silently — the name in `email_templates` is wrong and must be corrected before this is considered done.
+5. Confirm every `{{variable}}` was substituted: no literal `{{` remains in the delivered body.
+6. Remove the markers once each template is confirmed live.
