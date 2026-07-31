@@ -35,6 +35,12 @@ interface Business {
   owner_photo_url?: string | null;
   owner_quote?: string | null;
   advertises_in_discover?: boolean | null;
+  facebook_url?: string | null;
+  instagram_url?: string | null;
+  twitter_url?: string | null;
+  linkedin_url?: string | null;
+  tiktok_url?: string | null;
+  youtube_url?: string | null;
   business_categories: {
     name: string;
     icon: string;
@@ -54,7 +60,7 @@ const BusinessDetail = () => {
   }, [slug]);
 
   const fetchBusiness = async () => {
-    const { data, error } = await supabase.rpc('get_business_detail_by_slug', {
+    const { data, error } = await supabase.rpc('get_business_detail_by_slug_v2', {
       business_slug: slug as string
     });
     
@@ -62,10 +68,13 @@ const BusinessDetail = () => {
       console.error('Error fetching business:', error);
       setBusiness(null);
     } else if (data && data.length > 0) {
-      // Transform the data to match the expected Business interface
+      const row = data[0] as any;
+      // v2 returns the outward postcode as postcode_out; the public page only
+      // ever shows town + postcode, never an internal area name or number.
       const businessData = {
-        ...data[0],
-        business_categories: (data[0].business_categories as any) || { name: '', icon: '' }
+        ...row,
+        postcode: row.postcode_out ?? '',
+        business_categories: (row.business_categories as any) || { name: '', icon: '' }
       };
       setBusiness(businessData as Business);
     } else {
