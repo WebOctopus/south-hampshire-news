@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Phone, Globe, Mail, MapPin, CheckCircle2, Sparkles, ShieldCheck } from 'lucide-react';
 import { BusinessIcon } from './BusinessIcon';
 import { formatAddress } from '@/lib/businessIcon';
 import { BusinessClaimButton } from '@/components/BusinessClaimButton';
+import { BusinessRemovalRequestDialog } from './BusinessRemovalRequestDialog';
 
 interface Props {
   business: {
@@ -24,6 +26,7 @@ interface Props {
 }
 
 export function BusinessDetailHero({ business }: Props) {
+  const [removalOpen, setRemovalOpen] = useState(false);
   const address = formatAddress(business);
   const directionsUrl = address
     ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
@@ -114,12 +117,26 @@ export function BusinessDetailHero({ business }: Props) {
                 businessName={business.name}
                 ownerId={business.owner_id ?? null}
                 hideWhenPending
-                triggerLabel="Apply to verify"
+                triggerLabel="Is this your business? Claim this listing"
                 triggerIcon={<ShieldCheck className="h-3.5 w-3.5" />}
                 triggerClassName="inline-flex items-center gap-1.5 bg-white text-community-teal hover:bg-white/90 text-xs font-medium px-4 py-2 rounded-lg transition-colors border border-white"
               />
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => setRemovalOpen(true)}
+            className="mt-3 text-[11px] text-white/60 hover:text-white/90 underline underline-offset-2 transition-colors"
+          >
+            Request removal of this listing
+          </button>
+          <BusinessRemovalRequestDialog
+            businessId={business.id}
+            businessName={business.name}
+            open={removalOpen}
+            onOpenChange={setRemovalOpen}
+          />
         </div>
       </div>
     </section>

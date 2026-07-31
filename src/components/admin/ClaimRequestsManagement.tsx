@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Check, X, Eye, Building2, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RemovalRequestsPanel } from './RemovalRequestsPanel';
 
 interface ClaimRequest {
   id: string;
@@ -88,33 +90,25 @@ export function ClaimRequestsManagement() {
   const handleApprove = async (claim: ClaimRequest) => {
     setProcessing(true);
     try {
-      // Get current user for reviewed_by
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // Update claim request status
-      const { error: claimError } = await supabase
-        .from('business_claim_requests')
-        .update({
-          status: 'approved',
-          admin_notes: adminNotes || null,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user?.id
+      const { error } = await supabase.rpc('approve_business_claim', { _claim_id: claim.id });
+      if (error) throw error;
+
+      if (adminNotes) {
+        await supabase
+          .from('business_claim_requests')
+          .update({ admin_notes: adminNotes })
+          .eq('id', claim.id);
+      }
+
+      supabase.functions
+        .invoke('send-directory-notification', {
+          body: { type: 'claim_approved_customer', claim_id: claim.id },
         })
-        .eq('id', claim.id);
-
-      if (claimError) throw claimError;
-
-      // Update business owner_id
-      const { error: businessError } = await supabase
-        .from('businesses')
-        .update({ owner_id: claim.user_id })
-        .eq('id', claim.business_id);
-
-      if (businessError) throw businessError;
+        .catch(() => undefined);
 
       toast({
         title: "Claim Approved",
-        description: `Business ownership has been transferred to the claimant.`
+        description: 'The claimant now owns this listing and it is marked as verified.'
       });
 
       setSelectedClaim(null);
@@ -122,7 +116,7 @@ export function ClaimRequestsManagement() {
       loadClaimRequests();
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Approval failed",
         description: error.message,
         variant: "destructive"
       });
@@ -134,19 +128,17 @@ export function ClaimRequestsManagement() {
   const handleReject = async (claim: ClaimRequest) => {
     setProcessing(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const { error } = await supabase
-        .from('business_claim_requests')
-        .update({
-          status: 'rejected',
-          admin_notes: adminNotes || null,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user?.id
-        })
-        .eq('id', claim.id);
-
+      const { error } = await supabase.rpc('reject_business_claim', {
+        _claim_id: claim.id,
+        _reason: adminNotes || null,
+      });
       if (error) throw error;
+
+      supabase.functions
+        .invoke('send-directory-notification', {
+          body: { type: 'claim_rejected_customer', claim_id: claim.id },
+        })
+        .catch(() => undefined);
 
       toast({
         title: "Claim Rejected",
@@ -158,7 +150,7 @@ export function ClaimRequestsManagement() {
       loadClaimRequests();
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Rejection failed",
         description: error.message,
         variant: "destructive"
       });
@@ -185,16 +177,23 @@ export function ClaimRequestsManagement() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Business Claim Requests</h2>
+        <h2 className="text-2xl font-bold mb-2">Directory Review Queue</h2>
         <p className="text-muted-foreground">
-          Review and manage business ownership claims from users.
+          Review ownership claims and listing removal requests.
           {pendingCount > 0 && (
-            <Badge variant="destructive" className="ml-2">{pendingCount} pending</Badge>
+            <Badge variant="destructive" className="ml-2">{pendingCount} pending claims</Badge>
           )}
         </p>
       </div>
 
-      <Card>
+      <Tabs defaultValue="claims" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="claims">Claims</TabsTrigger>
+          <TabsTrigger value="removals">Removals</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="claims">
+          <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
@@ -261,6 +260,12 @@ export function ClaimRequestsManagement() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="removals">
+          <RemovalRequestsPanel />
+        </TabsContent>
+      </Tabs>
 
       {/* Review Dialog */}
       <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>

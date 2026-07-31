@@ -45,12 +45,16 @@ export function DashboardSidebar({
       : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
 
   const businessItems = [
-    {
-      title: editingBusiness ? "Edit Listing" : "Create New Listing",
-      value: "create",
-      icon: editingBusiness ? Building2 : Plus,
-      disabled: businessCount > 0 && !editingBusiness
-    },
+    ...(editingBusiness
+      ? [
+          {
+            title: "Edit Listing",
+            value: "create",
+            icon: Building2,
+            disabled: false
+          }
+        ]
+      : []),
     {
       title: `Your Listings (${businessCount})`,
       value: "listings", 

@@ -122,16 +122,26 @@ export function BusinessClaimButton({
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { data: created, error } = await supabase
         .from('business_claim_requests')
         .insert({
           business_id: businessId,
           user_id: userId,
           verification_method: formData.verification_method || null,
           verification_notes: formData.verification_notes || null
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      if (created?.id) {
+        supabase.functions
+          .invoke('send-directory-notification', {
+            body: { type: 'claim_submitted_admin', claim_id: created.id },
+          })
+          .catch(() => undefined);
+      }
 
       toast({
         title: "Claim Submitted",

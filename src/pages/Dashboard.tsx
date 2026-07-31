@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -410,7 +410,12 @@ const Dashboard = () => {
     setSubmitting(true);
 
     try {
-      if (editingBusiness) {
+      if (!editingBusiness) {
+        throw new Error(
+          'New listings are added by the Discover team from the CRM. Claim an existing listing from the directory to manage it here.'
+        );
+      }
+      {
         const { error } = await supabase
           .from('businesses')
           .update(formData)
@@ -425,21 +430,6 @@ const Dashboard = () => {
 
         setEditingBusiness(null);
         setActiveTab('listings');
-      } else {
-        const { error } = await supabase
-          .from('businesses')
-          .insert([{
-            ...formData,
-            owner_id: user.id,
-            is_active: true
-          }]);
-
-        if (error) throw error;
-
-        toast({
-          title: "Success!",
-          description: "Your business listing has been created successfully."
-        });
       }
 
       setFormData({
@@ -807,9 +797,7 @@ const Dashboard = () => {
   const renderCreateBusinessForm = () => (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {editingBusiness ? 'Edit Business Listing' : 'Create New Business Listing'}
-        </CardTitle>
+        <CardTitle>Edit Business Listing</CardTitle>
         {editingBusiness && (
           <div className="flex gap-2">
             <Button
@@ -959,10 +947,7 @@ const Dashboard = () => {
             className="w-full"
             disabled={submitting || !formData.name}
           >
-            {submitting 
-              ? (editingBusiness ? 'Updating Listing...' : 'Creating Listing...') 
-              : (editingBusiness ? 'Update Business Listing' : 'Create Business Listing')
-            }
+            {submitting ? 'Updating Listing...' : 'Update Business Listing'}
           </Button>
         </form>
       </CardContent>
@@ -973,17 +958,21 @@ const Dashboard = () => {
     <Card>
       <CardHeader>
         <CardTitle>Your Business Listings</CardTitle>
-        {hasExistingBusiness && (
-          <p className="text-sm text-muted-foreground">
-            You can only have one business listing per account. To add a different business, please edit your existing listing.
-          </p>
-        )}
+        <p className="text-sm text-muted-foreground">
+          Listings come from the Discover directory. To manage one here, claim it from its public listing page.
+        </p>
       </CardHeader>
       <CardContent>
         {businesses.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>You haven't created any business listings yet.</p>
-            <p className="mt-2">Click on "Create New Listing" to get started.</p>
+            <p>You don't manage any business listings yet.</p>
+            <p className="mt-2">
+              Find your business in the{' '}
+              <Link to="/business-directory" className="text-community-purple underline">
+                business directory
+              </Link>{' '}
+              and claim the listing to manage it here.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
