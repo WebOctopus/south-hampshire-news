@@ -74,6 +74,8 @@ Deno.serve(async (req) => {
     if (mode === "validate") return await handleValidate(supabase, body, areas, user.id);
     if (mode === "commit") return await handleCommit(supabase, body, areas);
     if (mode === "deactivate") return await handleDeactivate(supabase, body);
+    if (mode === "featured-preview") return await handleFeatured(supabase, body, false);
+    if (mode === "featured-apply") return await handleFeatured(supabase, body, true);
 
     return json({ error: "Unknown mode" }, 400);
   } catch (error) {
