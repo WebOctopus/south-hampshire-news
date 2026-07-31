@@ -426,6 +426,139 @@ export type Database = {
           },
         ]
       }
+      business_import_batches: {
+        Row: {
+          batch_index: number
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          import_run_id: string
+          row_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          batch_index: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          import_run_id: string
+          row_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          batch_index?: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          import_run_id?: string
+          row_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_import_batches_import_run_id_fkey"
+            columns: ["import_run_id"]
+            isOneToOne: false
+            referencedRelation: "business_import_runs"
+            referencedColumns: ["import_run_id"]
+          },
+        ]
+      }
+      business_import_conflicts: {
+        Row: {
+          business_id: string
+          created_at: string
+          crm_value: string | null
+          current_value: string | null
+          field_name: string
+          id: string
+          import_run_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          crm_value?: string | null
+          current_value?: string | null
+          field_name: string
+          id?: string
+          import_run_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          crm_value?: string | null
+          current_value?: string | null
+          field_name?: string
+          id?: string
+          import_run_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_import_conflicts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_import_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          deactivated_count: number | null
+          deactivation_status: string | null
+          import_run_id: string
+          status: string
+          total_batches: number
+          total_rows: number
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deactivated_count?: number | null
+          deactivation_status?: string | null
+          import_run_id?: string
+          status?: string
+          total_batches?: number
+          total_rows?: number
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deactivated_count?: number | null
+          deactivation_status?: string | null
+          import_run_id?: string
+          status?: string
+          total_batches?: number
+          total_rows?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       business_keywords: {
         Row: {
           business_id: string
@@ -541,6 +674,7 @@ export type Database = {
           postcode: string | null
           sector: string | null
           slug: string | null
+          suppressed: boolean
           tag: string | null
           tiktok_url: string | null
           twitter_url: string | null
@@ -582,6 +716,7 @@ export type Database = {
           postcode?: string | null
           sector?: string | null
           slug?: string | null
+          suppressed?: boolean
           tag?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
@@ -623,6 +758,7 @@ export type Database = {
           postcode?: string | null
           sector?: string | null
           slug?: string | null
+          suppressed?: boolean
           tag?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
