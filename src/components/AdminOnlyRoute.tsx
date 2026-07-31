@@ -6,13 +6,23 @@ interface AdminOnlyRouteProps {
 }
 
 /**
- * Renders the wrapped page only for admin users. Everyone else (including
- * unauthenticated visitors) sees the standard 404 page so the URL behaves
- * as if it does not exist. Used to hide in-development sections from the
- * public while keeping them reachable for admins.
+ * Pre-launch tester allowlist. These user IDs can view the gated directory
+ * pages without being admins. This whole guard (and this list) is removed at
+ * launch when the directory goes public.
+ */
+const PREVIEW_TESTER_IDS: string[] = [
+  'a637537f-dad5-452c-8d87-a6add67506ed', // jamie@mirola.io
+];
+
+/**
+ * Renders the wrapped page only for admin users or allowlisted testers.
+ * Everyone else (including unauthenticated visitors) sees the standard 404
+ * page so the URL behaves as if it does not exist. Used to hide
+ * in-development sections from the public while keeping them reachable for
+ * admins and pre-launch testers.
  */
 const AdminOnlyRoute = ({ children }: AdminOnlyRouteProps) => {
-  const { isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
@@ -25,7 +35,9 @@ const AdminOnlyRoute = ({ children }: AdminOnlyRouteProps) => {
     );
   }
 
-  if (!isAdmin) {
+  const isTester = !!user && PREVIEW_TESTER_IDS.includes(user.id);
+
+  if (!isAdmin && !isTester) {
     return <NotFound />;
   }
 
