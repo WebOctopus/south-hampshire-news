@@ -4,7 +4,7 @@ Replaces the current CSV Import tab with a two-phase importer: validate first, s
 
 ## What the admin sees
 
-1. **Upload** a CRM CSV. Headers are matched by alias, so the real CRM column names work as-is ("Company Name", "Company Domain Name", "Phone Number", "Postal Code", "Street Address 1-3", "City", "14 Editions - Local", etc.).
+1. **Upload** a Mirola CSV. Headers are matched by alias against the real export columns (see mapping below).
 2. **Validation report** (nothing written yet):
    - Rows to insert / rows to update
    - Rows rejected, each with a reason (blank CRM company ID, empty areas, area outside 1-14)
@@ -15,18 +15,53 @@ Replaces the current CSV Import tab with a two-phase importer: validate first, s
 3. **Confirm import** button. Only this writes.
 4. **Conflicts review** screen: for each owner-maintained field the CRM disagrees with, accept (writes the CRM value) or dismiss (leaves the listing alone).
 
+## Column mapping (real Mirola export)
+
+| CSV column | Business field |
+| --- | --- |
+| Name | name |
+| Email | email |
+| Phone Number | phone |
+| Website | website |
+| Address Line 1 | address_line1 |
+| Address Line 2 | address_line2 |
+| City | city |
+| Postal Code | postcode |
+| Logo URL | logo_url |
+| Description (from LinkedIn) | description |
+| Facebook Company Page | facebook_url |
+| Instagram | instagram_url |
+| Twitter | twitter_url |
+| LinkedIn Company Page | linkedin_url |
+| Directory keywords | keyword source (currently empty in every row) |
+| Tags | parsed for areas and keywords only — never stored |
+| Notes | never read, never stored |
+
+There is no areas column and no `is_paying_advertiser` column. `crm_company_id` is not in the export yet — it is being added to Mirola, and until then every row is rejected for a blank ID. There is no name-matching fallback, ever.
+
+### Parsing `Tags`
+
+`Tags` is semicolon-delimited. Tokens are classified case-insensitively:
+
+- `area <n>` (e.g. "area 6", "area 13") -> area codes. "area out of area" and "area portsmouth" resolve outside 1-14 and hit the existing skip-and-report rule.
+- `BIZ <term>` and `BZ <term>` -> keyword `<term>` with `source = 'crm'` ("BIZ Driveways & Patios" -> "Driveways & Patios").
+- `Sect HOSP` and `SectHOSP` (both spellings) -> sector tokens, ignored for now.
+- Anything else is ignored.
+
+`Tags` and `Notes` are never written to the business record in any form — they carry internal commercial language ("suspect", "budget", "AC Jamie"), the same exposure being removed from the `tag` column.
+
 ## Import rules
 
 - Match strictly on `crm_company_id`. Never on name.
-- Blank `crm_company_id` or empty `areas` → row rejected and reported. Areas are never guessed from the postcode.
-- `areas` and `keywords` split on `;` with surrounding whitespace trimmed; empty segments discarded. Commas are never delimiters — area and keyword values legitimately contain them.
-- Each area token resolves to a `directory_areas` row by area number or by internal name (case-insensitive). Anything that doesn't resolve to area 1-14 → row skipped and reported.
+- Blank `crm_company_id`, or no `area <n>` token in `Tags` → row rejected and reported. Areas are never guessed from the postcode.
+- Multi-value fields split on `;` with surrounding whitespace trimmed; empty segments discarded. Commas are never delimiters — area and keyword values legitimately contain them.
+- Any area token that does not resolve to area 1-14 → row skipped and reported.
 - Areas replace that business's `business_areas` rows.
-- Keywords write to `keywords` / `business_keywords` with `source = 'crm'`, deduplicated case-insensitively on the normalised term. Existing `source = 'owner'` rows are never touched, and only CRM rows are replaced.
+- Keywords (from `Directory keywords` plus the `BIZ`/`BZ` tokens) write to `keywords` / `business_keywords` with `source = 'crm'`, deduplicated case-insensitively on the normalised term. Existing `source = 'owner'` rows are never touched, and only CRM rows are replaced. A row with no keyword material is imported but counted in the prominent warning.
 - `owner_id` and `is_verified` are never modified.
-- Where `owner_id` is set, `description` (from `about`), `phone`, `email`, `website`, `logo_url` and the six social URLs are left as the owner has them. The incoming value is recorded as a conflict instead.
-- `about` maps to the existing `description` column. No column is renamed.
-- `is_paying_advertiser` sets `businesses.featured`.
+- Where `owner_id` is set, `description`, `phone`, `email`, `website`, `logo_url` and the social URLs are left as the owner has them. The incoming value is recorded as a conflict instead.
+- No column is renamed or dropped.
+- `featured` stays a manual admin toggle — the importer never sets or clears it.
 - A `crm_company_id` in the database but not in the file gets `is_active = false`. Nothing is ever deleted.
 - Slug is generated on insert only (`name` -> `name-city` -> `name-city-2`). Existing rows keep their slug forever so public URLs never break.
 
