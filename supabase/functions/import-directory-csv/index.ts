@@ -249,13 +249,15 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
     .eq("import_run_id", importRunId);
 
   const parsed = parseBatch(body, areas);
-  const accepted = parsed.filter((p) => !p.rejectReason);
+  const removedCount = parsed.filter((p) => p.removedInCrm).length;
+  const accepted = parsed.filter((p) => !p.removedInCrm && !p.rejectReason);
   const crmIds = accepted.map((p) => p.crmId);
 
   const result = {
     inserted: 0,
     updated: 0,
-    rejected: parsed.length - accepted.length,
+    rejected: parsed.length - accepted.length - removedCount,
+    removedSkipped: removedCount,
     suppressedSkipped: 0,
     conflictsRecorded: 0,
     errors: [] as string[],
