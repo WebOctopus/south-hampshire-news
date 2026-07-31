@@ -126,20 +126,33 @@ export function parseRow(row: CSVRow, rowNumber: number, areas: AreaRef[]): Pars
     fields[f] = f === "website" ? normaliseWebsite(raw) : raw || null;
   }
 
-  // ---- Areas: Local Edition is primary, Tags is fallback. Resolution is per token.
+  // ---- Areas: Tags is primary, Local Edition is the fallback. Resolution is per token.
   const tagsRaw = pick(norm, FIELD_ALIASES.tags);
   const tagTokens = splitList(tagsRaw);
   const localEdition = pick(norm, FIELD_ALIASES.local_edition);
-  const areaTokens = localEdition
-    ? splitList(localEdition)
-    : tagTokens.filter((t) => /^area\b/i.test(t));
 
-  const areaCodes: number[] = [];
-  const discardedAreaTokens: string[] = [];
-  for (const token of areaTokens) {
-    const code = resolveAreaToken(token, areas);
-    if (code === null) discardedAreaTokens.push(token);
-    else if (!areaCodes.includes(code)) areaCodes.push(code);
+  const resolveTokens = (tokens: string[]) => {
+    const codes: number[] = [];
+    const discarded: string[] = [];
+    for (const token of tokens) {
+      const code = resolveAreaToken(token, areas);
+      if (code === null) discarded.push(token);
+      else if (!codes.includes(code)) codes.push(code);
+    }
+    return { codes, discarded };
+  };
+
+  const tagAreaTokens = tagTokens.filter((t) => /^area\b/i.test(t));
+  let areaTokens = tagAreaTokens;
+  let { codes: areaCodes, discarded: discardedAreaTokens } = resolveTokens(tagAreaTokens);
+
+  // Fall back to Local Edition when Tags yields no *resolvable* area.
+  if (areaCodes.length === 0 && localEdition) {
+    const leTokens = splitList(localEdition);
+    const le = resolveTokens(leTokens);
+    areaTokens = [...tagAreaTokens, ...leTokens];
+    areaCodes = le.codes;
+    discardedAreaTokens = [...discardedAreaTokens, ...le.discarded];
   }
 
   // ---- Keywords: Directory keywords primary, BIZ/BZ tags fallback.
