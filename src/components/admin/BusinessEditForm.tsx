@@ -151,7 +151,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
       const saveData: any = {
         ...formData,
         owner_id: formData.owner_id || null,
-        category_id: formData.category_id || null,
       };
 
       if (isCreateMode && !createdBusinessId) {
@@ -238,28 +237,10 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   URL: /business/{previewSlug}
                 </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="category_id">Category</Label>
-                <Select
-                  value={formData.category_id}
-                  onValueChange={(value) => handleChange('category_id', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">About</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -268,39 +249,11 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="keywords">Directory Keywords</Label>
-              <Textarea
-                id="keywords"
-                value={formData.keywords}
-                onChange={(e) => handleChange('keywords', e.target.value)}
-                placeholder="e.g., plumber, heating, boiler repair, emergency"
-                rows={2}
-              />
-              <p className="text-xs text-muted-foreground">
-                Add searchable keywords to help customers find this business
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="biz_type">Business Type (from CSV)</Label>
-                <Input
-                  id="biz_type"
-                  value={formData.biz_type}
-                  onChange={(e) => handleChange('biz_type', e.target.value)}
-                  placeholder="e.g., HPR PLUMBER"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sector">Sector</Label>
-                <Input
-                  id="sector"
-                  value={formData.sector}
-                  onChange={(e) => handleChange('sector', e.target.value)}
-                />
-              </div>
-            </div>
+            <BusinessKeywordsEditor
+              businessId={createdBusinessId || business?.id || null}
+              businessName={formData.name}
+              mode="admin"
+            />
           </div>
 
           <Separator />
@@ -382,15 +335,8 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onChange={(e) => handleChange('postcode', e.target.value)}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edition_area">Edition Area</Label>
-                <Input
-                  id="edition_area"
-                  value={formData.edition_area}
-                  onChange={(e) => handleChange('edition_area', e.target.value)}
-                />
-              </div>
             </div>
+            <BusinessAreasEditor businessId={createdBusinessId || business?.id || null} />
           </div>
 
           <Separator />
