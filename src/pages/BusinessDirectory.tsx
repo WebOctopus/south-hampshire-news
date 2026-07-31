@@ -10,12 +10,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { DirectoryHero } from '@/components/directory/DirectoryHero';
 import { TieredResultsList } from '@/components/directory/TieredResultsList';
 import type { DirectoryBusiness } from '@/components/directory/DirectoryResultCards';
+import { useNoindex } from '@/hooks/useNoindex';
 
 const ITEMS_PER_PAGE = 60;
 
 interface Query { keyword: string; postcode: string }
 
 const BusinessDirectory = () => {
+  useNoindex();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
