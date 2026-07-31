@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Building2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Building2, CheckCircle, Clock, AlertCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface BusinessClaimButtonProps {
