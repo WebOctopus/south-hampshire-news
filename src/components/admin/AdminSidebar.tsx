@@ -96,7 +96,7 @@ const menuItems = [
     section: "competitions"
   },
   {
-    title: "CSV Import",
+    title: "Directory Import",
     icon: Upload,
     section: "csv-import"
   },
