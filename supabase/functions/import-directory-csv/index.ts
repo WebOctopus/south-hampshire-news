@@ -82,8 +82,33 @@ Deno.serve(async (req) => {
 
 // ---------------------------------------------------------------- helpers
 
+const PAGE = 1000;
+
+/**
+ * PostgREST caps a plain .select() at 1,000 rows, and a .limit() above the
+ * server's max-rows setting is silently clamped. Any unbounded read must page.
+ */
+async function selectAllPaged<T = any>(
+  build: () => any,
+  orderColumn = "id",
+): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await build()
+      .order(orderColumn, { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    const rows = (data || []) as T[];
+    out.push(...rows);
+    if (rows.length < PAGE) break;
+  }
+  return out;
+}
+
 async function loadExistingByCrmId(supabase: any, crmIds: string[]) {
   const map = new Map<string, any>();
+  // Bounded by batch size: 200 ids per request, so a response can never
+  // reach the 1,000-row cap.
   for (let i = 0; i < crmIds.length; i += 200) {
     const chunk = crmIds.slice(i, i + 200);
     const { data, error } = await supabase
