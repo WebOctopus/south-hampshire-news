@@ -177,16 +177,23 @@ export function ClaimRequestsManagement() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Business Claim Requests</h2>
+        <h2 className="text-2xl font-bold mb-2">Directory Review Queue</h2>
         <p className="text-muted-foreground">
-          Review and manage business ownership claims from users.
+          Review ownership claims and listing removal requests.
           {pendingCount > 0 && (
-            <Badge variant="destructive" className="ml-2">{pendingCount} pending</Badge>
+            <Badge variant="destructive" className="ml-2">{pendingCount} pending claims</Badge>
           )}
         </p>
       </div>
 
-      <Card>
+      <Tabs defaultValue="claims" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="claims">Claims</TabsTrigger>
+          <TabsTrigger value="removals">Removals</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="claims">
+          <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
@@ -253,6 +260,12 @@ export function ClaimRequestsManagement() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="removals">
+          <RemovalRequestsPanel />
+        </TabsContent>
+      </Tabs>
 
       {/* Review Dialog */}
       <Dialog open={!!selectedClaim} onOpenChange={() => setSelectedClaim(null)}>
