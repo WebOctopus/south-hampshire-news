@@ -33,7 +33,8 @@ Pre-test state on both: `owner_id` null, `is_verified` false, `is_active` true, 
 3. **Claim approved** — approve that same claim from the Directory Review Queue. Confirm the `directory_claim_approved_customer` send is logged and the delivered mail carries its marker.
 4. **Claim rejected** — submit a second claim from the test account, reject it from the queue with an admin note, and confirm the `Reason:` paragraph renders. Repeat once with the note left blank to confirm `admin_notes_block` collapses to nothing rather than an empty `<p></p>`.
 5. **Removal approved** — submit a removal request from the public dialog using the test address, approve it from the Removals tab, and confirm both `directory_removal_submitted_admin` and `directory_removal_approved_customer` log and render.
-6. **Cleanup** — after each check, revert the side effects: reset `owner_id` / `is_verified` on the claimed listing and `is_active` / `suppressed` on the removed listing to their pre-test values, and delete the test claim and removal rows. `email_send_log` rows are left in place as the audit trail.
+6. **Import re-run (before any cleanup)** — with Solent Mobility Centre still at `is_active = false` and `suppressed = true`, re-run the directory import using the same CRM export file. The listing must stay inactive and must be counted in the report's "suppressed, skipped" total. This is the only proof that removal survives the next import, and it cannot be tested once step 7 clears the flag.
+7. **Cleanup (last)** — run the step 4 result queries first, while the claim rows still exist. Then revert side effects: reset `owner_id` / `is_verified` on the claimed listing and `is_active` / `suppressed` on the removed listing, and delete the test claim and removal rows. `email_send_log` rows are left in place as the audit trail.
 
 ## Check SQL after each step
 
@@ -104,7 +105,20 @@ order by created_at desc limit 5;
 
 Expect `is_active` false, `suppressed` true, and both removal sends logged.
 
-**Step 6 — cleanup and confirmation:**
+**After the import re-run — suppression held:**
+
+```sql
+select id, name, is_active, suppressed, updated_at
+from businesses where id = 'a8dbee14-2d5d-4b27-a07b-549311e90a98';
+
+select import_run_id, status, total_rows, deactivated_count, completed_at
+from business_import_runs
+order by created_at desc limit 1;
+```
+
+Expect `is_active` false and `suppressed` true unchanged, and the import report's "suppressed, skipped" count to include this listing.
+
+**Step 7 — cleanup and confirmation (run the step 4 queries before this):**
 
 ```sql
 update businesses
