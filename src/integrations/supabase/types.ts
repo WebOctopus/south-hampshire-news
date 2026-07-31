@@ -316,6 +316,39 @@ export type Database = {
         }
         Relationships: []
       }
+      business_areas: {
+        Row: {
+          area_code: number
+          business_id: string
+          created_at: string
+        }
+        Insert: {
+          area_code: number
+          business_id: string
+          created_at?: string
+        }
+        Update: {
+          area_code?: number
+          business_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_areas_area_code_fkey"
+            columns: ["area_code"]
+            isOneToOne: false
+            referencedRelation: "directory_areas"
+            referencedColumns: ["area_code"]
+          },
+          {
+            foreignKeyName: "business_areas_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_categories: {
         Row: {
           created_at: string
@@ -393,6 +426,42 @@ export type Database = {
           },
         ]
       }
+      business_keywords: {
+        Row: {
+          business_id: string
+          created_at: string
+          keyword_id: string
+          source: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          keyword_id: string
+          source?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          keyword_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_keywords_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_keywords_keyword_id_fkey"
+            columns: ["keyword_id"]
+            isOneToOne: false
+            referencedRelation: "keywords"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_reviews: {
         Row: {
           business_id: string
@@ -446,6 +515,7 @@ export type Database = {
           category_id: string | null
           city: string | null
           created_at: string
+          crm_company_id: string | null
           description: string | null
           edition_area: string | null
           email: string | null
@@ -486,6 +556,7 @@ export type Database = {
           category_id?: string | null
           city?: string | null
           created_at?: string
+          crm_company_id?: string | null
           description?: string | null
           edition_area?: string | null
           email?: string | null
@@ -526,6 +597,7 @@ export type Database = {
           category_id?: string | null
           city?: string | null
           created_at?: string
+          crm_company_id?: string | null
           description?: string | null
           edition_area?: string | null
           email?: string | null
@@ -743,6 +815,36 @@ export type Database = {
           position?: string | null
           settings?: Json | null
           sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      directory_areas: {
+        Row: {
+          area_code: number
+          created_at: string
+          internal_name: string
+          is_active: boolean
+          postcodes: string[]
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          area_code: number
+          created_at?: string
+          internal_name: string
+          is_active?: boolean
+          postcodes?: string[]
+          sort_order: number
+          updated_at?: string
+        }
+        Update: {
+          area_code?: number
+          created_at?: string
+          internal_name?: string
+          is_active?: boolean
+          postcodes?: string[]
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []
@@ -1402,6 +1504,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      keywords: {
+        Row: {
+          created_at: string
+          id: string
+          normalised_term: string
+          term: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          normalised_term: string
+          term: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          normalised_term?: string
+          term?: string
+        }
+        Relationships: []
       }
       leaflet_areas: {
         Row: {
