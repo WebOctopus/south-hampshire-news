@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
     let subject = "";
     let bodyHtml = "";
     let vars: Record<string, string> = {};
+    let varsRaw: Record<string, string> = {};
 
     if (type.startsWith("claim_")) {
       if (!payload.claim_id) throw new Error("claim_id is required");
@@ -135,6 +136,14 @@ Deno.serve(async (req) => {
       const { data: userRes } = await admin.auth.admin.getUserById(claim.user_id);
       const claimantEmail = userRes?.user?.email ?? "";
 
+      varsRaw = {
+        business_name: business?.name ?? "a listing",
+        business_slug: business?.slug ?? "",
+        claimant_email: claimantEmail,
+        verification_method: claim.verification_method ?? "-",
+        verification_notes: claim.verification_notes ?? "-",
+        admin_notes: claim.admin_notes ?? "",
+      };
       vars = {
         business_name: escapeHtml(business?.name ?? "a listing"),
         business_slug: business?.slug ?? "",
@@ -213,6 +222,13 @@ Deno.serve(async (req) => {
         .eq("id", request.business_id)
         .maybeSingle();
 
+      varsRaw = {
+        business_name: business?.name ?? "a listing",
+        requester_name: request.requester_name,
+        requester_email: request.requester_email,
+        relationship: request.relationship ?? "-",
+        reason: request.reason,
+      };
       vars = {
         business_name: escapeHtml(business?.name ?? "a listing"),
         requester_name: escapeHtml(request.requester_name),
@@ -249,7 +265,7 @@ Deno.serve(async (req) => {
     const templateName = `directory_${type}`;
     const template = await fetchTemplate(templateName);
     if (template) {
-      subject = applyTemplate(template.subject, vars);
+      subject = applyTemplate(template.subject, varsRaw);
       bodyHtml = applyTemplate(template.html_body, vars);
     }
 
@@ -257,7 +273,7 @@ Deno.serve(async (req) => {
       from: FROM,
       to: [recipient],
       cc: recipientType === "admin" ? undefined : CC,
-      reply_to: REPLY_TO,
+      replyTo: REPLY_TO,
       subject,
       html: bodyHtml,
     });
