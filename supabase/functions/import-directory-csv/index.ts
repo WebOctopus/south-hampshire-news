@@ -588,21 +588,24 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
 
 /** Active, non-suppressed listings whose crm_company_id was absent from the run. */
 async function computeDeactivationSet(supabase: any, importRunId: string) {
-  const { data: batches } = await supabase
-    .from("business_import_batches")
-    .select("crm_ids")
-    .eq("import_run_id", importRunId);
+  const batches = await selectAllPaged<any>(
+    () =>
+      supabase
+        .from("business_import_batches")
+        .select("crm_ids, batch_index")
+        .eq("import_run_id", importRunId),
+    "batch_index",
+  );
   const seen = new Set<string>();
-  for (const b of batches || []) for (const id of b.crm_ids || []) seen.add(id);
+  for (const b of batches) for (const id of b.crm_ids || []) seen.add(id);
 
-  const { data: active } = await supabase
-    .from("businesses")
-    .select("id, name, crm_company_id")
-    .eq("is_active", true)
-    .eq("suppressed", false)
-    .limit(20000);
-
-  const activeRows = active || [];
+  const activeRows = await selectAllPaged<any>(() =>
+    supabase
+      .from("businesses")
+      .select("id, name, crm_company_id")
+      .eq("is_active", true)
+      .eq("suppressed", false)
+  );
   const targets = activeRows.filter((b: any) => !b.crm_company_id || !seen.has(b.crm_company_id));
 
   return {
@@ -630,14 +633,18 @@ async function handleDeactivate(supabase: any, body: RequestBody) {
     .maybeSingle();
   if (!run) return json({ error: "Unknown import run" }, 404);
 
-  const { data: batches } = await supabase
-    .from("business_import_batches")
-    .select("batch_index, status")
-    .eq("import_run_id", importRunId);
+  const batches = await selectAllPaged<any>(
+    () =>
+      supabase
+        .from("business_import_batches")
+        .select("batch_index, status")
+        .eq("import_run_id", importRunId),
+    "batch_index",
+  );
 
   // ---- Guard 1: completeness. Never bypassable.
   const byIndex = new Map<number, string>();
-  (batches || []).forEach((b: any) => byIndex.set(b.batch_index, b.status));
+  batches.forEach((b: any) => byIndex.set(b.batch_index, b.status));
   const missing: number[] = [];
   const failed: number[] = [];
   for (let i = 0; i < run.total_batches; i++) {
