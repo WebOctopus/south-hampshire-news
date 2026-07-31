@@ -10,6 +10,7 @@ import { BusinessDetailHero } from '@/components/directory/BusinessDetailHero';
 import { MeetTheOwnerCard } from '@/components/directory/MeetTheOwnerCard';
 import { OpeningHoursCard } from '@/components/directory/OpeningHoursCard';
 import { BusinessDetailsCard } from '@/components/directory/BusinessDetailsCard';
+import { useNoindex } from '@/hooks/useNoindex';
 
 interface Business {
   id: string;
@@ -48,6 +49,7 @@ interface Business {
 }
 
 const BusinessDetail = () => {
+  useNoindex();
   const { slug } = useParams<{ slug: string }>();
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);

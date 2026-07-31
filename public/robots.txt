@@ -1,14 +1,24 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /business-directory
+Disallow: /business/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /business-directory
+Disallow: /business/
 
 User-agent: Twitterbot
 Allow: /
+Disallow: /business-directory
+Disallow: /business/
 
 User-agent: facebookexternalhit
 Allow: /
+Disallow: /business-directory
+Disallow: /business/
 
 User-agent: *
 Allow: /
+Disallow: /business-directory
+Disallow: /business/
