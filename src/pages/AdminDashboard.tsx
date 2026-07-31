@@ -24,7 +24,7 @@ import AlertsManagement from '@/components/admin/AlertsManagement';
 import AdPreviewImageManagement from '@/components/admin/AdPreviewImageManagement';
 import MagazineEditionsManagement from '@/components/admin/MagazineEditionsManagement';
 import { CompetitionsManagement } from '@/components/admin/CompetitionsManagement';
-import { CSVImportManagement } from '@/components/admin/CSVImportManagement';
+import { DirectoryImportManagement } from '@/components/admin/DirectoryImportManagement';
 import { EventsManagement } from '@/components/admin/EventsManagement';
 import { StoriesManagement } from '@/components/admin/StoriesManagement';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -923,7 +923,7 @@ const AdminDashboard = () => {
         return <CompetitionsManagement />;
 
       case 'csv-import':
-        return <CSVImportManagement />;
+        return <DirectoryImportManagement />;
 
       case 'events':
         return <EventsManagement />;
