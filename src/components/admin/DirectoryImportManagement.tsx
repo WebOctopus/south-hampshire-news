@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ImportConflictsPanel } from './ImportConflictsPanel';
+import { FeaturedAdvertisersImport } from './FeaturedAdvertisersImport';
 import {
   AlertTriangle, CheckCircle, FileSpreadsheet, ShieldAlert, Trash2, Upload,
 } from 'lucide-react';
@@ -485,6 +486,8 @@ export function DirectoryImportManagement() {
           </CardContent>
         </Card>
       )}
+
+      <FeaturedAdvertisersImport />
 
       <ImportConflictsPanel />
     </div>
