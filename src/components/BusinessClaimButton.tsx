@@ -32,7 +32,7 @@ export function BusinessClaimButton({
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [existingClaim, setExistingClaim] = useState<any>(null);
+  const [ownClaim, setOwnClaim] = useState<any>(null);
   const [checkingClaim, setCheckingClaim] = useState(true);
   const [formData, setFormData] = useState({
     verification_method: '',
@@ -45,15 +45,19 @@ export function BusinessClaimButton({
       setUserId(session?.user?.id || null);
       
       if (session?.user?.id) {
-        // Check for existing claim
+        // Only this user's own most recent claim matters. Claims by other
+        // users must never suppress the claim button — the admin queue
+        // adjudicates between competing claims.
         const { data } = await supabase
           .from('business_claim_requests')
           .select('*')
           .eq('business_id', businessId)
           .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .maybeSingle();
-        
-        setExistingClaim(data);
+
+        setOwnClaim(data);
       }
       setCheckingClaim(false);
     };
@@ -61,9 +65,34 @@ export function BusinessClaimButton({
     checkAuth();
   }, [businessId]);
 
-  // Don't show if business already has an owner
+  // Business already has an owner: no claiming, but give a contact route.
   if (ownerId) {
-    return null;
+    if (hideWhenPending) {
+      return (
+        <Link
+          to="/contact"
+          className="inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-white underline underline-offset-2 transition-colors"
+        >
+          <ShieldCheck className="h-3.5 w-3.5" />
+          This listing is managed by its owner — contact us
+        </Link>
+      );
+    }
+    return (
+      <div className="p-4 border rounded-lg bg-muted/50">
+        <div className="flex items-center gap-2 font-medium">
+          <ShieldCheck className="h-4 w-4 mr-1 text-muted-foreground" />
+          This listing is managed by its owner
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          If you believe this listing was claimed in error,{' '}
+          <Link to="/contact" className="underline underline-offset-2">
+            contact our team
+          </Link>
+          .
+        </p>
+      </div>
+    );
   }
 
   // Still checking auth/claim status
@@ -90,27 +119,41 @@ export function BusinessClaimButton({
     );
   }
 
-  // User already has a claim
-  if (existingClaim) {
-    if (hideWhenPending) return null;
-    const statusIcon = existingClaim.status === 'pending' 
-      ? <Clock className="h-4 w-4 mr-2 text-yellow-600" />
-      : existingClaim.status === 'approved'
-        ? <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-        : <AlertCircle className="h-4 w-4 mr-2 text-red-600" />;
+  // This user's own claim is pending or approved — no new claim allowed.
+  const ownStatus = ownClaim?.status as string | undefined;
+  const ownClaimBlocks = ownStatus === 'pending' || ownStatus === 'approved';
+
+  if (ownClaimBlocks) {
+    if (hideWhenPending) {
+      return (
+        <span className="inline-flex items-center gap-1.5 bg-white/15 text-white/80 border border-white/25 text-xs font-medium px-4 py-2 rounded-lg cursor-not-allowed">
+          {ownStatus === 'pending' ? (
+            <>
+              <Clock className="h-3.5 w-3.5" /> Your claim is under review
+            </>
+          ) : (
+            <>
+              <CheckCircle className="h-3.5 w-3.5" /> Your claim has been approved
+            </>
+          )}
+        </span>
+      );
+    }
 
     return (
       <div className="p-4 border rounded-lg bg-muted/50">
         <div className="flex items-center gap-2 font-medium">
-          {statusIcon}
-          Claim {existingClaim.status}
+          {ownStatus === 'pending' ? (
+            <Clock className="h-4 w-4 mr-1 text-yellow-600" />
+          ) : (
+            <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
+          )}
+          {ownStatus === 'pending' ? 'Your claim is under review' : 'Your claim has been approved'}
         </div>
         <p className="text-sm text-muted-foreground mt-1">
-          {existingClaim.status === 'pending' 
+          {ownStatus === 'pending'
             ? 'Your claim is being reviewed by our team.'
-            : existingClaim.status === 'approved'
-              ? 'Your claim has been approved. Visit your dashboard to manage this business.'
-              : 'Your claim was rejected. Contact support for more information.'}
+            : 'Visit your dashboard to manage this business.'}
         </p>
       </div>
     );
@@ -149,8 +192,7 @@ export function BusinessClaimButton({
       });
 
       setIsOpen(false);
-      // Refresh to show pending status
-      setExistingClaim({ status: 'pending' });
+      setOwnClaim({ status: 'pending' });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -163,7 +205,20 @@ export function BusinessClaimButton({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <div className="space-y-1.5">
+      {ownStatus === 'rejected' && (
+        <p
+          className={
+            hideWhenPending
+              ? 'flex items-center gap-1.5 text-[11px] text-white/70'
+              : 'flex items-center gap-1.5 text-xs text-muted-foreground'
+          }
+        >
+          <AlertCircle className="h-3.5 w-3.5" />
+          Your previous claim was rejected — you can apply again with more evidence.
+        </p>
+      )}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {triggerClassName ? (
           <button type="button" className={triggerClassName}>
@@ -225,6 +280,7 @@ export function BusinessClaimButton({
           </div>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </div>
   );
 }
