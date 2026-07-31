@@ -18,7 +18,7 @@ The BIZ/BZ tag fallback for keywords still reads from `Tags`, so it stays semico
 
 New order:
 - Take area tokens from `Tags` (semicolon-split, tokens beginning "area").
-- If `Tags` yields no area tokens at all, fall back to `Local Edition`, extracting the leading number from the "Area <n> - <description>" prefix.
+- If `Tags` yields no *resolvable* area — either it has no "area" tokens, or every token it does have is discarded as out of scope (e.g. "area portsmouth") — fall back to `Local Edition`, extracting the leading number from the "Area <n> - <description>" prefix.
 - Tokens with no number — "out of area", "Portsmouth", "Salisbury", "Bournemouth" — resolve to nothing and are discarded per-token by the existing rule. A row with no resolvable area is still rejected.
 
 The rejection message is reworded to name the source actually used, so the report reads accurately.
@@ -26,5 +26,5 @@ The rejection message is reworded to name the source actually used, so the repor
 ## Technical notes
 
 - Add `splitKeywordList` (splits on `[,;]`) next to the existing `splitList` (semicolon-only); use the new one for `Directory keywords`.
-- In `parseRow`, compute `tagAreaTokens` from `tagTokens` filtered by `/^area\b/i` first; only when that array is empty read `Local Edition` via `splitList`.
+- In `parseRow`, resolve `tagTokens` filtered by `/^area\b/i` first; only when that resolution produces zero area codes read `Local Edition` via `splitList` and resolve those instead. Discarded tokens from both attempts are reported.
 - `resolveAreaToken` already matches a leading "Area <n>" and returns `null` for numberless tokens, so it needs no change.
