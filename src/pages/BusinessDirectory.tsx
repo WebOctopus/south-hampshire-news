@@ -1,275 +1,126 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Filter, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
-import BusinessCard from '../components/BusinessCard';
 import BusinessAuthPromptDialog from '@/components/BusinessAuthPromptDialog';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { DirectoryHero } from '@/components/directory/DirectoryHero';
-import { VerifiedBusinessesRow } from '@/components/directory/VerifiedBusinessesRow';
-import { RecentlyAddedRow } from '@/components/directory/RecentlyAddedRow';
-// Helper to clean area names (remove "Area X - " prefix)
-const cleanAreaName = (areaName: string): string => {
-  return areaName.replace(/^Area \d+\s*-\s*/, '').trim();
-};
+import { TieredResultsList } from '@/components/directory/TieredResultsList';
+import type { DirectoryBusiness } from '@/components/directory/DirectoryResultCards';
 
-interface BusinessCategory {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  slug: string;
-}
+const ITEMS_PER_PAGE = 60;
 
-
-interface Business {
-  id: string;
-  slug?: string;
-  tag?: string;
-  name: string;
-  description: string;
-  category_id: string;
-  email?: string;
-  phone?: string;
-  website: string;
-  address_line1: string;
-  address_line2: string;
-  city: string;
-  postcode: string;
-  logo_url: string;
-  featured_image_url: string;
-  images: string[];
-  is_verified: boolean;
-  featured: boolean;
-  owner_id?: string;
-  biz_type?: string;
-  business_categories?: BusinessCategory;
-}
-
-const ITEMS_PER_PAGE = 100;
+interface Query { keyword: string; postcode: string }
 
 const BusinessDirectory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [categories, setCategories] = useState<BusinessCategory[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedLocation, setSelectedLocation] = useState<string>('all');
-  const [selectedTag, setSelectedTag] = useState<string>('all');
-  const [error, setError] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const [keyword, setKeyword] = useState('');
+  const [postcode, setPostcode] = useState('');
+  const [query, setQuery] = useState<Query | null>(null);
+
+  const [businesses, setBusinesses] = useState<DirectoryBusiness[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  
+
   const requestIdRef = useRef(0);
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  const fetchCategories = useCallback(async () => {
-    const { data, error } = await supabase.from('business_categories').select('*').order('name');
-    if (error) {
-      console.error('Error fetching categories:', error);
-      return;
-    }
-    setCategories(data || []);
-  }, []);
-
-  const fetchLocations = useCallback(async () => {
-    // Use RPC function to get distinct edition areas efficiently
-    const { data, error } = await supabase.rpc('get_distinct_edition_areas');
-    
-    if (error) {
-      console.error('Error fetching locations:', error);
-      return;
-    }
-    
-    const raw = (data?.map((row: { edition_area: string }) => row.edition_area) || []) as string[];
-    // De-duplicate locations that share the same "Area N" prefix so users
-    // don't see e.g. both "SO15-SO17" and "SO15,SO16,SO17" variants.
-    const seenPrefix = new Set<string>();
-    const deduped: string[] = [];
-    for (const loc of raw) {
-      const prefixMatch = loc.match(/^(Area\s*\d+)/i);
-      const key = prefixMatch ? prefixMatch[1].toLowerCase() : loc.toLowerCase();
-      if (seenPrefix.has(key)) continue;
-      seenPrefix.add(key);
-      deduped.push(loc);
-    }
-    deduped.sort((a, b) => cleanAreaName(a).localeCompare(cleanAreaName(b)));
-    setLocations(deduped);
-  }, []);
-
-  const fetchTags = useCallback(async () => {
-    const { data, error } = await supabase.rpc('get_distinct_tags');
-    if (error) {
-      console.error('Error fetching tags:', error);
-      return;
-    }
-    setTags((data?.map((row: { tag: string }) => row.tag) || []) as string[]);
-  }, []);
-
-  const fetchTotalCount = useCallback(async () => {
-    const { data, error } = await supabase.rpc('get_public_businesses_count', {
-      category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-      search_term: searchTerm || null,
-      edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
-      tag_filter: selectedTag !== 'all' ? selectedTag : null,
-    });
-
-    if (error) {
-      console.error('Error fetching count:', error);
-      return 0;
-    }
-
-    return data || 0;
-  }, [searchTerm, selectedCategory, selectedLocation, selectedTag]);
-
-  const fetchBusinesses = useCallback(async () => {
-    // Increment request ID to track this specific request
+  const runSearch = useCallback(async (q: Query, page: number) => {
     const thisRequestId = ++requestIdRef.current;
-    
     setLoading(true);
     setError(false);
-
     try {
-      console.log('[BusinessDirectory] fetching businesses...');
-
-      // Fetch count and businesses in parallel
-      const [count, businessResult] = await Promise.all([
-        fetchTotalCount(),
-        supabase.rpc('get_public_businesses', {
-          category_filter: selectedCategory !== 'all' ? selectedCategory : null,
-          search_term: searchTerm || null,
+      const [countResult, listResult] = await Promise.all([
+        supabase.rpc('get_public_businesses_count_v2', {
+          keyword: q.keyword,
+          postcode: q.postcode,
+        }),
+        supabase.rpc('get_public_businesses_v2', {
+          keyword: q.keyword,
+          postcode: q.postcode,
           limit_count: ITEMS_PER_PAGE,
-          offset_count: (currentPage - 1) * ITEMS_PER_PAGE,
-          edition_area_filter: selectedLocation !== 'all' ? selectedLocation : null,
-          tag_filter: selectedTag !== 'all' ? selectedTag : null,
-        })
+          offset_count: (page - 1) * ITEMS_PER_PAGE,
+        }),
       ]);
 
-      // Stale request protection: ignore results if a newer request was made
-      if (thisRequestId !== requestIdRef.current) {
-        console.log('[BusinessDirectory] Ignoring stale response');
-        return;
-      }
+      if (thisRequestId !== requestIdRef.current) return;
 
-      setTotalCount(count);
-
-      console.log('[BusinessDirectory] result', { count: businessResult.data?.length, error: businessResult.error, totalCount: count });
-
-      if (businessResult.error) {
-        console.error('Error fetching businesses:', businessResult.error);
+      if (countResult.error || listResult.error) {
+        console.error('Directory search failed', countResult.error || listResult.error);
         setError(true);
         setBusinesses([]);
+        setTotalCount(0);
         return;
       }
 
-      const transformedData = businessResult.data?.map((business: any) => ({
-        ...business,
-        business_categories: business.business_categories || { name: '', icon: '' },
-      })) || [];
-
-      setBusinesses(transformedData);
+      setTotalCount((countResult.data as number) || 0);
+      setBusinesses((listResult.data as DirectoryBusiness[]) || []);
     } catch (err) {
-      console.error('Error in fetchBusinesses:', err);
+      console.error('Directory search failed', err);
       if (thisRequestId === requestIdRef.current) {
         setError(true);
         setBusinesses([]);
+        setTotalCount(0);
       }
     } finally {
-      if (thisRequestId === requestIdRef.current) {
-        setLoading(false);
-      }
+      if (thisRequestId === requestIdRef.current) setLoading(false);
     }
-  }, [searchTerm, selectedCategory, selectedLocation, selectedTag, currentPage, fetchTotalCount]);
+  }, []);
 
   useEffect(() => {
-    fetchCategories();
-    fetchLocations();
-    fetchTags();
-  }, [fetchCategories, fetchLocations, fetchTags]);
+    if (!query) return;
+    runSearch(query, currentPage);
+  }, [query, currentPage, runSearch]);
 
-  useEffect(() => {
-    // Only fetch if a specific location is selected (anti-scraping)
-    if (selectedLocation !== 'all') {
-      fetchBusinesses();
-    } else {
-      setBusinesses([]);
-      setTotalCount(0);
-      setLoading(false);
-    }
-  }, [fetchBusinesses, selectedLocation]);
+  const handleSearch = () => {
+    if (!keyword.trim() || !postcode) return;
+    setCurrentPage(1);
+    setQuery({ keyword: keyword.trim(), postcode });
+  };
 
-
-  // Handle #add hash in URL
   useEffect(() => {
     if (location.hash === '#add') {
       handleAddBusinessClick();
-      // Clear the hash
       window.history.replaceState(null, '', location.pathname);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.hash]);
 
   const handleAddBusinessClick = () => {
-    if (user) {
-      navigate('/dashboard');
-    } else {
-      setShowAuthDialog(true);
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    navigate('/dashboard');
+    if (user) navigate('/dashboard');
+    else setShowAuthDialog(true);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Scroll to top of listings
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const filteredBusinesses = businesses;
-
-  // Generate page numbers to show
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisiblePages = 5;
-
     if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      for (let i = 1; i <= 4; i++) pages.push(i);
+      pages.push('...', totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(1, '...');
+      for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
     } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push('...');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      }
+      pages.push(1, '...');
+      for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+      pages.push('...', totalPages);
     }
-
     return pages;
   };
 
@@ -278,111 +129,78 @@ const BusinessDirectory = () => {
       <Navigation />
       <main>
         <DirectoryHero
-          searchTerm={searchTerm}
-          onSearchChange={(v) => { setSearchTerm(v); setCurrentPage(1); }}
-          selectedLocation={selectedLocation}
-          onLocationChange={(v) => { setSelectedLocation(v); setCurrentPage(1); }}
-          locations={locations}
-          cleanAreaName={cleanAreaName}
-          onSearch={() => { setCurrentPage(1); }}
+          keyword={keyword}
+          onKeywordChange={setKeyword}
+          postcode={postcode}
+          onPostcodeChange={setPostcode}
+          onSearch={handleSearch}
         />
 
-        {/* Always-visible curated rows */}
-        <VerifiedBusinessesRow
-          searchTerm={searchTerm}
-          selectedCategory={selectedCategory}
-          selectedLocation={selectedLocation}
-          selectedTag={selectedTag}
-        />
-        <RecentlyAddedRow
-          searchTerm={searchTerm}
-          selectedCategory={selectedCategory}
-          selectedLocation={selectedLocation}
-          selectedTag={selectedTag}
-        />
-
-        {/* Full results grid (location-gated) */}
-        <section id="all-results" className="py-8 md:py-16 border-t">
+        <section id="all-results" className="py-8 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
-              <h2 className="text-2xl md:text-3xl font-heading font-bold">
-                {selectedCategory === 'all' ? 'All Businesses' : 
-                 categories.find(c => c.id === selectedCategory)?.name || 'Businesses'}
-              </h2>
-              <div className="flex items-center gap-2 text-gray-600 text-sm md:text-base">
-                <Filter size={16} />
-                <span>{totalCount} businesses found</span>
+            {query && (
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+                <h2 className="text-2xl md:text-3xl font-heading font-bold">
+                  Results for “{query.keyword}” near {query.postcode}
+                </h2>
+                <div className="flex items-center gap-2 text-muted-foreground text-sm md:text-base">
+                  <Filter size={16} />
+                  <span>{totalCount} businesses found</span>
+                </div>
               </div>
-            </div>
+            )}
 
-            {selectedLocation === 'all' ? (
-              <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Select Your Area
-                </h3>
-                <p className="text-gray-600 max-w-md mx-auto">
-                  Please choose a location from the dropdown above to view local businesses in your area.
+            {!query ? (
+              <div className="text-center py-16 bg-muted/40 rounded-lg border-2 border-dashed border-border">
+                <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Start your search</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Enter what you're looking for and choose your postcode above. Both are needed so
+                  we can show businesses that serve your area.
                 </p>
               </div>
             ) : loading ? (
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-community-green"></div>
-                <p className="mt-4 text-gray-600">Loading businesses...</p>
+                <p className="mt-4 text-muted-foreground">Searching local businesses...</p>
               </div>
             ) : error ? (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-lg mb-4">Failed to load businesses. Please try again.</p>
-                <Button 
-                  onClick={fetchBusinesses}
-                  className="bg-community-green hover:bg-green-600"
-                >
+                <p className="text-muted-foreground text-lg mb-4">
+                  Something went wrong loading results. Please try again.
+                </p>
+                <Button onClick={() => runSearch(query, currentPage)} className="bg-community-green hover:bg-green-600">
                   Retry
                 </Button>
               </div>
-            ) : filteredBusinesses.length === 0 ? (
+            ) : businesses.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">No businesses found matching your criteria.</p>
-                <Button 
-                  onClick={() => { setSearchTerm(''); setSelectedCategory('all'); setSelectedLocation('all'); }}
-                  className="mt-4 bg-community-green hover:bg-green-600"
-                >
-                  Clear Filters
-                </Button>
+                <p className="text-muted-foreground text-lg">
+                  No listings match “{query.keyword}” near {query.postcode}.
+                </p>
+                <p className="text-muted-foreground text-sm mt-2">
+                  Try a broader keyword or a neighbouring postcode.
+                </p>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  {filteredBusinesses.map((business) => (
-                    <BusinessCard key={business.id} business={business} />
-                  ))}
-                </div>
+                <TieredResultsList businesses={businesses} />
 
-                {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-muted-foreground">
                       Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} businesses
                     </p>
-                    
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="gap-1"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                        Previous
+                      <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="gap-1">
+                        <ChevronLeft className="h-4 w-4" /> Previous
                       </Button>
-                      
                       <div className="hidden sm:flex items-center gap-1 mx-2">
-                        {getPageNumbers().map((page, index) => (
+                        {getPageNumbers().map((page, index) =>
                           typeof page === 'number' ? (
                             <Button
                               key={index}
-                              variant={currentPage === page ? "default" : "outline"}
+                              variant={currentPage === page ? 'default' : 'outline'}
                               size="sm"
                               onClick={() => handlePageChange(page)}
                               className="min-w-[36px]"
@@ -390,26 +208,15 @@ const BusinessDirectory = () => {
                               {page}
                             </Button>
                           ) : (
-                            <span key={index} className="px-2 text-muted-foreground">
-                              {page}
-                            </span>
+                            <span key={index} className="px-2 text-muted-foreground">{page}</span>
                           )
-                        ))}
+                        )}
                       </div>
-
                       <span className="sm:hidden text-sm text-muted-foreground mx-2">
                         Page {currentPage} of {totalPages}
                       </span>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="gap-1"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4" />
+                      <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="gap-1">
+                        Next <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -419,17 +226,16 @@ const BusinessDirectory = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className="py-12 md:py-16 bg-community-green text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl md:text-3xl font-heading font-bold mb-4 md:mb-6">
               List Your Business
             </h2>
             <p className="text-lg md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto px-4">
-              Join our directory and connect with local customers in your area. 
+              Join our directory and connect with local customers in your area.
               Boost your visibility and grow your business.
             </p>
-            <Button 
+            <Button
               size="lg"
               className="bg-white text-community-green hover:bg-gray-100 px-6 md:px-8 py-3 text-base md:text-lg font-medium"
               onClick={handleAddBusinessClick}
@@ -441,11 +247,10 @@ const BusinessDirectory = () => {
       </main>
       <Footer />
 
-      {/* Auth Dialog for Adding Business */}
       <BusinessAuthPromptDialog
         open={showAuthDialog}
         onOpenChange={setShowAuthDialog}
-        onSuccess={handleAuthSuccess}
+        onSuccess={() => navigate('/dashboard')}
       />
     </div>
   );
