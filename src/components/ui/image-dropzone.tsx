@@ -26,8 +26,10 @@ export function ImageDropzone({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [brokenUrl, setBrokenUrl] = useState<string | null>(null);
 
-  const displayUrl = previewUrl || value;
+  const candidateUrl = previewUrl || value;
+  const displayUrl = candidateUrl && candidateUrl !== brokenUrl ? candidateUrl : undefined;
 
   const validateFile = (file: File): string | null => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -139,6 +141,7 @@ export function ImageDropzone({
               src={displayUrl}
               alt="Preview"
               className="w-full h-full object-cover"
+              onError={() => setBrokenUrl(displayUrl)}
             />
             {!isUploading && onClear && (
               <button
@@ -159,6 +162,12 @@ export function ImageDropzone({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground p-4">
             {isUploading ? (
               <Loader2 className="h-8 w-8 animate-spin" />
+            ) : candidateUrl ? (
+              <>
+                <ImageIcon className="h-8 w-8" />
+                <span className="text-sm text-center">Existing image could not be loaded</span>
+                <span className="text-xs text-center">Click or drop a file to replace it</span>
+              </>
             ) : (
               <>
                 <Upload className="h-8 w-8" />
