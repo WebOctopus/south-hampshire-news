@@ -16,7 +16,8 @@ Type-ahead suggestions drawn from both the keyword list and business names, limi
 - A business matches if any of its keywords matches the term, or the term appears in its name.
 - The postcode is resolved to every area whose postcode list contains it, and businesses in any of those areas are returned — once each, never duplicated when a business spans several areas.
 - `tag` is removed from the results (internal commercial flags stay server-side).
-- Adds a `tier` column: featured, then verified, then recent; results are ordered by tier then name.
+- Adds a `tier` column: `featured` when featured, else `verified` when verified, else `recent` (neither featured nor verified); results are ordered by tier then name.
+- Only live public listings are returned: `is_active = true` and `suppressed = false` on every function.
 - Returns each business's keyword list as a text array.
 
 **New detail functions (v2)**
@@ -28,8 +29,9 @@ Type-ahead suggestions drawn from both the keyword list and business names, limi
 - New functions are suffixed `_v2` rather than overloading the existing names. Reusing the same names with different parameter types (`category_filter uuid` -> `keyword text`, `edition_area_filter` -> `postcode`) while keeping the old ones would create ambiguous overloads once defaults are involved, and PostgREST would fail to pick one. The existing functions are left completely untouched, so the current directory page keeps working until it is switched over.
 - Postcode resolution: `directory_areas` where `is_active` and `postcodes @> array[upper(trim(postcode))]`, then `business_areas.area_code IN (...)`. Deduplication is done with `EXISTS (...)` against `business_areas` instead of a join, so a business in Area 5 and Area 13 is returned exactly once for an SO31 search.
 - Keyword matching goes through `business_keywords -> keywords.normalised_term` (same normalisation as the importer) OR `businesses.name ILIKE '%term%'`, so a landscaper tagged "gardener" appears under "gardener" and "Humphries" finds Humphries Digital Aerials.
-- `tier` is computed as `featured` / `verified` / `recent`; with 0 verified rows today the practical ordering is featured (104) then the rest.
-- `get_verified_businesses_v2` filters to `is_verified`, `get_recently_added_businesses_v2` to not-verified ordered by `created_at desc`, both otherwise sharing the same keyword/postcode gating.
+- `tier` is computed as `featured` / `verified` / `recent`, where `recent` means neither featured nor verified; with 0 verified rows today the practical ordering is featured (104) then the rest.
+- `get_verified_businesses_v2` filters to `is_verified`; `get_recently_added_businesses_v2` filters to NOT `is_verified` AND NOT `featured`, ordered by `created_at desc`, so the 104 featured (and currently unverified) listings do not appear in both tiers. Both otherwise share the same keyword/postcode gating.
+- Every v2 function — search, verified, recent, count, suggestions and both detail functions — applies `is_active = true` AND `suppressed = false`. That excludes the 172 deactivated legacy listings and honours the newer `suppressed` flag from the start, so the removal flow works as soon as it is used.
 - No column is renamed or dropped; `pricing_areas` and `leaflet_areas` are not read or written.
 
 ## Follow-up (not in this step)
