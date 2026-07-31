@@ -431,6 +431,7 @@ export type Database = {
           batch_index: number
           completed_at: string | null
           created_at: string
+          crm_ids: string[]
           error_message: string | null
           id: string
           import_run_id: string
@@ -442,6 +443,7 @@ export type Database = {
           batch_index: number
           completed_at?: string | null
           created_at?: string
+          crm_ids?: string[]
           error_message?: string | null
           id?: string
           import_run_id: string
@@ -453,6 +455,7 @@ export type Database = {
           batch_index?: number
           completed_at?: string | null
           created_at?: string
+          crm_ids?: string[]
           error_message?: string | null
           id?: string
           import_run_id?: string
