@@ -485,13 +485,19 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onCheckedChange={(checked) => handleChange('is_verified', checked)}
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="featured">Featured</Label>
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => handleChange('featured', checked)}
-                />
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="featured">Featured</Label>
+                  <Switch
+                    id="featured"
+                    checked={formData.featured}
+                    onCheckedChange={(checked) => handleChange('featured', checked)}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Featured advertisers are normally set in bulk from the Directory Import tab. That
+                  tool is declarative — the next run will overwrite anything changed here.
+                </p>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="advertises_in_discover">Advertises in Discover</Label>
