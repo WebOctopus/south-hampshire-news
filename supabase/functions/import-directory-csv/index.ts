@@ -82,8 +82,33 @@ Deno.serve(async (req) => {
 
 // ---------------------------------------------------------------- helpers
 
+const PAGE = 1000;
+
+/**
+ * PostgREST caps a plain .select() at 1,000 rows, and a .limit() above the
+ * server's max-rows setting is silently clamped. Any unbounded read must page.
+ */
+async function selectAllPaged<T = any>(
+  build: () => any,
+  orderColumn = "id",
+): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await build()
+      .order(orderColumn, { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    const rows = (data || []) as T[];
+    out.push(...rows);
+    if (rows.length < PAGE) break;
+  }
+  return out;
+}
+
 async function loadExistingByCrmId(supabase: any, crmIds: string[]) {
   const map = new Map<string, any>();
+  // Bounded by batch size: 200 ids per request, so a response can never
+  // reach the 1,000-row cap.
   for (let i = 0; i < crmIds.length; i += 200) {
     const chunk = crmIds.slice(i, i + 200);
     const { data, error } = await supabase
@@ -103,6 +128,91 @@ function parseBatch(body: RequestBody, areas: AreaRef[]): ParsedRow[] {
   const rows = body.rows || [];
   const offset = body.rowOffset ?? (body.batchIndex ?? 0) * rows.length;
   return rows.map((r, i) => parseRow(r, offset + i + 2, areas)); // +2 = header + 1-based
+}
+
+// ---------------------------------------------------------------- slugs
+
+/** Existing slugs that could collide with this batch's candidate bases. */
+async function loadSlugPool(supabase: any, bases: string[]): Promise<Set<string>> {
+  const pool = new Set<string>();
+  if (bases.length === 0) return pool;
+
+  for (let i = 0; i < bases.length; i += 100) {
+    const slice = bases.slice(i, i + 100);
+    const { data, error } = await supabase.from("businesses").select("slug").in("slug", slice);
+    if (error) throw error;
+    (data || []).forEach((r: any) => r.slug && pool.add(r.slug));
+  }
+
+  // Suffixed variants (base-city, base-2, ...) in small groups so the
+  // generated filter string stays short.
+  for (let i = 0; i < bases.length; i += 25) {
+    const slice = bases.slice(i, i + 25);
+    const filter = slice.map((s) => `slug.like.${s}-*`).join(",");
+    const { data, error } = await supabase.from("businesses").select("slug").or(filter);
+    if (error) throw error;
+    (data || []).forEach((r: any) => r.slug && pool.add(r.slug));
+  }
+
+  return pool;
+}
+
+/** Insert-only slug generation: base, then base-city, then base-city-2, ... */
+function nextFreeSlug(p: ParsedRow, taken: Set<string>): string {
+  const base = slugify(p.name) || "business";
+  if (!taken.has(base)) return base;
+  const citySlug = slugify(p.fields.city || "");
+  const withCity = citySlug ? `${base}-${citySlug}` : base;
+  if (!taken.has(withCity)) return withCity;
+  let n = 2;
+  while (taken.has(`${withCity}-${n}`)) n++;
+  return `${withCity}-${n}`;
+}
+
+function isSlugConflict(error: any): boolean {
+  return error?.code === "23505" &&
+    `${error?.message ?? ""} ${error?.details ?? ""}`.includes("slug");
+}
+
+/**
+ * Upsert a chunk; if a slug unique violation slips through (a concurrent or
+ * otherwise unseen slug), fall back to per-row upserts and regenerate the
+ * slug for the offending row rather than failing the whole batch.
+ */
+async function upsertWithSlugRetry(
+  supabase: any,
+  payload: Record<string, unknown>[],
+  chunk: ParsedRow[],
+  taken: Set<string>,
+): Promise<{ id: string; crm_company_id: string }[]> {
+  const { data, error } = await supabase
+    .from("businesses")
+    .upsert(payload, { onConflict: "crm_company_id" })
+    .select("id, crm_company_id");
+  if (!error) return data || [];
+  if (!isSlugConflict(error)) throw error;
+
+  const out: { id: string; crm_company_id: string }[] = [];
+  for (let i = 0; i < payload.length; i++) {
+    const record = { ...payload[i] };
+    let attempt = 0;
+    for (;;) {
+      const { data: rows, error: rowError } = await supabase
+        .from("businesses")
+        .upsert(record, { onConflict: "crm_company_id" })
+        .select("id, crm_company_id");
+      if (!rowError) {
+        if (rows?.[0]) out.push(rows[0]);
+        break;
+      }
+      if (!isSlugConflict(rowError) || !record.slug || attempt >= 20) throw rowError;
+      taken.add(record.slug as string);
+      record.slug = nextFreeSlug(chunk[i], taken);
+      taken.add(record.slug as string);
+      attempt++;
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------- validate
@@ -266,15 +376,23 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
   try {
     const existing = await loadExistingByCrmId(supabase, crmIds);
 
-    // Slug pool (insert-only; existing rows keep their slug forever)
-    const existingSlugs = new Set<string>();
-    {
-      const { data } = await supabase.from("businesses").select("slug").not("slug", "is", null);
-      (data || []).forEach((r: any) => r.slug && existingSlugs.add(r.slug));
-    }
-
     const toProcess = accepted.filter((p) => !existing.get(p.crmId)?.suppressed);
     result.suppressedSkipped = accepted.length - toProcess.length;
+
+    // Slug pool: bounded by this batch's own candidate bases rather than the
+    // whole table, so it cannot be truncated by the 1,000-row cap.
+    // Slugs are still generated on insert only.
+    const inserts = toProcess.filter((p) => !existing.get(p.crmId));
+    const candidateBases = [
+      ...new Set(
+        inserts.flatMap((p) => {
+          const base = slugify(p.name) || "business";
+          const citySlug = slugify(p.fields.city || "");
+          return citySlug ? [base, `${base}-${citySlug}`] : [base];
+        }),
+      ),
+    ];
+    const existingSlugs = await loadSlugPool(supabase, candidateBases);
 
     const idByCrmId = new Map<string, string>();
 
@@ -296,14 +414,7 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
         if (current) {
           record.id = current.id;
         } else {
-          let candidate = slugify(p.name) || "business";
-          if (existingSlugs.has(candidate)) {
-            const citySlug = slugify(p.fields.city || "");
-            candidate = citySlug ? `${candidate}-${citySlug}` : candidate;
-            let n = 2;
-            const base = candidate;
-            while (existingSlugs.has(candidate)) candidate = `${base}-${n++}`;
-          }
+          const candidate = nextFreeSlug(p, existingSlugs);
           existingSlugs.add(candidate);
           record.slug = candidate;
           record.is_verified = false;
@@ -311,12 +422,8 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
         return record;
       });
 
-      const { data, error } = await supabase
-        .from("businesses")
-        .upsert(payload, { onConflict: "crm_company_id" })
-        .select("id, crm_company_id");
-      if (error) throw error;
-      for (const r of data || []) idByCrmId.set(r.crm_company_id, r.id);
+      const rows = await upsertWithSlugRetry(supabase, payload, chunk, existingSlugs);
+      for (const r of rows) idByCrmId.set(r.crm_company_id, r.id);
       for (const p of chunk) {
         if (existing.get(p.crmId)) result.updated++;
         else result.inserted++;
@@ -481,21 +588,24 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
 
 /** Active, non-suppressed listings whose crm_company_id was absent from the run. */
 async function computeDeactivationSet(supabase: any, importRunId: string) {
-  const { data: batches } = await supabase
-    .from("business_import_batches")
-    .select("crm_ids")
-    .eq("import_run_id", importRunId);
+  const batches = await selectAllPaged<any>(
+    () =>
+      supabase
+        .from("business_import_batches")
+        .select("crm_ids, batch_index")
+        .eq("import_run_id", importRunId),
+    "batch_index",
+  );
   const seen = new Set<string>();
-  for (const b of batches || []) for (const id of b.crm_ids || []) seen.add(id);
+  for (const b of batches) for (const id of b.crm_ids || []) seen.add(id);
 
-  const { data: active } = await supabase
-    .from("businesses")
-    .select("id, name, crm_company_id")
-    .eq("is_active", true)
-    .eq("suppressed", false)
-    .limit(20000);
-
-  const activeRows = active || [];
+  const activeRows = await selectAllPaged<any>(() =>
+    supabase
+      .from("businesses")
+      .select("id, name, crm_company_id")
+      .eq("is_active", true)
+      .eq("suppressed", false)
+  );
   const targets = activeRows.filter((b: any) => !b.crm_company_id || !seen.has(b.crm_company_id));
 
   return {
@@ -523,14 +633,18 @@ async function handleDeactivate(supabase: any, body: RequestBody) {
     .maybeSingle();
   if (!run) return json({ error: "Unknown import run" }, 404);
 
-  const { data: batches } = await supabase
-    .from("business_import_batches")
-    .select("batch_index, status")
-    .eq("import_run_id", importRunId);
+  const batches = await selectAllPaged<any>(
+    () =>
+      supabase
+        .from("business_import_batches")
+        .select("batch_index, status")
+        .eq("import_run_id", importRunId),
+    "batch_index",
+  );
 
   // ---- Guard 1: completeness. Never bypassable.
   const byIndex = new Map<number, string>();
-  (batches || []).forEach((b: any) => byIndex.set(b.batch_index, b.status));
+  batches.forEach((b: any) => byIndex.set(b.batch_index, b.status));
   const missing: number[] = [];
   const failed: number[] = [];
   for (let i = 0; i < run.total_batches; i++) {
