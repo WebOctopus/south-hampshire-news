@@ -437,6 +437,7 @@ export function DirectoryImportManagement() {
               <Stat label="Added" value={summary.inserted} />
               <Stat label="Updated" value={summary.updated} />
               <Stat label="Rejected" value={summary.rejected} />
+              <Stat label="Skipped — marked Removed in CRM" value={summary.removedSkipped} />
               <Stat label="Conflicts recorded" value={summary.conflictsRecorded} />
             </div>
 
