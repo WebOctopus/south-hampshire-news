@@ -722,3 +722,113 @@ async function handleDeactivate(supabase: any, body: RequestBody) {
     preview: { ...preview, ids: undefined },
   });
 }
+// -------------------------------------------------- featured advertisers
+
+const UNFEATURE_THRESHOLD = 0.5; // 50% of currently featured listings
+
+/**
+ * Declarative Featured tier management. The submitted list of CRM company IDs
+ * is the complete set of featured advertisers: matched active listings become
+ * featured, everything else is unfeatured. Touches `featured` only.
+ */
+async function handleFeatured(supabase: any, body: RequestBody, apply: boolean) {
+  const crmIds = Array.from(
+    new Set((body.crmIds || []).map((v) => String(v).trim()).filter(Boolean)),
+  );
+  if (crmIds.length === 0) return json({ error: "No Company IDs supplied" }, 400);
+
+  // Every business matching a submitted id, active or not.
+  const matched: any[] = [];
+  for (let i = 0; i < crmIds.length; i += 200) {
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("id, name, crm_company_id, is_active, featured")
+      .in("crm_company_id", crmIds.slice(i, i + 200));
+    if (error) throw error;
+    matched.push(...(data || []));
+  }
+
+  const matchedIds = new Set(matched.map((b) => b.crm_company_id));
+  const unmatched = crmIds.filter((id) => !matchedIds.has(id));
+
+  const activeMatches = matched.filter((b) => b.is_active);
+  const inactiveMatches = matched.filter((b) => !b.is_active);
+  const targetIds = new Set(activeMatches.map((b) => b.id));
+
+  const currentlyFeatured = await selectAllPaged<any>(() =>
+    supabase.from("businesses").select("id, name, crm_company_id").eq("featured", true)
+  );
+
+  const willFeature = activeMatches.filter((b) => !b.featured);
+  const alreadyFeatured = activeMatches.filter((b) => b.featured);
+  const willUnfeature = currentlyFeatured.filter((b: any) => !targetIds.has(b.id));
+
+  const percentUnfeatured = currentlyFeatured.length > 0
+    ? Math.round((willUnfeature.length / currentlyFeatured.length) * 100)
+    : 0;
+  const exceedsThreshold = currentlyFeatured.length > 0 &&
+    willUnfeature.length / currentlyFeatured.length > UNFEATURE_THRESHOLD;
+
+  const preview = {
+    submitted: crmIds.length,
+    willFeature: willFeature.length,
+    alreadyFeatured: alreadyFeatured.length,
+    willUnfeature: willUnfeature.length,
+    currentlyFeatured: currentlyFeatured.length,
+    percentUnfeatured,
+    thresholdPercent: Math.round(UNFEATURE_THRESHOLD * 100),
+    exceedsThreshold,
+    unfeatureList: willUnfeature.slice(0, 500).map((b: any) => ({
+      name: b.name,
+      crmId: b.crm_company_id,
+    })),
+    inactiveMatches: inactiveMatches.slice(0, 500).map((b: any) => ({
+      name: b.name,
+      crmId: b.crm_company_id,
+    })),
+    inactiveCount: inactiveMatches.length,
+    unmatched: unmatched.slice(0, 500),
+    unmatchedCount: unmatched.length,
+  };
+
+  if (!apply) return json({ success: true, ...preview });
+
+  if (exceedsThreshold && !body.force) {
+    return json({
+      success: false,
+      blocked: true,
+      error:
+        `This list would unfeature ${percentUnfeatured}% of currently featured listings, ` +
+        `above the ${preview.thresholdPercent}% safety threshold. Confirm the override to proceed.`,
+      ...preview,
+    }, 200);
+  }
+
+  // Feature the matched active listings.
+  const toFeature = willFeature.map((b) => b.id);
+  for (let i = 0; i < toFeature.length; i += 200) {
+    const { error } = await supabase
+      .from("businesses")
+      .update({ featured: true })
+      .in("id", toFeature.slice(i, i + 200));
+    if (error) throw error;
+  }
+
+  // Unfeature everything else that is currently featured.
+  const toUnfeature = willUnfeature.map((b: any) => b.id);
+  for (let i = 0; i < toUnfeature.length; i += 200) {
+    const { error } = await supabase
+      .from("businesses")
+      .update({ featured: false })
+      .in("id", toUnfeature.slice(i, i + 200));
+    if (error) throw error;
+  }
+
+  return json({
+    success: true,
+    applied: true,
+    featured: toFeature.length,
+    unfeatured: toUnfeature.length,
+    ...preview,
+  });
+}
