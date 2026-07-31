@@ -65,6 +65,10 @@ export function pick(norm: Record<string, string>, aliases: string[]): string {
 export const splitList = (v: string) =>
   (v || "").split(";").map((s) => s.trim()).filter((s) => s.length > 0);
 
+/** Directory keywords are comma-delimited; semicolons appear in one legacy value. */
+export const splitKeywordList = (v: string) =>
+  (v || "").split(/[,;]/).map((s) => s.trim()).filter((s) => s.length > 0);
+
 export const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
