@@ -2689,6 +2689,14 @@ export type Database = {
         }[]
       }
       assign_admin_role: { Args: { user_email: string }; Returns: string }
+      directory_business_keywords: {
+        Args: { _business_id: string }
+        Returns: string[]
+      }
+      directory_business_postcodes: {
+        Args: { _business_id: string }
+        Returns: string[]
+      }
       generate_invoice_number: { Args: never; Returns: string }
       generate_voucher_code: { Args: never; Returns: string }
       get_active_alerts: {
@@ -2770,6 +2778,94 @@ export type Database = {
           website: string
         }[]
       }
+      get_business_detail_by_slug_v2: {
+        Args: { business_slug: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          advertises_in_discover: boolean
+          business_categories: Json
+          category_id: string
+          city: string
+          created_at: string
+          description: string
+          email: string
+          facebook_url: string
+          featured: boolean
+          featured_image_url: string
+          id: string
+          images: string[]
+          instagram_url: string
+          is_verified: boolean
+          keywords: string[]
+          linkedin_url: string
+          logo_url: string
+          name: string
+          opening_hours: Json
+          owner_id: string
+          owner_name: string
+          owner_photo_url: string
+          owner_quote: string
+          owner_role: string
+          phone: string
+          postcode_out: string
+          postcodes: string[]
+          slug: string
+          tier: string
+          tiktok_url: string
+          twitter_url: string
+          updated_at: string
+          website: string
+          youtube_url: string
+        }[]
+      }
+      get_business_detail_v2: {
+        Args: { business_id: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          advertises_in_discover: boolean
+          business_categories: Json
+          category_id: string
+          city: string
+          created_at: string
+          description: string
+          email: string
+          facebook_url: string
+          featured: boolean
+          featured_image_url: string
+          id: string
+          images: string[]
+          instagram_url: string
+          is_verified: boolean
+          keywords: string[]
+          linkedin_url: string
+          logo_url: string
+          name: string
+          opening_hours: Json
+          owner_id: string
+          owner_name: string
+          owner_photo_url: string
+          owner_quote: string
+          owner_role: string
+          phone: string
+          postcode_out: string
+          postcodes: string[]
+          slug: string
+          tier: string
+          tiktok_url: string
+          twitter_url: string
+          updated_at: string
+          website: string
+          youtube_url: string
+        }[]
+      }
+      get_directory_postcodes: {
+        Args: never
+        Returns: {
+          postcode: string
+        }[]
+      }
       get_distinct_edition_areas: {
         Args: never
         Returns: {
@@ -2828,6 +2924,42 @@ export type Database = {
         }
         Returns: number
       }
+      get_public_businesses_count_v2: {
+        Args: { keyword?: string; postcode?: string }
+        Returns: number
+      }
+      get_public_businesses_v2: {
+        Args: {
+          keyword?: string
+          limit_count?: number
+          offset_count?: number
+          postcode?: string
+        }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          advertises_in_discover: boolean
+          biz_type: string
+          business_categories: Json
+          category_id: string
+          city: string
+          created_at: string
+          description: string
+          featured: boolean
+          featured_image_url: string
+          id: string
+          images: string[]
+          is_verified: boolean
+          keywords: string[]
+          logo_url: string
+          name: string
+          postcode_out: string
+          slug: string
+          tier: string
+          updated_at: string
+          website: string
+        }[]
+      }
       get_recently_added_businesses: {
         Args: {
           category_filter?: string
@@ -2849,6 +2981,27 @@ export type Database = {
           name: string
           postcode: string
           slug: string
+          website: string
+        }[]
+      }
+      get_recently_added_businesses_v2: {
+        Args: { keyword?: string; limit_count?: number; postcode?: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          biz_type: string
+          business_categories: Json
+          category_id: string
+          city: string
+          featured: boolean
+          id: string
+          is_verified: boolean
+          keywords: string[]
+          logo_url: string
+          name: string
+          postcode_out: string
+          slug: string
+          tier: string
           website: string
         }[]
       }
@@ -2883,6 +3036,28 @@ export type Database = {
           name: string
           postcode: string
           slug: string
+          website: string
+        }[]
+      }
+      get_verified_businesses_v2: {
+        Args: { keyword?: string; limit_count?: number; postcode?: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          advertises_in_discover: boolean
+          biz_type: string
+          business_categories: Json
+          category_id: string
+          city: string
+          featured: boolean
+          id: string
+          is_verified: boolean
+          keywords: string[]
+          logo_url: string
+          name: string
+          postcode_out: string
+          slug: string
+          tier: string
           website: string
         }[]
       }
@@ -2922,6 +3097,13 @@ export type Database = {
         }[]
       }
       slugify_text: { Args: { input_text: string }; Returns: string }
+      suggest_directory_keywords: {
+        Args: { limit_count?: number; postcode?: string; search_term: string }
+        Returns: {
+          kind: string
+          suggestion: string
+        }[]
+      }
       validate_booking_access: {
         Args: { booking_user_id: string }
         Returns: boolean
