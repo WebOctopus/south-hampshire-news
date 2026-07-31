@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -12,6 +11,7 @@ import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
 import { OpeningHoursEditor, type OpeningHoursValue } from '@/components/directory/OpeningHoursEditor';
+import { BusinessKeywordsEditor } from '@/components/directory/BusinessKeywordsEditor';
 
 interface UserBusinessEditFormProps {
   business: any;
@@ -24,14 +24,11 @@ const DAYS_OF_WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 's
 export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusinessEditFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
   const { uploadImage, isUploading } = useBusinessImageUpload();
   
   const [formData, setFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
-    keywords: business?.keywords || '',
-    category_id: business?.category_id || '',
     email: business?.email || '',
     phone: business?.phone || '',
     website: business?.website || '',
@@ -54,17 +51,6 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
   const [openingHours, setOpeningHours] = useState<OpeningHoursValue>(
     (business?.opening_hours as OpeningHoursValue) || {}
   );
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      const { data } = await supabase
-        .from('business_categories')
-        .select('*')
-        .order('name');
-      if (data) setCategories(data);
-    };
-    loadCategories();
-  }, []);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -93,7 +79,6 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
     try {
       const updateData = {
         ...formData,
-        category_id: formData.category_id || null,
         opening_hours: openingHours as any,
       };
 
@@ -141,28 +126,10 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="category_id">Category</Label>
-              <Select
-                value={formData.category_id}
-                onValueChange={(value) => handleChange('category_id', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">About</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -172,19 +139,11 @@ export function UserBusinessEditForm({ business, onSave, onCancel }: UserBusines
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="keywords">Directory Keywords</Label>
-            <Textarea
-              id="keywords"
-              value={formData.keywords}
-              onChange={(e) => handleChange('keywords', e.target.value)}
-              placeholder="e.g., plumber, heating, boiler repair, emergency"
-              rows={2}
-            />
-            <p className="text-xs text-muted-foreground">
-              Add searchable keywords to help customers find your business
-            </p>
-          </div>
+          <BusinessKeywordsEditor
+            businessId={business?.id}
+            businessName={business?.name}
+            mode={business?.is_verified ? 'owner-verified' : 'owner-readonly'}
+          />
         </CardContent>
       </Card>
 

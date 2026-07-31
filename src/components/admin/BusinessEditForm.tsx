@@ -18,6 +18,8 @@ import { ImageDropzone } from '@/components/ui/image-dropzone';
 import { useBusinessImageUpload } from '@/hooks/useBusinessImageUpload';
 import { BusinessGalleryEditor } from '@/components/directory/BusinessGalleryEditor';
 import { OpeningHoursEditor, type OpeningHoursValue } from '@/components/directory/OpeningHoursEditor';
+import { BusinessKeywordsEditor } from '@/components/directory/BusinessKeywordsEditor';
+import { BusinessAreasEditor } from '@/components/directory/BusinessAreasEditor';
 
 interface BusinessEditFormProps {
   business?: any | null;
@@ -28,7 +30,6 @@ interface BusinessEditFormProps {
 export function BusinessEditForm({ business, onClose, onSave }: BusinessEditFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
   const { uploadImage, isUploading } = useBusinessImageUpload();
   const [createdBusinessId, setCreatedBusinessId] = useState<string | null>(business?.id || null);
   const [owners, setOwners] = useState<Array<{ user_id: string; display_name: string | null; company: string | null; email: string | null }>>([]);
@@ -69,10 +70,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
   const [formData, setFormData] = useState({
     name: business?.name || '',
     description: business?.description || '',
-    keywords: business?.keywords || '',
-    biz_type: business?.biz_type || '',
-    sector: business?.sector || '',
-    category_id: business?.category_id || '',
     email: business?.email || '',
     phone: business?.phone || '',
     website: business?.website || '',
@@ -80,7 +77,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     address_line2: business?.address_line2 || '',
     city: business?.city || '',
     postcode: business?.postcode || '',
-    edition_area: business?.edition_area || '',
     logo_url: business?.logo_url || '',
     featured_image_url: business?.featured_image_url || '',
     images: (business?.images as string[]) || [],
@@ -98,17 +94,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     youtube_url: business?.youtube_url || '',
     opening_hours: (business?.opening_hours as OpeningHoursValue) || {},
   });
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      const { data } = await supabase
-        .from('business_categories')
-        .select('*')
-        .order('name');
-      if (data) setCategories(data);
-    };
-    loadCategories();
-  }, []);
 
   useEffect(() => {
     const loadOwners = async () => {
@@ -166,7 +151,6 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
       const saveData: any = {
         ...formData,
         owner_id: formData.owner_id || null,
-        category_id: formData.category_id || null,
       };
 
       if (isCreateMode && !createdBusinessId) {
@@ -253,28 +237,10 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   URL: /business/{previewSlug}
                 </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="category_id">Category</Label>
-                <Select
-                  value={formData.category_id}
-                  onValueChange={(value) => handleChange('category_id', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">About</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -283,39 +249,11 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="keywords">Directory Keywords</Label>
-              <Textarea
-                id="keywords"
-                value={formData.keywords}
-                onChange={(e) => handleChange('keywords', e.target.value)}
-                placeholder="e.g., plumber, heating, boiler repair, emergency"
-                rows={2}
-              />
-              <p className="text-xs text-muted-foreground">
-                Add searchable keywords to help customers find this business
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="biz_type">Business Type (from CSV)</Label>
-                <Input
-                  id="biz_type"
-                  value={formData.biz_type}
-                  onChange={(e) => handleChange('biz_type', e.target.value)}
-                  placeholder="e.g., HPR PLUMBER"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sector">Sector</Label>
-                <Input
-                  id="sector"
-                  value={formData.sector}
-                  onChange={(e) => handleChange('sector', e.target.value)}
-                />
-              </div>
-            </div>
+            <BusinessKeywordsEditor
+              businessId={createdBusinessId || business?.id || null}
+              businessName={formData.name}
+              mode="admin"
+            />
           </div>
 
           <Separator />
@@ -397,15 +335,8 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onChange={(e) => handleChange('postcode', e.target.value)}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edition_area">Edition Area</Label>
-                <Input
-                  id="edition_area"
-                  value={formData.edition_area}
-                  onChange={(e) => handleChange('edition_area', e.target.value)}
-                />
-              </div>
             </div>
+            <BusinessAreasEditor businessId={createdBusinessId || business?.id || null} />
           </div>
 
           <Separator />
@@ -554,13 +485,19 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   onCheckedChange={(checked) => handleChange('is_verified', checked)}
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="featured">Featured</Label>
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => handleChange('featured', checked)}
-                />
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="featured">Featured</Label>
+                  <Switch
+                    id="featured"
+                    checked={formData.featured}
+                    onCheckedChange={(checked) => handleChange('featured', checked)}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Featured advertisers are normally set in bulk from the Directory Import tab. That
+                  tool is declarative — the next run will overwrite anything changed here.
+                </p>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="advertises_in_discover">Advertises in Discover</Label>
