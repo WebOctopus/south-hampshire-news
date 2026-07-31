@@ -1647,18 +1647,21 @@ export type Database = {
       keywords: {
         Row: {
           created_at: string
+          created_by_owner: boolean
           id: string
           normalised_term: string
           term: string
         }
         Insert: {
           created_at?: string
+          created_by_owner?: boolean
           id?: string
           normalised_term: string
           term: string
         }
         Update: {
           created_at?: string
+          created_by_owner?: boolean
           id?: string
           normalised_term?: string
           term?: string
@@ -2663,6 +2666,14 @@ export type Database = {
       }
     }
     Functions: {
+      add_owner_business_keyword: {
+        Args: { _business_id: string; _term: string }
+        Returns: {
+          keyword_id: string
+          source: string
+          term: string
+        }[]
+      }
       admin_get_client: { Args: { p_email: string }; Returns: Json }
       admin_list_clients: {
         Args: never
@@ -2686,6 +2697,18 @@ export type Database = {
           quotes_count: number
           total_confirmed_spend: number
           user_id: string
+        }[]
+      }
+      admin_list_owner_keywords: {
+        Args: never
+        Returns: {
+          businesses: string[]
+          created_at: string
+          keyword_id: string
+          normalised_term: string
+          owner_link_count: number
+          term: string
+          total_link_count: number
         }[]
       }
       assign_admin_role: { Args: { user_email: string }; Returns: string }
