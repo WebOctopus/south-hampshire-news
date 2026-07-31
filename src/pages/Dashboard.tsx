@@ -958,17 +958,21 @@ const Dashboard = () => {
     <Card>
       <CardHeader>
         <CardTitle>Your Business Listings</CardTitle>
-        {hasExistingBusiness && (
-          <p className="text-sm text-muted-foreground">
-            You can only have one business listing per account. To add a different business, please edit your existing listing.
-          </p>
-        )}
+        <p className="text-sm text-muted-foreground">
+          Listings come from the Discover directory. To manage one here, claim it from its public listing page.
+        </p>
       </CardHeader>
       <CardContent>
         {businesses.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>You haven't created any business listings yet.</p>
-            <p className="mt-2">Click on "Create New Listing" to get started.</p>
+            <p>You don't manage any business listings yet.</p>
+            <p className="mt-2">
+              Find your business in the{' '}
+              <Link to="/business-directory" className="text-community-purple underline">
+                business directory
+              </Link>{' '}
+              and claim the listing to manage it here.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
