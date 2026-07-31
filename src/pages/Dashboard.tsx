@@ -410,7 +410,12 @@ const Dashboard = () => {
     setSubmitting(true);
 
     try {
-      if (editingBusiness) {
+      if (!editingBusiness) {
+        throw new Error(
+          'New listings are added by the Discover team from the CRM. Claim an existing listing from the directory to manage it here.'
+        );
+      }
+      {
         const { error } = await supabase
           .from('businesses')
           .update(formData)
@@ -425,21 +430,6 @@ const Dashboard = () => {
 
         setEditingBusiness(null);
         setActiveTab('listings');
-      } else {
-        const { error } = await supabase
-          .from('businesses')
-          .insert([{
-            ...formData,
-            owner_id: user.id,
-            is_active: true
-          }]);
-
-        if (error) throw error;
-
-        toast({
-          title: "Success!",
-          description: "Your business listing has been created successfully."
-        });
       }
 
       setFormData({
