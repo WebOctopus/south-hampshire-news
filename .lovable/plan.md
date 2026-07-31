@@ -85,13 +85,20 @@ There is no `is_paying_advertiser` column. `crm_company_id` is not in the export
 **Migration**
 - Add `businesses.suppressed boolean not null default false` — a manual admin flag meaning "never put this listing back up". The importer reads it and never writes it.
 - New table `public.business_import_conflicts`: `id`, `business_id` (fk, cascade), `field_name`, `crm_value`, `current_value`, `import_run_id uuid`, `status text default 'pending'` (check: pending/accepted/dismissed), `resolved_at`, `resolved_by`, `created_at`, `updated_at`. Partial unique index on `(business_id, field_name)` where `status = 'pending'` so re-imports update the pending row rather than piling up duplicates. A dismissed conflict whose CRM value later differs becomes a new pending row; an unchanged value stays dismissed.
+- New table `public.business_import_runs`: `import_run_id uuid primary key`, `total_batches int`, `batch_index int`, `status`, plus a `business_import_batches` child row per batch (`import_run_id`, `batch_index`, `row_count`, `status`, `completed_at`, unique on `(import_run_id, batch_index)`). This is what the deactivation guard reads. Same grants/RLS as the conflicts table.
 - Grants: `authenticated` (admin policies gate it) and `service_role` only. No `anon`. RLS on, admin-only via `has_role(auth.uid(),'admin')`.
 
 **Edge function `import-directory-csv`** (replaces `import-businesses-csv`, which is deleted along with its wipe-everything logic)
 - Verifies caller is an admin, then uses the service-role client.
 - Two modes on the same endpoint: `mode: 'validate'` (pure analysis, no writes) and `mode: 'commit'` (writes, keyed to an `import_run_id` issued by the validate pass).
 - Client sends 500-row batches; server processes in 100-row sub-batches, as today.
-- Commit pass per row: upsert `businesses` on `crm_company_id`; replace `business_areas`; upsert keyword terms and replace only `source = 'crm'` links; record conflicts for owner-held fields. Deactivation sweep runs on the final batch against the full set of CRM ids seen.
+- Commit pass per row: upsert `businesses` on `crm_company_id`; replace `business_areas`; upsert keyword terms and replace only `source = 'crm'` links; record conflicts for owner-held fields.
+- Every batch records its outcome against the `import_run_id` before returning. The validate pass registers the expected batch count on the run.
+
+**Deactivation sweep guards** (both run before anything is switched off)
+- Completeness guard: the sweep only runs when the number of batches marked complete for this `import_run_id` equals the expected total and none failed. If any batch failed or never reported, nothing is deactivated and the result reads "import incomplete, deactivation skipped", listing which batch indexes are missing or failed. Everything already upserted stays — only the sweep is skipped, and re-running the import fixes it.
+- Volume guard: count how many currently active, non-suppressed listings are absent from the CRM ids seen in this run. If that count exceeds 20% of currently active listings, abort the sweep and report "deactivation would affect N of M active listings (X%) — above the 20% threshold, skipped". The result includes an explicit "Deactivate anyway" confirmation that re-calls commit with `force_deactivate: true` for the same `import_run_id`, which bypasses the volume guard only. The completeness guard is never bypassable.
+- When both guards pass, the sweep sets `is_active = false` on active, non-suppressed listings whose `crm_company_id` was not present in the file, and reports the count.
 
 **Front end**
 - `src/components/admin/DirectoryImportManagement.tsx` replaces `CSVImportManagement.tsx` in the existing admin tab: upload, validation report, confirm, progress, result summary.
