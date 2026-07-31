@@ -112,6 +112,7 @@ export interface ParsedRow {
   discardedAreaTokens: string[];
   keywords: string[];
   rejectReason: string | null;
+  removedInCrm: boolean;
 }
 
 export function parseRow(row: CSVRow, rowNumber: number, areas: AreaRef[]): ParsedRow {
@@ -130,6 +131,9 @@ export function parseRow(row: CSVRow, rowNumber: number, areas: AreaRef[]): Pars
   const tagsRaw = pick(norm, FIELD_ALIASES.tags);
   const tagTokens = splitList(tagsRaw);
   const localEdition = pick(norm, FIELD_ALIASES.local_edition);
+
+  // Companies marked as gone in the CRM: exact token match on "Removed".
+  const removedInCrm = tagTokens.some((t) => t.trim().toLowerCase() === "removed");
 
   const resolveTokens = (tokens: string[]) => {
     const codes: number[] = [];
@@ -173,7 +177,8 @@ export function parseRow(row: CSVRow, rowNumber: number, areas: AreaRef[]): Pars
   }
 
   let rejectReason: string | null = null;
-  if (!crmId) rejectReason = "Blank CRM company ID";
+  if (removedInCrm) rejectReason = null;
+  else if (!crmId) rejectReason = "Blank CRM company ID";
   else if (!name) rejectReason = "Blank company name";
   else if (areaCodes.length === 0) {
     rejectReason = areaTokens.length === 0
@@ -190,6 +195,7 @@ export function parseRow(row: CSVRow, rowNumber: number, areas: AreaRef[]): Pars
     discardedAreaTokens,
     keywords,
     rejectReason,
+    removedInCrm,
   };
 }
 
