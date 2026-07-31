@@ -24,7 +24,7 @@ const json = (body: unknown, status = 200) =>
   });
 
 interface RequestBody {
-  mode: "validate" | "commit" | "deactivate";
+  mode: "validate" | "commit" | "deactivate" | "featured-preview" | "featured-apply";
   rows?: CSVRow[];
   batchIndex?: number;
   totalBatches?: number;
@@ -33,6 +33,8 @@ interface RequestBody {
   importRunId?: string;
   isFinal?: boolean;
   forceDeactivate?: boolean;
+  crmIds?: string[];
+  force?: boolean;
 }
 
 Deno.serve(async (req) => {
