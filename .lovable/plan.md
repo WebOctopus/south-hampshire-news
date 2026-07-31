@@ -29,12 +29,22 @@ Change: send `replyTo: REPLY_TO`. Value stays `discover@discovermagazines.co.uk`
 
 ## After the change
 
-Redeploy `send-directory-notification`, then trigger one fresh send through the real
-path (the claim submission on Sunrise Tools & Equipment). I then check `email_send_log`
-for the `sent` row, and you confirm from the Resend raw payload that:
+Redeploy `send-directory-notification`, then verify via step 3 rather than a fresh
+claim — the partial unique index blocks a second pending claim from the same user on
+the same listing. Approve the existing pending claim on Sunrise Tools & Equipment from
+the Directory Review Queue. That sends `directory_claim_approved_customer`, whose
+subject is "Your listing claim has been approved — {{business_name}}", so it exercises
+the same ampersand case.
 
-- `subject` reads `New listing claim: Sunrise Tools & Equipment` (no `&amp;`)
-- `reply_to` contains `discover@discovermagazines.co.uk`
-- the html part still shows `<strong>Sunrise Tools &amp; Equipment</strong>`
+Expected in the Resend raw payload:
 
-Template verification (steps 3-6 and the import re-run) resumes from there unchanged.
+- `subject` -> `Your listing claim has been approved — Sunrise Tools & Equipment` (no `&amp;`)
+- `reply_to` -> `["discover@discovermagazines.co.uk"]`
+- `html` -> still contains `<strong>Sunrise Tools &amp; Equipment</strong>`
+- marker -> `<!-- tpl:directory_claim_approved_customer -->`
+
+And in the database, on Sunrise Tools & Equipment: `owner_id` set to jamie@mirola.io's
+user id, `is_verified` true. I check `email_send_log` for the `sent` row on
+`directory_claim_approved_customer`.
+
+Remaining verification (steps 4-6 and the import re-run) resumes from there unchanged.
