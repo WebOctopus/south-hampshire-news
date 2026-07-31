@@ -130,6 +130,91 @@ function parseBatch(body: RequestBody, areas: AreaRef[]): ParsedRow[] {
   return rows.map((r, i) => parseRow(r, offset + i + 2, areas)); // +2 = header + 1-based
 }
 
+// ---------------------------------------------------------------- slugs
+
+/** Existing slugs that could collide with this batch's candidate bases. */
+async function loadSlugPool(supabase: any, bases: string[]): Promise<Set<string>> {
+  const pool = new Set<string>();
+  if (bases.length === 0) return pool;
+
+  for (let i = 0; i < bases.length; i += 100) {
+    const slice = bases.slice(i, i + 100);
+    const { data, error } = await supabase.from("businesses").select("slug").in("slug", slice);
+    if (error) throw error;
+    (data || []).forEach((r: any) => r.slug && pool.add(r.slug));
+  }
+
+  // Suffixed variants (base-city, base-2, ...) in small groups so the
+  // generated filter string stays short.
+  for (let i = 0; i < bases.length; i += 25) {
+    const slice = bases.slice(i, i + 25);
+    const filter = slice.map((s) => `slug.like.${s}-*`).join(",");
+    const { data, error } = await supabase.from("businesses").select("slug").or(filter);
+    if (error) throw error;
+    (data || []).forEach((r: any) => r.slug && pool.add(r.slug));
+  }
+
+  return pool;
+}
+
+/** Insert-only slug generation: base, then base-city, then base-city-2, ... */
+function nextFreeSlug(p: ParsedRow, taken: Set<string>): string {
+  const base = slugify(p.name) || "business";
+  if (!taken.has(base)) return base;
+  const citySlug = slugify(p.fields.city || "");
+  const withCity = citySlug ? `${base}-${citySlug}` : base;
+  if (!taken.has(withCity)) return withCity;
+  let n = 2;
+  while (taken.has(`${withCity}-${n}`)) n++;
+  return `${withCity}-${n}`;
+}
+
+function isSlugConflict(error: any): boolean {
+  return error?.code === "23505" &&
+    `${error?.message ?? ""} ${error?.details ?? ""}`.includes("slug");
+}
+
+/**
+ * Upsert a chunk; if a slug unique violation slips through (a concurrent or
+ * otherwise unseen slug), fall back to per-row upserts and regenerate the
+ * slug for the offending row rather than failing the whole batch.
+ */
+async function upsertWithSlugRetry(
+  supabase: any,
+  payload: Record<string, unknown>[],
+  chunk: ParsedRow[],
+  taken: Set<string>,
+): Promise<{ id: string; crm_company_id: string }[]> {
+  const { data, error } = await supabase
+    .from("businesses")
+    .upsert(payload, { onConflict: "crm_company_id" })
+    .select("id, crm_company_id");
+  if (!error) return data || [];
+  if (!isSlugConflict(error)) throw error;
+
+  const out: { id: string; crm_company_id: string }[] = [];
+  for (let i = 0; i < payload.length; i++) {
+    const record = { ...payload[i] };
+    let attempt = 0;
+    for (;;) {
+      const { data: rows, error: rowError } = await supabase
+        .from("businesses")
+        .upsert(record, { onConflict: "crm_company_id" })
+        .select("id, crm_company_id");
+      if (!rowError) {
+        if (rows?.[0]) out.push(rows[0]);
+        break;
+      }
+      if (!isSlugConflict(rowError) || !record.slug || attempt >= 20) throw rowError;
+      taken.add(record.slug as string);
+      record.slug = nextFreeSlug(chunk[i], taken);
+      taken.add(record.slug as string);
+      attempt++;
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------- validate
 
 async function handleValidate(
