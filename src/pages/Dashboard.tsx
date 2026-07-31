@@ -797,9 +797,7 @@ const Dashboard = () => {
   const renderCreateBusinessForm = () => (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {editingBusiness ? 'Edit Business Listing' : 'Create New Business Listing'}
-        </CardTitle>
+        <CardTitle>Edit Business Listing</CardTitle>
         {editingBusiness && (
           <div className="flex gap-2">
             <Button
@@ -949,10 +947,7 @@ const Dashboard = () => {
             className="w-full"
             disabled={submitting || !formData.name}
           >
-            {submitting 
-              ? (editingBusiness ? 'Updating Listing...' : 'Creating Listing...') 
-              : (editingBusiness ? 'Update Business Listing' : 'Create Business Listing')
-            }
+            {submitting ? 'Updating Listing...' : 'Update Business Listing'}
           </Button>
         </form>
       </CardContent>
