@@ -2669,9 +2669,9 @@ export type Database = {
       add_owner_business_keyword: {
         Args: { _business_id: string; _term: string }
         Returns: {
-          keyword_id: string
-          source: string
-          term: string
+          out_keyword_id: string
+          out_source: string
+          out_term: string
         }[]
       }
       admin_get_client: { Args: { p_email: string }; Returns: Json }
