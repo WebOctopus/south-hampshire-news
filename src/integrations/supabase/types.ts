@@ -388,6 +388,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          updated_at: string
           user_id: string
           verification_method: string | null
           verification_notes: string | null
@@ -400,6 +401,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          updated_at?: string
           user_id: string
           verification_method?: string | null
           verification_notes?: string | null
@@ -412,6 +414,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          updated_at?: string
           user_id?: string
           verification_method?: string | null
           verification_notes?: string | null
@@ -594,6 +597,59 @@ export type Database = {
             columns: ["keyword_id"]
             isOneToOne: false
             referencedRelation: "keywords"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_removal_requests: {
+        Row: {
+          admin_notes: string | null
+          business_id: string
+          created_at: string
+          id: string
+          reason: string
+          relationship: string | null
+          requester_email: string
+          requester_name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          relationship?: string | null
+          requester_email: string
+          requester_name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          business_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          relationship?: string | null
+          requester_email?: string
+          requester_name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_removal_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -2711,6 +2767,11 @@ export type Database = {
           total_link_count: number
         }[]
       }
+      approve_business_claim: { Args: { _claim_id: string }; Returns: boolean }
+      approve_business_removal: {
+        Args: { _request_id: string }
+        Returns: boolean
+      }
       assign_admin_role: { Args: { user_email: string }; Returns: string }
       directory_business_keywords: {
         Args: { _business_id: string }
@@ -3092,6 +3153,7 @@ export type Database = {
         Returns: boolean
       }
       is_advertiser_active: { Args: { _user_id: string }; Returns: boolean }
+      is_privileged_writer: { Args: never; Returns: boolean }
       record_discount_redemption: {
         Args: {
           p_booking_id: string
@@ -3104,6 +3166,14 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      reject_business_claim: {
+        Args: { _claim_id: string; _reason: string }
+        Returns: boolean
+      }
+      reject_business_removal: {
+        Args: { _reason: string; _request_id: string }
+        Returns: boolean
       }
       search_businesses_suggest: {
         Args: {
@@ -3120,6 +3190,16 @@ export type Database = {
         }[]
       }
       slugify_text: { Args: { input_text: string }; Returns: string }
+      submit_business_removal_request: {
+        Args: {
+          _business_id: string
+          _email: string
+          _name: string
+          _reason: string
+          _relationship: string
+        }
+        Returns: boolean
+      }
       suggest_directory_keywords: {
         Args: { limit_count?: number; postcode?: string; search_term: string }
         Returns: {
