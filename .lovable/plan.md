@@ -8,7 +8,8 @@ A small admin action inside the Directory Import tab for managing the Featured t
 2. A preview is generated — nothing is written yet — showing:
    - how many listings will become featured
    - how many will stop being featured, with their names listed
-   - Company IDs in the file that match no listing in the directory, listed (usually advertisers rejected at import for having no in-scope area)
+   - Company IDs that match a listing which is switched off (inactive), so it cannot be featured — listed separately with their names
+   - Company IDs that match no listing at all, listed (never imported, almost certainly rejected for having no in-scope area)
    - how many are already featured with no change
 3. If the file would unfeature more than 50% of currently featured listings, a prominent warning appears before confirmation is allowed.
 4. On explicit confirm, the list is applied declaratively: `featured = true` for active listings whose CRM company ID is in the list, `featured = false` for every other business.
@@ -21,7 +22,7 @@ Because the list is the complete set rather than an addition, an advertiser who 
 - Body: `{ mode, crmIds: string[] }`. The client parses the CSV or pasted text and sends the deduped, trimmed, non-empty Company ID list.
 - Preview reads use the existing `selectAllPaged` helper so nothing truncates at the 1,000-row PostgREST cap:
   - all currently `featured = true` businesses (id, name, crm_company_id)
-  - matching active businesses for the submitted IDs, chunked with `.in()` at 200 IDs per request
+  - matching businesses for the submitted IDs regardless of `is_active`, chunked with `.in()` at 200 IDs per request, then split into three buckets: matched-and-active (will be featured), matched-but-inactive (reported, never written), and unmatched IDs
 - Apply performs exactly two updates, both touching only the `featured` column:
   - `featured = true` where `crm_company_id` is in the list and `is_active = true`, chunked
   - `featured = false` for every currently featured listing not in that set, chunked by id
