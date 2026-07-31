@@ -33,18 +33,29 @@ Replaces the current CSV Import tab with a two-phase importer: validate first, s
 | Instagram | instagram_url |
 | Twitter | twitter_url |
 | LinkedIn Company Page | linkedin_url |
-| Directory keywords | keyword source (currently empty in every row) |
-| Tags | parsed for areas and keywords only — never stored |
+| Directory keywords | primary keyword source (populated on ~92% of rows) |
+| Local Edition (if present) | primary area source |
+| Tags | fallback source for areas and keywords only — never stored |
 | Notes | never read, never stored |
 
-There is no areas column and no `is_paying_advertiser` column. `crm_company_id` is not in the export yet — it is being added to Mirola, and until then every row is rejected for a blank ID. There is no name-matching fallback, ever.
+There is no `is_paying_advertiser` column. `crm_company_id` is not in the export yet — it is being added to Mirola, and until then every row is rejected for a blank ID. There is no name-matching fallback, ever.
+
+### Areas
+
+- If a `Local Edition` column is present and non-blank for a row, it is the area source (semicolon-split, each token resolved to an area code by number or internal name).
+- Only when it is absent or blank does the importer fall back to `area <n>` tokens in `Tags`.
+
+### Keywords
+
+- `Directory keywords` is the primary source (semicolon-split).
+- Only when a row has no `Directory keywords` value does the importer fall back to the `BIZ`/`BZ` tokens in `Tags`.
 
 ### Parsing `Tags`
 
 `Tags` is semicolon-delimited. Tokens are classified case-insensitively:
 
-- `area <n>` (e.g. "area 6", "area 13") -> area codes. "area out of area" and "area portsmouth" resolve outside 1-14 and hit the existing skip-and-report rule.
-- `BIZ <term>` and `BZ <term>` -> keyword `<term>` with `source = 'crm'` ("BIZ Driveways & Patios" -> "Driveways & Patios").
+- `area <n>` (e.g. "area 6", "area 13") -> area codes, used only as the fallback described above. "area out of area" and "area portsmouth" resolve outside 1-14 and hit the existing skip-and-report rule.
+- `BIZ <term>` and `BZ <term>` -> fallback keyword `<term>` with `source = 'crm'` ("BIZ Driveways & Patios" -> "Driveways & Patios").
 - `Sect HOSP` and `SectHOSP` (both spellings) -> sector tokens, ignored for now.
 - Anything else is ignored.
 
@@ -53,11 +64,11 @@ There is no areas column and no `is_paying_advertiser` column. `crm_company_id` 
 ## Import rules
 
 - Match strictly on `crm_company_id`. Never on name.
-- Blank `crm_company_id`, or no `area <n>` token in `Tags` → row rejected and reported. Areas are never guessed from the postcode.
+- Blank `crm_company_id`, or no area resolvable from `Local Edition` or `Tags` → row rejected and reported. Areas are never guessed from the postcode.
 - Multi-value fields split on `;` with surrounding whitespace trimmed; empty segments discarded. Commas are never delimiters — area and keyword values legitimately contain them.
 - Any area token that does not resolve to area 1-14 → row skipped and reported.
 - Areas replace that business's `business_areas` rows.
-- Keywords (from `Directory keywords` plus the `BIZ`/`BZ` tokens) write to `keywords` / `business_keywords` with `source = 'crm'`, deduplicated case-insensitively on the normalised term. Existing `source = 'owner'` rows are never touched, and only CRM rows are replaced. A row with no keyword material is imported but counted in the prominent warning.
+- Keywords write to `keywords` / `business_keywords` with `source = 'crm'`, deduplicated case-insensitively on the normalised term. Existing `source = 'owner'` rows are never touched, and only CRM rows are replaced. A row with no keyword material from either source is imported but counted in the prominent warning.
 - `owner_id` and `is_verified` are never modified.
 - Where `owner_id` is set, `description`, `phone`, `email`, `website`, `logo_url` and the social URLs are left as the owner has them. The incoming value is recorded as a conflict instead.
 - No column is renamed or dropped.
