@@ -156,10 +156,10 @@ export function parseRow(row: CSVRow, rowNumber: number, areas: AreaRef[]): Pars
   }
 
   // ---- Keywords: Directory keywords primary, BIZ/BZ tags fallback.
-  const directoryKeywords = splitList(pick(norm, FIELD_ALIASES.keywords));
+  const directoryKeywords = splitKeywordList(pick(norm, FIELD_ALIASES.keywords));
   const fallbackKeywords = tagTokens
     .filter((t) => /^(biz|bz)\s+/i.test(t))
-    .map((t) => t.replace(/^(biz|bz)\s+/i, "").trim())
+    .flatMap((t) => splitKeywordList(t.replace(/^(biz|bz)\s+/i, "")))
     .filter(Boolean);
   const keywordSource = directoryKeywords.length > 0 ? directoryKeywords : fallbackKeywords;
   const seenKw = new Set<string>();
@@ -177,7 +177,7 @@ export function parseRow(row: CSVRow, rowNumber: number, areas: AreaRef[]): Pars
   else if (!name) rejectReason = "Blank company name";
   else if (areaCodes.length === 0) {
     rejectReason = areaTokens.length === 0
-      ? "No area supplied (Local Edition and Tags both empty)"
+      ? "No area supplied (Tags and Local Edition both empty)"
       : `No in-scope area — all tokens out of scope: ${areaTokens.join("; ")}`;
   }
 
