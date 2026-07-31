@@ -7,7 +7,9 @@ Replaces the current CSV Import tab with a two-phase importer: validate first, s
 1. **Upload** a Mirola CSV. Headers are matched by alias against the real export columns (see mapping below).
 2. **Validation report** (nothing written yet):
    - Rows to insert / rows to update
-   - Rows rejected, each with a reason (blank CRM company ID, empty areas, area outside 1-14)
+   - Rows rejected, each with a reason (blank CRM company ID, no valid area left after discarding out-of-scope tokens)
+   - Rows **partially resolved** — imported, but with one or more out-of-scope area tokens discarded, listed so you can see which listings lost an area
+   - Rows **suppressed, skipped** — listings marked suppressed in the database, left completely untouched
    - Rows with no keywords — imported, but shown as a prominent warning count
    - New keyword terms that would be created
    - Listings that would be deactivated (in the database, absent from this file)
@@ -44,6 +46,7 @@ There is no `is_paying_advertiser` column. `crm_company_id` is not in the export
 
 - If a `Local Edition` column is present and non-blank for a row, it is the area source (semicolon-split, each token resolved to an area code by number or internal name).
 - Only when it is absent or blank does the importer fall back to `area <n>` tokens in `Tags`.
+- Resolution is **per token, not per row**, for both sources. A token that does not resolve to area 1-14 ("area portsmouth", "area out of area") is discarded and counted; the row keeps whatever valid areas remain. "area 5; area portsmouth" imports as Area 5 and is reported as partially resolved. Only a row where *every* token is out of scope is rejected.
 
 ### Keywords
 
@@ -54,7 +57,7 @@ There is no `is_paying_advertiser` column. `crm_company_id` is not in the export
 
 `Tags` is semicolon-delimited. Tokens are classified case-insensitively:
 
-- `area <n>` (e.g. "area 6", "area 13") -> area codes, used only as the fallback described above. "area out of area" and "area portsmouth" resolve outside 1-14 and hit the existing skip-and-report rule.
+- `area <n>` (e.g. "area 6", "area 13") -> area codes, used only as the fallback described above. "area out of area" and "area portsmouth" don't resolve to 1-14, so they are discarded per token and reported.
 - `BIZ <term>` and `BZ <term>` -> fallback keyword `<term>` with `source = 'crm'` ("BIZ Driveways & Patios" -> "Driveways & Patios").
 - `Sect HOSP` and `SectHOSP` (both spellings) -> sector tokens, ignored for now.
 - Anything else is ignored.
@@ -64,9 +67,10 @@ There is no `is_paying_advertiser` column. `crm_company_id` is not in the export
 ## Import rules
 
 - Match strictly on `crm_company_id`. Never on name.
-- Blank `crm_company_id`, or no area resolvable from `Local Edition` or `Tags` → row rejected and reported. Areas are never guessed from the postcode.
+- Blank `crm_company_id`, or no area at all resolvable from `Local Edition` or `Tags` after discarding out-of-scope tokens → row rejected and reported. Areas are never guessed from the postcode.
 - Multi-value fields split on `;` with surrounding whitespace trimmed; empty segments discarded. Commas are never delimiters — area and keyword values legitimately contain them.
-- Any area token that does not resolve to area 1-14 → row skipped and reported.
+- Unresolvable area tokens are discarded and counted; the row survives on its remaining valid areas and is reported as partially resolved.
+- A business with `suppressed = true` is skipped entirely: not updated, `is_active` untouched, areas and keywords untouched. Counted as "suppressed, skipped". This protects businesses that have asked to be removed from the directory but still exist in the CRM.
 - Areas replace that business's `business_areas` rows.
 - Keywords write to `keywords` / `business_keywords` with `source = 'crm'`, deduplicated case-insensitively on the normalised term. Existing `source = 'owner'` rows are never touched, and only CRM rows are replaced. A row with no keyword material from either source is imported but counted in the prominent warning.
 - `owner_id` and `is_verified` are never modified.
@@ -79,6 +83,7 @@ There is no `is_paying_advertiser` column. `crm_company_id` is not in the export
 ## Technical detail
 
 **Migration**
+- Add `businesses.suppressed boolean not null default false` — a manual admin flag meaning "never put this listing back up". The importer reads it and never writes it.
 - New table `public.business_import_conflicts`: `id`, `business_id` (fk, cascade), `field_name`, `crm_value`, `current_value`, `import_run_id uuid`, `status text default 'pending'` (check: pending/accepted/dismissed), `resolved_at`, `resolved_by`, `created_at`, `updated_at`. Partial unique index on `(business_id, field_name)` where `status = 'pending'` so re-imports update the pending row rather than piling up duplicates. A dismissed conflict whose CRM value later differs becomes a new pending row; an unchanged value stays dismissed.
 - Grants: `authenticated` (admin policies gate it) and `service_role` only. No `anon`. RLS on, admin-only via `has_role(auth.uid(),'admin')`.
 
