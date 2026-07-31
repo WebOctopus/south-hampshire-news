@@ -24,6 +24,8 @@ interface Payload {
   type: NotificationType;
   claim_id?: string;
   removal_request_id?: string;
+  business_id?: string;
+  requester_email?: string;
 }
 
 const admin = createClient(
@@ -172,12 +174,31 @@ Deno.serve(async (req) => {
         );
       }
     } else {
-      if (!payload.removal_request_id) throw new Error("removal_request_id is required");
-      const { data: request } = await admin
-        .from("business_removal_requests")
-        .select("id, status, admin_notes, requester_name, requester_email, relationship, reason, business_id")
-        .eq("id", payload.removal_request_id)
-        .maybeSingle();
+      const columns =
+        "id, status, admin_notes, requester_name, requester_email, relationship, reason, business_id";
+      let request: Record<string, any> | null = null;
+      if (payload.removal_request_id) {
+        const { data } = await admin
+          .from("business_removal_requests")
+          .select(columns)
+          .eq("id", payload.removal_request_id)
+          .maybeSingle();
+        request = data;
+      } else if (payload.business_id && payload.requester_email) {
+        // The public submission RPC returns only a boolean, so resolve the row
+        // from the business plus the requester's email.
+        const { data } = await admin
+          .from("business_removal_requests")
+          .select(columns)
+          .eq("business_id", payload.business_id)
+          .eq("requester_email", payload.requester_email.trim().toLowerCase())
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        request = data;
+      } else {
+        throw new Error("removal_request_id or business_id + requester_email is required");
+      }
       if (!request) throw new Error("Removal request not found");
 
       const { data: business } = await admin
