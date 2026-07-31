@@ -7,6 +7,7 @@ Rebuild the directory search bar and results list on the v2 RPC layer. Nothing e
 Two required fields, side by side, plus a Search button.
 
 - **Postcode** — single-select dropdown populated from `get_directory_postcodes()`. Searchable/filterable list (there are a lot of postcodes). No area name or number appears anywhere.
+  - The filter is tolerant of full postcodes: typing "SO30 2QT" or "so302qt" selects the SO30 option. Typed text is stripped of whitespace and uppercased, the outward portion (leading letters plus the digits before the inward code) is extracted and matched against the options, with a plain prefix match as fallback for partial entries like "SO3". A valid full postcode never returns "no matches".
 - **Keyword** — autocomplete input backed by `suggest_directory_keywords(search_term, postcode)`. Fires from 2 characters, debounced 250ms, shows at most 8 suggestions. Each suggestion carries a `kind`:
   - `keyword` — plain text with a small tag-style icon
   - `business` — shown with a distinct "Business" label chip and different weight, so a company name never reads as a trade
