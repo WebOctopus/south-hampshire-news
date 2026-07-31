@@ -291,15 +291,23 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
   try {
     const existing = await loadExistingByCrmId(supabase, crmIds);
 
-    // Slug pool (insert-only; existing rows keep their slug forever)
-    const existingSlugs = new Set<string>();
-    {
-      const { data } = await supabase.from("businesses").select("slug").not("slug", "is", null);
-      (data || []).forEach((r: any) => r.slug && existingSlugs.add(r.slug));
-    }
-
     const toProcess = accepted.filter((p) => !existing.get(p.crmId)?.suppressed);
     result.suppressedSkipped = accepted.length - toProcess.length;
+
+    // Slug pool: bounded by this batch's own candidate bases rather than the
+    // whole table, so it cannot be truncated by the 1,000-row cap.
+    // Slugs are still generated on insert only.
+    const inserts = toProcess.filter((p) => !existing.get(p.crmId));
+    const candidateBases = [
+      ...new Set(
+        inserts.flatMap((p) => {
+          const base = slugify(p.name) || "business";
+          const citySlug = slugify(p.fields.city || "");
+          return citySlug ? [base, `${base}-${citySlug}`] : [base];
+        }),
+      ),
+    ];
+    const existingSlugs = await loadSlugPool(supabase, candidateBases);
 
     const idByCrmId = new Map<string, string>();
 
@@ -321,14 +329,7 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
         if (current) {
           record.id = current.id;
         } else {
-          let candidate = slugify(p.name) || "business";
-          if (existingSlugs.has(candidate)) {
-            const citySlug = slugify(p.fields.city || "");
-            candidate = citySlug ? `${candidate}-${citySlug}` : candidate;
-            let n = 2;
-            const base = candidate;
-            while (existingSlugs.has(candidate)) candidate = `${base}-${n++}`;
-          }
+          const candidate = nextFreeSlug(p, existingSlugs);
           existingSlugs.add(candidate);
           record.slug = candidate;
           record.is_verified = false;
@@ -336,12 +337,8 @@ async function handleCommit(supabase: any, body: RequestBody, areas: AreaRef[]) 
         return record;
       });
 
-      const { data, error } = await supabase
-        .from("businesses")
-        .upsert(payload, { onConflict: "crm_company_id" })
-        .select("id, crm_company_id");
-      if (error) throw error;
-      for (const r of data || []) idByCrmId.set(r.crm_company_id, r.id);
+      const rows = await upsertWithSlugRetry(supabase, payload, chunk, existingSlugs);
+      for (const r of rows) idByCrmId.set(r.crm_company_id, r.id);
       for (const p of chunk) {
         if (existing.get(p.crmId)) result.updated++;
         else result.inserted++;
