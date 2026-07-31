@@ -39,3 +39,17 @@ File: `supabase/functions/import-directory-csv/index.ts`, inside `handleCommit`.
 - Extract the candidate-slug logic into a small helper so the retry path can request "next suffix" for a given base.
 - Split the current single `upsert(payload)` call into: try chunk upsert → on `23505` fall back to per-row upsert with slug regeneration.
 - Redeploy the edge function.
+
+## Audit of every `.select()` in the function for the 1,000-row cap
+
+**1. Existing-listing lookup (`loadExistingByCrmId`)** — already bounded: it chunks the batch's own CRM ids and queries `.in("crm_company_id", chunk)` 200 at a time, so each response is at most 200 rows. No change needed beyond confirming the chunk size stays below 1,000. This is the lookup that decides insert vs update; the re-run's validate pass should report roughly "to add 1,465, to update 2,222". If it reports "to add 3,687, to update 0", this lookup is truncating and is the first thing to check.
+
+**2. Deactivation sweep (`computeDeactivationSet`)** — currently `.select("id, name, crm_company_id").eq("is_active", true).eq("suppressed", false).limit(20000)`. A `.limit()` above the server's max-rows setting is silently clamped, so this can return 1,000 rows and both the volume guard percentage and the deactivation set would be computed against a truncated population. Replace with explicit paging: loop `.range(from, from + 999)` until a page returns fewer than 1,000 rows, accumulating all rows.
+
+**3. Batch rows (`business_import_batches` by `import_run_id`)** — a full import is well under 1,000 batches at 500 rows per batch, but page it the same way for safety since it feeds the sweep's "seen" set. Same for the batch status query in `handleDeactivate`.
+
+**4. Keyword lookups** — `.in("normalised_term", slice)` with slices of 200, and the conflict lookup `.in("business_id", ids)` bounded by batch size. Both safe; no change.
+
+**5. Slug pool** — removed entirely and replaced by the bounded per-batch queries described above.
+
+Add a small `selectAllPaged(query builder factory)` helper in the function so paged reads are consistent, and use it for items 2 and 3.
