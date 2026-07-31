@@ -9,7 +9,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const FROM = "Discover Magazine <discover@discovermagazines.co.uk>";
+const FROM = "Discover Magazine <discovermagazines@peacockpixelmedia.co.uk>";
+const REPLY_TO = "discover@discovermagazines.co.uk";
 const ADMIN_EMAIL = "discover@discovermagazines.co.uk";
 const CC = ["discover@discovermagazines.co.uk"];
 
@@ -256,6 +257,7 @@ Deno.serve(async (req) => {
       from: FROM,
       to: [recipient],
       cc: recipientType === "admin" ? undefined : CC,
+      reply_to: REPLY_TO,
       subject,
       html: bodyHtml,
     });
