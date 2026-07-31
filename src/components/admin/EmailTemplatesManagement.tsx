@@ -52,6 +52,18 @@ const SAMPLE_DATA: Record<string, string> = {
   deposit_amount: "£127.00",
   remaining_amount: "£381.00",
   payment_terms: "25% deposit to secure your slot, 75% balance due 10 days before distribution",
+  // Directory claim & removal
+  business_slug: "smith-and-co-ltd",
+  claimant_email: "john@smithandco.co.uk",
+  verification_method: "I have access to the business email",
+  verification_notes: "I am the owner and use the listed email address.",
+  admin_notes: "We could not match the email address to the listing.",
+  admin_notes_block:
+    "<p><strong>Reason:</strong> We could not match the email address to the listing.</p>",
+  requester_name: "Jane Doe",
+  requester_email: "jane@example.com",
+  relationship: "Former owner",
+  reason: "The business closed in 2024 and the listing is out of date.",
 };
 
 function applyPreviewVariables(html: string, variables: string[]): string {
