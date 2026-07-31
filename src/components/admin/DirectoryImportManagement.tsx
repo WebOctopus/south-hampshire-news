@@ -35,6 +35,7 @@ interface ValidationReport {
   rejected: { row: number; name: string; reason: string }[];
   partiallyResolved: { row: number; name: string; kept: number[]; discarded: string[] }[];
   suppressedSkipped: { row: number; name: string }[];
+  removedSkipped: { row: number; name: string }[];
   noKeywords: { row: number; name: string }[];
   newKeywords: string[];
   conflicts: { row: number; name: string; field: string; crm_value: string; current_value: string }[];
@@ -46,6 +47,7 @@ interface CommitSummary {
   updated: number;
   rejected: number;
   suppressedSkipped: number;
+  removedSkipped: number;
   conflictsRecorded: number;
   errors: string[];
   deactivation: {
@@ -153,6 +155,7 @@ export function DirectoryImportManagement() {
       rejected: [],
       partiallyResolved: [],
       suppressedSkipped: [],
+      removedSkipped: [],
       noKeywords: [],
       newKeywords: [],
       conflicts: [],
@@ -183,6 +186,7 @@ export function DirectoryImportManagement() {
         acc.rejected.push(...data.rejected);
         acc.partiallyResolved.push(...data.partiallyResolved);
         acc.suppressedSkipped.push(...data.suppressedSkipped);
+        acc.removedSkipped.push(...(data.removedSkipped ?? []));
         acc.noKeywords.push(...data.noKeywords);
         acc.conflicts.push(...data.conflicts);
         for (const k of data.newKeywords) if (!acc.newKeywords.includes(k)) acc.newKeywords.push(k);
@@ -215,7 +219,7 @@ export function DirectoryImportManagement() {
 
     const batches = Math.ceil(parsed.rows.length / BATCH_SIZE);
     const acc: CommitSummary = {
-      inserted: 0, updated: 0, rejected: 0, suppressedSkipped: 0,
+      inserted: 0, updated: 0, rejected: 0, suppressedSkipped: 0, removedSkipped: 0,
       conflictsRecorded: 0, errors: [], deactivation: null,
     };
 
@@ -241,6 +245,7 @@ export function DirectoryImportManagement() {
           acc.updated += data.updated;
           acc.rejected += data.rejected;
           acc.suppressedSkipped += data.suppressedSkipped;
+          acc.removedSkipped += data.removedSkipped ?? 0;
           acc.conflictsRecorded += data.conflictsRecorded;
         }
         setProgress(Math.round(((i + 1) / batches) * 100));
@@ -338,6 +343,11 @@ export function DirectoryImportManagement() {
               <Stat label="To update" value={report.toUpdate} />
               <Stat label="Rejected" value={report.rejected.length} tone={report.rejected.length ? 'warn' : undefined} />
               <Stat label="Suppressed, skipped" value={report.suppressedSkipped.length} />
+              <Stat
+                label="Skipped — marked Removed in CRM"
+                value={report.removedSkipped.length}
+                tone={report.removedSkipped.length ? 'warn' : undefined}
+              />
               <Stat label="Partially resolved areas" value={report.partiallyResolved.length} />
               <Stat label="No keywords" value={report.noKeywords.length} tone={report.noKeywords.length ? 'warn' : undefined} />
               <Stat label="New keyword terms" value={report.newKeywords.length} />
@@ -394,6 +404,15 @@ export function DirectoryImportManagement() {
               />
             )}
 
+            {report.removedSkipped.length > 0 && (
+              <IssueTable
+                title="Skipped — marked Removed in CRM"
+                rows={report.removedSkipped.slice(0, 100).map((r) => [String(r.row), r.name])}
+                headers={['Row', 'Name']}
+                total={report.removedSkipped.length}
+              />
+            )}
+
             <div className="flex items-center gap-3 pt-2">
               <Button onClick={runCommit} disabled={busy}>
                 {phase === 'importing' ? 'Importing…' : 'Confirm import'}
@@ -418,6 +437,7 @@ export function DirectoryImportManagement() {
               <Stat label="Added" value={summary.inserted} />
               <Stat label="Updated" value={summary.updated} />
               <Stat label="Rejected" value={summary.rejected} />
+              <Stat label="Skipped — marked Removed in CRM" value={summary.removedSkipped} />
               <Stat label="Conflicts recorded" value={summary.conflictsRecorded} />
             </div>
 
