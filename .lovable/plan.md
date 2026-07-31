@@ -15,6 +15,7 @@
      `IF NOT v_is_admin AND NOT (v_business.owner_id IS NOT DISTINCT FROM auth.uid() AND coalesce(v_business.is_verified, false)) THEN`
    - Everything else unchanged: `out_keyword_id` / `out_term` / `out_source` output names, 2-40 character rule, safe-character check on new terms only, business-name rejection, reuse of an existing normalised term, `created_by_owner` flag, and the 2-keyword owner cap enforced by the trigger.
 2. `REVOKE EXECUTE ON FUNCTION public.add_owner_business_keyword(uuid, text) FROM anon;` plus a revoke from `PUBLIC` so the grant cannot reappear through the default role. EXECUTE stays for `authenticated` and `service_role`.
+3. Revoke `anon` (and `PUBLIC`) EXECUTE from `directory_business_keywords(uuid)` and `directory_business_postcodes(uuid)`. A codebase search finds no caller outside the generated `src/integrations/supabase/types.ts` — they are only used internally by the v2 detail/search functions, which run as their own definer and are unaffected by the revoke. Neither helper checks `is_active` or `suppressed`, so they should not be publicly callable.
 
 No frontend change is needed — `BusinessKeywordsEditor` only calls the RPC for signed-in users and already surfaces the raised message.
 
@@ -24,7 +25,8 @@ Checked ACLs and bodies for all of them:
 
 | Function | anon EXECUTE | Verdict |
 | --- | --- | --- |
-| `get_directory_postcodes`, `suggest_directory_keywords`, `get_public_businesses_v2`, `get_public_businesses_count_v2`, `get_verified_businesses_v2`, `get_recently_added_businesses_v2`, `get_business_detail_v2`, `get_business_detail_by_slug_v2`, `directory_business_keywords`, `directory_business_postcodes` | yes | Correct — these are the public directory read path and contain no `auth.uid()` comparison. |
+| `get_directory_postcodes`, `suggest_directory_keywords`, `get_public_businesses_v2`, `get_public_businesses_count_v2`, `get_verified_businesses_v2`, `get_recently_added_businesses_v2`, `get_business_detail_v2`, `get_business_detail_by_slug_v2` | yes | Correct — these are the public directory read path and contain no `auth.uid()` comparison. |
+| `directory_business_keywords`, `directory_business_postcodes` | yes | Internal helpers only, no visibility filtering — revoke `anon`. |
 | `admin_list_owner_keywords`, `get_users_for_owner_assignment` | already revoked | Correct. Both gate on `has_role(auth.uid(), 'admin')`, which returns false (not NULL) for a NULL uid, so they fail closed. |
 | `add_owner_business_keyword` | yes | Broken — fixed above. |
 
