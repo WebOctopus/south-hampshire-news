@@ -46,6 +46,7 @@ import ArtworkUploadTab from '@/components/dashboard/ArtworkUploadTab';
 import CampaignScheduleTab from '@/components/dashboard/CampaignScheduleTab';
 import MagazinesTab from '@/components/dashboard/MagazinesTab';
 import AdvertiserStatusBanner from '@/components/dashboard/AdvertiserStatusBanner';
+import { BusinessKeywordsEditor } from '@/components/directory/BusinessKeywordsEditor';
 
 const defaultEventFormData: EventFormFieldsData & { image: string } = {
   ...defaultEventFormFieldsData,
@@ -56,7 +57,6 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [editingBusiness, setEditingBusiness] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
@@ -93,7 +93,6 @@ const Dashboard = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category_id: '',
     email: '',
     phone: '',
     website: '',
@@ -121,21 +120,6 @@ const Dashboard = () => {
       setLoading(false);
     }
   }, [user, authLoading]);
-
-  const loadCategories = async () => {
-    const { data } = await supabase
-      .from('business_categories')
-      .select('*')
-      .order('name');
-    
-    if (data) {
-      setCategories(data);
-    }
-  };
-
-  useEffect(() => {
-    loadCategories();
-  }, []);
 
   // Check for returning BOGOF customer flag
   useEffect(() => {
@@ -461,7 +445,6 @@ const Dashboard = () => {
       setFormData({
         name: '',
         description: '',
-        category_id: '',
         email: '',
         phone: '',
         website: '',
@@ -489,7 +472,6 @@ const Dashboard = () => {
     setFormData({
       name: business.name || '',
       description: business.description || '',
-      category_id: business.category_id || '',
       email: business.email || '',
       phone: business.phone || '',
       website: business.website || '',
@@ -506,7 +488,6 @@ const Dashboard = () => {
     setFormData({
       name: '',
       description: '',
-      category_id: '',
       email: '',
       phone: '',
       website: '',
@@ -844,7 +825,7 @@ const Dashboard = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">
                 Business Name *
@@ -857,29 +838,11 @@ const Dashboard = () => {
                 placeholder="Enter your business name"
               />
             </div>
-
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium mb-1">
-                Category
-              </label>
-              <Select value={formData.category_id} onValueChange={(value) => handleInputChange('category_id', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium mb-1">
-              Description
+              About
             </label>
             <Textarea
               id="description"
@@ -889,6 +852,14 @@ const Dashboard = () => {
               rows={4}
             />
           </div>
+
+          {editingBusiness && (
+            <BusinessKeywordsEditor
+              businessId={editingBusiness.id}
+              businessName={editingBusiness.name}
+              mode={editingBusiness.is_verified ? 'owner-verified' : 'owner-readonly'}
+            />
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
