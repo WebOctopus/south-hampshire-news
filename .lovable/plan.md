@@ -34,6 +34,20 @@ A switch writing `businesses.featured`, rendered for admins only, with an inline
 
 ## Technical notes
 
-- One migration is needed. `business_keywords` has admin ALL, owner INSERT and owner DELETE policies but **no SELECT policy**, so a verified owner cannot read their own keyword rows; and adding a brand-new term requires inserting into `keywords`, which is admin-only. The migration adds a SELECT policy on `business_keywords` for the business owner, plus a SECURITY DEFINER RPC that normalises a term, upserts it into `keywords`, links it to the business with the correct `source`, and re-raises the cap trigger's error message. Removal keeps using the existing DELETE policy.
+- One migration is needed. `business_keywords` has admin ALL, owner INSERT and owner DELETE policies but **no SELECT policy**, so a verified owner cannot read their own keyword rows; and adding a brand-new term requires inserting into `keywords`, which is admin-only. The migration adds a SELECT policy on `business_keywords` for the business owner, plus a SECURITY DEFINER RPC that validates and normalises a term, links or creates the `keywords` row, links it to the business with the correct `source`, and re-raises the cap trigger's error message. Removal keeps using the existing DELETE policy.
+
+### Owner keyword RPC validation
+
+`keywords` is shared across the whole directory and feeds public autocomplete, so the RPC validates before creating anything new and raises a clear, user-facing message on each failure:
+
+- 2 to 40 characters after trimming.
+- Letters, numbers, spaces, hyphens and ampersands only — rejects URLs, phone numbers, email addresses and punctuation-heavy strings.
+- Rejects a term that is just the business's own name.
+
+If the normalised term already exists in `keywords`, the RPC links to that existing row instead of creating a near-duplicate. Only a genuinely new normalised term inserts a row.
+
+### Admin visibility of owner-created terms
+
+`keywords` gets a `created_by_owner` boolean (default false), set true when the RPC creates the row on an owner's behalf. The Directory admin area gains a small "Owner-added keywords" list showing those terms with the businesses using them, so a bad term can be spotted, renamed or deleted rather than living unnoticed in the shared autocomplete list.
 - No column is renamed or dropped; `pricing_areas` and `leaflet_areas` are not touched.
 - Public reads stay on SECURITY DEFINER RPCs; the edit forms are authenticated-only and continue to use direct table access.
