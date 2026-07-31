@@ -142,6 +142,11 @@ Deno.serve(async (req) => {
         verification_notes: escapeHtml(claim.verification_notes ?? "-"),
         admin_notes: escapeHtml(claim.admin_notes ?? ""),
       };
+      // Full paragraph so templates can drop the reason block entirely when
+      // no admin notes were recorded.
+      vars.admin_notes_block = vars.admin_notes
+        ? `<p><strong>Reason:</strong> ${vars.admin_notes}</p>`
+        : "";
 
       if (type === "claim_submitted_admin") {
         recipient = ADMIN_EMAIL;
