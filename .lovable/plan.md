@@ -14,17 +14,20 @@ Confirmed the 14 source rows exist with `sort_order` 1-14 ("Area 1 - SOUTHAMPTON
 
 Postcode mapping seeded exactly as supplied, including the deliberate multi-area postcodes (SO18, SO31, SO40, SO51, SO52, PO17). A postcode search will later return businesses from every matching area.
 
-Access: anyone can read active rows; admins have full access. `internal_name` is for the admin UI only and never surfaces publicly.
+Access: admins have full access; signed-in users can read. The public never reads this table directly — logged-out visitors reach it only through SECURITY DEFINER RPCs, so `anon` gets no grant at all. `internal_name` is for the admin UI only and never surfaces publicly.
+
+Four out-of-scope regions are also inserted, switched off (`is_active = false`) for this release: Portsmouth (PO1-PO6, PO8-PO11), Salisbury (SP), Bournemouth (BH), and a catch-all out-of-area row (PO18-PO38). They take area codes 15-18 so the 1-14 magazine numbering stays intact.
 
 **3. `business_areas`**
 Join table (`business_id`, `area_code`) so a business can sit in several areas. Admin-only under RLS — public reads will go through SECURITY DEFINER RPCs added in a later step.
 
 **4. `keywords` + `business_keywords`**
-`keywords` holds a unique `term` plus a `normalised_term` (lowercased, trimmed) for matching. `business_keywords` links them to a business with a `source` of either `crm` or `owner`.
+`keywords` holds a display `term` plus a `normalised_term` (lowercased, trimmed). The uniqueness constraint sits on `normalised_term`, so "Gardener" and "gardener" can never coexist as two rows. `business_keywords` links them to a business with a `source` of either `crm` or `owner`.
 
 Access rules on `business_keywords`:
 - Admins: full access.
 - A verified business owner: may add and remove rows for their own business, and only rows they added themselves (`source = 'owner'`). CRM-imported keywords cannot be touched by owners.
+- A database trigger caps owner-added keywords at 2 per business, so the limit holds even when the API is called directly rather than through the UI.
 
 ## Not in this change
 
@@ -34,4 +37,4 @@ Access rules on `business_keywords`:
 
 ## Technical notes
 
-Migration order per new table: CREATE TABLE, GRANT (authenticated/service_role; anon SELECT only on `directory_areas`), ENABLE ROW LEVEL SECURITY, CREATE POLICY. Postcode arrays are stored as `text[]` on `directory_areas` and seeded with a single UPDATE per area built from the supplied postcode -> area list. `updated_at` on `directory_areas` uses the existing `public.update_updated_at_column()` trigger function. Owner policies on `business_keywords` use an EXISTS check against `businesses` (`owner_id = auth.uid() AND is_verified = true`) combined with `source = 'owner'`; admin policies use `has_role(auth.uid(),'admin')`.
+Migration order per new table: CREATE TABLE, GRANT (authenticated/service_role only — no `anon` grants on any of the new tables), ENABLE ROW LEVEL SECURITY, CREATE POLICY. Postcode arrays are stored as `text[]` on `directory_areas` and seeded with a single UPDATE per area built from the supplied postcode -> area list. `updated_at` on `directory_areas` uses the existing `public.update_updated_at_column()` trigger function. The owner-keyword cap is a `BEFORE INSERT` trigger counting existing rows for that `business_id` with `source = 'owner'` and raising when the count is already 2. Owner policies on `business_keywords` use an EXISTS check against `businesses` (`owner_id = auth.uid() AND is_verified = true`) combined with `source = 'owner'`; admin policies use `has_role(auth.uid(),'admin')`.
