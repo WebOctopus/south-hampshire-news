@@ -132,13 +132,18 @@ async function handleValidate(
   }
 
   const parsed = parseBatch(body, areas);
-  const accepted = parsed.filter((p) => !p.rejectReason);
+  const removedRows = parsed.filter((p) => p.removedInCrm);
+  const accepted = parsed.filter((p) => !p.removedInCrm && !p.rejectReason);
   const crmIds = accepted.map((p) => p.crmId);
   const existing = await loadExistingByCrmId(supabase, crmIds);
 
   const rejected = parsed
-    .filter((p) => p.rejectReason)
+    .filter((p) => !p.removedInCrm && p.rejectReason)
     .map((p) => ({ row: p.rowNumber, name: p.name || "(no name)", reason: p.rejectReason }));
+  const removedSkipped = removedRows.map((p) => ({
+    row: p.rowNumber,
+    name: p.name || "(no name)",
+  }));
   const partiallyResolved: any[] = [];
   const suppressedSkipped: any[] = [];
   const noKeywords: any[] = [];
@@ -223,6 +228,7 @@ async function handleValidate(
     rejected,
     partiallyResolved,
     suppressedSkipped,
+    removedSkipped,
     noKeywords,
     newKeywords,
     conflicts,
