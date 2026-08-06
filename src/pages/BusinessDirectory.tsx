@@ -35,6 +35,7 @@ const BusinessDirectory = () => {
 
   const requestIdRef = useRef(0);
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+  const isDirty = !!query && (keyword.trim() !== query.keyword || postcode !== query.postcode);
 
   const runSearch = useCallback(async (q: Query, page: number) => {
     const thisRequestId = ++requestIdRef.current;
@@ -150,6 +151,7 @@ const BusinessDirectory = () => {
           onSearch={handleSearch}
           onNewSearch={handleReset}
           hasResults={!!query}
+          isDirty={isDirty}
         />
 
 
