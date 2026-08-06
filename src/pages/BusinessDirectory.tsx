@@ -89,6 +89,17 @@ const BusinessDirectory = () => {
     setQuery({ keyword: keyword.trim(), postcode });
   };
 
+  const handleReset = () => {
+    setKeyword('');
+    setPostcode('');
+    setQuery(null);
+    setCurrentPage(1);
+    setBusinesses([]);
+    setTotalCount(0);
+    setError(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     if (location.hash === '#add') {
       handleAddBusinessClick();
@@ -96,6 +107,7 @@ const BusinessDirectory = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.hash]);
+
 
   const handleAddBusinessClick = () => {
     if (user) navigate('/dashboard');
