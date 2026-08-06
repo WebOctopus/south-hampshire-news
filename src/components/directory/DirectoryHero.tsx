@@ -1,4 +1,4 @@
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PostcodeSelect } from './PostcodeSelect';
 import { KeywordAutocomplete } from './KeywordAutocomplete';
@@ -9,7 +9,10 @@ interface Props {
   postcode: string;
   onPostcodeChange: (v: string) => void;
   onSearch: () => void;
+  onNewSearch?: () => void;
+  hasResults?: boolean;
 }
+
 
 export function DirectoryHero({
   keyword, onKeywordChange, postcode, onPostcodeChange, onSearch,
