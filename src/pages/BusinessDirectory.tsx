@@ -148,7 +148,10 @@ const BusinessDirectory = () => {
           postcode={postcode}
           onPostcodeChange={setPostcode}
           onSearch={handleSearch}
+          onNewSearch={handleReset}
+          hasResults={!!query}
         />
+
 
         <section id="all-results" className="py-8 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
