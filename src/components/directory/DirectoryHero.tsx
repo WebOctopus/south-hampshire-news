@@ -11,11 +11,12 @@ interface Props {
   onSearch: () => void;
   onNewSearch?: () => void;
   hasResults?: boolean;
+  isDirty?: boolean;
 }
 
 
 export function DirectoryHero({
-  keyword, onKeywordChange, postcode, onPostcodeChange, onSearch, onNewSearch, hasResults = false,
+  keyword, onKeywordChange, postcode, onPostcodeChange, onSearch, onNewSearch, hasResults = false, isDirty = false,
 }: Props) {
   const hasKeyword = keyword.trim().length > 0;
   const canSearch = hasKeyword && !!postcode;
@@ -72,7 +73,7 @@ export function DirectoryHero({
             disabled={!canSearch}
             className="h-14 px-8 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-60"
           >
-            {hasResults ? (
+            {isDirty ? (
               <>
                 <RefreshCw className="h-5 w-5 mr-2" /> Update search
               </>
@@ -85,9 +86,11 @@ export function DirectoryHero({
         </form>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-3">
           <p className="text-white/60 text-xs">
-            {hint || (hasResults
-              ? 'Change your keyword or postcode above, then click Update search.'
-              : 'Press Search to see businesses near you.')}
+            {hint || (isDirty
+              ? "You've changed your search — click Update search to see new results."
+              : hasResults
+                ? 'Showing results for your current search.'
+                : 'Press Search to see businesses near you.')}
           </p>
           {hasResults && onNewSearch && (
             <button
