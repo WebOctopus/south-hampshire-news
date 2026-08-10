@@ -705,6 +705,7 @@ export type Database = {
           advertises_in_discover: boolean
           biz_type: string | null
           category_id: string | null
+          checkatrade_url: string | null
           city: string | null
           created_at: string
           crm_company_id: string | null
@@ -747,6 +748,7 @@ export type Database = {
           advertises_in_discover?: boolean
           biz_type?: string | null
           category_id?: string | null
+          checkatrade_url?: string | null
           city?: string | null
           created_at?: string
           crm_company_id?: string | null
@@ -789,6 +791,7 @@ export type Database = {
           advertises_in_discover?: boolean
           biz_type?: string | null
           category_id?: string | null
+          checkatrade_url?: string | null
           city?: string | null
           created_at?: string
           crm_company_id?: string | null
@@ -2870,6 +2873,7 @@ export type Database = {
           advertises_in_discover: boolean
           business_categories: Json
           category_id: string
+          checkatrade_url: string
           city: string
           created_at: string
           description: string
@@ -2911,6 +2915,7 @@ export type Database = {
           advertises_in_discover: boolean
           business_categories: Json
           category_id: string
+          checkatrade_url: string
           city: string
           created_at: string
           description: string
