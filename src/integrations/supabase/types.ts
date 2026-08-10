@@ -3031,22 +3031,29 @@ export type Database = {
           biz_type: string
           business_categories: Json
           category_id: string
+          checkatrade_url: string
           city: string
           created_at: string
           description: string
+          facebook_url: string
           featured: boolean
           featured_image_url: string
           id: string
           images: string[]
+          instagram_url: string
           is_verified: boolean
           keywords: string[]
+          linkedin_url: string
           logo_url: string
           name: string
           postcode_out: string
           slug: string
           tier: string
+          tiktok_url: string
+          twitter_url: string
           updated_at: string
           website: string
+          youtube_url: string
         }[]
       }
       get_recently_added_businesses: {

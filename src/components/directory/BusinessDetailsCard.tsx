@@ -1,5 +1,5 @@
-import { Phone, Globe, Mail, MapPin, Facebook, Instagram, Linkedin, Youtube, Music2 } from 'lucide-react';
-import checkatradeAsset from '@/assets/checkatrade.png.asset.json';
+import { Phone, Globe, Mail, MapPin } from 'lucide-react';
+import { SocialLinks, getSocialLinks } from './SocialLinks';
 
 interface Props {
   business: {
@@ -19,18 +19,6 @@ interface Props {
     checkatrade_url?: string | null;
   };
 }
-
-const XIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
-);
-
-const toHref = (url: string) => (url.startsWith('http') ? url : `https://${url}`);
-
-const CheckatradeIcon = ({ className }: { className?: string }) => (
-  <img src={checkatradeAsset.url} alt="" aria-hidden="true" className={className} />
-);
 
 export function BusinessDetailsCard({ business }: Props) {
   const websiteHref = business.website
@@ -112,21 +100,7 @@ export function BusinessDetailsCard({ business }: Props) {
     },
   ];
 
-  const socials = [
-    { key: 'facebook', label: 'Facebook', url: business.facebook_url, Icon: Facebook },
-    { key: 'instagram', label: 'Instagram', url: business.instagram_url, Icon: Instagram },
-    { key: 'twitter', label: 'X', url: business.twitter_url, Icon: XIcon },
-    { key: 'linkedin', label: 'LinkedIn', url: business.linkedin_url, Icon: Linkedin },
-    { key: 'tiktok', label: 'TikTok', url: business.tiktok_url, Icon: Music2 },
-    { key: 'youtube', label: 'YouTube', url: business.youtube_url, Icon: Youtube },
-    {
-      key: 'checkatrade',
-      label: 'Checkatrade',
-      url: business.checkatrade_url,
-      Icon: CheckatradeIcon,
-      brand: true,
-    },
-  ].filter((s) => !!s.url && s.url.trim().length > 0);
+  const socials = getSocialLinks(business);
 
   return (
     <div className="bg-card border border-community-teal/25 rounded-xl p-5">
@@ -147,25 +121,10 @@ export function BusinessDetailsCard({ business }: Props) {
       </div>
 
       {socials.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-community-teal/15 flex flex-wrap items-center gap-2">
-          {socials.map(({ key, label, url, Icon, brand }: any) => (
-            <a
-              key={key}
-              href={toHref(url as string)}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={label}
-              title={label}
-              className={
-                brand
-                  ? 'inline-flex h-9 w-9 items-center justify-center rounded-full border border-community-teal/25 bg-background hover:border-community-teal transition-colors'
-                  : 'inline-flex h-9 w-9 items-center justify-center rounded-full border border-community-teal/25 text-community-teal hover:bg-community-teal hover:text-background transition-colors'
-              }
-            >
-              <Icon className={brand ? 'h-5 w-5 object-contain' : 'h-4 w-4'} />
-            </a>
-          ))}
-        </div>
+        <SocialLinks
+          business={business}
+          className="mt-4 pt-3 border-t border-community-teal/15"
+        />
       )}
     </div>
   );
