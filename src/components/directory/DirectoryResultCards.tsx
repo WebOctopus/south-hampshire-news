@@ -103,7 +103,12 @@ export function FeaturedResultCard({ business }: { business: DirectoryBusiness }
 
       <div className="px-6 py-4 border-t flex items-center justify-between gap-3">
         {business.advertises_in_discover ? (
-          <span className="text-xs font-semibold uppercase tracking-wide text-orange-700/80 truncate">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-orange-700/80 truncate">
+            <img
+              src="/favicon.svg"
+              alt="Discover Magazine"
+              className="h-4 w-4 object-contain flex-shrink-0"
+            />
             Advertises in Discover
           </span>
         ) : (
