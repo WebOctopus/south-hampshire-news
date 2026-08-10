@@ -44,7 +44,7 @@ export function FeaturedResultCard({ business }: { business: DirectoryBusiness }
       className="cursor-pointer group rounded-2xl border-2 border-orange-200 bg-card shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col overflow-hidden"
     >
       {/* Media banner */}
-      <div className="relative aspect-[16/9] overflow-hidden bg-[hsl(40,40%,95%)]">
+      <div className={`relative overflow-hidden bg-[hsl(40,40%,95%)] ${photo ? 'aspect-[16/9]' : 'aspect-[24/7]'}`}>
         {photo ? (
           <img
             src={photo}
@@ -68,9 +68,15 @@ export function FeaturedResultCard({ business }: { business: DirectoryBusiness }
           </div>
         )}
 
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 to-transparent" />
+        {photo && <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 to-transparent" />}
 
-        <span className="absolute top-3 left-3 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold text-white bg-black/55 backdrop-blur-sm rounded-full px-2.5 py-1">
+        <span
+          className={`absolute top-3 left-3 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-bold rounded-full px-2.5 py-1 ${
+            photo
+              ? 'text-white bg-black/55 backdrop-blur-sm'
+              : 'text-orange-700 bg-orange-100 border border-orange-200'
+          }`}
+        >
           <Star className="h-3 w-3 fill-current" /> Featured
         </span>
       </div>
