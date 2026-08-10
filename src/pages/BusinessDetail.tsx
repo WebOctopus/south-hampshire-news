@@ -42,6 +42,7 @@ interface Business {
   linkedin_url?: string | null;
   tiktok_url?: string | null;
   youtube_url?: string | null;
+  checkatrade_url?: string | null;
   business_categories: {
     name: string;
     icon: string;

@@ -92,6 +92,7 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
     linkedin_url: business?.linkedin_url || '',
     tiktok_url: business?.tiktok_url || '',
     youtube_url: business?.youtube_url || '',
+    checkatrade_url: business?.checkatrade_url || '',
     opening_hours: (business?.opening_hours as OpeningHoursValue) || {},
   });
 
@@ -456,6 +457,15 @@ export function BusinessEditForm({ business, onClose, onSave }: BusinessEditForm
                   value={formData.youtube_url}
                   onChange={(e) => handleChange('youtube_url', e.target.value)}
                   placeholder="https://youtube.com/@yourbusiness"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="checkatrade_url">Checkatrade</Label>
+                <Input
+                  id="checkatrade_url"
+                  value={formData.checkatrade_url}
+                  onChange={(e) => handleChange('checkatrade_url', e.target.value)}
+                  placeholder="https://www.checkatrade.com/trades/yourbusiness"
                 />
               </div>
             </div>
