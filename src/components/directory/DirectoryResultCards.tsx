@@ -1,8 +1,9 @@
 import { Globe, ArrowRight, BadgeCheck, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BusinessIcon } from './BusinessIcon';
+import { SocialLinks, type SocialUrls } from './SocialLinks';
 
-export interface DirectoryBusiness {
+export interface DirectoryBusiness extends SocialUrls {
   id: string;
   name: string;
   slug?: string | null;
@@ -98,6 +99,7 @@ export function FeaturedResultCard({ business }: { business: DirectoryBusiness }
               <span className="truncate text-orange-600">{cleanWebsite(business.website)}</span>
             </div>
           )}
+          <SocialLinks business={business} size="sm" className="mt-4" />
         </div>
       </div>
 
