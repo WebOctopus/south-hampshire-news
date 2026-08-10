@@ -1,4 +1,5 @@
 import { Phone, Globe, Mail, MapPin, Facebook, Instagram, Linkedin, Youtube, Music2 } from 'lucide-react';
+import checkatradeAsset from '@/assets/checkatrade.png.asset.json';
 
 interface Props {
   business: {
@@ -15,6 +16,7 @@ interface Props {
     linkedin_url?: string | null;
     tiktok_url?: string | null;
     youtube_url?: string | null;
+    checkatrade_url?: string | null;
   };
 }
 
@@ -25,6 +27,10 @@ const XIcon = ({ className }: { className?: string }) => (
 );
 
 const toHref = (url: string) => (url.startsWith('http') ? url : `https://${url}`);
+
+const CheckatradeIcon = ({ className }: { className?: string }) => (
+  <img src={checkatradeAsset.url} alt="" aria-hidden="true" className={className} />
+);
 
 export function BusinessDetailsCard({ business }: Props) {
   const websiteHref = business.website
@@ -113,6 +119,13 @@ export function BusinessDetailsCard({ business }: Props) {
     { key: 'linkedin', label: 'LinkedIn', url: business.linkedin_url, Icon: Linkedin },
     { key: 'tiktok', label: 'TikTok', url: business.tiktok_url, Icon: Music2 },
     { key: 'youtube', label: 'YouTube', url: business.youtube_url, Icon: Youtube },
+    {
+      key: 'checkatrade',
+      label: 'Checkatrade',
+      url: business.checkatrade_url,
+      Icon: CheckatradeIcon,
+      brand: true,
+    },
   ].filter((s) => !!s.url && s.url.trim().length > 0);
 
   return (
@@ -135,7 +148,7 @@ export function BusinessDetailsCard({ business }: Props) {
 
       {socials.length > 0 && (
         <div className="mt-4 pt-3 border-t border-community-teal/15 flex flex-wrap items-center gap-2">
-          {socials.map(({ key, label, url, Icon }) => (
+          {socials.map(({ key, label, url, Icon, brand }: any) => (
             <a
               key={key}
               href={toHref(url as string)}
@@ -143,9 +156,13 @@ export function BusinessDetailsCard({ business }: Props) {
               rel="noreferrer"
               aria-label={label}
               title={label}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-community-teal/25 text-community-teal hover:bg-community-teal hover:text-background transition-colors"
+              className={
+                brand
+                  ? 'inline-flex h-9 w-9 items-center justify-center rounded-full border border-community-teal/25 bg-background hover:border-community-teal transition-colors'
+                  : 'inline-flex h-9 w-9 items-center justify-center rounded-full border border-community-teal/25 text-community-teal hover:bg-community-teal hover:text-background transition-colors'
+              }
             >
-              <Icon className="h-4 w-4" />
+              <Icon className={brand ? 'h-5 w-5 object-contain' : 'h-4 w-4'} />
             </a>
           ))}
         </div>
